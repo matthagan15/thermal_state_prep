@@ -1,6 +1,64 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 
+\usepackage{amsmath,amsthm, amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{mathtools}
+\usepackage{dsfont}
+\usepackage{xcolor}
+\usepackage{algorithm,algpseudocode}
+\usepackage{todonotes}
+\usepackage{nicefrac}
+\usepackage{mathrsfs}
+\usepackage{tikz}
+
+%%%%%%%%    THEOREM DEFINITIONS AND RESTATABLE
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+
+\usepackage{todonotes}
+
+\newcommand{\matt}[1]{\todo[color=red!50, prepend, caption={Matt}, tickmarkheight=0.25cm]{#1}}
+\newcommand{\note}[1]{\emph{Note: #1}}
+\newcommand{\conjecture}[1]{ \noindent\emph{\textbf{Conjecture:}} \emph{ #1 }}
+
+
+
+
+%%%%%%%%    NOTATION DEFINITIONS FOR EASIER WRITING
+\newcommand{\ket}[1]{|#1\rangle}
+\newcommand{\bra}[1]{\langle #1|}
+\newcommand{\braket}[2]{\langle #1|#2\rangle}
+\newcommand{\ketbra}[2]{| #1\rangle\! \langle #2|}
+\newcommand{\parens}[1]{\left( #1 \right)}
+\newcommand{\brackets}[1]{\left[ #1 \right]}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\norm}[1]{\left| \left| #1 \right| \right|}
+\newcommand{\diamondnorm}[1]{\left| \left| #1 \right| \right|_\diamond}
+\newcommand{\anglebrackets}[1]{\left< #1 \right>}
+\newcommand{\overlap}[2]{\anglebrackets{#1 , #2 }}
+\newcommand{\set}[1]{\left\{ #1 \right\}}
+\newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
+\newcommand{\openone}{\mathds{1}}
+\newcommand{\expect}[1]{\mathbb{E}\brackets{#1}}
+\newcommand{\prob}[1]{\text{Pr}\left[ #1 \right]}
+\newcommand{\bigo}[1]{\mathcal{O}\left( #1 \right)}
+\newcommand{\bigotilde}[1]{\widetilde{\mathcal{O}} \left( #1 \right)}
+\newcommand{\ts}{\textsuperscript}
+
+\DeclareMathOperator{\Tr}{Tr}
+\newcommand{\trace}[1]{\Tr \brackets{ #1 }}
+\newcommand{\partrace}[2]{\Tr_{#1} \brackets{ #2 }}
+\newcommand{\complex}{\mathbb{C}}
+
+%%%%% COMMONLY USED OBJECTS
+\newcommand{\hilb}{\mathscr{H}}
+\newcommand{\partfun}{\mathcal{Z}}
+\newcommand{\gue}{\rm GUE}
+\DeclareMathOperator{\hermMathOp}{Herm}
+\newcommand{\herm}[1]{\hermMathOp\parens{#1}}
+
+
 \title{Thermal State Prep}
 \author{Nathan Wiebe, Matthew Hagan}
 \date{May 2022}
@@ -10,6 +68,27 @@
 \maketitle
 
 \section{Introduction}
-Thermal state preparation occupies a unique spot in quantum information sciences: Preparing thermal states for arbitrary Hamiltonians for arbitrary temperatures is $QMA$-Hard, however thermal states are incredibly useful inputs whenever low energy states are needed, such as when training Boltzmann machines \cite{}, preparing ground states for quantum error correcting codes \cite{}, or starting states for chemistry simulations \cite{}. 
+The computational task of preparing states of the form $\frac{e^{-\beta H}}{\partfun}$ in a usable approximation on a quantum computer is both incredibly useful and difficult. The closely related problem of estimating the free energy, defined as $F = -(1/\beta) \log \partfun$, up to additive error is known to be QMA-Hard for 2-local Hamiltonians \cite{bravyi_complexity_2021}. Intuitively, finding the ground state of a $k$-local Hamiltonian is known to be QMA-Hard \cite{} and the thermal state $e^{-\beta H} \partfun^{-1}$ can be constructed with arbitrarily high overlap with the ground state as $\beta \to \infty$ or the temperature approaches 0. 
+
+Preparing thermal states for arbitrary Hamiltonians for arbitrary temperatures is $QMA$-Hard, however thermal states are incredibly useful inputs whenever low energy states are needed, such as when training Boltzmann machines \cite{}, preparing ground states for quantum error correcting codes \cite{}, or starting states for chemistry simulations \cite{}. 
+
+Want to include here the main methods for preparing thermal states that currently exist, mainly the Poulin and Wocjan paper and Quantum-Quantum Metropolis Hastings. Where should more niche/advanced methods go?
+
+\section{Preliminaries}
+We denote the Hilbert space of the system as $\hilb_{sys}$ and the environment as $\hilb_{env}$. The algorithm we propose for preparing thermal states for a Hamiltonian $H_{sys} \in \herm{\hilb_{sys}}$ involves direct time simulation of the system coupled to an environment governed by $H_{env} \in \herm{\hilb_{env}}$. We denote the interaction $H_{int} \in \herm{\hilb_{sys} \otimes \hilb_{env}}$. At a broad level, the algorithm starts from some initial state (what is the distribution over inputs?) we denote as $\rho$, undergoes time evolution with $H = H_{sys} + H_{env} + H_{int}$ for some time $t$, after which we trace out the environment leaving
+\begin{equation}
+    \mathcal{P}(\rho) = \partrace{Env}{e^{i H t} \rho e^{-i H t}}.
+\end{equation}
+The goal of this paper is to provide subsets of possible systems, environments, and interactions that can lead to efficient thermalization. 
+
+Can thermal state preparation be written as a SDP? Brandao and Svore showed that thermal states can be used as a resource for a quantum Aurora-Kale SDP solver, but what about the inverse problem? We know that the thermal state satisfies the following:
+\begin{align}
+    \rho_G &= \arg \max_{\rho} \trace{- \rho \log \rho} \quad \text{such that} \\
+    \trace{\rho H} &= E ?
+\end{align}
+
+
+\bibliographystyle{unsrt}
+\bibliography{bib}
 
 \end{document}
