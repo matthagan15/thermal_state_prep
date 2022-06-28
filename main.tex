@@ -68,9 +68,9 @@
 \maketitle
 
 \section{Introduction}
-The computational task of preparing states of the form $\frac{e^{-\beta H}}{\partfun}$ in a usable approximation on a quantum computer is both incredibly useful and difficult. The closely related problem of estimating the free energy, defined as $F = -(1/\beta) \log \partfun$, up to additive error is known to be QMA-Hard for 2-local Hamiltonians \cite{bravyi_complexity_2021}. Intuitively, finding the ground state of a $k$-local Hamiltonian is known to be QMA-Hard \cite{} and the thermal state $e^{-\beta H} \partfun^{-1}$ can be constructed with arbitrarily high overlap with the ground state as $\beta \to \infty$ or the temperature approaches 0. 
+The computational task of preparing states of the form $\frac{e^{-\beta H}}{\partfun}$ in a usable approximation on a quantum computer is both incredibly useful and difficult. The closely related problem of estimating the free energy, defined as $F = -(1/\beta) \log \partfun$, up to additive error is known to be QMA-Hard for 2-local Hamiltonians \cite{bravyi_complexity_2021}. Intuitively, finding the ground state of a $k$-local Hamiltonian is known to be QMA-Hard \cite{} and the thermal state $e^{-\beta H} \partfun^{-1}$ can have arbitrarily high overlap with the ground state as $\beta \to \infty$ or the temperature approaches 0, indicating the problem for all computationally accessible $H$ and $\beta$ seems to be an incredibly difficult problem. 
 
-Preparing thermal states for arbitrary Hamiltonians for arbitrary temperatures is $QMA$-Hard, however thermal states are incredibly useful inputs whenever low energy states are needed, such as when training Boltzmann machines \cite{}, preparing ground states for quantum error correcting codes \cite{}, or starting states for chemistry simulations \cite{}. 
+The difficulty of preparing thermal states is offset by their incredible utility. Whenever low energy states are needed, such as when training Boltzmann machines \cite{}, preparing ground states for quantum error correcting codes \cite{}, or starting states for chemistry simulations \cite{}, thermal states correspond to natural choices for starting states. Even more broadly, thermal states can be used as resource states for SemiDefinite Program (SDP) solvers via a Quantum Aurora-Kale algorithm given by Brandao et al. \cite{}. 
 
 Want to include here the main methods for preparing thermal states that currently exist, mainly the Poulin and Wocjan paper and Quantum-Quantum Metropolis Hastings. Where should more niche/advanced methods go?
 
@@ -81,12 +81,23 @@ We denote the Hilbert space of the system as $\hilb_{sys}$ and the environment a
 \end{equation}
 The goal of this paper is to provide subsets of possible systems, environments, and interactions that can lead to efficient thermalization. 
 
-Can thermal state preparation be written as a SDP? Brandao and Svore showed that thermal states can be used as a resource for a quantum Aurora-Kale SDP solver, but what about the inverse problem? We know that the thermal state satisfies the following:
-\begin{align}
-    \rho_G &= \arg \max_{\rho} \trace{- \rho \log \rho} \quad \text{such that} \\
-    \trace{\rho H} &= E ?
-\end{align}
 
+\section{Harmonic Oscillators}
+The first system we want to study is the two coupled Harmonic oscillators at first to get the machinery working and then extend one of the systems to something more general. We consider two systems, $\hilb_1 \otimes \hilb_2$, with two "base" hamiltonians $H_1 \otimes \openone$ and $\openone \otimes H_2$, where $H_1, H_2$ are finite approximations to a harmonic oscillator. For notation, we write $H_1 = \sum_{i = 0}^{n-1} \lambda_i u_i u_i^*$ and $H_2 = \sum_{j = 0}^{m} \nu_j v_j v_j^*$. Then we let $H = H_1 \otimes \openone + \openone \otimes H_2$, which has eigenvalue decomposition $H = \sum_{i,j} (\lambda_i + \nu_j) (u_i \otimes v_j)(u_i \otimes v_j)^*$. For simplicity, we will also use the notation $\eta_{i,j} := \lambda_i + \nu_j$ and $\Pi_{i,j} := (u_i \otimes v_j) (u_i \otimes v_j)^*$. We then consider adding in a perturbation $\alpha G$, where $\alpha \in [0, \infty)$ is a real coupling constant and $G$ is sampled from the Gaussian Unitary Ensemble (GUE) $G \sim GUE$. We denote perturbed expressions with tildes, so our perturbed hamiltonian is $\widetilde{H} = H + \alpha G$ with eigenvalues $\widetilde{\eta}_{i,j}$ and eigenspace projectors $\widetilde{\Pi}_{i,j}$. 
+
+The channel we would like to replicate is
+\begin{equation}
+    \Phi(\rho) = \partrace{\hilb_2}{\int dG e^{+i \widetilde{H} t} \rho e^{- i \widetilde{H} t}}.
+\end{equation}
+Our goal is to show that for some performance metric this channel takes thermal states defined for $H_1, H_2$ and outputs a thermal state on $\hilb_1$ with a lower temperature than it began with. In other words, if we let $d(\rho, \sigma)$ represent the metric of interest then we would like $d \parens{ \partfun_3^{-1} e^{-\beta_3 H_1}, \Phi\parens{\partfun_1^{-1} e^{-\beta_1 H_1} \otimes \partfun_2^{-1}e^{-\beta_2 H_2}} }$ to be small (if we think of it as a distance, high if it's some kind of overlap). There are a few various metrics we could look at: the trace distance, fidelity, difference in overlap on a single observable, or the difference in overlap averaged over a distribution over all possible observables. 
+
+\begin{itemize}
+    \item Fidelity: $F(P, Q) := \trace{\sqrt{\sqrt{P} Q \sqrt{P}}}$
+    \item Trace distance $\norm{P - Q}_1 = \trace{\sqrt{(P-Q)^*(P-Q)}}$
+\end{itemize}
+
+\subsection{Fidelity}
+I'm going to look at fidelity to start. The goal is to reduce this to a perturbation theory calculation which seems like it would be tractable. 
 
 \bibliographystyle{unsrt}
 \bibliography{bib}
