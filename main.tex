@@ -2,7 +2,7 @@
 \usepackage[utf8]{inputenc}
 
 \usepackage{amsmath,amsthm, amssymb}
-\usepackage[margin=1in]{geometry}
+\usepackage[margin=1.5cm]{geometry}
 \usepackage{mathtools}
 \usepackage{dsfont}
 \usepackage{xcolor}
@@ -92,12 +92,39 @@ The channel we would like to replicate is
 Our goal is to show that for some performance metric this channel takes thermal states defined for $H_1, H_2$ and outputs a thermal state on $\hilb_1$ with a lower temperature than it began with. In other words, if we let $d(\rho, \sigma)$ represent the metric of interest then we would like $d \parens{ \partfun_3^{-1} e^{-\beta_3 H_1}, \Phi\parens{\partfun_1^{-1} e^{-\beta_1 H_1} \otimes \partfun_2^{-1}e^{-\beta_2 H_2}} }$ to be small (if we think of it as a distance, high if it's some kind of overlap). There are a few various metrics we could look at: the trace distance, fidelity, difference in overlap on a single observable, or the difference in overlap averaged over a distribution over all possible observables. 
 
 \begin{itemize}
-    \item Fidelity: $F(P, Q) := \trace{\sqrt{\sqrt{P} Q \sqrt{P}}}$
-    \item Trace distance $\norm{P - Q}_1 = \trace{\sqrt{(P-Q)^*(P-Q)}}$
+    \item Fidelity: $F(P, Q) := \trace{\sqrt{\sqrt{P} Q \sqrt{P}}}$. The biggest issue I could see here is the square root, it seems like the thing in the square root might be fairly straightforward to compute. 
+    \item Trace distance: $\norm{P - Q}_1 = \trace{\sqrt{(P-Q)^*(P-Q)}}$
+    \item Overlap: $\anglebrackets{P, Q} = \trace{P^* Q}$, similar to dot product for vectors. This is not super useful, note if $P = Q$ then the overlap isn't even one and is more a measure of the purity of the state. 
+    \item Measurement statistics for a single observable: Let $\mu(i)$ denote a measurement, could correspond to eigenspace projectors for some Hermitian observable. Then the vector defined by $\overlap{\mu(i)}{P}$ denotes the probability vector for the measurement $\mu$. We could take the Kullback-Leibler divergence of these vectors for $P, Q$.
+    \item Measurement statistics for an ensemble of observables: The idea behind this is that the trace distance corresponds to an upper bound on the distinguishability between $P,Q$ as defined by their measurement statistics. If instead of looking at the maximum, what if we specify a distribution over possible observables and then look at the measurement statistic differences? 
 \end{itemize}
 
-\subsection{Fidelity}
-I'm going to look at fidelity to start. The goal is to reduce this to a perturbation theory calculation which seems like it would be tractable. 
+\subsection{Simplifying $\Phi(\rho)$ with Perturbation Theory}
+The goal is to use perturbation theory to write the output of the channel in terms of powers of the coupling strength $\alpha$. It remains to be seen if first order perturbation theory will be enough. We also are specifically interested when $\rho$ is a product state of thermal states, in other words $\rho_{PS} = \frac{e^{-\beta_1 H_1}}{\partfun_1} \otimes \frac{e^{-\beta_2 H_2}}{\partfun_2}$. We also denote the action of our channel with respect to a particular choice of $G$ as $\Phi_G$, which combined with linearity of partial traces gives $\Phi = \int dG \Phi_G$. 
+\begin{align}
+    \Phi_G(\rho_{PS}) &= \partrace{2}{e^{+i \widetilde{H} t} \rho_{PS} e^{-i \widetilde{H} t}} \\
+    &= \sum_{k} \openone \otimes v_k^* \parens{\sum_{i, j} e^{i \widetilde{\eta}_{i, j} t} \widetilde{\Pi}_{i,j}} \rho_{PS} \parens{ \sum_{m, n} e^{i \widetilde{\eta}_{m, n} t} \widetilde{\Pi}_{m,n} }
+\end{align}
+Our next goal is to analyze $e^{i \widetilde{\eta}_{i,j} t} \widetilde{\Pi}_{i,j}$ using time-independent perturbation theory. Our goal is to write $e^{i \widetilde{\eta}_{i,j} t}$ as a power series in terms of $\alpha$, which is given by perturbation theory for $\widetilde{H} = H + \alpha G$. We first write the perturbation series for $\widetilde{\eta}$ as 
+\begin{equation}
+    \widetilde{\eta}_{i,j} = \eta_{i,j} + \alpha (u_i \otimes v_j)^* G (u_i \otimes v_j) + \alpha^2 \sum_{(i',j') \neq (i,j)}  \frac{\abs{(u_i \otimes v_j)^* G (u_{i'} \otimes v_{j'})}^{2}}{\eta_{i,j} - \eta_{i',j'}} + \bigo{\alpha^3}.
+\end{equation}
+To simplify the notation, we introduce the indexing $G(i,j,k,l) := (u_i \otimes v_j)^* G (u_k \otimes v_l)$. $G(i,j)$ without a second pair of indices denotes the diagonal matrix element $(u_i \otimes v_j)^* G (u_i \otimes v_j)$. The Taylor's Series for $e^{i \widetilde{\eta}_{i,j} t}$ is
+\begin{align}
+    e^{i \widetilde{\eta}_{i,j} t} &= e^{i \eta_{i,j} t} \\
+    &\quad + \frac{\partial \widetilde{\eta}_{i,j}}{\partial \alpha} e^{i \widetilde{\eta}_{i,j}t} \bigg|_{\alpha = 0} i \alpha t \\
+    &\quad + \frac{ i\alpha^2 t}{2!} \frac{\partial^2 \widetilde{\eta}_{i,j}}{\partial \alpha^2} e^{i \widetilde{\eta}_{i,j}t}\bigg|_{\alpha=0} \\
+    &\quad - \frac{\alpha^2 t^2}{2!} \parens{\frac{\partial \widetilde{\eta}_{i,j}}{\partial \alpha}}^2 e^{i \widetilde{\eta}_{i,j} t} \bigg|_{\alpha=0} + \bigo{\alpha^3} .
+\end{align}
+
+\subsection{Simplifying $\Phi(\rho)$ with Trotter}
+The idea here is to try and see what very short time evolution does to our channel. At the very least this might give some intuition as to what is happening?
+\begin{align}
+    \Phi_G(\rho_{PS}) &= \partrace{2}{e^{+i\widetilde{H}t} \rho_{PS} e^{-i \widetilde{H} t}} \\
+    &= \partrace{2}{\parens{e^{i G \alpha t} e^{i H t} + \bigo{t^2}} \rho_{PS} \parens{e^{-iHt} e^{-i G \alpha t} + \bigo{t^2}}} \\
+    &= 
+\end{align}
+
 
 \bibliographystyle{unsrt}
 \bibliography{bib}
