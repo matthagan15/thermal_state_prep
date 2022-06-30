@@ -116,13 +116,23 @@ To simplify the notation, we introduce the indexing $G(i,j,k,l) := (u_i \otimes 
     &\quad + \frac{ i\alpha^2 t}{2!} \frac{\partial^2 \widetilde{\eta}_{i,j}}{\partial \alpha^2} e^{i \widetilde{\eta}_{i,j}t}\bigg|_{\alpha=0} \\
     &\quad - \frac{\alpha^2 t^2}{2!} \parens{\frac{\partial \widetilde{\eta}_{i,j}}{\partial \alpha}}^2 e^{i \widetilde{\eta}_{i,j} t} \bigg|_{\alpha=0} + \bigo{\alpha^3} .
 \end{align}
+These are rather straightforward to compute and plug in, yielding
+\begin{equation}
+    e^{i \widetilde{\eta}_{ij} t} = e^{i \eta_{ij} t}\parens{1 + i \alpha t G(i,j) - \frac{\alpha^2 t^2}{2} G(i,j)^2 + i \frac{\alpha^2 t}{2} \sum_{(i',j') \neq (i,j)}\frac{\abs{G(i',j',i,j)}^2}{\eta_{ij} - \eta_{i' j'}} + \bigo{\alpha^3}}.
+\end{equation}
+This is sloppy, need to be able to bound the $\bigo{\alpha^3}$ terms better. Also note that $G(i,j)$ is a real Gaussian variable, the realness is due to the Hermiticity constraint on $G$. 
+
+The other quantity we need to compute a perturbation series for is $\widetilde{\Pi}_{ij}$. We first need to compute the perturbation series for the eigenvectors of $H$ 
+\begin{equation}
+    \widetilde{u_i \otimes v_j} = 
+\end{equation}
 
 \subsection{Simplifying $\Phi(\rho)$ with Trotter}
 The idea here is to try and see what very short time evolution does to our channel. At the very least this might give some intuition as to what is happening?
 \begin{align}
     \Phi_G(\rho_{PS}) &= \partrace{2}{e^{+i\widetilde{H}t} \rho_{PS} e^{-i \widetilde{H} t}} \\
     &= \partrace{2}{\parens{e^{i G \alpha t} e^{i H t} + \bigo{t^2}} \rho_{PS} \parens{e^{-iHt} e^{-i G \alpha t} + \bigo{t^2}}} \\
-    &= 
+    &= \partrace{2}{e^{i G \alpha t} \rho_{PS} e^{-i G \alpha t}} + \bigo{t^2} 
 \end{align}
 
 
