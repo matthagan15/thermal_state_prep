@@ -27,7 +27,7 @@ def thermal_state(hamiltonian, beta):
     except Exception as e:
         print("BIG ERROR:")
         print(e)
-        ret = mat
+        ret = mat * 0
     return ret
 
 def harmonic_oscillator_hamiltonian(dimensions, gap = 1.0):
@@ -102,7 +102,7 @@ class QHMC:
             out = partrace(raw, dim1, dim2)
             avg_out += out.view(np.complex128) / self.num_monte_carlo
         b, e = find_best_beta(avg_out, self.ham_sys)
-        print("b,e:", b, ", ", e)
+        # print("b,e:", b, ", ", e)
         return (avg_out, b, e)
         
         # return a dictionary mapping to a list of sys output betas and erros, do we only return average beta and avg error?
@@ -125,80 +125,30 @@ class QHMC:
         print("done.")
         if self.verbose:
             for ix in range(len(rho_diags)):
+                print("ix:", ix)
+                print("ret_beta:", ret_betas[ix])
+                print("ret_error:", ret_errors[ix])
+                print("params: alpha=", self.alphas[ix], ", env_beta=", self.betas[ix], ", sim_time=", self.times[ix])
+                print("Ground state prob:", rho_diags[ix][0])
                 true = np.diagonal(thermal_state(self.ham_sys, self.betas[ix]))
-                l = "beta_env=" + str(self.betas[ix])
-                print("l:", l)
-                plt.plot(range(rho_diags[ix].shape[0]), rho_diags[ix], label=l)
-                plt.plot(range(rho_diags[ix].shape[0]), true, "--", label="true:" + str(self.betas[ix]))
+                l = "ix=" + str(ix) + ", e: {:4.2f}".format(ret_errors[ix])
+                if ix % 9 == 0 or ix == len(rho_diags) - 1:
+                    plt.plot(rho_diags[ix], label=l)
+            avg_env_state = thermal_state(self.ham_env_base, np.mean(self.betas))
+            plt.plot(np.abs(np.diagonal(avg_env_state)), '-.', label="avg_env_state")
+                # plt.plot(range(rho_diags[ix].shape[0]), true, "--", label="error:" + str(ret_errors[ix]))
 
             plt.legend()
             plt.show()
 
-
-
-
-
-def channel(rho, beta_env, time, alpha, dim1=10, dim2=10):
-    oscillator1 = harmonic_oscillator_hamiltonian(dim1)
-    oscillator2 = harmonic_oscillator_hamiltonian(dim2)
-    rho_env =thermal_state(oscillator2, beta_env)
-    rho_tot = np.kron(rho, rho_env)
-    interactions = gue(dim1 * dim2)
-    ham = np.kron(oscillator1, np.identity(dim2)) + np.kron(np.identity(dim1), oscillator2) + alpha * interactions
-    u = linalg.expm(1j * ham * time)
-    raw = u @ rho_tot @ u.conj().T
-    return partrace(raw, dim1, dim2)
-
-def sample_channel(betas = [0.0, 1.0], times = [1], alphas = [0.01], used_env_per_beta = 1, ham_sysn=np.identity(2), ham_env_base=np.diag([0.5, 1.5]), verbose=False):
-    if verbose:
-        start_time = time_this.time()
-        print("#"*75)
-        print("call time:", start_time)
-        print("beta0, betaf, num_beta=10, used_env_per_beta = 100, time=100, system_hamiltonian=np.identity(2), env_dim=10, verbose=False", beta0, betaf, num_beta, used_env_per_beta, time, system_hamiltonian, env_dim, verbose)
-
-    h_sys = harmonic_oscillator_hamiltonian(dim1)
-    rho = thermal_state(h_sys, beta0)
-    count = 1
-    for n in range(num_samples):
-        if n % int(num_samples / 10) == 0 and verbose:
-            print(count*10, "% complete. time since start:", time_this.time() - start_time)
-            count += 1
-        beta = 2* betaf
-        rho = channel(rho, beta, time, 0.01, dim1=dim1, dim2=dim2)
-    print("Final output:")
-    return get_beta_min(rho, h_sys)
-
-
-
-def test_time(t1, t2):
-    betas, errors = [], []
-    count = 0
-    for t in np.geomspace(t1, t2):
-        print("*" * 75)
-        print("count:", count)
-        count += 1
-        beta, error = repeat_channel()
-        betas.append(beta)
-        errors.append(error)
-    return (betas, errors)
-
-def test_samples(s1, s2, num_steps=50, beta_0=0.0, beta_1=1.0, time=100, env_dim=10, sys_ham=np.zeros(1) ):
-    betas, errors = [], []
-    count = 0
-    for samp in np.geomspace(s1, s2, num=num_steps):
-        print("~" * 75)
-        print("count:", count)
-        count += 1
-        b, e = repeat_channel(beta_0, beta_1, time, sys_ham, env_dim)
-
 def test():
     h1 = harmonic_oscillator_hamiltonian(10)
     h2 = harmonic_oscillator_hamiltonian(10)
-    betas = [1., 10., 100.]
-    times = [100] * 3
-    alphas = [0.05] * 3
+    betas = [2] * 45
+    times = [50] * 45
+    alphas = [0.005] * 45
     qhmc = QHMC(ham_sys = h1, ham_env_base=h2, env_betas=betas, sim_times=times, alphas=alphas, verbose=True)
-    qhmc.print_params()
+    # qhmc.print_params()
     qhmc.compute_betas_and_errors()
 
 test()
