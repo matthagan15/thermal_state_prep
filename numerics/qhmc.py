@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from scipy import linalg
 from skopt import gbrt_minimize
 from skopt.space import Real
+import math
 import time as time_this
 
 BETA_MAX = 1000
@@ -47,6 +48,12 @@ def find_best_beta(rho, ham, verbose=False):
     ret = gbrt_minimize(obj_fun, dims, x0=[1.0], verbose=verbose)
     return (ret.x, ret.fun)
 
+# This class simulates weak interactions with a bath using GUE couplings. The main method is
+# "channel" which simulates the time evolution channel using an average of several samples of
+# interactions with GUE. The specification is you provide a list of environment betas of which
+# to use thermal states for as an expendable resource. The system is iteratively coupled with
+# these environment resources and simulated for the corresponding time and coupling strength
+# alpha. 
 class QHMC:
     def __init__(
                 self,
@@ -54,7 +61,6 @@ class QHMC:
                 sys_start_beta = 0.0,
                 sim_times = [1],
                 alphas = [0.01],
-                used_env_per_beta = 1,
                 ham_sys=np.zeros((2,2)),
                 ham_env_base=np.diag([0.5, 1.5]),
                 num_monte_carlo=10,
@@ -66,7 +72,6 @@ class QHMC:
             self.betas = env_betas
             self.times = sim_times
             self.alphas = alphas
-            self.env_per_iter = used_env_per_beta
             self.sys_start_beta = sys_start_beta
             self.ham_sys = ham_sys
             self.ham_env_base = ham_env_base
@@ -77,13 +82,13 @@ class QHMC:
         print("betas:", self.betas)
         print("times:", self.times)
         print("alphas:", self.alphas)
-        print("env_per_iter:", self.env_per_iter)
         print("sys_start_beta:", self.sys_start_beta)
         print("ham_sys:", self.ham_sys)
         print("ham_env:", self.ham_env_base)
         print("num_monte_carlo:", self.num_monte_carlo)
         print("verbose:", self.verbose)
 
+    # TODO: Fix this to just return avg_out and add other helpers, need to eliminate find_best_beta
     def channel(self, rho_sys, env_beta, alpha, time):
         if rho_sys.shape != self.ham_sys.shape:
             if self.verbose:
@@ -132,7 +137,9 @@ class QHMC:
                 print("Ground state prob:", rho_diags[ix][0])
                 true = np.diagonal(thermal_state(self.ham_sys, self.betas[ix]))
                 l = "ix=" + str(ix) + ", e: {:4.2f}".format(ret_errors[ix])
-                if ix % 9 == 0 or ix == len(rho_diags) - 1:
+                # We want to plot five points equally spaced.
+                plot_ix_length = math.ceil(len(rho_diags) / 5.)
+                if ix % plot_ix_length == 0:
                     plt.plot(rho_diags[ix], label=l)
             avg_env_state = thermal_state(self.ham_env_base, np.mean(self.betas))
             plt.plot(np.abs(np.diagonal(avg_env_state)), '-.', label="avg_env_state")
@@ -140,6 +147,16 @@ class QHMC:
 
             plt.legend()
             plt.show()
+
+def test_hamiltonian_gap():
+    h1 = np.diag([0.5, 2, 2.5, 3., 3.5, 4., 4.5, 5., 5.5])
+    h2 = harmonic_oscillator_hamiltonian(10)
+    iters = 20
+    betas = [2] * iters
+    times = [20] * iters
+    alphas = [0.05] * iters
+    qhmc = QHMC(ham_sys = h1, ham_env_base=h2, env_betas=betas, sim_times=times, alphas=alphas, verbose=True)
+    qhmc.compute_betas_and_errors()
 
 def test():
     h1 = harmonic_oscillator_hamiltonian(10)
@@ -151,4 +168,5 @@ def test():
     # qhmc.print_params()
     qhmc.compute_betas_and_errors()
 
-test()
+# test()
+test_hamiltonian_gap()
