@@ -148,13 +148,33 @@ Now we need to compute the perturbed eigenspace projectors
     & \quad + \bigo{\alpha^3}.
 \end{align}
 
-This allows us to write the output of the channel $\Phi$ as a power series in $\alpha$. The second order corrections have 10 possible sources for terms, however many are hermitian conjugates of priors, so if herm. conj. appears it refers to the hermitian conjugate of the entire previous line.
+This allows us to write the output of the channel $\Phi$ as a power series in $\alpha$. The expressions can become quite cumbersome, so we introduce the following notation:
+\begin{align}
+    M_{i,j,i',j'} :=  u_{i'} u_i^* \otimes v_{j'} v_j^* \parens{  \frac{G(i,j,i',j')}{\eta_{i,j} - \eta_{i',j'}} } +  u_i u_{i'}^* \otimes v_j v_{j'}^* \parens{  \frac{G(i,j,i',j')^*}{\eta_{i,j} - \eta_{i',j'}} } \\
+    N_{i,j,i',j'} := u_{i'} u_i^* \otimes v_{j'} v_j^* \parens{ \sum_{(i'',j'') \neq (i,j)} \frac{G(i,j,i'',j'') G(i'',j'',i',j')}{(\eta_{i,j} - \eta_{i'',j''})(\eta_{i,j} - \eta_{i'',j''})} -  \frac{G(i,j,i,j) G(i,j,i',j')}{(\eta_{i,j} - \eta_{i',j'})^2}}
+\end{align}
+which captures the first and second order corrections to the eigenspace projectors.
+The second order corrections have 10 possible sources for terms, however many are hermitian conjugates of priors, so if herm. conj. appears it refers to the hermitian conjugate of the entire previous line.
+\newpage
 \begin{align}
 \alpha^0 :& e^{+i H t} \rho e^{-i H t} \\
- \alpha^1 :& \sum_{i,j} e^{i\eta_{i,j}t} \parens{i t G(i,j) \Pi_{i,j} + \sum_{(i',j') \neq (i,j)} u_{i'} u_i^* \otimes v_{j'} v_j^* \frac{G(i,j,i',j')}{\eta_{i,j} - \eta_{i',j'}} + u_i u_{i'}^* \otimes v_j v_{j'}^* \frac{G(i,j,i',j')^*}{\eta_{i,j} - \eta_{i',j'}}} \rho e^{- i H t} \\
- &+ \text{herm. conj.}
+ \alpha^1 :& \sum_{i,j} e^{i\eta_{i,j}t} \parens{i t G(i,j) \Pi_{i,j} + \sum_{(i',j') \neq (i,j)} M_{i,j,i',j'}} \rho e^{- i H t} \\
+ &+ \text{herm. conj.} \\
+ \alpha^2 :& \sum_{i,j} i t G(i,j) e^{i \eta_{i,j}} \Pi_{i,j} \rho \sum_{k,l} (-i t) G(k,l)^* e^{-i \eta_{k,l}t} \Pi_{k,l} \\
+ &+ \sum_{i,j} e^{i \eta_{i,j} t} \sum_{(i',j') \neq (i,j)} M_{i,j,i',j'} \rho \sum_{k,l} (-i t) G(k,l) e^{-i \eta_{k,l} t} \Pi_{k,l} \\
+ &+ \text{herm. conj.} \\
+ &+ \sum_{i,j} e^{i \eta_{i,j} t} \sum_{(i',j') \neq (i,j)} M_{i,j,i',j'} \rho \sum_{k,l} e^{-i \eta_{k,l} t} \sum_{(k',l') \neq (k,l)} M_{k,l,k',l'}\\
+ &+  \sum_{i,j} e^{i \eta_{i,j} t} \parens{- \frac{t^2 G(i,j)^2}{2} + i \frac{t}{2} \sum_{(i',j') \neq (i,j)} \frac{\abs{G(i,j,i',j')}^2}{\eta_{i,j} - \eta_{i',j'}} } \rho e^{- i H t} \\
+ &+ \text{herm. conj.} \\
+ &+ \sum_{i,j} e^{i \eta_{i,j} t} \sum_{(i',j') \neq (i,j)} N_{i,j,i',j'} \rho e^{-i H t} \\
+ &+ \text{herm. conj.} \\
+ &+ \sum_{i,j} i t G(i,j) e^{i \eta_{i,j} t} \sum_{(i',j') \neq (i,j)} M_{i,j,i',j'} \rho e^{-i H t} \\
+ &+ \text{herm. conj.}.
 \end{align}
 
+The problem with the above is I don't think anything is normalized, so the output is not a proper state. Will need to divide it by the overall trace?
+
+Now that we have expressions for the output channel in terms of a perturbative expansion, we can continue with finding the output after tracing out the environment and considering the GUE averaging integral. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
