@@ -67,6 +67,9 @@
 
 \maketitle
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 The computational task of preparing states of the form $\frac{e^{-\beta H}}{\partfun}$ in a usable approximation on a quantum computer is both incredibly useful and difficult. The closely related problem of estimating the free energy, defined as $F = -(1/\beta) \log \partfun$, up to additive error is known to be QMA-Hard for 2-local Hamiltonians \cite{bravyi_complexity_2021}. Intuitively, finding the ground state of a $k$-local Hamiltonian is known to be QMA-Hard \cite{} and the thermal state $e^{-\beta H} \partfun^{-1}$ can have arbitrarily high overlap with the ground state as $\beta \to \infty$ or the temperature approaches 0, indicating the problem for all computationally accessible $H$ and $\beta$ seems to be an incredibly difficult problem. 
 
@@ -74,6 +77,9 @@ The difficulty of preparing thermal states is offset by their incredible utility
 
 Want to include here the main methods for preparing thermal states that currently exist, mainly the Poulin and Wocjan paper and Quantum-Quantum Metropolis Hastings. Where should more niche/advanced methods go?
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Preliminaries}
 We denote the Hilbert space of the system as $\hilb_{sys}$ and the environment as $\hilb_{env}$. The algorithm we propose for preparing thermal states for a Hamiltonian $H_{sys} \in \herm{\hilb_{sys}}$ involves direct time simulation of the system coupled to an environment governed by $H_{env} \in \herm{\hilb_{env}}$. We denote the interaction $H_{int} \in \herm{\hilb_{sys} \otimes \hilb_{env}}$. At a broad level, the algorithm starts from some initial state (what is the distribution over inputs?) we denote as $\rho$, undergoes time evolution with $H = H_{sys} + H_{env} + H_{int}$ for some time $t$, after which we trace out the environment leaving
 \begin{equation}
@@ -81,7 +87,9 @@ We denote the Hilbert space of the system as $\hilb_{sys}$ and the environment a
 \end{equation}
 The goal of this paper is to provide subsets of possible systems, environments, and interactions that can lead to efficient thermalization. 
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Harmonic Oscillators}
 The first system we want to study is the two coupled Harmonic oscillators at first to get the machinery working and then extend one of the systems to something more general. We consider two systems, $\hilb_1 \otimes \hilb_2$, with two "base" hamiltonians $H_1 \otimes \openone$ and $\openone \otimes H_2$, where $H_1, H_2$ are finite approximations to a harmonic oscillator. For notation, we write $H_1 = \sum_{i = 0}^{n-1} \lambda_i u_i u_i^*$ and $H_2 = \sum_{j = 0}^{m} \nu_j v_j v_j^*$. Then we let $H = H_1 \otimes \openone + \openone \otimes H_2$, which has eigenvalue decomposition $H = \sum_{i,j} (\lambda_i + \nu_j) (u_i \otimes v_j)(u_i \otimes v_j)^*$. For simplicity, we will also use the notation $\eta_{i,j} := \lambda_i + \nu_j$ and $\Pi_{i,j} := (u_i \otimes v_j) (u_i \otimes v_j)^*$. We then consider adding in a perturbation $\alpha G$, where $\alpha \in [0, \infty)$ is a real coupling constant and $G$ is sampled from the Gaussian Unitary Ensemble (GUE) $G \sim GUE$. We denote perturbed expressions with tildes, so our perturbed hamiltonian is $\widetilde{H} = H + \alpha G$ with eigenvalues $\widetilde{\eta}_{i,j}$ and eigenspace projectors $\widetilde{\Pi}_{i,j}$. 
 
@@ -99,6 +107,8 @@ Our goal is to show that for some performance metric this channel takes thermal 
     \item Measurement statistics for an ensemble of observables: The idea behind this is that the trace distance corresponds to an upper bound on the distinguishability between $P,Q$ as defined by their measurement statistics. If instead of looking at the maximum, what if we specify a distribution over possible observables and then look at the measurement statistic differences? 
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Simplifying $\Phi(\rho)$ with Perturbation Theory}
 The goal is to use perturbation theory to write the output of the channel in terms of powers of the coupling strength $\alpha$. It remains to be seen if first order perturbation theory will be enough. We also are specifically interested when $\rho$ is a product state of thermal states, in other words $\rho_{PS} = \frac{e^{-\beta_1 H_1}}{\partfun_1} \otimes \frac{e^{-\beta_2 H_2}}{\partfun_2}$. We also denote the action of our channel with respect to a particular choice of $G$ as $\Phi_G$, which combined with linearity of partial traces gives $\Phi = \int dG \Phi_G$. 
 \begin{align}
@@ -122,11 +132,32 @@ These are rather straightforward to compute and plug in, yielding
 \end{equation}
 This is sloppy, need to be able to bound the $\bigo{\alpha^3}$ terms better. Also note that $G(i,j)$ is a real Gaussian variable, the realness is due to the Hermiticity constraint on $G$. 
 
-The other quantity we need to compute a perturbation series for is $\widetilde{\Pi}_{ij}$. We first need to compute the perturbation series for the eigenvectors of $H$ 
-\begin{equation}
-    \widetilde{u_i \otimes v_j} = 
-\end{equation}
+The other quantity we need to compute a perturbation series for is $\widetilde{\Pi}_{ij}$. We first need to compute the perturbation series for the eigenvectors of $H$, which we do to second order
+\begin{align}
+    \widetilde{u_i \otimes v_j} &= u_i \otimes v_j \\
+    &\quad + \alpha \sum_{(i',j') \neq (i,j)} u_{i'} \otimes v_{j'} \parens{  \frac{G(i,j,i',j')}{\eta_{i,j} - \eta_{i',j'}} } \\
+    &\quad + \alpha^2 \sum_{(i',j') \neq (i,j)} u_{i'} \otimes v_{j'} \parens{ \sum_{(i'',j'') \neq (i,j)} \frac{G(i,j,i'',j'') G(i'',j'',i',j')}{(\eta_{i,j} - \eta_{i'',j''})(\eta_{i,j} - \eta_{i'',j''})} -  \frac{G(i,j,i,j) G(i,j,i',j')}{(\eta_{i,j} - \eta_{i',j'})^2}} \\
+    &\quad + \bigo{\alpha^3}.
+\end{align}
+Now we need to compute the perturbed eigenspace projectors
+\begin{align}
+    \widetilde{\Pi}_{i,j} &= \Pi_{i,j} \\
+    & \quad + \alpha \sum_{(i',j') \neq (i,j)} u_{i'} u_i^* \otimes v_{j'} v_j^* \parens{  \frac{G(i,j,i',j')}{\eta_{i,j} - \eta_{i',j'}} } + \sum_{(i',j') \neq (i,j)} u_i u_{i'}^* \otimes v_j v_{j'}^* \parens{  \frac{G(i,j,i',j')^*}{\eta_{i,j} - \eta_{i',j'}} } \\
+    & \quad + \alpha^2 \sum_{(i',j') \neq (i,j)} u_{i'} u_i^* \otimes v_{j'} v_j^* \parens{ \sum_{(i'',j'') \neq (i,j)} \frac{G(i,j,i'',j'') G(i'',j'',i',j')}{(\eta_{i,j} - \eta_{i'',j''})(\eta_{i,j} - \eta_{i'',j''})} -  \frac{G(i,j,i,j) G(i,j,i',j')}{(\eta_{i,j} - \eta_{i',j'})^2}} \\
+    & \quad + \alpha^2 \sum_{(i',j') \neq (i,j)} u_i u_{i'}^* \otimes v_j v_{j'}^* \parens{ \sum_{(i'',j'') \neq (i,j)} \frac{G(i,j,i'',j'')^* G(i'',j'',i',j')^*}{(\eta_{i,j} - \eta_{i'',j''})(\eta_{i,j} - \eta_{i'',j''})} -  \frac{G(i,j,i,j)^* G(i,j,i',j')^*}{(\eta_{i,j} - \eta_{i',j'})^2}} \\
+    & \quad + \bigo{\alpha^3}.
+\end{align}
 
+This allows us to write the output of the channel $\Phi$ as a power series in $\alpha$. The second order corrections have 10 possible sources for terms, however many are hermitian conjugates of priors, so if herm. conj. appears it refers to the hermitian conjugate of the entire previous line.
+\begin{align}
+\alpha^0 :& e^{+i H t} \rho e^{-i H t} \\
+ \alpha^1 :& \sum_{i,j} e^{i\eta_{i,j}t} \parens{i t G(i,j) \Pi_{i,j} + \sum_{(i',j') \neq (i,j)} u_{i'} u_i^* \otimes v_{j'} v_j^* \frac{G(i,j,i',j')}{\eta_{i,j} - \eta_{i',j'}} + u_i u_{i'}^* \otimes v_j v_{j'}^* \frac{G(i,j,i',j')^*}{\eta_{i,j} - \eta_{i',j'}}} \rho e^{- i H t} \\
+ &+ \text{herm. conj.}
+\end{align}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Simplifying $\Phi(\rho)$ with Trotter}
 The idea here is to try and see what very short time evolution does to our channel. At the very least this might give some intuition as to what is happening?
 \begin{align}
@@ -136,6 +167,12 @@ The idea here is to try and see what very short time evolution does to our chann
 \end{align}
 
 TODO: Show that our channel obviously preserves total energy, find the thermal state for the joint system, and show our mapping increases entropy for the JOINT state. Think of the overall state!
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implementing $e^{i (H + \alpha G) t}$}
+
 \bibliographystyle{unsrt}
 \bibliography{bib}
 
