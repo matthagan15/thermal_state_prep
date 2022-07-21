@@ -156,6 +156,9 @@ This allows us to write the output of the channel $\Phi$ as a power series in $\
 which captures the first and second order corrections to the eigenspace projectors.
 The second order corrections have 10 possible sources for terms, however many are hermitian conjugates of priors, so if herm. conj. appears it refers to the hermitian conjugate of the entire previous line.
 \newpage
+\begin{equation}
+    e^{+i(H + \alpha G)t} \rho e^{-i (H + \alpha G) t}
+\end{equation}
 \begin{align}
 \alpha^0 :& e^{+i H t} \rho e^{-i H t} \\
  \alpha^1 :& \sum_{i,j} e^{i\eta_{i,j}t} \parens{i t G(i,j) \Pi_{i,j} + \sum_{(i',j') \neq (i,j)} M_{i,j,i',j'}} \rho e^{- i H t} \\
@@ -172,7 +175,7 @@ The second order corrections have 10 possible sources for terms, however many ar
  &+ \text{herm. conj.}.
 \end{align}
 
-The problem with the above is I don't think anything is normalized, so the output is not a proper state. Will need to divide it by the overall trace?
+Two potential issues. 1) How can we normalize the output state? This may depend on how we approach the second. 2) How do we bound the remaining terms in the perturbation series? Are there any dumb bounds I can work out? 
 
 Now that we have expressions for the output channel in terms of a perturbative expansion, we can continue with finding the output after tracing out the environment and considering the GUE averaging integral. 
 
