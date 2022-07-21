@@ -145,15 +145,20 @@ Now we need to compute the perturbed eigenspace projectors
     & \quad + \alpha \sum_{(i',j') \neq (i,j)} u_{i'} u_i^* \otimes v_{j'} v_j^* \parens{  \frac{G(i,j,i',j')}{\eta_{i,j} - \eta_{i',j'}} } + \sum_{(i',j') \neq (i,j)} u_i u_{i'}^* \otimes v_j v_{j'}^* \parens{  \frac{G(i,j,i',j')^*}{\eta_{i,j} - \eta_{i',j'}} } \\
     & \quad + \alpha^2 \sum_{(i',j') \neq (i,j)} u_{i'} u_i^* \otimes v_{j'} v_j^* \parens{ \sum_{(i'',j'') \neq (i,j)} \frac{G(i,j,i'',j'') G(i'',j'',i',j')}{(\eta_{i,j} - \eta_{i'',j''})(\eta_{i,j} - \eta_{i'',j''})} -  \frac{G(i,j,i,j) G(i,j,i',j')}{(\eta_{i,j} - \eta_{i',j'})^2}} \\
     & \quad + \alpha^2 \sum_{(i',j') \neq (i,j)} u_i u_{i'}^* \otimes v_j v_{j'}^* \parens{ \sum_{(i'',j'') \neq (i,j)} \frac{G(i,j,i'',j'')^* G(i'',j'',i',j')^*}{(\eta_{i,j} - \eta_{i'',j''})(\eta_{i,j} - \eta_{i'',j''})} -  \frac{G(i,j,i,j)^* G(i,j,i',j')^*}{(\eta_{i,j} - \eta_{i',j'})^2}} \\
+    & \quad + \alpha^2 \sum_{(i',j') \neq (i,j)} \sum_{(i'',j'') \neq (i,j)} u_{i'}u_{i''}^* \otimes v_{j'} v_{j''}^* \frac{G(i,j,i',j') G(i,j,i'',j'')^*}{(\eta_{i,j} - \eta_{i',j'})(\eta_{i,j} - \eta_{i'',j''})} \\
     & \quad + \bigo{\alpha^3}.
 \end{align}
 
 This allows us to write the output of the channel $\Phi$ as a power series in $\alpha$. The expressions can become quite cumbersome, so we introduce the following notation:
 \begin{align}
-    M_{i,j,i',j'} :=  u_{i'} u_i^* \otimes v_{j'} v_j^* \parens{  \frac{G(i,j,i',j')}{\eta_{i,j} - \eta_{i',j'}} } +  u_i u_{i'}^* \otimes v_j v_{j'}^* \parens{  \frac{G(i,j,i',j')^*}{\eta_{i,j} - \eta_{i',j'}} } \\
-    N_{i,j,i',j'} := u_{i'} u_i^* \otimes v_{j'} v_j^* \parens{ \sum_{(i'',j'') \neq (i,j)} \frac{G(i,j,i'',j'') G(i'',j'',i',j')}{(\eta_{i,j} - \eta_{i'',j''})(\eta_{i,j} - \eta_{i'',j''})} -  \frac{G(i,j,i,j) G(i,j,i',j')}{(\eta_{i,j} - \eta_{i',j'})^2}}
+    M_{i,j,i',j'} &:=  u_{i'} u_i^* \otimes v_{j'} v_j^* \parens{  \frac{G(i,j,i',j')}{\eta_{i,j} - \eta_{i',j'}} } +  u_i u_{i'}^* \otimes v_j v_{j'}^* \parens{  \frac{G(i,j,i',j')^*}{\eta_{i,j} - \eta_{i',j'}} } \\
+    N_{i,j,i',j'} &:= u_{i'} u_i^* \otimes v_{j'} v_j^* \parens{ \sum_{(i'',j'') \neq (i,j)} \frac{G(i,j,i'',j'') G(i'',j'',i',j')}{(\eta_{i,j} - \eta_{i'',j''})(\eta_{i,j} - \eta_{i'',j''})} -  \frac{G(i,j,i,j) G(i,j,i',j')}{(\eta_{i,j} - \eta_{i',j'})^2}} \\
+    & \quad + \sum_{(i'',j'') \neq (i,j)} u_{i'}u_{i''}^* \otimes v_{j'} v_{j''}^* \frac{G(i,j,i',j') G(i,j,i'',j'')^*}{(\eta_{i,j} - \eta_{i',j'})(\eta_{i,j} - \eta_{i'',j''})}
 \end{align}
-which captures the first and second order corrections to the eigenspace projectors.
+which captures the first and second order corrections to the eigenspace projectors. We can then simplify
+\begin{align}
+    \widetilde{\Pi}_{i,j} &= \Pi_{i,j} + \alpha \sum_{(i',j') \neq (i,j)} M_{i,j,i',j'} + \alpha^2 \sum_{(i',j') \neq (i,j)} N_{i,j,i',j'} + \bigo{\alpha^3}
+\end{align}
 The second order corrections have 10 possible sources for terms, however many are hermitian conjugates of priors, so if herm. conj. appears it refers to the hermitian conjugate of the entire previous line.
 \newpage
 \begin{align}
