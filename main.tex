@@ -234,7 +234,17 @@ For the last two terms we can make them look similar to the first two by redefin
 
 
 \section{Energy and Entropic concerns}
-TODO: Show that our channel obviously preserves total energy, find the thermal state for the joint system, and show our mapping increases entropy for the JOINT state. Think of the overall state before partial trace!
+One requirement that our construction should satisfy is that a system in a thermal state should be invariant under contact with an environment at the same temperature. Formally, we would like that $\Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}} = \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}$. Exact equality may be too strong to enforce, so we instead consider that the energy of the system remains unchanged after coupling with the environment. 
+
+\begin{equation}
+    \trace{H_{sys} \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}} = \trace{H_{sys} \Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}}}.
+\end{equation}
+Now we look at the RHS in detail
+\begin{align}
+    \trace{H_{sys} \Phi \parens{\rho} } &= \trace{ H_{sys} \partrace{env}{\int e^{i \widetilde{H} t} \rho e^{-i \widetilde{H} t} dG}} \\
+    &= \int \trace{H_{sys} \otimes \openone_{env} e^{i \widetilde{H} t} \rho e^{-i \widetilde{H} t} } dG \\
+    &=  \trace{\int e^{- i (H + \alpha G) t} H_{sys} \otimes \openone_{env} e^{+ i (H + \alpha G) t} dG ~ \rho }
+\end{align}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
