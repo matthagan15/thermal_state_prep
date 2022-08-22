@@ -231,8 +231,6 @@ For the last two terms we can make them look similar to the first two by redefin
     &\text{ } - t^2 \int_0^1 \int_0^1 \brackets{ \rho(t), G(s_1 t) G((s_1 + s_2 - s_1 s_2) t) }_+ (1-s_1) ds_1 ds_2 \\
 \end{align}
 
-
-
 \section{Energy and Entropic concerns}
 One requirement that our construction should satisfy is that a system in a thermal state should be invariant under contact with an environment at the same temperature. Formally, we would like that $\Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}} = \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}$. Exact equality may be too strong to enforce, so we instead consider that the energy of the system remains unchanged after coupling with the environment. 
 
@@ -243,8 +241,32 @@ Now we look at the RHS in detail
 \begin{align}
     \trace{H_{sys} \Phi \parens{\rho} } &= \trace{ H_{sys} \partrace{env}{\int e^{i \widetilde{H} t} \rho e^{-i \widetilde{H} t} dG}} \\
     &= \int \trace{H_{sys} \otimes \openone_{env} e^{i \widetilde{H} t} \rho e^{-i \widetilde{H} t} } dG \\
-    &=  \trace{\int e^{- i (H + \alpha G) t} H_{sys} \otimes \openone_{env} e^{+ i (H + \alpha G) t} dG ~ \rho }
+    &=  \trace{\int e^{- i (H + \alpha G) t} H_{sys} \otimes \openone_{env} e^{+ i (H + \alpha G) t} dG ~ \rho } 
 \end{align}
+
+we start with a trotter decomposition. We then write the trace as a schatten norm. then $\diamondnorm{\Phi^{\circ r}} \leq r \diamondnorm{\Phi}$
+The trotter decomposition can be written as
+\begin{equation}
+    e^{i(H + \alpha G)t} = \parens{e^{i G \alpha t/r} e^{i H t/r}}^r + E_{trott}.
+\end{equation}
+where we can choose $r$ such that $\norm{E_{trott}}_{p} < \epsilon$. 
+\begin{equation}
+    \norm{A}_p := \trace{\parens{AA^*}^{p/2}}^{1/p}
+\end{equation}
+\begin{align}
+    \trace{\int U_G H_{sys} U_G^* ~ \rho ~ dG } &= \int \trace{}
+\end{align}
+We are going to have to require that $H_{sys}$ be positive semidefinite. This is because if the product $H_{sys} \sigma$ for some density matrix $\sigma$ is positive semidefinite then we can write $H_{sys} U_{G}^* \rho U_G = H_{sys} \sigma = A^*A$ for some $A$. 
+If $[H_{sys}, \sigma] = 0$ then $H = (H_{sys}^{1/2} \sigma^{1/2})^* (H_{sys}^{1/2} \sigma^{1/2})$ If we do this then we have
+\begin{align}
+    \trace{H_{sys} \sigma} &=  \norm{(H_{sys}^{1/2} \sigma^{1/2})^{2/p}}_{p}^p \\ 
+    &= \norm{(H_{sys} \sigma)^{1/p}}_p^p
+\end{align}
+\begin{align}
+    \trace{e^{i(Ht/r) }}
+\end{align}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
