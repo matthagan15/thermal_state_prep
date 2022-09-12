@@ -266,6 +266,64 @@ The idea here is to try and see what very short time evolution does to our chann
 \end{align}
 
 
+\subsection{Computing $\Phi_G$ with Duhamel's formula}
+We would like to produce a Taylor Series of the expression $\Phi_G = e^{i(H+\alpha G) t} \rho e^{-i(H+\alpha G) t}$ with respect to the coupling constant $\alpha$. To do this we use Duhamel's formula for differentiation of the exponent of a matrix exponential
+\begin{equation}
+    \frac{d}{dt} e^{A(t)} = \int_0^1 e^{s A(t)} \frac{d A(t)}{dt} e^{(1-s)A(t)} ds.
+\end{equation}
+Our goal is to write $\Phi_G = \rho(t) + \alpha \frac{\partial}{\partial \alpha} \Phi_G \big|_{\alpha=0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi_G \big|_{\alpha=0} + R$. The first term can be computed as
+\begin{align}
+    \frac{\partial}{\partial \alpha} e^{i(H+\alpha G)t} \rho e^{-i (H+\alpha G)t} \bigg|_{\alpha = 0} &= \int_{0}^{1} e^{i s (H+\alpha G)t} (i t G) e^{i (1-s) (H+\alpha G)t} ds \rho e^{-i(H+\alpha G)t} \bigg|_{\alpha=0} \nonumber \\
+    &\text{ } + e^{i(H+\alpha G)t} \rho \int_{0}^1 e^{-i s (H+\alpha G) t} (- i t G) e^{-i (1-s) (H+\alpha G)t} ds \bigg|_{\alpha = 0} \label{eq:first_order_alpha_derivative}\\
+    &= i t \int_0^1 e^{i s H t} G e^{-i s H t} ds e^{i H t} \rho e^{-i H t} - i t e^{+i H t} \rho \int_0^1 e^{-is H t} G e^{-i(1-s) Ht} ds \\
+    &= i t \int_0^1 G(s t) ds \rho(t) - it \rho(t) \int_0^1 G(s t) ds \\
+    &= i t \int_0^1 [G(s t), \rho(t)] ds.
+\end{align}
+
+Now we can compute the second order term by differentiating Eq. \eqref{eq:first_order_alpha_derivative} inside of the $\big|_{\alpha = 0}$. Note that there are 3 locations for the derivative to act in each term, yielding 6 final terms. To give a sense of how each term is computed we will compute the first one explicitly and simply state the remaining terms.
+\begin{align}
+    &i t\int_0^1 \parens{\frac{\partial}{\partial \alpha} e^{i s_1 (H+ \alpha G)t}} G e^{i(1-s_1)(H+\alpha G)t} ds_1 \rho e^{-i (H+\alpha G)t} \bigg|_{\alpha=0} \\
+    &= (it)^2 \int_0^1 \int_0^1 e^{i s_1 s_2 (H+\alpha G)t} s_1 G e^{i s_1 (1-s_2) (H+\alpha G)t} ds_2 G e^{i(1-s_1) (H+\alpha G)t} ds_1 \rho e^{-i(H+\alpha G) t} \bigg|_{\alpha=0} \\
+    &= -t^2 \int_0^1 \int_0^1 e^{i s_1 s_2 H t} G e^{-i s_1 s_2 H t} e^{i s_1 H t} G e^{-i s_1 H t} s_1 ds_1 ds_2 e^{i H t} \rho e^{-i H t} \\
+    &= -t^2 \int_0^1 \int_0^1 G(s_1 s_2 t) G(s_1 t) s_1 ds_1 ds_2 \rho(t).
+\end{align}
+The remaining terms we compute using a similar process, and are stated as
+\begin{align}
+    & -t^2 \int_0^1 \int_0^1 G(s_1 t) G((s_1 + s_2 - s_1 s_2) t) (1-s_1) ds_z1 ds_2 \rho (t) \\
+    & +t^2 \int_0^1 G(st) ds \rho(t) \int_0^1 G(st) ds \\
+    & +t^2 \int_0^1 G(st) ds \rho(t) \int_0^1 G(st) ds \\
+    & -t^2 \rho(t) \int_0^1 \int_0^1 G((1-s_1)t) G((1-s_1 s_2) t) s_1 ds_1 ds_2 \\
+    & -t^2 \rho(t) \int_0^1 \int_0^1 G((1-s_1)t) G((1-s_1)(1 - s_2) t) (1-s_1) ds_1 ds_2.
+\end{align}
+For the last two terms we can make them look similar to the first two by redefining the integration variables. This leads to the simplified expression
+\begin{align}
+    \frac{\partial^2}{\partial \alpha^2} \Phi_G \bigg|_{\alpha = 0} &= 2 t^2 \int_0^1 G(st) ds \rho(t) \int_0^1 G(st) ds \\
+    &\text{ } - t^2 \int_0^1 \int_0^1 \brackets{\rho(t) , G(s_1 t) G(s_1 s_2 t)}_+ s_1 ds_1 ds_2 \\
+    &\text{ } - t^2 \int_0^1 \int_0^1 \brackets{ \rho(t), G(s_1 t) G((s_1 + s_2 - s_1 s_2) t) }_+ (1-s_1) ds_1 ds_2 \\
+\end{align}
+
+
+
+\section{Energy and Entropic concerns}
+One requirement that our construction should satisfy is that a system in a thermal state should be invariant under contact with an environment at the same temperature. Formally, we would like that $\Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}} = \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}$. Exact equality may be too strong to enforce, so we instead consider that the energy of the system remains unchanged after coupling with the environment. 
+
+\begin{equation}
+    \trace{H_{sys} \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}} = \trace{H_{sys} \Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}}}.
+\end{equation}
+Now we look at the RHS in detail
+\begin{align}
+    \trace{H_{sys} \Phi \parens{\rho} } &= \trace{ H_{sys} \partrace{env}{\int e^{i \widetilde{H} t} \rho e^{-i \widetilde{H} t} dG}} \\
+    &= \int \trace{H_{sys} \otimes \openone_{env} e^{i \widetilde{H} t} \rho e^{-i \widetilde{H} t} } dG \\
+    &=  \trace{\int e^{- i (H + \alpha G) t} H_{sys} \otimes \openone_{env} e^{+ i (H + \alpha G) t} dG ~ \rho }
+\end{align}
+
+ 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Approximating $e^{i (H + \alpha G) t}$ evolution}
+
 \bibliographystyle{unsrt}
 \bibliography{bib}
 
