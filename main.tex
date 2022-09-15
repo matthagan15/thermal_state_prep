@@ -52,8 +52,9 @@
 \newcommand{\complex}{\mathbb{C}}
 
 %%%%% COMMONLY USED OBJECTS
-\newcommand{\hilb}{\mathscr{H}}
+\newcommand{\hilb}{\mathcal{H}}
 \newcommand{\partfun}{\mathcal{Z}}
+\newcommand{\identity}{\mathds{1}}
 \newcommand{\gue}{\rm GUE}
 \DeclareMathOperator{\hermMathOp}{Herm}
 \newcommand{\herm}[1]{\hermMathOp\parens{#1}}
@@ -71,48 +72,45 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-The computational task of preparing states of the form $\frac{e^{-\beta H}}{\partfun}$ in a usable approximation on a quantum computer is both incredibly useful and difficult. The closely related problem of estimating the free energy, defined as $F = -(1/\beta) \log \partfun$, up to additive error is known to be QMA-Hard for 2-local Hamiltonians \cite{bravyi_complexity_2021}. Intuitively, finding the ground state of a $k$-local Hamiltonian is known to be QMA-Hard \cite{} and the thermal state $e^{-\beta H} \partfun^{-1}$ can have arbitrarily high overlap with the ground state as $\beta \to \infty$ or the temperature approaches 0, indicating the problem for all computationally accessible $H$ and $\beta$ seems to be an incredibly difficult problem. 
+Going to leave this blank for now. 
 
-The difficulty of preparing thermal states is offset by their incredible utility. Whenever low energy states are needed, such as when training Boltzmann machines \cite{}, preparing ground states for quantum error correcting codes \cite{}, or starting states for chemistry simulations \cite{}, thermal states correspond to natural choices for starting states. Even more broadly, thermal states can be used as resource states for SemiDefinite Program (SDP) solvers via a Quantum Aurora-Kale algorithm given by Brandao et al. \cite{}. 
-
-Want to include here the main methods for preparing thermal states that currently exist, mainly the Poulin and Wocjan paper and Quantum-Quantum Metropolis Hastings. Where should more niche/advanced methods go?
+Want to include here the main methods for preparing thermal states that currently exist, mainly the Poulin and Wocjan paper and Quantum-Quantum Metropolis Hastings. Where should more niche/advanced methods go? \cite{shiraishi_undecidability_2021}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Preliminaries}
-We denote the Hilbert space of the system as $\hilb_{sys}$ and the environment as $\hilb_{env}$. The algorithm we propose for preparing thermal states for a Hamiltonian $H_{sys} \in \herm{\hilb_{sys}}$ involves direct time simulation of the system coupled to an environment governed by $H_{env} \in \herm{\hilb_{env}}$. We denote the interaction $H_{int} \in \herm{\hilb_{sys} \otimes \hilb_{env}}$. At a broad level, the algorithm starts from some initial state (what is the distribution over inputs?) we denote as $\rho$, undergoes time evolution with $H = H_{sys} + H_{env} + H_{int}$ for some time $t$, after which we trace out the environment leaving
+We denote the Hilbert space of the system as $\hilb_{sys}$ and the environment as $\hilb_{env}$, with the Hamiltonians governing each as $H_{sys}$ and $H_{env}$. The Hamiltonian for the joint system on $\hilb_{sys} \otimes \hilb_{env}$ is then $H = H_{sys} \otimes \identity + \identity \otimes H_{env}$. We study the effects of simulating the time dynamics of the system-environment space with randomized interactions. Our goal is to produce a channel that can reduce the entropy of a system thermal state by utilizing easily prepared thermal states of the environment. We consider using the Haar measure over eigenvectors for the randomized interaction and i.i.d eigenvalues from a zero mean $\sigma^2$ variance distribution. We consider input states of the form $\rho(\beta_S, \beta_E) = \frac{e^{-\beta_S H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{-\beta_E H_{env}}}{\partfun_{env}}$ and will simply use $\rho$ until the thermal nature of our inputs are necessary. The thermal states for the environment are supposed to be easily preparable.
+
+The Hamiltonians $H_{sys}$ and $H_{env}$ form a basis for the tensor product space. As we are not concerned with specific details of the eigenvectors of each, we will refer to them by an arbitrary index. Let $E_{i,j}$ denote the eigenvalue $E_i(H_{sys}) + E_j(H_{env})$ and $\ket{i,j}$ the corresponding eigenvector. Without loss of generality we will focus on spaces in which the system can be represented with $n$ qubits and the environment with $m$ qubits. So we have
 \begin{equation}
-    \mathcal{P}(\rho) = \partrace{Env}{e^{i H t} \rho e^{-i H t}}.
+    H_{sys} = \sum_{i = 0}^{2^n - 1} E_i \ketbra{i}{i} ~,~ H_{env} = \sum_{j=0}^{2^m - 1} E_j \ketbra{j}{j} ~,~ H = \sum_{i=0}^{2^n - 1} \sum_{j=0}^{2^m - 1} E_{i,j} \ketbra{i,j}{i,j}.
 \end{equation}
-The goal of this paper is to provide subsets of possible systems, environments, and interactions that can lead to efficient thermalization. 
+The above is just to put all the chosen notation in a convenient place. 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Harmonic Oscillators}
-The first system we want to study is the two coupled Harmonic oscillators at first to get the machinery working and then extend one of the systems to something more general. We consider two systems, $\hilb_1 \otimes \hilb_2$, with two "base" hamiltonians $H_1 \otimes \openone$ and $\openone \otimes H_2$, where $H_1, H_2$ are finite approximations to a harmonic oscillator. For notation, we write $H_1 = \sum_{i = 0}^{n-1} \lambda_i u_i u_i^*$ and $H_2 = \sum_{j = 0}^{m} \nu_j v_j v_j^*$. Then we let $H = H_1 \otimes \openone + \openone \otimes H_2$, which has eigenvalue decomposition $H = \sum_{i,j} (\lambda_i + \nu_j) (u_i \otimes v_j)(u_i \otimes v_j)^*$. For simplicity, we will also use the notation $\eta_{i,j} := \lambda_i + \nu_j$ and $\Pi_{i,j} := (u_i \otimes v_j) (u_i \otimes v_j)^*$. We then consider adding in a perturbation $\alpha G$, where $\alpha \in [0, \infty)$ is a real coupling constant and $G$ is sampled from the Gaussian Unitary Ensemble (GUE) $G \sim GUE$. We denote perturbed expressions with tildes, so our perturbed hamiltonian is $\widetilde{H} = H + \alpha G$ with eigenvalues $\widetilde{\eta}_{i,j}$ and eigenspace projectors $\widetilde{\Pi}_{i,j}$. 
 
-The channel we would like to replicate is
+Overall one application of our channel is represented as
 \begin{equation}
-    \Phi(\rho) = \partrace{\hilb_2}{\int dG e^{+i \widetilde{H} t} \rho e^{- i \widetilde{H} t}} = \partrace{\hilb_2}{\int dG \Phi_G(\rho)}.
+    \Phi(\rho) := \int \partrace{env}{e^{+i(H + \alpha G)t} \rho e^{-i(H + \alpha G) t}} dG.
 \end{equation}
-Our goal is to show that for some performance metric this channel takes thermal states defined for $H_1, H_2$ and outputs a thermal state on $\hilb_1$ with a lower temperature than it began with. In other words, if we let $d(\rho, \sigma)$ represent the metric of interest then we would like $d \parens{ \partfun_3^{-1} e^{-\beta_3 H_1}, \Phi\parens{\partfun_1^{-1} e^{-\beta_1 H_1} \otimes \partfun_2^{-1}e^{-\beta_2 H_2}} }$ to be small (if we think of it as a distance, high if it's some kind of overlap). There are a few various metrics we could look at: the trace distance, fidelity, difference in overlap on a single observable, or the difference in overlap averaged over a distribution over all possible observables. 
-
-\begin{itemize}
-    \item Fidelity: $F(P, Q) := \trace{\sqrt{\sqrt{P} Q \sqrt{P}}}$. The biggest issue I could see here is the square root, it seems like the thing in the square root might be fairly straightforward to compute. 
-    \item Trace distance: $\norm{P - Q}_1 = \trace{\sqrt{(P-Q)^*(P-Q)}}$
-    \item Overlap: $\anglebrackets{P, Q} = \trace{P^* Q}$, similar to dot product for vectors. This is not super useful, note if $P = Q$ then the overlap isn't even one and is more a measure of the purity of the state. 
-    \item Measurement statistics for a single observable: Let $\mu(i)$ denote a measurement, could correspond to eigenspace projectors for some Hermitian observable. Then the vector defined by $\overlap{\mu(i)}{P}$ denotes the probability vector for the measurement $\mu$. We could take the Kullback-Leibler divergence of these vectors for $P, Q$.
-    \item Measurement statistics for an ensemble of observables: The idea behind this is that the trace distance corresponds to an upper bound on the distinguishability between $P,Q$ as defined by their measurement statistics. If instead of looking at the maximum, what if we specify a distribution over possible observables and then look at the measurement statistic differences? 
-\end{itemize}
+For simplicity we will denote the time evolution channel for a specific random interaction $G$ as
+\begin{equation}
+    \Phi_G(\rho) := e^{+i (H+ \alpha G) t} \rho e^{-i (H + \alpha G) t}.
+\end{equation}
+Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the randomized interaction term, where $G = U_G D U_G^\dagger$. The measure we choose for the eigenbasis of $G$ is $U_G \sim Haar$ and the eigenvalues are i.i.d with mean 0 and variance $\sigma^2$. This gives the overall measure decomposition $dG = dD ~ dU_G$. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Fixed Points}
+Our first goal is to show that $\rho(\beta, \beta)$ is a fixed point, at least approximately, of the channel $\Phi$. We then aim to show that it is an attractor for states of the form $\rho(\beta_S, \beta_E)$ with $\beta_E > \beta_S$. 
 
 \subsection{Computing $\Phi_G$ with Duhamel's formula}
-We would like to produce a Taylor Series of the expression $\Phi_G = e^{i(H+\alpha G) t} \rho e^{-i(H+\alpha G) t}$ with respect to the coupling constant $\alpha$. To do this we use Duhamel's formula for differentiation of the exponent of a matrix exponential
+Our first goal is to compute the Taylor's series for $\Phi$ with respect to the coupling constant $\alpha$. To do this we compute the Taylor Series for $\Phi_G$ and then compute the effects of integrating and partial traces. We make use Duhamel's formula for differentiation of the exponent of a matrix exponential
 \begin{equation}
     \frac{d}{dt} e^{A(t)} = \int_0^1 e^{s A(t)} \frac{d A(t)}{dt} e^{(1-s)A(t)} ds.
 \end{equation}
-Our goal is to write $\Phi_G = \rho(t) + \alpha \frac{\partial}{\partial \alpha} \Phi_G \big|_{\alpha=0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi_G \big|_{\alpha=0} + R$. The first term can be computed as
+The object of interest is $$\Phi_G = \rho(t) + \alpha \frac{\partial}{\partial \alpha} \Phi_G \big|_{\alpha=0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi_G \big|_{\alpha=0} + R.$$ Then due to linearity of integration and partial traces this will give us a series expansion in $\alpha$ for the overall channel $\Phi$. We first focus on computing the first two non-trivial terms and focus on bounding the magnitude of $R$ later. 
+The first order term can be computed as
 \begin{align}
     \frac{\partial}{\partial \alpha} e^{i(H+\alpha G)t} \rho e^{-i (H+\alpha G)t} \bigg|_{\alpha = 0} &= \int_{0}^{1} e^{i s (H+\alpha G)t} (i t G) e^{i (1-s) (H+\alpha G)t} ds \rho e^{-i(H+\alpha G)t} \bigg|_{\alpha=0} \nonumber \\
     &\text{ } + e^{i(H+\alpha G)t} \rho \int_{0}^1 e^{-i s (H+\alpha G) t} (- i t G) e^{-i (1-s) (H+\alpha G)t} ds \bigg|_{\alpha = 0} \label{eq:first_order_alpha_derivative}\\
@@ -121,12 +119,21 @@ Our goal is to write $\Phi_G = \rho(t) + \alpha \frac{\partial}{\partial \alpha}
     &= i t \int_0^1 [G(s t), \rho(t)] ds.
 \end{align}
 
+This term is negligible in the overall channel due to the eigenvalues having mean 0. This is computed as
+\begin{align}
+    \frac{\partial}{\partial \alpha} \Phi(\rho) \bigg|_{\alpha = 0} &= \frac{\partial}{\partial \alpha} \partrace{env}{\int \Phi_G(\rho) ~dG} \bigg|_{\alpha=0} \\
+    &= \partrace{env}{\int\frac{\partial \Phi_G(\rho)}{\partial \alpha} \bigg|_{\alpha=0} dG } \\
+    &= i t \partrace{env}{\int_0^1 \int [e^{i H s t} G e^{-i H s t}, \rho(t)] dG ds} \\
+    &= i t \partrace{env}{\int_0^1  [e^{i H s t} \int U_G D U_G^\dagger ~ dD ~ dU_G e^{-i H s t}, \rho(t)] ds},
+\end{align}
+but because $\int D ~dD$ is simply the mean of the eigenvalues this is 0 which leads to the entire term being 0. 
+
 Now we can compute the second order term by differentiating Eq. \eqref{eq:first_order_alpha_derivative} inside of the $\big|_{\alpha = 0}$. Note that there are 3 locations for the derivative to act in each term, yielding 6 final terms. To give a sense of how each term is computed we will compute the first one explicitly and simply state the remaining terms.
 \begin{align}
     &i t\int_0^1 \parens{\frac{\partial}{\partial \alpha} e^{i s_1 (H+ \alpha G)t}} G e^{i(1-s_1)(H+\alpha G)t} ds_1 \rho e^{-i (H+\alpha G)t} \bigg|_{\alpha=0} \\
     &= (it)^2 \int_0^1 \int_0^1 e^{i s_1 s_2 (H+\alpha G)t} s_1 G e^{i s_1 (1-s_2) (H+\alpha G)t} ds_2 G e^{i(1-s_1) (H+\alpha G)t} ds_1 \rho e^{-i(H+\alpha G) t} \bigg|_{\alpha=0} \\
     &= -t^2 \int_0^1 \int_0^1 e^{i s_1 s_2 H t} G e^{-i s_1 s_2 H t} e^{i s_1 H t} G e^{-i s_1 H t} s_1 ds_1 ds_2 e^{i H t} \rho e^{-i H t} \\
-    &= -t^2 \int_0^1 \int_0^1 G(s_1 s_2 t) G(s_1 t) s_1 ds_1 ds_2 \rho(t).
+    &= -t^2 \int_0^1 \int_0^1 G(s_1 s_2 t) G(s_1 t) s_1 ds_1 ds_2 \rho(t). 
 \end{align}
 The remaining terms we compute using a similar process, and are stated as
 \begin{align}
@@ -151,9 +158,19 @@ We compute these explicitly term by term. Starting with Eq. \eqref{eq:second_ord
 Now we make the simplifying assumption that our input is a tensor product of a system thermal state and an environment thermal state, symbolically $\partfun_{sys}^{-1} e^{-\beta_{sys} H_{sys}} \otimes \partfun_{env}^{-1} e^{-\beta_{env}H_{env}}$. This allows us to write the state as diagonal in the Hamiltonian basis
 \begin{align}
    2 t^2 \sum_{i',j',k',l', m,n} \int_0^1 \int_0^1 e^{i (E_{i,j} - E_{m,n}) s_1 t}  e^{i (E_{m,n} - E_{k,l})s_2 t} \bra{i',j'} D \ket{i',j'} \bra{k',l'} D \ket{k', l'} \bra{m,n} \rho \ket{m,n} \\
-   \times \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{k',l'} \bra{k',l'} U_G^\dagger \ket{k,l}
+   \times \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{k',l'} \bra{k',l'} U_G^\dagger \ket{k,l}.
 \end{align}
+Now we use results from Weingarten calculus to compute the moments of the matrix elements of the Haar-distributed unitary
+\begin{equation}
+    \bra{i,j} U_G \ket{i',j'} \bra{m,n} U_G \ket{k',l'} \bra{m,n} \overline{U_G} \ket{i',j'} \bra{k,l} \overline{U_G} \ket{k',l'} = \frac{-\delta_{i,k} \delta_{j,l}}{\dim_{env\otimes sys} (\dim_{env \otimes sys}^2 - 1)}
+\end{equation}
 
+Now we turn our attention to the eigenvalue integral. We aren't going to use GUE anymore, instead we are just going to choose some values i.i.d from a similar distribution. The exact distribution is not critically important, for now we assume that the covariance is a multiple of the identity as $Cov(\lambda_{i,j}, \lambda_{k,l}) = \delta_{i,k} \delta_{j,l} \sigma^2$. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Energy and Entropic concerns}
 One requirement that our construction should satisfy is that a system in a thermal state should be invariant under contact with an environment at the same temperature. Formally, we would like that $\Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}} = \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}$. Exact equality may be too strong to enforce, so we instead consider that the energy of the system remains unchanged after coupling with the environment. 
 
@@ -253,7 +270,6 @@ The second order corrections have 10 possible sources for terms, however many ar
 
 Two potential issues. 1) How can we normalize the output state? This may depend on how we approach the second. 2) How do we bound the remaining terms in the perturbation series? Are there any dumb bounds I can work out? 
 
-Now that we have expressions for the output channel in terms of a perturbative expansion, we can continue with finding the output after tracing out the environment and considering the GUE averaging integral. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -264,45 +280,6 @@ The idea here is to try and see what very short time evolution does to our chann
     &= \partrace{2}{\parens{e^{i G \alpha t} e^{i H t} + \bigo{t^2}} \rho_{PS} \parens{e^{-iHt} e^{-i G \alpha t} + \bigo{t^2}}} \\
     &= \partrace{2}{e^{i G \alpha t} \rho_{PS} e^{-i G \alpha t}} + \bigo{t^2} 
 \end{align}
-
-
-\subsection{Computing $\Phi_G$ with Duhamel's formula}
-We would like to produce a Taylor Series of the expression $\Phi_G = e^{i(H+\alpha G) t} \rho e^{-i(H+\alpha G) t}$ with respect to the coupling constant $\alpha$. To do this we use Duhamel's formula for differentiation of the exponent of a matrix exponential
-\begin{equation}
-    \frac{d}{dt} e^{A(t)} = \int_0^1 e^{s A(t)} \frac{d A(t)}{dt} e^{(1-s)A(t)} ds.
-\end{equation}
-Our goal is to write $\Phi_G = \rho(t) + \alpha \frac{\partial}{\partial \alpha} \Phi_G \big|_{\alpha=0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi_G \big|_{\alpha=0} + R$. The first term can be computed as
-\begin{align}
-    \frac{\partial}{\partial \alpha} e^{i(H+\alpha G)t} \rho e^{-i (H+\alpha G)t} \bigg|_{\alpha = 0} &= \int_{0}^{1} e^{i s (H+\alpha G)t} (i t G) e^{i (1-s) (H+\alpha G)t} ds \rho e^{-i(H+\alpha G)t} \bigg|_{\alpha=0} \nonumber \\
-    &\text{ } + e^{i(H+\alpha G)t} \rho \int_{0}^1 e^{-i s (H+\alpha G) t} (- i t G) e^{-i (1-s) (H+\alpha G)t} ds \bigg|_{\alpha = 0} \label{eq:first_order_alpha_derivative}\\
-    &= i t \int_0^1 e^{i s H t} G e^{-i s H t} ds e^{i H t} \rho e^{-i H t} - i t e^{+i H t} \rho \int_0^1 e^{-is H t} G e^{-i(1-s) Ht} ds \\
-    &= i t \int_0^1 G(s t) ds \rho(t) - it \rho(t) \int_0^1 G(s t) ds \\
-    &= i t \int_0^1 [G(s t), \rho(t)] ds.
-\end{align}
-
-Now we can compute the second order term by differentiating Eq. \eqref{eq:first_order_alpha_derivative} inside of the $\big|_{\alpha = 0}$. Note that there are 3 locations for the derivative to act in each term, yielding 6 final terms. To give a sense of how each term is computed we will compute the first one explicitly and simply state the remaining terms.
-\begin{align}
-    &i t\int_0^1 \parens{\frac{\partial}{\partial \alpha} e^{i s_1 (H+ \alpha G)t}} G e^{i(1-s_1)(H+\alpha G)t} ds_1 \rho e^{-i (H+\alpha G)t} \bigg|_{\alpha=0} \\
-    &= (it)^2 \int_0^1 \int_0^1 e^{i s_1 s_2 (H+\alpha G)t} s_1 G e^{i s_1 (1-s_2) (H+\alpha G)t} ds_2 G e^{i(1-s_1) (H+\alpha G)t} ds_1 \rho e^{-i(H+\alpha G) t} \bigg|_{\alpha=0} \\
-    &= -t^2 \int_0^1 \int_0^1 e^{i s_1 s_2 H t} G e^{-i s_1 s_2 H t} e^{i s_1 H t} G e^{-i s_1 H t} s_1 ds_1 ds_2 e^{i H t} \rho e^{-i H t} \\
-    &= -t^2 \int_0^1 \int_0^1 G(s_1 s_2 t) G(s_1 t) s_1 ds_1 ds_2 \rho(t).
-\end{align}
-The remaining terms we compute using a similar process, and are stated as
-\begin{align}
-    & -t^2 \int_0^1 \int_0^1 G(s_1 t) G((s_1 + s_2 - s_1 s_2) t) (1-s_1) ds_z1 ds_2 \rho (t) \\
-    & +t^2 \int_0^1 G(st) ds \rho(t) \int_0^1 G(st) ds \\
-    & +t^2 \int_0^1 G(st) ds \rho(t) \int_0^1 G(st) ds \\
-    & -t^2 \rho(t) \int_0^1 \int_0^1 G((1-s_1)t) G((1-s_1 s_2) t) s_1 ds_1 ds_2 \\
-    & -t^2 \rho(t) \int_0^1 \int_0^1 G((1-s_1)t) G((1-s_1)(1 - s_2) t) (1-s_1) ds_1 ds_2.
-\end{align}
-For the last two terms we can make them look similar to the first two by redefining the integration variables. This leads to the simplified expression
-\begin{align}
-    \frac{\partial^2}{\partial \alpha^2} \Phi_G \bigg|_{\alpha = 0} &= 2 t^2 \int_0^1 G(st) ds \rho(t) \int_0^1 G(st) ds \\
-    &\text{ } - t^2 \int_0^1 \int_0^1 \brackets{\rho(t) , G(s_1 t) G(s_1 s_2 t)}_+ s_1 ds_1 ds_2 \\
-    &\text{ } - t^2 \int_0^1 \int_0^1 \brackets{ \rho(t), G(s_1 t) G((s_1 + s_2 - s_1 s_2) t) }_+ (1-s_1) ds_1 ds_2 \\
-\end{align}
-
-
 
 \section{Energy and Entropic concerns}
 One requirement that our construction should satisfy is that a system in a thermal state should be invariant under contact with an environment at the same temperature. Formally, we would like that $\Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}} = \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}$. Exact equality may be too strong to enforce, so we instead consider that the energy of the system remains unchanged after coupling with the environment. 
