@@ -100,10 +100,12 @@ For simplicity we will denote the time evolution channel for a specific random i
 Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the randomized interaction term, where $G = U_G D U_G^\dagger$. The measure we choose for the eigenbasis of $G$ is $U_G \sim Haar$ and the eigenvalues are i.i.d with mean 0 and variance $\sigma^2$. This gives the overall measure decomposition $dG = dD ~ dU_G$. 
 
 \begin{lemma}
-    What is the computation of the Haar integral 
-    \begin{equation}
-        \int dU \bra{i_1} U \ket{j_1} \bra{i_2} U \ket{j_2} \bra{k_1} \overline{U} \ket{l_1} \bra{k_2} \overline{U} \ket{l_2} = 
-    \end{equation}
+    The following "four-element" Haar integral can be computed as 
+    \begin{align}
+        \int dU \bra{i_1} U \ket{j_1} ~ \bra{i_2} U \ket{j_2} ~ \overline{\bra{k_1} U \ket{l_1}}  ~ \overline{\bra{k_2} U \ket{l_2} }  = \\
+        \frac{1}{\dim^2 - 1}\parens{\delta_{i_1, k_1} \delta_{i_2, k_2} \delta_{j_1, l_1} \delta_{j_2, l_2} + \delta_{i_1, k_2}  \delta_{i_2, k_1} \delta_{j_1, l_2} \delta_{j_2, l_1}} \\
+        - \frac{1}{\dim (\dim^2 - 1)} \parens{\delta_{i_1, k_2} \delta_{i_2, k_1} \delta_{j_1, l_1} \delta_{j_2, l_2} + \delta_{i_1, k_1} \delta_{i_2, k_2} \delta_{j_1, l_2} \delta_{j_2, l_1}} 
+    \end{align}
 \end{lemma}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -171,7 +173,7 @@ Now we make the simplifying assumption that our input is a tensor product of a s
 \end{align}
 Now we use results from Weingarten calculus to compute the moments of the matrix elements of the Haar-distributed unitary
 \begin{equation}
-    \int dU_G \bra{i,j} U_G \ket{i',j'} \bra{m,n} U_G \ket{k',l'} \bra{m,n} \overline{U_G} \ket{i',j'} \bra{k,l} \overline{U_G} \ket{k',l'} = \frac{-\delta_{i,k} \delta_{j,l}}{\dim_{env\otimes sys} (\dim_{env \otimes sys}^2 - 1)}
+    \int dU_G \bra{i,j} U_G \ket{i',j'} \bra{m,n} U_G \ket{k',l'}  \overline{\bra{m,n} U_G \ket{i',j'}}   ~\overline{\bra{k,l} U_G \ket{k',l'}}  = \frac{-\delta_{i,k} \delta_{j,l}}{\dim_{env\otimes sys} (\dim_{env \otimes sys}^2 - 1)}
 \end{equation}
 
 Now we turn our attention to the eigenvalue integral. We aren't going to use GUE anymore, instead we are just going to choose some values i.i.d from a similar distribution. The exact distribution is not critically important, for now we assume that the covariance is a multiple of the identity as $Cov(\lambda_{i,j}, \lambda_{k,l}) = \delta_{i,k} \delta_{j,l} \sigma^2$. This leads to
