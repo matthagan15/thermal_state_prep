@@ -32,7 +32,11 @@ def thermal_state(hamiltonian, beta):
     return ret
 
 def harmonic_oscillator_hamiltonian(dimensions, gap = 1.0):
-    diags = [0.5 + n for n in range(dimensions)]
+    """
+    Inputs: dimensions - number of basis states to use
+    (optional) gap - default 1.0 
+    """
+    diags = [0.5 + n * gap for n in range(dimensions)]
     return np.diag(diags)
 
 # returns (beta, fro error)
@@ -127,7 +131,7 @@ class QHMC:
             ret_betas.append(out_beta)
             ret_errors.append(error)
             rho_diags.append(np.abs(np.diagonal(rho)))
-        print("done.")
+        print("done. total time:", time_this.time() - start_time)
         if self.verbose:
             for ix in range(len(rho_diags)):
                 print("ix:", ix)
@@ -149,24 +153,15 @@ class QHMC:
             plt.show()
 
 def test_hamiltonian_gap():
-    h1 = np.diag([0.5, 2, 2.5, 3., 3.5, 4., 4.5, 5., 5.5])
-    h2 = harmonic_oscillator_hamiltonian(10)
-    iters = 20
-    betas = [2] * iters
-    times = [20] * iters
-    alphas = [0.05] * iters
-    qhmc = QHMC(ham_sys = h1, ham_env_base=h2, env_betas=betas, sim_times=times, alphas=alphas, verbose=True)
-    qhmc.compute_betas_and_errors()
-
-def test():
     h1 = harmonic_oscillator_hamiltonian(10)
-    h2 = harmonic_oscillator_hamiltonian(10)
-    betas = [2] * 45
-    times = [50] * 45
-    alphas = [0.005] * 45
+    h2 = harmonic_oscillator_hamiltonian(2)
+    iters = 500
+    betas = [2] * iters
+    times = [100] * iters
+    alphas = [0.001] * iters
     qhmc = QHMC(ham_sys = h1, ham_env_base=h2, env_betas=betas, sim_times=times, alphas=alphas, verbose=True)
-    # qhmc.print_params()
     qhmc.compute_betas_and_errors()
 
-# test()
-test_hamiltonian_gap()
+if __name__ == "__main__":
+    # test()
+    test_hamiltonian_gap()
