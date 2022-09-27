@@ -5,3 +5,4 @@ main.log
 main.synctex.gz
 main.blg
 main.bbl
+numerics/target/**
