@@ -201,7 +201,7 @@ We now average these over the randomized interaction measure $dG$. We first perf
 \begin{align}
     \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{k,l} dG &= t^2 \sum_{i',j',k',l',m,n} C_E \int C_{\lambda} dD \int C_{H} dU_G.
 \end{align}
-We know that $\int C_{\lambda} dD = \sigma^2 \delta(i',j' | k',l')$ by construction. Due to the delta function we can simply set $(i',j') = (k',l')$ without harm, which turns the Haar integration into
+We know that $\int C_{\lambda} dD = \sigma^2 \delta(i',j' | k',l')$ by construction. Due to the delta function we can simply set $(i',j') = (k',l')$ by performing the sum over $k',l'$, which turns the Haar integration into
 \begin{align}
     \int C_{H} dU_G &= \int \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{k,l} dU_G \\
     &= \int \bra{i,j} U_G \ket{i',j'}  \bra{m,n} U_G \ket{i',j'} \overline{\bra{m,n} U_G \ket{i',j'}} ~ \overline{ \bra{k,l} U_G \ket{i',j'} }~ dU_G \\
@@ -211,33 +211,23 @@ We know that $\int C_{\lambda} dD = \sigma^2 \delta(i',j' | k',l')$ by construct
 \end{align}
 where we used Lemma \ref{lem:haar_two_moment} for the last line. This, combined with the eigenvalue integration, yields
 \begin{align}
-    \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{k,l} dG &= t^2 \sigma^2 \sum_{i',j',m,n} C_E \frac{\delta(i,j | k,l)}{\dim^2 - 1} \parens{\delta(i,j | m,n) + \frac{\dim - 1 - \delta(i,j | m,n)}{\dim}}.
+    \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{k,l} dG &= t^2 \sigma^2 \sum_{i',j',m,n} C_E \frac{\delta(i, j | k,l)}{\dim (\dim + 1)} (1 + \delta(i,j | m,n)).
 \end{align}
 
-Now we investigate the phase integrals $C_E$. 
+Our next goal is to simplify the phase contributions to this second order correction. We use the fact that the Haar integration forces the index equalities $i = k, j = l$ to simplify the phase integrals. Substituting $E_{k,l} \mapsto E_{i,j}$ yields:
 \begin{align}
-    C_E &= \int_0^1 \int_0^1 \bigg(  2 \rho_{m,n} e^{i(E_{i,j} - E_{m,n})s_1t} e^{i(E_{m,n} - E_{k,l})s_2 t}  \\
-    &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 \\
-    &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1) \bigg) ds_1 ds_2 \\
-\end{align}
-These can be solved analytically as
-\begin{align}
-    \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1t} e^{i(E_{m,n} - E_{k,l})s_2 t} ds_1 ds_2 &= \frac{(e^{i(E_{i,j} - E_{m,n})t} - 1)(e^{i(E_{m,n} - E_{k,l})t} - 1)}{t^2 (E_{i,j} - E_{m,n})(E_{k,l} - E_{m,n})} \\
-    \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 ds_1 ds_2 &= \nonumber \\
-    \frac{e^{i(E_{i,j} - E_{k,l})t}(E_{i,j} - E_{m,n}) + (E_{m,n} - E_{k,l}) - e^{i(E_{i,j} - E_{m,n})t}(E_{i,j} - E_{k,l})}{t^2(E_{i,j} - E_{m,n})(E_{k,l} - E_{m,n})(E_{i,j} - E_{k,l})} \\
-    \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1) ds_1 ds_2 &= \nonumber \\
-    \frac{-(E_{i,j} - E_{m,n}) + e^{i(E_{m,n} - E_{k,l})t}\parens{E_{i,j} - E_{k,l} - e^{i(E_{i,j} - E_{m,n})t}(E_{m,n} - E_{k,l})}}{t^2 (E_{i,j} - E_{m,n})(E_{m,n} - E_{k,l})(E_{i,j} - E_{k,l})}
-\end{align}
-Now we introduce some minor notation to help readability $\Delta_{ij,kl} := E_{i,j} - E_{k,l}$. This reduces the phase contribution to
-\begin{align}
-     t^2 C_E(\rho) = &e^{i\Delta_{ij,kl}t} \parens{\frac{2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} + \frac{(\rho_{ij} + \rho_{k,l}) \Delta_{ij,mn}}{\Delta_{ij,kl} \Delta_{ij,mn} \Delta_{kl,mn}}} \\
-    +& e^{i \Delta_{ij,mn}t} \parens{\frac{- 2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} - \frac{(\rho_{ij} + \rho_{k,l}) \Delta_{mn,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}} - \frac{(\rho_{i,j} + \rho_{k,l})\Delta_{ij,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}}} \\
-    +& e^{i \Delta_{mn,kl}t} \parens{\frac{- 2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} - \frac{(\rho_{i,j} + \rho_{k,l}) \Delta_{ij,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}}} \\
-    +& \parens{2 \rho_{m,n} + (\rho_{i,j} + \rho_{k,l}) \frac{\Delta_{mn,kl} + \Delta_{ij,mn}}{\Delta_{ij,kl} \Delta_{ij,mn} \Delta_{kl,mn}}}
+    C_E &= 2 \rho_{m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})(s_1 - s_2)t} ds_1 ds_2 \\
+    &~ ~ - 2 \rho_{i,j} \parens{\int_0^1 \int_0^1 e^{i (E_{i,j} - E_{m,n})s_1 (1- s_2)t}s_1 ds_1 ds_2 + \int_0^1 \int_0^1 e^{-i(E_{i,j} - E_{m,n})s_2(1-s_1)t}((1-s_1)ds_1 ds_2)} \\
+    &= \frac{4 \rho_{m,n}}{(E_{i,j} - E_{m,n})^2 t^2} (1 - \cos((E_{i,j} - E_{m,n})t)) - \frac{2 \rho_{i,j}}{(E_{i,j} - E_{m,n})^2 t^2} \parens{1 - e^{i (E_{i,j} - E_{m,n})t} + i (E_{i,j} - E_{m,n})t } \\
+    & ~ ~ - \frac{2 \rho_{i,j}}{(E_{i,j} - E_{m,n})^2 t^2} \parens{1 - i (E_{i,j} - E_{m,n})t - e^{i(E_{i,j} - E_{m,n})t}} \\
+    &= \frac{2}{(E_{i,j} - E_{m,n})^2 t^2} \parens{(2 \rho_{m,n} - \rho_{i,j}) - 2(\rho_{m,n} - \rho_{i,j}) \cos ((E_{i,j} - E_{m,n})t)}  
 \end{align}
 
-Since we have the factor of $\delta_{i,j | k,l}$ from the Haar integral contribution we can further simplify these as
+Note that this expression is indeterminate whenever $m = i, n = j$. For this simply note that each of the phases in the exponents of the integrals are 0, leading to $C_E = 0$. This means we can restrict ourselves to $m \neq i, n \neq j$. 
 
+\begin{align}
+    \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{i,j} dG &= \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) \neq (i,j)} \frac{(2 \rho_{m,n} - \rho_{i,j}) - 2(\rho_{m,n} - \rho_{i,j}) \cos ((E_{i,j} - E_{m,n})t)}{(E_{i,j} - E_{m,n})^2}
+\end{align}
 % Now we make the simplifying assumption that our input is a tensor product of a system thermal state and an environment thermal state, symbolically $\partfun_{sys}^{-1} e^{-\beta_{sys} H_{sys}} \otimes \partfun_{env}^{-1} e^{-\beta_{env}H_{env}}$. This allows us to write the state as diagonal in the Hamiltonian basis
 % \begin{align}
 %    2 t^2 \sum_{i',j',k',l', m,n} \int_0^1 \int_0^1 e^{i (E_{i,j} - E_{m,n}) s_1 t}  e^{i (E_{m,n} - E_{k,l})s_2 t} \bra{i',j'} D \ket{i',j'} \bra{k',l'} D \ket{k', l'} \bra{m,n} \rho \ket{m,n} \nonumber \\
@@ -407,8 +397,30 @@ Now we look at the RHS in detail
     &=  \trace{\int e^{- i (H + \alpha G) t} H_{sys} \otimes \openone_{env} e^{+ i (H + \alpha G) t} dG ~ \rho }
 \end{align}
 
+ \subsection{Phase Contribution complicated}
+ Now we investigate the phase integrals $C_E$. 
+ \begin{align}
+     C_E &= \int_0^1 \int_0^1 \bigg(  2 \rho_{m,n} e^{i(E_{i,j} - E_{m,n})s_1t} e^{i(E_{m,n} - E_{k,l})s_2 t}  \\
+     &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 \\
+     &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1) \bigg) ds_1 ds_2 \\
+ \end{align}
+ These can be solved analytically as
+ \begin{align}
+     \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1t} e^{i(E_{m,n} - E_{k,l})s_2 t} ds_1 ds_2 &= \frac{(e^{i(E_{i,j} - E_{m,n})t} - 1)(e^{i(E_{m,n} - E_{k,l})t} - 1)}{t^2 (E_{i,j} - E_{m,n})(E_{k,l} - E_{m,n})} \\
+     \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 ds_1 ds_2 &= \nonumber \\
+     \frac{e^{i(E_{i,j} - E_{k,l})t}(E_{i,j} - E_{m,n}) + (E_{m,n} - E_{k,l}) - e^{i(E_{i,j} - E_{m,n})t}(E_{i,j} - E_{k,l})}{t^2(E_{i,j} - E_{m,n})(E_{k,l} - E_{m,n})(E_{i,j} - E_{k,l})} \\
+     \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1) ds_1 ds_2 &= \nonumber \\
+     \frac{-(E_{i,j} - E_{m,n}) + e^{i(E_{m,n} - E_{k,l})t}\parens{E_{i,j} - E_{k,l} - e^{i(E_{i,j} - E_{m,n})t}(E_{m,n} - E_{k,l})}}{t^2 (E_{i,j} - E_{m,n})(E_{m,n} - E_{k,l})(E_{i,j} - E_{k,l})}
+ \end{align}
+ Now we introduce some minor notation to help readability $\Delta_{ij,kl} := E_{i,j} - E_{k,l}$. This reduces the phase contribution to
+ \begin{align}
+      t^2 C_E(\rho) = &e^{i\Delta_{ij,kl}t} \parens{\frac{2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} + \frac{(\rho_{ij} + \rho_{k,l}) \Delta_{ij,mn}}{\Delta_{ij,kl} \Delta_{ij,mn} \Delta_{kl,mn}}} \\
+     +& e^{i \Delta_{ij,mn}t} \parens{\frac{- 2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} - \frac{(\rho_{ij} + \rho_{k,l}) \Delta_{mn,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}} - \frac{(\rho_{i,j} + \rho_{k,l})\Delta_{ij,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}}} \\
+     +& e^{i \Delta_{mn,kl}t} \parens{\frac{- 2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} - \frac{(\rho_{i,j} + \rho_{k,l}) \Delta_{ij,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}}} \\
+     +& \parens{2 \rho_{m,n} + (\rho_{i,j} + \rho_{k,l}) \frac{\Delta_{mn,kl} + \Delta_{ij,mn}}{\Delta_{ij,kl} \Delta_{ij,mn} \Delta_{kl,mn}}}
+ \end{align}
  
-
+ Since we have the factor of $\delta_{i,j | k,l}$ from the Haar integral contribution we can further simplify these as
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
