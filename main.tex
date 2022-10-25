@@ -228,6 +228,9 @@ Note that this expression is indeterminate whenever $m = i, n = j$. For this sim
 \begin{align}
     \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{i,j} dG &= \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) \neq (i,j)} \frac{(2 \rho_{m,n} - \rho_{i,j}) - 2(\rho_{m,n} - \rho_{i,j}) \cos ((E_{i,j} - E_{m,n})t)}{(E_{i,j} - E_{m,n})^2}
 \end{align}
+
+Now lets look at the specific system of a truncated harmonic oscillator, which implies $E_{i,j} = \hbar \omega (1 + i + j) = 1 + 1 + j$, as we are not concerned with the specific scaling of $\omega$. This gives us the thermal state of $\rho = \sum_{i,j} \ketbra{i}{i} \otimes \ketbra{j}{j}\rho_{i,j} = \frac{e^{-\beta (1 + i + j)}}{\sum_{e^{-\beta(1+  i + j)}}} \ketbra{i}{i} \otimes \ketbra{j}{j}$
+
 % Now we make the simplifying assumption that our input is a tensor product of a system thermal state and an environment thermal state, symbolically $\partfun_{sys}^{-1} e^{-\beta_{sys} H_{sys}} \otimes \partfun_{env}^{-1} e^{-\beta_{env}H_{env}}$. This allows us to write the state as diagonal in the Hamiltonian basis
 % \begin{align}
 %    2 t^2 \sum_{i',j',k',l', m,n} \int_0^1 \int_0^1 e^{i (E_{i,j} - E_{m,n}) s_1 t}  e^{i (E_{m,n} - E_{k,l})s_2 t} \bra{i',j'} D \ket{i',j'} \bra{k',l'} D \ket{k', l'} \bra{m,n} \rho \ket{m,n} \nonumber \\

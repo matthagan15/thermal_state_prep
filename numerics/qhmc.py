@@ -67,7 +67,7 @@ class QHMC:
                 alphas = [0.01],
                 ham_sys=np.zeros((2,2)),
                 ham_env_base=np.diag([0.5, 1.5]),
-                num_monte_carlo=10,
+                num_monte_carlo=100,
                 verbose=False
                 ):
         if len(env_betas) != len(sim_times) or len(sim_times) != len(alphas):
@@ -110,15 +110,17 @@ class QHMC:
             raw = u @ rho_tot @ u.conj().T
             out = partrace(raw, dim1, dim2)
             avg_out += out.view(np.complex128) / self.num_monte_carlo
-        b, e = find_best_beta(avg_out, self.ham_sys)
+        # b, e = find_best_beta(avg_out, self.ham_sys)
         # print("b,e:", b, ", ", e)
-        return (avg_out, b, e)
+        # return (avg_out, b, e)
+        return avg_out
         
         # return a dictionary mapping to a list of sys output betas and erros, do we only return average beta and avg error?
         # or return a "list of lists" to let another function process? 
     def compute_betas_and_errors(self):
+        start_time = time_this.time()
         if self.verbose:
-            start_time = time_this.time()
+            
             print("#"*75)
             print("[compute_betas_and_errors] start time:", start_time)
         rho = thermal_state(self.ham_sys, self.sys_start_beta)
@@ -127,10 +129,11 @@ class QHMC:
         for ix in range(len(self.betas)):
             if self.verbose:
                 print("percent done:", float(ix) / len(self.betas))
-            rho, out_beta, error = self.channel(rho, self.betas[ix], self.alphas[ix], self.times[ix])
-            ret_betas.append(out_beta)
-            ret_errors.append(error)
-            rho_diags.append(np.abs(np.diagonal(rho)))
+            rho = self.channel(rho, self.betas[ix], self.alphas[ix], self.times[ix])
+            # ret_betas.append(out_beta)
+            # ret_errors.append(error)
+            # rho_diags.append(np.abs(np.diagonal(rho)))
+        print("fro error w/ ideal:", np.linalg.norm(rho - thermal_state(self.ham_sys, self.betas[0]), ord='fro'))
         print("done. total time:", time_this.time() - start_time)
         if self.verbose:
             for ix in range(len(rho_diags)):
@@ -153,15 +156,18 @@ class QHMC:
             plt.show()
 
 def test_hamiltonian_gap():
-    h1 = harmonic_oscillator_hamiltonian(10)
-    h2 = harmonic_oscillator_hamiltonian(2)
-    iters = 500
-    betas = [2] * iters
-    times = [100] * iters
-    alphas = [0.001] * iters
-    qhmc = QHMC(ham_sys = h1, ham_env_base=h2, env_betas=betas, sim_times=times, alphas=alphas, verbose=True)
+    h1 = harmonic_oscillator_hamiltonian(4)
+    h2 = harmonic_oscillator_hamiltonian(20)
+    iters = 10
+    betas = [1.] * iters
+    times = [100.] * iters
+    alphas = [0.05] * iters
+    qhmc = QHMC(ham_sys = h1, ham_env_base=h2, env_betas=betas, sim_times=times, alphas=alphas, verbose=False)
     qhmc.compute_betas_and_errors()
 
 if __name__ == "__main__":
     # test()
+    start = time_this.time()
     test_hamiltonian_gap()
+    end = time_this.time()
+    print("took this many seconds: ", end - start)
