@@ -211,22 +211,37 @@ We know that $\int C_{\lambda} dD = \sigma^2 \delta(i',j' | k',l')$ by construct
 \end{align}
 where we used Lemma \ref{lem:haar_two_moment} for the last line. This, combined with the eigenvalue integration, yields
 \begin{align}
-    \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{k,l} dG &= t^2 \sigma^2 \sum_{i',j',m,n} C_E \frac{\delta(i, j | k,l)}{\dim (\dim + 1)} (1 + \delta(i,j | m,n)).
+    \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{k,l} dG &= t^2 \sigma^2 \sum_{i',j',m,n} C_E(\rho; m,n; i,j) \frac{\delta(i, j | k,l)}{\dim (\dim + 1)} (1 + \delta(i,j | m,n)) \\
+    &= t^2 \sigma^2 \sum_{m,n} C_E(\rho; m,n; i,j) \frac{\delta(i, j | k,l)}{\dim + 1
+    } (1 + \delta(i,j | m,n))
 \end{align}
 
 Our next goal is to simplify the phase contributions to this second order correction. We use the fact that the Haar integration forces the index equalities $i = k, j = l$ to simplify the phase integrals. Substituting $E_{k,l} \mapsto E_{i,j}$ yields:
 \begin{align}
-    C_E &= 2 \rho_{m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})(s_1 - s_2)t} ds_1 ds_2 \\
-    &~ ~ - 2 \rho_{i,j} \parens{\int_0^1 \int_0^1 e^{i (E_{i,j} - E_{m,n})s_1 (1- s_2)t}s_1 ds_1 ds_2 + \int_0^1 \int_0^1 e^{-i(E_{i,j} - E_{m,n})s_2(1-s_1)t}((1-s_1)ds_1 ds_2)} \\
+    C_E &= 2 \rho_{m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})(s_1 - s_2)t} ds_1 ds_2 \nonumber \\
+    &~ ~ - 2 \rho_{i,j} \parens{\int_0^1 \int_0^1 e^{i (E_{i,j} - E_{m,n})s_1 (1- s_2)t}s_1 ds_1 ds_2 + \int_0^1 \int_0^1 e^{-i(E_{i,j} - E_{m,n})s_2(1-s_1)t}((1-s_1)ds_1 ds_2)} \label{eq:phase_int_equal_energy} \\
     &= \frac{4 \rho_{m,n}}{(E_{i,j} - E_{m,n})^2 t^2} (1 - \cos((E_{i,j} - E_{m,n})t)) - \frac{2 \rho_{i,j}}{(E_{i,j} - E_{m,n})^2 t^2} \parens{1 - e^{i (E_{i,j} - E_{m,n})t} + i (E_{i,j} - E_{m,n})t } \\
     & ~ ~ - \frac{2 \rho_{i,j}}{(E_{i,j} - E_{m,n})^2 t^2} \parens{1 - i (E_{i,j} - E_{m,n})t - e^{i(E_{i,j} - E_{m,n})t}} \\
     &= \frac{2}{(E_{i,j} - E_{m,n})^2 t^2} \parens{(2 \rho_{m,n} - \rho_{i,j}) - 2(\rho_{m,n} - \rho_{i,j}) \cos ((E_{i,j} - E_{m,n})t)}  
 \end{align}
 
-Note that this expression is indeterminate whenever $m = i, n = j$. For this simply note that each of the phases in the exponents of the integrals are 0, leading to $C_E = 0$. This means we can restrict ourselves to $m \neq i, n \neq j$. 
+Note that this expression is indeterminate whenever $m = i, n = j$. To get around this we revisit Eq. \eqref{eq:phase_int_equal_energy} and isolate the condition $E_{m,n} = E_{i,j}$. In this scenario we have
+\begin{align}
+    C_E(m,n;i,j | E_{m,n} = E_{i,j}) &= 2 \rho_{m,n} \int_0^1 \int_0^1 1 ds_1 ds_2 - 2 \rho_{i,j} \parens{\int_0^1 \int_0^1 s_1 ds_1 ds_2 + \int_0^1 \int_0^ (1-s_1) ds_1 ds_2} \\
+    &= 2 (\rho_{m,n} - \rho_{i,j}).
+\end{align}
+Now it is apparent that if $(m,n) = (i,j)$ this term clearly is zero. It is not obvious that in other situations this is zero. Expanding the $\rho_{m,n}$ term, we see that if $\beta_{env} = \beta_{sys}$
+\begin{align}
+    \rho_{m,n} &= \frac{e^{-\beta_{sys} E_m}}{\partfun_{sys}} \frac{e^{-\beta_{env} E_{n}}}{\partfun_{env}} \\
+    \xRightarrow{\beta_{env} = \beta_{sys}} \rho_{m,n} &= \frac{e^{-\beta_{sys}E_{m,n}}}{\partfun_{sys} \partfun_{env}} \\
+    \xRightarrow{E_{m,n} = E_{i,j}} \rho_{m,n} &= \rho_{i,j}.
+\end{align}
+This tells us that when the system has thermalized ($\rho = \partfun_{sys}^{-1} e^{-\beta H_{sys}} \otimes \partfun_{env}^{-1} e^{-\beta H_{env}}$), this contribution is zero. However at non-equilibrium states where $\beta_{env} \neq \beta_{sys}$ we cannot neglect these non-zero contributions. 
+
+For this simply note that each of the phases in the exponents of the integrals are 0, leading to $C_E = 0$. This means we can restrict ourselves to $m \neq i, n \neq j$. 
 
 \begin{align}
-    \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{i,j} dG &= \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) \neq (i,j)} \frac{(2 \rho_{m,n} - \rho_{i,j}) - 2(\rho_{m,n} - \rho_{i,j}) \cos ((E_{i,j} - E_{m,n})t)}{(E_{i,j} - E_{m,n})^2}
+    \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{i,j} dG &= \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} \neq E_{i,j}} \frac{(2 \rho_{m,n} - \rho_{i,j}) - 2(\rho_{m,n} - \rho_{i,j}) \cos ((E_{i,j} - E_{m,n})t)}{(E_{i,j} - E_{m,n})^2}
 \end{align}
 
 Now lets look at the specific system of a truncated harmonic oscillator, which implies $E_{i,j} = \hbar \omega (1 + i + j) = 1 + 1 + j$, as we are not concerned with the specific scaling of $\omega$. This gives us the thermal state of $\rho = \sum_{i,j} \ketbra{i}{i} \otimes \ketbra{j}{j}\rho_{i,j} = \frac{e^{-\beta (1 + i + j)}}{\sum_{e^{-\beta(1+  i + j)}}} \ketbra{i}{i} \otimes \ketbra{j}{j}$
