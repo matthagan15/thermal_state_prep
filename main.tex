@@ -227,7 +227,7 @@ Our next goal is to simplify the phase contributions to this second order correc
 
 Note that this expression is indeterminate whenever $m = i, n = j$. To get around this we revisit Eq. \eqref{eq:phase_int_equal_energy} and isolate the condition $E_{m,n} = E_{i,j}$. In this scenario we have
 \begin{align}
-    C_E(m,n;i,j | E_{m,n} = E_{i,j}) &= 2 \rho_{m,n} \int_0^1 \int_0^1 1 ds_1 ds_2 - 2 \rho_{i,j} \parens{\int_0^1 \int_0^1 s_1 ds_1 ds_2 + \int_0^1 \int_0^ (1-s_1) ds_1 ds_2} \\
+    C_E(m,n;i,j | E_{m,n} = E_{i,j}) &= 2 \rho_{m,n} \int_0^1 \int_0^1 1 ds_1 ds_2 - 2 \rho_{i,j} \parens{\int_0^1 \int_0^1 s_1 ds_1 ds_2 + \int_0^1 \int_0^1 (1-s_1) ds_1 ds_2} \\
     &= 2 (\rho_{m,n} - \rho_{i,j}).
 \end{align}
 Now it is apparent that if $(m,n) = (i,j)$ this term clearly is zero. It is not obvious that in other situations this is zero. Expanding the $\rho_{m,n}$ term, we see that if $\beta_{env} = \beta_{sys}$
@@ -236,40 +236,23 @@ Now it is apparent that if $(m,n) = (i,j)$ this term clearly is zero. It is not 
     \xRightarrow{\beta_{env} = \beta_{sys}} \rho_{m,n} &= \frac{e^{-\beta_{sys}E_{m,n}}}{\partfun_{sys} \partfun_{env}} \\
     \xRightarrow{E_{m,n} = E_{i,j}} \rho_{m,n} &= \rho_{i,j}.
 \end{align}
-This tells us that when the system has thermalized ($\rho = \partfun_{sys}^{-1} e^{-\beta H_{sys}} \otimes \partfun_{env}^{-1} e^{-\beta H_{env}}$), this contribution is zero. However at non-equilibrium states where $\beta_{env} \neq \beta_{sys}$ we cannot neglect these non-zero contributions. 
+This tells us that when the system has thermalized ($\rho = \partfun_{sys}^{-1} e^{-\beta H_{sys}} \otimes \partfun_{env}^{-1} e^{-\beta H_{env}}$), equal energy contributions ($E_{m,n} = E_{i,j}$) are zero. However at non-equilibrium states where $\beta_{env} \neq \beta_{sys}$ we cannot neglect these non-zero contributions. 
 
 For this simply note that each of the phases in the exponents of the integrals are 0, leading to $C_E = 0$. This means we can restrict ourselves to $m \neq i, n \neq j$. 
 
 \begin{align}
-    \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{i,j} dG &= \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} \neq E_{i,j}} \frac{(2 \rho_{m,n} - \rho_{i,j}) - 2(\rho_{m,n} - \rho_{i,j}) \cos ((E_{i,j} - E_{m,n})t)}{(E_{i,j} - E_{m,n})^2}
+    \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{i,j} dG &= \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} \neq E_{i,j}} \frac{(2 \rho_{m,n} - \rho_{i,j}) - 2(\rho_{m,n} - \rho_{i,j}) \cos ((E_{i,j} - E_{m,n})t)}{(E_{i,j} - E_{m,n})^2} \nonumber \\
+    &~ + \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} = E_{i,j}} 2 (\rho_{m,n} - \rho_{i,j}) \label{eq:second_order_final}
 \end{align}
 
-Now lets look at the specific system of a truncated harmonic oscillator, which implies $E_{i,j} = \hbar \omega (1 + i + j) = 1 + 1 + j$, as we are not concerned with the specific scaling of $\omega$. This gives us the thermal state of $\rho = \sum_{i,j} \ketbra{i}{i} \otimes \ketbra{j}{j}\rho_{i,j} = \frac{e^{-\beta (1 + i + j)}}{\sum_{e^{-\beta(1+  i + j)}}} \ketbra{i}{i} \otimes \ketbra{j}{j}$
+\subsection{Harmonic Oscillator Fixed Point}
+Now consider the situation of a system and environment which are both harmonic oscillators of frequency $\omega$, $H_{sys} = \hbar \omega \sum_{i=0}^{N_{sys}} (0.5 + i) \ketbra{i}{i}$ and $H_{env} = \hbar \omega \sum_{i=0}^{N_{env}} (0.5 + i) \ketbra{i}{i}$, yeilding $H = \sum_{i,j} \hbar \omega (1 + i + j) \ketbra{i,j}{i,j}$. We set $\hbar = \omega = 1$ to avoid dimensionful quantities. 
 
-% Now we make the simplifying assumption that our input is a tensor product of a system thermal state and an environment thermal state, symbolically $\partfun_{sys}^{-1} e^{-\beta_{sys} H_{sys}} \otimes \partfun_{env}^{-1} e^{-\beta_{env}H_{env}}$. This allows us to write the state as diagonal in the Hamiltonian basis
-% \begin{align}
-%    2 t^2 \sum_{i',j',k',l', m,n} \int_0^1 \int_0^1 e^{i (E_{i,j} - E_{m,n}) s_1 t}  e^{i (E_{m,n} - E_{k,l})s_2 t} \bra{i',j'} D \ket{i',j'} \bra{k',l'} D \ket{k', l'} \bra{m,n} \rho \ket{m,n} \nonumber \\
-%    \times \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{k',l'} \bra{k',l'} U_G^\dagger \ket{k,l}. \label{eq:second_order_duhamel_factored}
-% \end{align}
+Our hunch is that the second order correction of $\Phi(\rho)$ vanishes whenever $\rho$ is a thermal state of the joint system-environment hamiltonian, i.e. $\rho = \sum_{i,j} \ketbra{i}{i} \otimes \ketbra{j}{j}\rho_{i,j} = \frac{e^{-\beta (1 + i + j)}}{\sum_{e^{-\beta(1+  i + j)}}} \ketbra{i}{i} \otimes \ketbra{j}{j}$. Before we compute this second-order correction, note that the assumption of a thermal state input eliminates the sum over equal energy contributions in Eq. \eqref{eq:second_order_final}. Further, in the interest of simplifying the expression as much as possible, we will only consider the time-averaged contributions $\frac{1}{T} \int_0^T \Phi(\rho, t) dt$, this pretty much just eliminates the cosine term in Eq. \eqref{eq:second_order_final}.
 
+Sum
 
 
-% Now we turn our attention to the eigenvalue integral. We aren't going to use GUE anymore, instead we are just going to choose some values i.i.d from a similar distribution. The exact distribution is not critically important, for now we assume that the covariance is a multiple of the identity as $Cov(\lambda_{i,j}, \lambda_{k,l}) = \delta_{i,k} \delta_{j,l} \sigma^2$. This leads to
-% \begin{equation}
-%     \int \bra{i',j'} D \ket{i',j'} \bra{k',l'} D \ket{k',l'} ~dD = \delta_{i',k'} \delta_{j',l'} \sigma^2.
-% \end{equation}
-% Plugging these two expressions into Eq. \eqref{eq:second_order_duhamel_factored}, performing the integration over $dG = dD dU_G$ and summing over $k', l'$ we get
-% \begin{align}
-%     2 t^2 \sigma^2 \sum_{i',j',m,n} \bra{m,n} \rho \ket{m,n} \int_0^1 \int_0^1 e^{i (E_{i,j} - E_{m,n}) s_1 t}  e^{i (E_{m,n} - E_{k,l})s_2 t} ds_1 ds_2 \nonumber \\ 
-%     \times \int \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{k',l'} \bra{k',l'} U_G^\dagger \ket{k,l} dU_G \\
-%     =2 t^2 \sigma^2 \sum_{i',j',m,n} \bra{m,n} \rho \ket{m,n} \frac{e^{i(E_{i,j} - E_{m,n})t} - 1}{(E_{i,j} - E_{m,n})t} \frac{e^{i(E_{m,n} - E_{k,l})t} - 1}{(E_{k,l} - E_{m,n})t} \frac{\delta(i,j | k,l)}{\dim^2 - 1} \parens{\delta(i,j | m,n) + \frac{\dim - 1 - \delta(i,j | m,n)}{\dim}}
-% \end{align}
-% \begin{align}
-%     - 2 t^2 \sigma^2 \sum_{i',j',k',l',m,n} \int_0^1 \int_0^1 e^{i (E_{i,j} - E_{m,n}) s_1 t}  e^{i (E_{m,n} - E_{k,l})s_2 t} \bra{m,n} \rho \ket{m,n}  \frac{\delta_{i,k} \delta_{j,l}  \delta_{i',k'} \delta_{j',l'}}{\dim_{env \otimes sys} (\dim_{env \otimes sys}^2 - 1)} \\
-%     - \frac{2 t^2 \sigma^2 \delta_{i,k} \delta_{j,l}}{\dim_{env \otimes sys}^2 - 1} \sum_{m,n} \int_0^1 \int_0^1 e^{i (E_{i,j} - E_{m,n}) s_1 t}  e^{i (E_{m,n} - E_{k,l})s_2 t} \bra{m,n} \rho \ket{m,n} \\
-%     - \frac{2 t^2 \sigma^2 \delta_{i,k} \delta_{j,l}}{\dim_{env \otimes sys}^2 - 1} \sum_{m,n} \bra{m,n} \rho \ket{m,n} \frac{(e^{i(E_{i,j} - E_{m,n})t} - 1)}{(E_{i,j} - E_{m,n})t} \frac{(e^{i(E_{m,n} - E_{k,l})t} - 1)}{(E_{i,j} - E_{m,n})t} \\
-%     - \frac{4 \sigma^2 \delta_{i,k} \delta_{j,l}}{\dim_{env \otimes sys}^2 - 1} \sum_{m,n} \bra{m,n} \rho \ket{m,n} \frac{1 - \cos ((E_{i,j} - E_{m,n})t)}{(E_{i,j} - E_{m,n})^2}
-% \end{align}
 
 
 % Now we compute the second term, Eq. \eqref{eq:second_order_duhamel_two}. We avoid duplicating similar steps to the computation of the first computation and simply state the results (aka I need to write this up in an appendix.)
