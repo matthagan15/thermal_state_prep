@@ -279,7 +279,6 @@ dependencies = [
 name = "ndarray-linalg"
 version = "0.16.0"
 dependencies = [
- "blas-src",
  "cauchy",
  "katexit",
  "lax",
@@ -362,6 +361,8 @@ dependencies = [
  "ndarray",
  "ndarray-linalg",
  "num-complex 0.4.2",
+ "rand",
+ "rand_distr",
  "rayon",
 ]
 

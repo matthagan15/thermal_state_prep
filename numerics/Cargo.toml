@@ -12,3 +12,5 @@ blas-src = {version = "0.8.0", features=["accelerate"]}
 num-complex = "*"
 ndarray-linalg = {version = "*", path = "/Users/matt/repos/ndarray-linalg/ndarray-linalg"}
 rayon = "1.5.3"
+rand = "0.8.5"
+rand_distr = "0.4.3"

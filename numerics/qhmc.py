@@ -67,7 +67,7 @@ class QHMC:
                 alphas = [0.01],
                 ham_sys=np.zeros((2,2)),
                 ham_env_base=np.diag([0.5, 1.5]),
-                num_monte_carlo=100,
+                num_monte_carlo=500,
                 verbose=False
                 ):
         if len(env_betas) != len(sim_times) or len(sim_times) != len(alphas):
@@ -127,8 +127,7 @@ class QHMC:
         ret_betas, ret_errors = [], []
         rho_diags = []
         for ix in range(len(self.betas)):
-            if self.verbose:
-                print("percent done:", float(ix) / len(self.betas))
+            print("percent done:", float(ix) / len(self.betas))
             rho = self.channel(rho, self.betas[ix], self.alphas[ix], self.times[ix])
             # ret_betas.append(out_beta)
             # ret_errors.append(error)
@@ -156,12 +155,12 @@ class QHMC:
             plt.show()
 
 def test_hamiltonian_gap():
-    h1 = harmonic_oscillator_hamiltonian(4)
-    h2 = harmonic_oscillator_hamiltonian(20)
-    iters = 10
+    h1 = harmonic_oscillator_hamiltonian(20)
+    h2 = harmonic_oscillator_hamiltonian(10)
+    iters = 100
     betas = [1.] * iters
     times = [100.] * iters
-    alphas = [0.05] * iters
+    alphas = [0.01] * iters
     qhmc = QHMC(ham_sys = h1, ham_env_base=h2, env_betas=betas, sim_times=times, alphas=alphas, verbose=False)
     qhmc.compute_betas_and_errors()
 
