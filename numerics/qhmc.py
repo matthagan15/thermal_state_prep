@@ -39,6 +39,16 @@ def harmonic_oscillator_hamiltonian(dimensions, gap = 1.0):
     diags = [0.5 + n * gap for n in range(dimensions)]
     return np.diag(diags)
 
+def pathological_hamiltonian(dimensions):
+    diags = []
+    for ix in range(dimensions):
+        diags.append(10. * np.log(1. + 1.* ix))
+    return np.diag(diags)
+
+def sqrt_hamiltonian(dimensions):
+    diags = [np.sqrt(ix) for ix in range(dimensions)]
+    return np.diag(diags)
+
 # returns (beta, fro error)
 def find_best_beta(rho, ham, verbose=False):
     dims = [Real(0.0, BETA_MAX)]
@@ -124,44 +134,53 @@ class QHMC:
             print("#"*75)
             print("[compute_betas_and_errors] start time:", start_time)
         rho = thermal_state(self.ham_sys, self.sys_start_beta)
+        ideal_output = thermal_state(self.ham_sys, self.betas[-1])
         ret_betas, ret_errors = [], []
         rho_diags = []
+        sys_fro_errors = []
         for ix in range(len(self.betas)):
             print("percent done:", float(ix) / len(self.betas))
             rho = self.channel(rho, self.betas[ix], self.alphas[ix], self.times[ix])
             # ret_betas.append(out_beta)
             # ret_errors.append(error)
-            # rho_diags.append(np.abs(np.diagonal(rho)))
-        print("fro error w/ ideal:", np.linalg.norm(rho - thermal_state(self.ham_sys, self.betas[0]), ord='fro'))
+            rho_diags.append(np.abs(np.diagonal(rho)))
+            sys_fro_errors.append(np.linalg.norm(rho - ideal_output))
+        # print("fro error w/ ideal:", np.linalg.norm(rho - thermal_state(self.ham_sys, self.betas[0]), ord='fro'))
+        print("final frobenius error compared to ideal:", sys_fro_errors[-1])
         print("done. total time:", time_this.time() - start_time)
         if self.verbose:
             for ix in range(len(rho_diags)):
                 print("ix:", ix)
-                print("ret_beta:", ret_betas[ix])
-                print("ret_error:", ret_errors[ix])
+                # print("ret_beta:", ret_betas[ix])
+                print("ret_error:", sys_fro_errors[ix])
                 print("params: alpha=", self.alphas[ix], ", env_beta=", self.betas[ix], ", sim_time=", self.times[ix])
                 print("Ground state prob:", rho_diags[ix][0])
-                true = np.diagonal(thermal_state(self.ham_sys, self.betas[ix]))
-                l = "ix=" + str(ix) + ", e: {:4.2f}".format(ret_errors[ix])
+                l = "#refreshes=" + str(ix) + ", err: {:4.2f}".format(sys_fro_errors[ix])
                 # We want to plot five points equally spaced.
                 plot_ix_length = math.ceil(len(rho_diags) / 5.)
-                if ix % plot_ix_length == 0:
+                if ix % 40 == 39:
                     plt.plot(rho_diags[ix], label=l)
             avg_env_state = thermal_state(self.ham_env_base, np.mean(self.betas))
-            plt.plot(np.abs(np.diagonal(avg_env_state)), '-.', label="avg_env_state")
-                # plt.plot(range(rho_diags[ix].shape[0]), true, "--", label="error:" + str(ret_errors[ix]))
+            plt.plot(np.abs(np.diagonal(ideal_output)), '-.', label="ideal output")
+            # plt.plot(np.diagonal(self.ham_sys), '+', label="hamiltonian")
+            plt.title("Thermalization of sqrt(x) w/ single qubit")
+            plt.xlabel("Eigenvector Number")
+            plt.ylabel("State Overlap")
+            # plt.plot(range(rho_diags[ix].shape[0]), true, "--", label="error:" + str(ret_errors[ix]))
 
             plt.legend()
             plt.show()
 
 def test_hamiltonian_gap():
-    h1 = harmonic_oscillator_hamiltonian(20)
-    h2 = harmonic_oscillator_hamiltonian(10)
-    iters = 100
+    # h1 = harmonic_oscillator_hamiltonian(10)
+    h1 = sqrt_hamiltonian(10)
+    h2 = harmonic_oscillator_hamiltonian(2)
+    # This took 650 seconds for 50 iters and resulted in final error around 74. Probably need to do ~300 iters.
+    iters = 200
     betas = [1.] * iters
     times = [100.] * iters
     alphas = [0.01] * iters
-    qhmc = QHMC(ham_sys = h1, ham_env_base=h2, env_betas=betas, sim_times=times, alphas=alphas, verbose=False)
+    qhmc = QHMC(ham_sys = h1, ham_env_base=h2, env_betas=betas, sim_times=times, alphas=alphas, verbose=True)
     qhmc.compute_betas_and_errors()
 
 if __name__ == "__main__":

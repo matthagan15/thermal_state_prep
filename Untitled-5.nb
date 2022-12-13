@@ -1,0 +1,133 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 13.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      3919,        123]
+NotebookOptionsPosition[      3443,        106]
+NotebookOutlinePosition[      3839,        122]
+CellTagsIndexPosition[      3796,        119]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(", 
+   RowBox[{"1", "/", "T"}], ")"}], " ", 
+  RowBox[{"Integrate", "[", 
+   RowBox[{
+    RowBox[{"Integrate", "[", 
+     RowBox[{
+      RowBox[{
+       SuperscriptBox["t", "2"], 
+       RowBox[{"Exp", "[", 
+        RowBox[{"I", " ", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"eij", " ", "s1"}], " ", "+", " ", 
+           RowBox[{"emn", " ", 
+            RowBox[{"(", 
+             RowBox[{"s2", " ", "-", " ", "s1"}], ")"}]}], " ", "-", " ", 
+           RowBox[{"ekl", " ", "s2"}]}], ")"}], " ", "t"}], "]"}]}], ",", 
+      RowBox[{"{", 
+       RowBox[{"t", ",", "0", ",", "T"}], "}"}]}], "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"s1", ",", "0", ",", "1"}], "}"}], ",", " ", 
+    RowBox[{"{", 
+     RowBox[{"s2", ",", "0", ",", "1"}], "}"}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.874768778792204*^9, 3.874768797309115*^9}, {
+  3.874768859756899*^9, 3.8747688997875357`*^9}},
+ CellLabel->"In[41]:=",ExpressionUUID->"018ede4d-a72d-4e3d-b13d-561dc2d3c6f2"],
+
+Cell[BoxData[
+ FractionBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{"\[ImaginaryI]", " ", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{
+        SuperscriptBox["\[ExponentialE]", 
+         RowBox[{"\[ImaginaryI]", " ", 
+          RowBox[{"(", 
+           RowBox[{"eij", "-", "emn"}], ")"}], " ", "T"}]], " ", 
+        RowBox[{"(", 
+         RowBox[{"eij", "-", "ekl"}], ")"}]}], "+", "ekl", "-", "emn", "+", 
+       RowBox[{
+        SuperscriptBox["\[ExponentialE]", 
+         RowBox[{"\[ImaginaryI]", " ", 
+          RowBox[{"(", 
+           RowBox[{"eij", "-", "ekl"}], ")"}], " ", "T"}]], " ", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"-", "eij"}], "+", "emn"}], ")"}]}]}], ")"}]}], 
+    RowBox[{"eij", "-", "ekl"}]], "-", 
+   FractionBox[
+    RowBox[{
+     SuperscriptBox["\[ExponentialE]", 
+      RowBox[{
+       RowBox[{"-", "\[ImaginaryI]"}], " ", 
+       RowBox[{"(", 
+        RowBox[{"ekl", "-", "emn"}], ")"}], " ", "T"}]], " ", 
+     RowBox[{"(", 
+      RowBox[{"eij", "-", "emn"}], ")"}], " ", 
+     RowBox[{"(", 
+      RowBox[{"\[ImaginaryI]", "+", 
+       RowBox[{
+        SuperscriptBox["\[ExponentialE]", 
+         RowBox[{"\[ImaginaryI]", " ", 
+          RowBox[{"(", 
+           RowBox[{"ekl", "-", "emn"}], ")"}], " ", "T"}]], " ", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"-", "\[ImaginaryI]"}], "-", 
+          RowBox[{"ekl", " ", "T"}], "+", 
+          RowBox[{"emn", " ", "T"}]}], ")"}]}]}], ")"}]}], 
+    RowBox[{"ekl", "-", "emn"}]]}], 
+  RowBox[{
+   SuperscriptBox[
+    RowBox[{"(", 
+     RowBox[{"eij", "-", "emn"}], ")"}], "2"], " ", 
+   RowBox[{"(", 
+    RowBox[{"ekl", "-", "emn"}], ")"}], " ", "T"}]]], "Output",
+ CellChangeTimes->{3.874768798210651*^9, 3.874808568686963*^9},
+ CellLabel->"Out[41]=",ExpressionUUID->"ffc62575-09d1-4061-93f8-1cc9a8f07022"]
+}, Open  ]]
+},
+WindowSize->{808, 816},
+WindowMargins->{{36, Automatic}, {16, Automatic}},
+FrontEndVersion->"13.0 for Mac OS X ARM (64-bit) (February 4, 2022)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"c9c5f0a3-98fa-4d75-92d5-a74c718a5187"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 1019, 27, 56, "Input",ExpressionUUID->"018ede4d-a72d-4e3d-b13d-561dc2d3c6f2"],
+Cell[1602, 51, 1825, 52, 74, "Output",ExpressionUUID->"ffc62575-09d1-4061-93f8-1cc9a8f07022"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
+
