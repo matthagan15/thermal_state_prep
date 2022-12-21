@@ -246,6 +246,42 @@ For this simply note that each of the phases in the exponents of the integrals a
 \end{align}
 
 \subsection{Convergence to low temperature system state}
+For simplicity later on we make the following definitions:
+\begin{align}
+    T(\rho) &:= \alpha^2 \int \partrace{Env}{ \frac{\partial^2}{\partial \alpha^2} \Phi_G (\rho) \bigg_{\alpha=0} } dG \\
+    R(\rho) &:= \Phi(\rho) - \rho - T(\rho),
+\end{align} 
+aka the remainder term in the $\alpha$ expansion. It should be clear that $\norm{R} \in \bigo{\alpha^3}$ and $\norm{T} \in \bigo{\alpha^2}$.
+
+\subsection{Linearization of $\beta$}
+In order to show convergence to a thermal state we now will linearize the one norm of our channel with respect to the difference between the system's starting inverse temperature and the environment's inverse temperature, $\beta_{env} - \beta_{sys} := \gamma$. Our goal is to show $\norm{\Phi(\rho(\gamma)) - \rho(0)}_1 \leq \norm{\rho(\gamma) - \rho(0)}_1$, where $\rho(\gamma) = e^{- \beta_{sys} H_sys} \partfun_{sys}(\gamma)^{-1} = e^{-(\beta_{env} - \gamma) H_{sys}} \partfun_{sys}(\gamma)^{-1}$, where $\partfun_{sys}(\gamma) = \trace{e^{-(\beta_{env} - \gamma) H_{sys}}}$.
+
+We start by computing $\frac{\partial}{\partial \gamma}\rho(\gamma)$, which will be used in linearizations of the channel:
+\begin{align}
+    \frac{\partial}{\partial \gamma} \rho(\gamma) &= \frac{\partial}{\partial \gamma} \parens{e^{-\beta_{env} H_{sys} + \gamma H_{sys}} \partfun_{sys}(\gamma)^{-1}} \\
+    &= H_{sys} \frac{e^{-\beta_{env} H_{sy} + \gamma H_{sys}}}{\partfun_{sys}(\gamma)} - \frac{e^{-\beta_{env} H_{sys} + \gamma H_{sys}}}{\partfun_{sys}(\gamma)^2} \frac{\partial \partfun_{sys}(\gamma)}{\partial \gamma} \\
+    &= \frac{e^{-\beta_{env} H_{sy} + \gamma H_{sys}}}{\partfun_{sys}(\gamma)} \parens{H_{sys} - \frac{\trace{H_{sys} e^{-\beta_{env} H_{sys} + \gamma H_{sys}}} }{\partfun_{sys}(\gamma)}} \\
+    &= \rho(\gamma) \parens{H_{sys} - \trace{H_{sys} \rho(\gamma)}}.
+\end{align}
+This allows us to compute the linearization of the channel:
+\begin{align}
+    \Phi(\rho(\gamma)) = \Phi(\rho(0)) + \gamma \frac{\partial}{\partial \gamma} \Phi(\rho(\gamma))\bigg|_{\gamma = 0} + \bigo{\gamma^2}
+\end{align}
+
+Carrying the linearization to the second order term results in a lot of factors of the form $\frac{e^{-\beta_E E_{m,n}}}{\partfun(0)} (\bra{m} H_{sys} \ket{m} - \trace{\rho(0) H_{sys}})$. We need to know when these are negative, so here we go:
+\begin{align}
+    \frac{e^{-\beta_E E_{m,n}}}{\partfun(0)} \parens{\bra{m} H_{sys} \ket{m} - \trace{\rho(0) H_{sys}}} & \leq 0 \\
+    \implies \bra{m} H_{sys} \ket{m} \leq \trace{\rho(0) H_{sys}}
+\end{align}
+What I want to know is what is: (I don't think the partition function should be a function of x, think of this as just selecting the energy to evaluate the above. By selecting a different energy I'm not changing the partition function, but I'm changing this specific matrix element)
+\begin{align}
+    \frac{\partial}{\partial x} \frac{e^{-\beta_E (x + c)}}{\partfun}(x - E) &= (-\beta_E) \frac{e^{-\beta_E (x + c)}}{\partfun}(x - E) + \frac{e^{-\beta_E (x + c)}}{\partfun} \\
+    &= \frac{e^{-\beta_E (x + c)}}{\partfun} \parens{1 + \beta_E (E - x)}
+\end{align}
+
+
+
+\subsection{Harmonic Oscillator Fixed Point}
 Now consider the situation of a system and environment which are both harmonic oscillators of frequency $\omega$, $H_{sys} = \hbar \omega \sum_{i=0}^{N_{sys}} (0.5 + i) \ketbra{i}{i}$ and $H_{env} = \hbar \omega \sum_{i=0}^{N_{env}} (0.5 + i) \ketbra{i}{i}$, yeilding $H = \sum_{i,j} \hbar \omega (1 + i + j) \ketbra{i,j}{i,j}$. We set $\hbar = \omega = 1$ to avoid dimensionful quantities. 
 
 Our hunch is that the second order correction of $\Phi(\rho)$ vanishes whenever $\rho$ is a thermal state of the joint system-environment hamiltonian, i.e. $\rho = \sum_{i,j} \ketbra{i}{i} \otimes \ketbra{j}{j}\rho_{i,j} = \frac{e^{-\beta (1 + i + j)}}{\sum_{e^{-\beta(1+  i + j)}}} \ketbra{i}{i} \otimes \ketbra{j}{j}$. Before we compute this second-order correction, note that the assumption of a thermal state input eliminates the sum over equal energy contributions in Eq. \eqref{eq:second_order_final}. Further, in the interest of simplifying the expression as much as possible, we will only consider the time-averaged contributions $\frac{1}{T} \int_0^T \Phi(\rho, t) dt$, this pretty much just eliminates the cosine term in Eq. \eqref{eq:second_order_final}.
