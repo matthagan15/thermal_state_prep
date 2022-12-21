@@ -245,13 +245,26 @@ For this simply note that each of the phases in the exponents of the integrals a
     &~ + \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} = E_{i,j}} 2 (\rho_{m,n} - \rho_{i,j}) \label{eq:second_order_final}
 \end{align}
 
-\subsection{Harmonic Oscillator Fixed Point}
+\subsection{Convergence to low temperature system state}
 Now consider the situation of a system and environment which are both harmonic oscillators of frequency $\omega$, $H_{sys} = \hbar \omega \sum_{i=0}^{N_{sys}} (0.5 + i) \ketbra{i}{i}$ and $H_{env} = \hbar \omega \sum_{i=0}^{N_{env}} (0.5 + i) \ketbra{i}{i}$, yeilding $H = \sum_{i,j} \hbar \omega (1 + i + j) \ketbra{i,j}{i,j}$. We set $\hbar = \omega = 1$ to avoid dimensionful quantities. 
 
 Our hunch is that the second order correction of $\Phi(\rho)$ vanishes whenever $\rho$ is a thermal state of the joint system-environment hamiltonian, i.e. $\rho = \sum_{i,j} \ketbra{i}{i} \otimes \ketbra{j}{j}\rho_{i,j} = \frac{e^{-\beta (1 + i + j)}}{\sum_{e^{-\beta(1+  i + j)}}} \ketbra{i}{i} \otimes \ketbra{j}{j}$. Before we compute this second-order correction, note that the assumption of a thermal state input eliminates the sum over equal energy contributions in Eq. \eqref{eq:second_order_final}. Further, in the interest of simplifying the expression as much as possible, we will only consider the time-averaged contributions $\frac{1}{T} \int_0^T \Phi(\rho, t) dt$, this pretty much just eliminates the cosine term in Eq. \eqref{eq:second_order_final}.
 
-Sum
-
+First define $\rho(\gamma) := \frac{e^{-(\beta_E -\gamma) H_{sys}}}{\partfun_{sys}(\gamma)}$
+Our main goal is to show $\norm{\Phi(\rho(\gamma)) - \rho(0)} \leq \norm{\rho(\gamma) - \rho(0)}$, in other words that a higher temperature state ($\beta_{sys} = \beta_{env} - \gamma$) gets closer to a lower temperature state after application of $\Phi$. In order to do this we first use our power series of $\Phi$ in terms of the coupling constant $\alpha$ and use the Schatten-1 norm:
+\begin{align}
+    \norm{\Phi(\rho(\gamma)) - \rho(0)}_1 &= \norm{\rho(\gamma) + T(\rho(\gamma)) + R(\rho(\gamma)) - \rho(0)}_1 \\
+    &= \norm{ \sum_{i} \parens{ e^{-(\beta_{env} + \gamma) E_i} \partfun_{S}^{-1}(\gamma) + T_{i,i}(\rho(\gamma)) - e^{-\beta_{env} E_i} \partfun_{S}^{-1}(\gamma) }\ketbra{i}{i}} + \bigo{\alpha^{4}} \\
+    &= \sum_i \abs{ e^{-(\beta_{env} + \gamma) E_i} \partfun_{S}^{-1}(\gamma) + T_{i,i}(\rho(\gamma)) - e^{-\beta_{env} E_i} \partfun_{S}^{-1}(\gamma) } + \bigo{\alpha^4},
+\end{align}
+where we can avoid using the triangle inequality as our operator is already diagonalized. \todo{Does the $\bigo{\alpha^4}$ term not pick up dimensional factors from the schatten-1 norm?} Now we have to use a linearization of the operator $\rho(\gamma)$ as well as the second order corrections $T_{i,i}$.
+\begin{align}
+    \rho(\gamma) = \frac{e^{-\beta_{env} H_{sys}}}{\partfun_{sys}(\gamma=0)} + \gamma \frac{\partial}{\partial \gamma} \frac{e^{-\beta_{env} H_{sys} + \gamma H_{sys}}}{\partfun_{sys}(\gamma)} \bigg|_{\gamma=0} + \bigo{\gamma^2}.
+\end{align}
+The derivative is easy to compute (I think I wrote this down on the overleaf) 
+\begin{equation}
+    \frac{\partial}{\partial \gamma} \frac{e^{-\beta_{env} H_{sys} + \gamma H_{sys}}}{\partfun_{sys}(\gamma)} = e^{-\beta_{env}}
+\end{equation}
 
 
 
