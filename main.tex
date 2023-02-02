@@ -245,13 +245,13 @@ For this simply note that each of the phases in the exponents of the integrals a
     &~ + \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} = E_{i,j}} 2 (\rho_{m,n} - \rho_{i,j}) \label{eq:second_order_final}
 \end{align}
 
-\subsection{Convergence to low temperature system state}
-For simplicity later on we make the following definitions:
-\begin{align}
-    T(\rho) &:= \alpha^2 \int \partrace{Env}{ \frac{\partial^2}{\partial \alpha^2} \Phi_G (\rho) \bigg_{\alpha=0} } dG \\
-    R(\rho) &:= \Phi(\rho) - \rho - T(\rho),
-\end{align} 
-aka the remainder term in the $\alpha$ expansion. It should be clear that $\norm{R} \in \bigo{\alpha^3}$ and $\norm{T} \in \bigo{\alpha^2}$.
+% \subsection{Convergence to low temperature system state}
+% For simplicity later on we make the following definitions:
+% \begin{align}
+%     T(\rho) &:= \alpha^2 \int \partrace{Env}{ \frac{\partial^2}{\partial \alpha^2} \Phi_G (\rho) \bigg_{\alpha=0} } dG \\
+%     R(\rho) &:= \Phi(\rho) - \rho - T(\rho),
+% \end{align} 
+% aka the remainder term in the $\alpha$ expansion. It should be clear that $\norm{R} \in \bigo{\alpha^3}$ and $\norm{T} \in \bigo{\alpha^2}$.
 
 \subsection{Linearization of $\beta$}
 In order to show convergence to a thermal state we now will linearize the one norm of our channel with respect to the difference between the system's starting inverse temperature and the environment's inverse temperature, $\beta_{env} - \beta_{sys} := \gamma$. Our goal is to show $\norm{\Phi(\rho(\gamma)) - \rho(0)}_1 \leq \norm{\rho(\gamma) - \rho(0)}_1$, where $\rho(\gamma) = e^{- \beta_{sys} H_sys} \partfun_{sys}(\gamma)^{-1} = e^{-(\beta_{env} - \gamma) H_{sys}} \partfun_{sys}(\gamma)^{-1}$, where $\partfun_{sys}(\gamma) = \trace{e^{-(\beta_{env} - \gamma) H_{sys}}}$.
