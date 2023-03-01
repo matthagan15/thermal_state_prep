@@ -2,7 +2,7 @@
 \usepackage[utf8]{inputenc}
 
 \usepackage{amsmath,amsthm, amssymb}
-\usepackage[margin=1.5cm]{geometry}
+\usepackage[margin=3cm]{geometry}
 \usepackage{mathtools}
 \usepackage{dsfont}
 \usepackage{xcolor}
@@ -115,6 +115,19 @@ Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the r
 \section{Fixed Points}
 Our first goal is to show that $\rho(\beta, \beta)$ is a fixed point, at least approximately, of the channel $\Phi$. We then aim to show that it is an attractor for states of the form $\rho(\beta_S, \beta_E)$ with $\beta_E > \beta_S$. 
 
+\begin{lemma}[Second Order Correction]
+    Given a system Hamiltonian $H_{S} = \sum_{i = 1}^{\dim_S} E_i \ketbra{i}{i}$, an environment Hamiltonian $H_{E} = \sum_{j = 1}^{\dim_E} E_j \ketbra{j}{j}$, a simulation time $t$, and coupling coefficient $\alpha$ we can simulate the overall system-environment evolution of Hamiltonian $H = H_S \otimes \identity + \identity \otimes H_E$ with randomized interaction $G$ as
+    \begin{align}
+        \Phi(\rho) &= \int  \partrace{\mathcal{H}_E}{e^{+i (H + \alpha G)t} \parens{\rho \otimes \frac{e^{-\beta_E H_E}}{\partfun_E(\beta_E)} } e^{-i (H + \alpha G) t} } dG \\
+        &= \rho + \alpha^2 \sum_{i,j} T_{i,j} \ketbra{i,j}{i,j} + \bigo{\alpha^3},
+    \end{align}
+    where 
+    
+    \begin{align}
+        T_{i,j} &\coloneqq \frac{\sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} \neq E_{i,j}} \frac{2 \rho_{m,n}(1 - \cos ((E_{i,j} - E_{m,n})t)) + \rho_{i,j} (2 \cos ((E_{i,j} - E_{m,n})t) - 1 )}{(E_{i,j} - E_{m,n})^2} \\
+        &~ + \frac{\sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} = E_{i,j}} 2 (\rho_{m,n} - \rho_{i,j})
+    \end{align}
+\end{lemma}
 \subsection{Computing $\Phi_G$ with Duhamel's formula}
 Our first goal is to compute the Taylor's series for $\Phi$ with respect to the coupling constant $\alpha$. To do this we compute the Taylor Series for $\Phi_G$ and then compute the effects of integrating and partial traces. We make use Duhamel's formula for differentiation of the exponent of a matrix exponential
 \begin{equation}
@@ -140,18 +153,17 @@ This term is negligible in the overall channel due to the eigenvalues having mea
 \end{align}
 but because $\int D ~dD$ is simply the mean of the eigenvalues this is 0 which implies $\frac{\partial}{\partial \alpha} \Phi(\rho) \big|_{\alpha = 0} = 0$. 
 
-Now we can compute the second order term by differentiating Eq. \eqref{eq:first_order_alpha_derivative} before setting $\alpha \to 0$. Note that there are 3 locations for the derivative to act in each term, yielding 6 final terms. To give a sense of how each term is computed we will compute the first one explicitly and simply state the remaining terms.
-
+Now we can compute the second order term by differentiating Eq. \eqref{eq:first_order_alpha_derivative} before setting $\alpha \to 0$. Doing so we see that we quickly run into many terms. As seen in the following:
 \begin{align}
     \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} =& \frac{\partial}{\partial \alpha} \parens{\int_{0}^{1} e^{i s (H+\alpha G)t} (i t G) e^{i (1-s) (H+\alpha G)t} ds \rho e^{-i(H+\alpha G)t}} \bigg|_{\alpha=0} \nonumber \\
-    &\text{ } +\frac{\partial}{\partial \alpha} \parens{ e^{i(H+\alpha G)t} \rho \int_{0}^1 e^{-i s (H+\alpha G) t} (- i t G) e^{-i (1-s) (H+\alpha G)t} ds } \bigg|_{\alpha = 0}
+    &\text{ } +\frac{\partial}{\partial \alpha} \parens{ e^{i(H+\alpha G)t} \rho \int_{0}^1 e^{-i s (H+\alpha G) t} (- i t G) e^{-i (1-s) (H+\alpha G)t} ds } \bigg|_{\alpha = 0},
 \end{align}
-There are clearly six factors containing functions of $\alpha$ which leads to six terms after utilizing Duhamel's rule. We work through the first term in detail and will simply state the remaining terms in order from left to right and top to bottom. The first time can be simplified as
+there are clearly six factors containing functions of $\alpha$ which leads to six terms after utilizing Duhamel's rule. We will work through the first term in detail and will simply state the remaining terms. We work in order from left to right and top to bottom. The first term can be computed as
 \begin{align}
     &i t\int_0^1 \parens{\frac{\partial}{\partial \alpha} e^{i s_1 (H+ \alpha G)t}} G e^{i(1-s_1)(H+\alpha G)t} ds_1 \rho e^{-i (H+\alpha G)t} \bigg|_{\alpha=0} \\
     &= (it)^2 \int_0^1 \int_0^1 e^{i s_1 s_2 (H+\alpha G)t} s_1 G e^{i s_1 (1-s_2) (H+\alpha G)t} ds_2 G e^{i(1-s_1) (H+\alpha G)t} ds_1 \rho e^{-i(H+\alpha G) t} \bigg|_{\alpha=0} \\
     &= -t^2 \int_0^1 \int_0^1 e^{i s_1 s_2 H t} G e^{-i s_1 s_2 H t} e^{i s_1 H t} G e^{-i s_1 H t} s_1 ds_1 ds_2 e^{i H t} \rho e^{-i H t} \\
-    &= -t^2 \int_0^1 \int_0^1 G(s_1 s_2 t) G(s_1 t) s_1 ds_1 ds_2 \rho(t). 
+    &= -t^2 \int_0^1 \int_0^1 G(s_1 s_2 t) G(s_1 t) s_1 ds_1 ds_2 \rho(t). \label{eq:second_deriv_alpha_first_term}
 \end{align}
 The remaining terms we compute using a similar process, and are stated as
 \begin{align}
@@ -159,17 +171,18 @@ The remaining terms we compute using a similar process, and are stated as
     & +t^2 \int_0^1 G(st) ds \rho(t) \int_0^1 G(st) ds \\
     & +t^2 \int_0^1 G(st) ds \rho(t) \int_0^1 G(st) ds \\
     & -t^2 \rho(t) \int_0^1 \int_0^1 G((1-s_1)t) G((1-s_1 s_2) t) s_1 ds_1 ds_2 \\
-    & -t^2 \rho(t) \int_0^1 \int_0^1 G((1-s_1)t) G((1-s_1)(1 - s_2) t) (1-s_1) ds_1 ds_2.
+    & -t^2 \rho(t) \int_0^1 \int_0^1 G((1-s_1)t) G((1-s_1)(1 - s_2) t) (1-s_1) ds_1 ds_2. \label{eq:second_deriv_alpha_last_term}
 \end{align}
-For the last two terms we can make them look similar to the first two by redefining the integration variables. This leads to the simplified expression
+By redefining integration variables we can state the sum of equations  \eqref{eq:second_deriv_alpha_first_term} through \eqref{eq:second_deriv_alpha_last_term} in a compact manner. Doing so leads to
 \begin{align}
     \frac{\partial^2}{\partial \alpha^2} \Phi_G \bigg|_{\alpha = 0} &= 2 t^2 \int_0^1 G(st) ds \rho(t) \int_0^1 G(st) ds \label{eq:second_order_duhamel_one} \\
     &~ - t^2 \int_0^1 \int_0^1 \brackets{\rho(t) , G(s_1 t) G(s_1 s_2 t)}_+ s_1 ds_1 ds_2 \label{eq:second_order_duhamel_two}  \\
     &~ - t^2 \int_0^1 \int_0^1 \brackets{ \rho(t), G(s_1 t) G((s_1 + s_2 - s_1 s_2) t) }_+ (1-s_1) ds_1 ds_2, \label{eq:second_order_duhamel_three} 
 \end{align}
-where $[A,B]_+ := AB + BA$. 
+where $[A,B]_+ := AB + BA$. We would like to point out the spiritual similarity to a discretized symmetric laplacian operator, which takes a doubled center point and subtracts the two boundary points.
 
-Our next goal is to use this to compute the second order expansion for the expected channel, i.e by integrating over the randomized interaction $G$. We do so by computing the matrix elements $\bra{i,j} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \big|_{\alpha = 0} dG \ket{k,l}$. This then puts us only a partial trace away from computing the second order term in the coupling coefficient expansion for the overall channel $\Phi$. Our main approach for computing these matrix elements is to factor a term, for example Eq. \eqref{eq:second_order_duhamel_one}, into three parts: a phase integral, a $G$ eigenvalue integral, and a Haar integral. To do so we make two assumptions: we assume that the input state is diagonal in the combined system-environment $H$ basis $\rho = \sum_{m,n} \rho_{m,n} \ketbra{m,n}{m,n}$, and second that the eigenvalues of the random interaction $G$ are i.i.d, which leads to a covariance matrix $Cov(\lambda_{i,j}, \lambda_{k,l}) = \sigma^2 \delta(i,j | k,l)$, where $\delta(i,j | k,l) := \delta_{i,k} \delta_{j,l}$ is a shorthand kronecker delta function. Note due to the invariance of the Haar eigenvectors we can always write the eigenvalues $D$ as diagonal in the 
+Our next goal is to take this expression for a given interaction term $G$ and integrate over the distribution for randomized interactions .
+We do so by computing the matrix elements $\bra{i,j} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \big|_{\alpha = 0} dG \ket{k,l}$. This then puts us only a partial trace away from computing the second order term in the coupling coefficient expansion for the overall channel $\Phi$. Our main approach for computing these matrix elements is to factor a term, for example Eq. \eqref{eq:second_order_duhamel_one}, into three parts: a phase integral, a $G$ eigenvalue integral, and a Haar integral. To do so we make two assumptions: we assume that the input state is diagonal in the combined system-environment $H$ basis $\rho = \sum_{m,n} \rho_{m,n} \ketbra{m,n}{m,n}$, and second that the eigenvalues of the random interaction $G$ are i.i.d, which leads to a covariance matrix $Cov(\lambda_{i,j}, \lambda_{k,l}) = \sigma^2 \delta(i,j | k,l)$, where $\delta(i,j | k,l) := \delta_{i,k} \delta_{j,l}$ is a shorthand kronecker delta function. Note due to the invariance of the Haar eigenvectors we can always write the eigenvalues $D$ as diagonal in the 
 \begin{align}
     2t^2 \int_0^1 G(s_1t) ds_1 \rho(t) \int_0^1 G(s_2 t) ds_2 &= 2 t^2 \bra{i,j} \int_{0}^1 \int_0^1 e^{i H s_1 t} G e^{-iH s_1 t} e^{i H t} \rho e^{-i H t} e^{i H s_2 t} G e^{-iH s_2 t} ds_1 ds_2 \ket{k,l} \\
     &= 2 t^2 \sum_{m,n} \rho_{m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l}) s_2 t} ds_1 ds_2 \bra{i,j}G \ketbra{m,n}{m,n} G \ket{k,l} \\
