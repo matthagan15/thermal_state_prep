@@ -64,7 +64,7 @@ fn one_shot_interaction(
     let h = kron(system_hamiltonian, env_hamiltonian);
     let mut tot_h = &g + &h;
     tot_h *= i() * time;
-    let (time_evolution_op, _) = expm(&tot_h);
+    let time_evolution_op = expm(&tot_h).expect("we ballin");
     let time_evolution_op_adjoint = adjoint(&time_evolution_op);
     let mut out = kron(system_state, env_state);
     out = time_evolution_op.dot(&out);
@@ -138,7 +138,7 @@ fn schatten_2_norm(a: &Array2<c64>, b: &Array2<c64>) -> f64 {
 
 fn thermal_state(hamiltonian: &Array2<c64>, beta: f64) -> Array2<c64> {
     let scaled_h = hamiltonian * (beta + zero());
-    let (mut out, _) = expm(&scaled_h);
+    let mut out = expm(&scaled_h).expect("we ballin");
     let partition_function = out.trace().unwrap();
     if ComplexFloat::abs(partition_function) < 1e-12 {
         println!("[thermal_state] encountered near zero partition function. You're gonna have a bad time.");
