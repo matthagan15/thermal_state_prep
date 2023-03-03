@@ -97,7 +97,7 @@ Overall one application of our channel is represented as
 \end{equation}
 For simplicity we will denote the time evolution channel for a specific random interaction $G$ as
 \begin{equation}
-    \Phi_G(\rho) := e^{+i (H+ \alpha G) t} \rho e^{-i (H + \alpha G) t}.
+    \Phi_G(\rho) := e^{+i (H+ \alpha G) t} \rho e^{-i (H + \alpha G) t}. \label{eq:phi_g_definition}
 \end{equation}
 Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the randomized interaction term, where $G = U_G D U_G^\dagger$. The measure we choose for the eigenbasis of $G$ is $U_G \sim Haar$ and the eigenvalues are i.i.d with mean 0 and variance $\sigma^2$. This gives the overall measure decomposition $dG = dD ~ dU_G$. 
 
@@ -128,30 +128,40 @@ Our first goal is to show that $\rho(\beta, \beta)$ is a fixed point, at least a
         &~ + \frac{\sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} = E_{i,j}} 2 (\rho_{m,n} - \rho_{i,j})
     \end{align}
 \end{lemma}
-\subsection{Computing $\Phi_G$ with Duhamel's formula}
-Our first goal is to compute the Taylor's series for $\Phi$ with respect to the coupling constant $\alpha$. To do this we compute the Taylor Series for $\Phi_G$ and then compute the effects of integrating and partial traces. We make use Duhamel's formula for differentiation of the exponent of a matrix exponential
+\begin{proof}
+Our first goal is to compute the Taylor's series for $\Phi$ with respect to the coupling constant $\alpha$. To do this we compute the Taylor Series for the fixed interaction channel $\Phi_G$ and then compute the effects of integrating. We leave all partial traces until the last step of the computation. We make use Duhamel's formula for differentiation of the exponent of a matrix exponential
 \begin{equation}
     \frac{d}{dt} e^{A(t)} = \int_0^1 e^{s A(t)} \frac{d A(t)}{dt} e^{(1-s)A(t)} ds.
 \end{equation}
-The object of interest is $$\Phi_G = \rho(t) + \alpha \frac{\partial}{\partial \alpha} \Phi_G \big|_{\alpha=0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi_G \big|_{\alpha=0} + R.$$ Then due to linearity of integration and partial traces this will give us a series expansion in $\alpha$ for the overall channel $\Phi$. We first focus on computing the first two non-trivial terms and focus on bounding the magnitude of $R$ later. 
-The first order term can be computed as
-\begin{align}
-    \frac{\partial}{\partial \alpha} e^{i(H+\alpha G)t} \rho e^{-i (H+\alpha G)t} \bigg|_{\alpha = 0} &= \int_{0}^{1} e^{i s (H+\alpha G)t} (i t G) e^{i (1-s) (H+\alpha G)t} ds \rho e^{-i(H+\alpha G)t} \bigg|_{\alpha=0} \nonumber \\
-    &\text{ } + e^{i(H+\alpha G)t} \rho \int_{0}^1 e^{-i s (H+\alpha G) t} (- i t G) e^{-i (1-s) (H+\alpha G)t} ds \bigg|_{\alpha = 0} \label{eq:first_order_alpha_derivative}\\
-    &= i t \int_0^1 e^{i s H t} G e^{-i s H t} ds e^{i H t} \rho e^{-i H t} - i t e^{+i H t} \rho \int_0^1 e^{-is H t} G e^{-i(1-s) Ht} ds \\
-    &= i t \int_0^1 G(s t) ds \rho(t) - it \rho(t) \int_0^1 G(s t) ds \\
-    &= i t \int_0^1 [G(s t), \rho(t)] ds.
-\end{align}
+The first object of interest is the Taylor Series 
+\begin{equation}
+	\Phi_G (\rho) = e^{+ i H t} \parens{ \rho \otimes \frac{e^{-\beta_E H_E}}{\partfun_E(\beta_E)} } e^{-i H t} + \alpha \frac{\partial}{\partial \alpha} \Phi_G (\rho) \big|_{\alpha=0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi_G (\rho) \big|_{\alpha=0} + R,
+\end{equation}
 
-This term is negligible in the overall channel due to the eigenvalues having mean 0. This is computed as
+ where the remainder $R$ is of order $\bigo{\alpha^3}$. We first focus on computing the first two non-trivial terms and focus on bounding the magnitude of $R$ later. 
+For ease of writing, let $\rho_E \coloneqq \frac{e^{-\beta_E H_E}}{\partfun_E(\beta_E)}$ represent the resource state that the environment is prepared in. Using this, the first order term can be computed as
+\begin{align}
+    \frac{\partial}{\partial \alpha} \Phi_G(\rho) \bigg|_{\alpha = 0} &= \frac{\partial}{\partial \alpha} e^{+i(H + \alpha G) t} \parens{\rho \otimes \rho_E} e^{-i(H + \alpha G) t} \\
+    &= \int_{0}^{1} e^{i s (H+\alpha G)t} (i t G) e^{i (1-s) (H+\alpha G)t} ds \parens{\rho \otimes \rho_E} e^{-i(H+\alpha G)t} \bigg|_{\alpha=0} \nonumber \\
+    &~ + e^{i(H+\alpha G)t} \parens{\rho \otimes \rho_E} \int_{0}^1 e^{-i s (H+\alpha G) t} (- i t G) e^{-i (1-s) (H+\alpha G)t} ds \bigg|_{\alpha = 0} \label{eq:first_order_alpha_derivative}\\
+    &= i t \int_0^1 e^{i s H t} G e^{-i s H t} ds e^{i H t} \parens{\rho \otimes \rho_E} e^{-i H t} - i t e^{+i H t} \parens{\rho \otimes \rho_E} \int_0^1 e^{-is H t} G e^{-i(1-s) Ht} ds \\
+    &= i t \int_0^1 G(s t) ds \parens{\rho \otimes \rho_E}(t) - it \parens{\rho \otimes \rho_E}(t) \int_0^1 G(s t) ds \\
+    &= i t \int_0^1 [G(s t), \parens{\rho \otimes \rho_E}(t)] ds,
+\end{align}
+where we utilize the Heisenberg picture $G(t) = e^{+i H t} G e^{-i H g}$, similarly for $\rho \otimes \rho_E$.
+
+Now before we compute the second order correction for $\alpha$ we will show that the first order correction vanishes upon averaging over interaction terms $G$. This is most easily seen by breaking down the overall matrix measure into it's eigenvalue and eigenvector measures, followed by computing the eigenvalue average. The first few steps can be done by plugging Eq. \eqref{eq:first_order_alpha_derivative} into the definition given by Eq. \eqref{eq:phi_g_definition}
 \begin{align}
     \frac{\partial}{\partial \alpha} \Phi(\rho) \bigg|_{\alpha = 0} &= \frac{\partial}{\partial \alpha} \partrace{env}{\int \Phi_G(\rho) ~dG} \bigg|_{\alpha=0} \\
     &= \partrace{env}{\int\frac{\partial \Phi_G(\rho)}{\partial \alpha} \bigg|_{\alpha=0} dG } \\
-    &= i t \partrace{env}{\int_0^1 \int [e^{i H s t} G e^{-i H s t}, \rho(t)] dG ds} \\
-    &= i t \partrace{env}{\int_0^1  [e^{i H s t} \int U_G D U_G^\dagger ~ dD ~ dU_G e^{-i H s t}, \rho(t)] ds} \\
-    &= i t \partrace{env}{\int_0^1  [e^{i H s t} \int U_G \parens{\int D dD} U_G^\dagger ~ dU_G e^{-i H s t}, \rho(t)] ds},
+    &= i t \partrace{env}{\int_0^1 \int [e^{i H s t} G e^{-i H s t}, \parens{\rho \otimes \rho_E}(t)] dG ds}.
 \end{align}
-but because $\int D ~dD$ is simply the mean of the eigenvalues this is 0 which implies $\frac{\partial}{\partial \alpha} \Phi(\rho) \big|_{\alpha = 0} = 0$. 
+From here we use the fact that partial traces, integrations, and our anticommutator is linear in one of the inputs to pull the averaging over $G$ into the anticommutator. Then we use the fact that any given $G$ can be written as $G = U_G D U_G^\dagger$ to yield
+\begin{align}
+    &= i t \partrace{env}{\int_0^1  [e^{i H s t} \int U_G D U_G^\dagger ~ dD ~ dU_G e^{-i H s t}, \parens{\rho \otimes \rho_E}(t)] ds} \\
+    &= i t \partrace{env}{\int_0^1  [e^{i H s t} \int U_G \parens{\int D dD} U_G^\dagger ~ dU_G ~ e^{-i H s t}, \parens{\rho \otimes \rho_E}(t)] ds}.
+\end{align}
+We now impose our restriction on the random matrix ensembles allowed for $G$, namely that they have eigenvalues with mean $0$ and variance $\sigma^2$, which allows us to say $\int D ~dD = 0$. This then implies that the total first order correction vanishes as $\frac{\partial}{\partial \alpha} \Phi(\rho) \big|_{\alpha = 0} = 0$. 
 
 Now we can compute the second order term by differentiating Eq. \eqref{eq:first_order_alpha_derivative} before setting $\alpha \to 0$. Doing so we see that we quickly run into many terms. As seen in the following:
 \begin{align}
@@ -257,6 +267,7 @@ For this simply note that each of the phases in the exponents of the integrals a
     \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{i,j} dG &= \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} \neq E_{i,j}} \frac{(2 \rho_{m,n} - \rho_{i,j}) - 2(\rho_{m,n} - \rho_{i,j}) \cos ((E_{i,j} - E_{m,n})t)}{(E_{i,j} - E_{m,n})^2} \nonumber \\
     &~ + \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} = E_{i,j}} 2 (\rho_{m,n} - \rho_{i,j}) \label{eq:second_order_final}
 \end{align}
+\end{proof}
 
 % \subsection{Convergence to low temperature system state}
 % For simplicity later on we make the following definitions:
