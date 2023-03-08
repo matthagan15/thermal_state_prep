@@ -1,4 +1,3 @@
-from audioop import avg
 from cProfile import label
 from tabnanny import verbose
 import numpy as np
@@ -91,6 +90,8 @@ class QHMC:
             self.ham_env_base = ham_env_base
             self.num_monte_carlo = num_monte_carlo
             self.verbose = verbose
+            self.system_state = thermal_state(ham_sys, sys_start_beta)
+            self.total_hamiltonian = np.kron(ham_sys, np.identity(ham_env_base.shape[0])) + np.kron(np.identity(ham_sys.shape[0]), ham_env_base)
 
     def print_params(self):
         print("betas:", self.betas)
@@ -125,8 +126,34 @@ class QHMC:
         # return (avg_out, b, e)
         return avg_out
         
-        # return a dictionary mapping to a list of sys output betas and erros, do we only return average beta and avg error?
-        # or return a "list of lists" to let another function process? 
+
+    def simulate_interactions(self):
+        self.system_state = thermal_state(self.ham_sys, self.sys_start_beta)
+        for ix in range(len(self.betas)):
+            rho_env = thermal_state(self.ham_env_base, self.betas[ix])
+            rho_tot = np.kron(self.system_state, rho_env)
+            new_output = np.zeros((self.system_state.shape[0], self.system_state.shape[1] * 2)).view(np.complex128)
+            for sample in range(self.num_monte_carlo):
+                g = gue(self.ham_sys.shape[0] * self.ham_env_base.shape[0])
+                ham_tot = self.total_hamiltonian + self.alphas[ix] * g
+                u = linalg.expm(1j * ham_tot * self.times[ix])
+                raw = u @ rho_tot @ u.conj().T
+                out = partrace(raw, self.ham_sys.shape[0], self.ham_env_base.shape[0])
+                new_output += out.view(np.complex128) / self.num_monte_carlo
+            self.system_state = new_output
+
+    def compute_error_with_target_beta(self):
+        """
+        Simulate the interactions and give the frobenius norm distance between
+        the output system state and the ideal system state. The ideal system
+        state is defined to be the thermal state at the temperature of the
+        last provided beta for the environment.
+        """
+        self.simulate_interactions()
+        ideal = thermal_state(self.ham_sys, self.betas[-1])
+        difference = ideal - self.system_state
+        return np.linalg.norm(difference, ord='fro')
+    
     def compute_betas_and_errors(self):
         start_time = time_this.time()
         if self.verbose:
@@ -183,9 +210,18 @@ def test_hamiltonian_gap():
     qhmc = QHMC(ham_sys = h1, ham_env_base=h2, env_betas=betas, sim_times=times, alphas=alphas, verbose=True)
     qhmc.compute_betas_and_errors()
 
+def test_dimension():
+    sys_dimensions = [5, 10, 15, 20, 25, 30]
+    env_dimension = 10
+    env_hamiltonian = harmonic_oscillator_hamiltonian(env_dimension)
+    for sys_dim in sys_dimensions:
+        qhmc = QHMC(ham_sys = harmonic_oscillator_hamiltonian(sys_dim), env_betas=[1.], sim_times=[100.], alphas=[0.01], ham_env_base=env_hamiltonian, num_monte_carlo=500, sys_start_beta = 0.9)
+        print("dimension: ", sys_dim)
+        print("output error: ", qhmc.compute_error_with_target_beta())
+
 if __name__ == "__main__":
     # test()
     start = time_this.time()
-    test_hamiltonian_gap()
+    test_dimension()
     end = time_this.time()
     print("took this many seconds: ", end - start)
