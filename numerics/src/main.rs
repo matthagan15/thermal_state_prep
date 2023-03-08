@@ -228,40 +228,33 @@ fn two_harmonic_oscillators() {
     // println!("rho_one:\n{:}", rho_one);
     // println!("rho_ten:\n{:}", rho_final);
     println!("initial fro error w/target: {:}", schatten_2_norm(&state_sys, &target));
+    println!("one shot interaction results");
     println!("rho_one fro error w/ target: {:}", schatten_2_norm(&rho_one, &target));
+    println!("\n");
+    println!("multi-shot interaction results");
     println!("rho_ten fro error w/ target: {:}", schatten_2_norm(&rho_final, &target));
     println!("rho_ten fro error w/ guess: {:}", schatten_2_norm(&rho_final, &guess));
     let duration = start.elapsed();
     println!("took this many millis: {:}", duration.as_millis());
 }
 
-fn main() {
-    let alpha_center = 0.01;
-    let alpha_diff = 0.001;
-    println!("###################################################################################");
-    let left = interaction_at_alpha(alpha_center - alpha_diff);
-    println!("###################################################################################");
-    let right = interaction_at_alpha(alpha_center + alpha_diff);
-    println!("###################################################################################");
-    let center = interaction_at_alpha(alpha_center);
-    println!("###################################################################################");
-    let second_diff = (left + right - 2. * center) / (alpha_diff.powi(2));
-    println!("approximated second order derivative: {:}", second_diff);
-}
-
 // fn main() {
-//     let start = Instant::now();
-//     let num_samples = 100;
-//     let dim = 1000;
-//     let mut results = Vec::new();
-//     for _ in 0..num_samples {
-//         let m:Array2<c64> = random_hermite(dim);
-//         let (_,d) = expm(&m);
-//         results.push(d);
-//     }
-//     println!("ms per expm: {:}", start.elapsed().as_millis() / num_samples);
-//     println!("results:{:}", results.iter().sum::<usize>() as u128 / num_samples);
+    // let alpha_center = 0.01;
+    // let alpha_diff = 0.001;
+    // println!("###################################################################################");
+    // let left = interaction_at_alpha(alpha_center - alpha_diff);
+    // println!("###################################################################################");
+    // let right = interaction_at_alpha(alpha_center + alpha_diff);
+    // println!("###################################################################################");
+    // let center = interaction_at_alpha(alpha_center);
+    // println!("###################################################################################");
+    // let second_diff = (left + right - 2. * center) / (alpha_diff.powi(2));
+    // println!("approximated second order derivative: {:}", second_diff);
 // }
+
+fn main() {
+    two_harmonic_oscillators();
+}
 
 // millis unoptimized : 48760
 // millis release     : 2714
