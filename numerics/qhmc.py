@@ -215,13 +215,24 @@ def test_dimension():
     env_dimension = 10
     env_hamiltonian = harmonic_oscillator_hamiltonian(env_dimension)
     for sys_dim in sys_dimensions:
-        qhmc = QHMC(ham_sys = harmonic_oscillator_hamiltonian(sys_dim), env_betas=[1.], sim_times=[100.], alphas=[0.01], ham_env_base=env_hamiltonian, num_monte_carlo=500, sys_start_beta = 0.9)
+        qhmc = QHMC(ham_sys = harmonic_oscillator_hamiltonian(sys_dim), env_betas=[1.], sim_times=[100.], alphas=[0.01], ham_env_base=env_hamiltonian, num_monte_carlo=500, sys_start_beta = 0.5)
         print("dimension: ", sys_dim)
+        print("output error: ", qhmc.compute_error_with_target_beta())
+
+def test_beta():
+    betas = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    env_dimension = 10
+    sys_dim = 20
+    env_hamiltonian = harmonic_oscillator_hamiltonian(env_dimension)
+    for beta in betas:
+        qhmc = QHMC(ham_sys = harmonic_oscillator_hamiltonian(sys_dim), env_betas=[1.], sim_times=[100.], alphas = [0.01], ham_env_base = env_hamiltonian, num_monte_carlo=500, sys_start_beta=beta)
+        print("beta: ", beta)
         print("output error: ", qhmc.compute_error_with_target_beta())
 
 if __name__ == "__main__":
     # test()
     start = time_this.time()
-    test_dimension()
+    # test_dimension()
+    test_beta()
     end = time_this.time()
     print("took this many seconds: ", end - start)

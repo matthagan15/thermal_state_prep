@@ -57,14 +57,14 @@ fn one_shot_interaction(
     system_state: &Array2<c64>,
     env_state: &Array2<c64>,
     alpha: f64,
-    beta: f64,
     time: f64,
 ) -> Array2<c64> {
-    let g: Array2<c64> = (c64::from_real(alpha)) * random_hermite(system_state.nrows() * env_state.nrows());
-    let h = kron(system_hamiltonian, env_hamiltonian);
-    let mut tot_h = &g + &h;
-    tot_h *= i() * time;
-    let time_evolution_op = expm(&tot_h).expect("we ballin");
+    let sys_env_interaction_sample: Array2<c64> = (c64::from_real(alpha)) * random_hermite(system_state.nrows() * env_state.nrows());
+    let hamiltonian = kron(system_hamiltonian, env_hamiltonian);
+    let mut tot_hamiltonian = &sys_env_interaction_sample + &hamiltonian;
+    tot_hamiltonian *= i() * time;
+
+    let time_evolution_op = expm(&tot_hamiltonian).expect("we ballin");
     let time_evolution_op_adjoint = adjoint(&time_evolution_op);
     let mut out = kron(system_state, env_state);
     out = time_evolution_op.dot(&out);
@@ -80,13 +80,12 @@ fn one_shot_mc(
     system_state: &Array2<c64>,
     env_state: &Array2<c64>,
     alpha: f64,
-    beta: f64,
     time: f64,
 ) -> Array2<c64> {
-    let mut out = Array2::<c64>::zeros((system_state.nrows(), system_state.ncols()).f());
-    let mut locker = RwLock::new(out);
+    let out = Array2::<c64>::zeros((system_state.nrows(), system_state.ncols()).f());
+    let locker = RwLock::new(out);
     (0..num_samples).into_par_iter().for_each(|_|{
-        let sample =  one_shot_interaction(system_hamiltonian, env_hamiltonian, system_state, env_state, alpha, beta, time);
+        let sample =  one_shot_interaction(system_hamiltonian, env_hamiltonian, system_state, env_state, alpha, time);
         let mut x = locker.write().unwrap();
         for ix in 0..x.nrows() {
             for jx in 0..x.ncols() {
@@ -107,12 +106,11 @@ fn multi_interaction_mc(
     system_state: &Array2<c64>,
     env_state: &Array2<c64>,
     alpha: f64,
-    beta: f64,
     time: f64,
 ) -> Array2<c64> {
     let mut out = system_state.clone();
     for i in 0..num_interactions {
-        let interacted = one_shot_mc(num_samples, system_hamiltonian, env_hamiltonian, &out, env_state, alpha, beta, time);
+        let interacted = one_shot_mc(num_samples, system_hamiltonian, env_hamiltonian, &out, env_state, alpha, time);
         out.assign(&interacted);
         // if i % (num_samples / 10) == 0 {
         println!("{:}% done.", (i as f64) / (num_interactions as f64));
@@ -152,6 +150,14 @@ fn harmonic_oscillator_hamiltonian(dim: usize) -> Array2<c64> {
     let mut out = Array2::<c64>::zeros((dim, dim).f());
     for ix in 0..dim {
         out[[ix, ix]] = c64::new(0.5 + ix as f64, 0.);
+    }
+    out
+}
+
+fn marked_state_hamiltonian(dim: usize, gap: f64) -> Array2<c64> {
+    let mut out = Array2::<c64>::zeros((dim, dim).f());
+    for ix in 1..dim {
+        out[[ix, ix]] = gap.into();
     }
     out
 }
@@ -200,60 +206,50 @@ fn interaction_at_alpha(alpha: f64) -> f64 {
     let rho_sys = thermal_state(&h_sys, beta);
     let rho_env = thermal_state(&h_env, beta);
     let rho_tot = kron(&rho_sys, &rho_env);
-    let channel_output = multi_interaction_mc(10, 20000, &h_sys, &h_env, &rho_sys, &rho_env, alpha, beta, t);
+    let channel_output = multi_interaction_mc(10, 20000, &h_sys, &h_env, &rho_sys, &rho_env, alpha, t);
     // println!("channel_output shape: {:?}", channel_output.shape());
     // schatten_2_norm(&channel_output, &rho_tot)
     let diff = &channel_output - &rho_sys;
     diff.opnorm_fro().unwrap()
 }
 
-fn two_harmonic_oscillators() {
-    let start = Instant::now();
-    let dim_sys = 20;
-    let dim_env = 10;
-    let beta = 1.;
+fn two_harmonic_oscillators(sys_dim: usize, env_dim: usize, sys_initial_beta: f64, env_beta: f64) {
     let alpha = 0.01;
     let t = 100.;
-    let num_interactions = 100;
     let num_mc_samples = 500;
-    let h_sys = harmonic_oscillator_hamiltonian(dim_sys);
-    let h_env = harmonic_oscillator_hamiltonian(dim_env);
-    let state_sys = Array2::<c64>::eye(dim_sys) / (c64::from_real(dim_sys as f64));
-    let state_env = thermal_state(&h_env, beta);
-    let target = thermal_state(&h_sys, beta);
-    let guess = thermal_state(&h_sys, beta * 2.);
-    let rho_one = one_shot_mc(num_mc_samples, &h_sys, &h_env, &state_sys, &state_env, alpha, beta, t);
-    let rho_final = multi_interaction_mc(num_interactions, num_mc_samples, &h_sys, &h_env, &state_sys, &state_env, alpha, beta, t);
+    let h_sys = harmonic_oscillator_hamiltonian(sys_dim);
+    let h_env = harmonic_oscillator_hamiltonian(env_dim);
+    let state_sys = thermal_state(&h_sys, sys_initial_beta);
+    let state_env = thermal_state(&h_env, env_beta);
+    let target = thermal_state(&h_sys, env_beta);
+    let channel_output = one_shot_mc(num_mc_samples, &h_sys, &h_env, &state_sys, &state_env, alpha, t);
 
-    // println!("rho_one:\n{:}", rho_one);
-    // println!("rho_ten:\n{:}", rho_final);
-    println!("initial fro error w/target: {:}", schatten_2_norm(&state_sys, &target));
-    println!("one shot interaction results");
-    println!("rho_one fro error w/ target: {:}", schatten_2_norm(&rho_one, &target));
-    println!("\n");
-    println!("multi-shot interaction results");
-    println!("rho_ten fro error w/ target: {:}", schatten_2_norm(&rho_final, &target));
-    println!("rho_ten fro error w/ guess: {:}", schatten_2_norm(&rho_final, &guess));
-    let duration = start.elapsed();
-    println!("took this many millis: {:}", duration.as_millis());
+    println!("output frobenius distance to target: {:}", schatten_2_norm(&channel_output, &target));
 }
 
-// fn main() {
-    // let alpha_center = 0.01;
-    // let alpha_diff = 0.001;
-    // println!("###################################################################################");
-    // let left = interaction_at_alpha(alpha_center - alpha_diff);
-    // println!("###################################################################################");
-    // let right = interaction_at_alpha(alpha_center + alpha_diff);
-    // println!("###################################################################################");
-    // let center = interaction_at_alpha(alpha_center);
-    // println!("###################################################################################");
-    // let second_diff = (left + right - 2. * center) / (alpha_diff.powi(2));
-    // println!("approximated second order derivative: {:}", second_diff);
-// }
+fn test_dimension_fix_beta() {
+    let sys_dims = vec![5, 10, 15, 20, 25, 30];
+    for dim in sys_dims {
+        println!("dimension: {:}", dim);
+        two_harmonic_oscillators(dim, 10, 0.5, 1.);
+    }
+}
+
+fn test_beta_fix_dimension() {
+    let sys_dim = 40;
+    let betas = vec![0.0, 0.2, 0.4, 0.6, 0.8, 1.0];
+    for beta in betas {
+        println!("beta: {:}", beta);
+        two_harmonic_oscillators(sys_dim, 10, beta, 1.);
+    }
+}
 
 fn main() {
-    two_harmonic_oscillators();
+    let start = Instant::now();
+    test_beta_fix_dimension();
+    // test_dimension_fix_beta();
+    let duration = start.elapsed();
+    println!("took this many millis: {:}", duration.as_millis());
 }
 
 // millis unoptimized : 48760
