@@ -113,7 +113,7 @@ Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the r
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Fixed Points}
-Our first goal is to show that $\rho(\beta, \beta)$ is a fixed point, at least approximately, of the channel $\Phi$. We then aim to show that it is an attractor for states of the form $\rho(\beta_S, \beta_E)$ with $\beta_E > \beta_S$. 
+
 
 \begin{lemma}[Second Order Correction]
     Given a system Hamiltonian $H_{S} = \sum_{i = 1}^{\dim_S} E_i \ketbra{i}{i}$, an environment Hamiltonian $H_{E} = \sum_{j = 1}^{\dim_E} E_j \ketbra{j}{j}$, a simulation time $t$, and coupling coefficient $\alpha$ we can simulate the overall system-environment evolution of Hamiltonian $H = H_S \otimes \identity + \identity \otimes H_E$ with randomized interaction $G$ as
@@ -148,7 +148,7 @@ For ease of writing, let $\rho_E \coloneqq \frac{e^{-\beta_E H_E}}{\partfun_E(\b
     &= i t \int_0^1 G(s t) ds \parens{\rho \otimes \rho_E}(t) - it \parens{\rho \otimes \rho_E}(t) \int_0^1 G(s t) ds \\
     &= i t \int_0^1 [G(s t), \parens{\rho \otimes \rho_E}(t)] ds,
 \end{align}
-where we utilize the Heisenberg picture $G(t) = e^{+i H t} G e^{-i H g}$, similarly for $\rho \otimes \rho_E$.
+where we utilize the Heisenberg picture $G(t) = e^{+i H t} G e^{-i H t}$, similarly for $\rho \otimes \rho_E$.
 
 Now before we compute the second order correction for $\alpha$ we will show that the first order correction vanishes upon averaging over interaction terms $G$. This is most easily seen by breaking down the overall matrix measure into it's eigenvalue and eigenvector measures, followed by computing the eigenvalue average. The first few steps can be done by plugging Eq. \eqref{eq:first_order_alpha_derivative} into the definition given by Eq. \eqref{eq:phi_g_definition}
 \begin{align}
@@ -156,7 +156,7 @@ Now before we compute the second order correction for $\alpha$ we will show that
     &= \partrace{env}{\int\frac{\partial \Phi_G(\rho)}{\partial \alpha} \bigg|_{\alpha=0} dG } \\
     &= i t \partrace{env}{\int_0^1 \int [e^{i H s t} G e^{-i H s t}, \parens{\rho \otimes \rho_E}(t)] dG ds}.
 \end{align}
-From here we use the fact that partial traces, integrations, and our anticommutator is linear in one of the inputs to pull the averaging over $G$ into the anticommutator. Then we use the fact that any given $G$ can be written as $G = U_G D U_G^\dagger$ to yield
+From here we use the fact that partial traces, integrations, and our anticommutator is linear in one of the inputs to pull the averaging over $G$ into the commutator. Then we use the fact that any given $G$ can be written as $G = U_G D U_G^\dagger$ to yield
 \begin{align}
     &= i t \partrace{env}{\int_0^1  [e^{i H s t} \int U_G D U_G^\dagger ~ dD ~ dU_G e^{-i H s t}, \parens{\rho \otimes \rho_E}(t)] ds} \\
     &= i t \partrace{env}{\int_0^1  [e^{i H s t} \int U_G \parens{\int D dD} U_G^\dagger ~ dU_G ~ e^{-i H s t}, \parens{\rho \otimes \rho_E}(t)] ds}.
@@ -168,9 +168,14 @@ Now we can compute the second order term by differentiating Eq. \eqref{eq:first_
     \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} =& \frac{\partial}{\partial \alpha} \parens{\int_{0}^{1} e^{i s (H+\alpha G)t} (i t G) e^{i (1-s) (H+\alpha G)t} ds \rho e^{-i(H+\alpha G)t}} \bigg|_{\alpha=0} \nonumber \\
     &\text{ } +\frac{\partial}{\partial \alpha} \parens{ e^{i(H+\alpha G)t} \rho \int_{0}^1 e^{-i s (H+\alpha G) t} (- i t G) e^{-i (1-s) (H+\alpha G)t} ds } \bigg|_{\alpha = 0},
 \end{align}
+Using substack
+\begin{align}
+    \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} =& \frac{\partial}{\partial \alpha} \parens{\int_{0}^{1} \underset{\substack{\downarrow \\ (A)}}{e^{i s (H+\alpha G)t}} (i t G) \underset{\substack{\downarrow \\ (B)}}{e^{i (1-s) (H+\alpha G)t}} ds \rho \underset{\substack{\downarrow \\ (C)}}{e^{-i(H+\alpha G)t}} } \bigg|_{\alpha=0} \nonumber \\
+    &~ ~+\frac{\partial}{\partial \alpha} \parens{ \underset{\substack{\downarrow \\ (D)} }{e^{i(H+\alpha G)t}} \rho \int_{0}^1 \underset{\substack{\downarrow \\ (E)} }{e^{-i s (H+\alpha G) t} } (- i t G) \underset{\substack{\downarrow \\ (F)}}{e^{-i (1-s) (H+\alpha G)t}} ds } \bigg|_{\alpha = 0},
+\end{align}
 there are clearly six factors containing functions of $\alpha$ which leads to six terms after utilizing Duhamel's rule. We will work through the first term in detail and will simply state the remaining terms. We work in order from left to right and top to bottom. The first term can be computed as
 \begin{align}
-    &i t\int_0^1 \parens{\frac{\partial}{\partial \alpha} e^{i s_1 (H+ \alpha G)t}} G e^{i(1-s_1)(H+\alpha G)t} ds_1 \rho e^{-i (H+\alpha G)t} \bigg|_{\alpha=0} \\
+    (A) &=i t\int_0^1 \parens{\frac{\partial}{\partial \alpha} e^{i s_1 (H+ \alpha G)t}} G e^{i(1-s_1)(H+\alpha G)t} ds_1 \rho e^{-i (H+\alpha G)t} \bigg|_{\alpha=0} \\
     &= (it)^2 \int_0^1 \int_0^1 e^{i s_1 s_2 (H+\alpha G)t} s_1 G e^{i s_1 (1-s_2) (H+\alpha G)t} ds_2 G e^{i(1-s_1) (H+\alpha G)t} ds_1 \rho e^{-i(H+\alpha G) t} \bigg|_{\alpha=0} \\
     &= -t^2 \int_0^1 \int_0^1 e^{i s_1 s_2 H t} G e^{-i s_1 s_2 H t} e^{i s_1 H t} G e^{-i s_1 H t} s_1 ds_1 ds_2 e^{i H t} \rho e^{-i H t} \\
     &= -t^2 \int_0^1 \int_0^1 G(s_1 s_2 t) G(s_1 t) s_1 ds_1 ds_2 \rho(t). \label{eq:second_deriv_alpha_first_term}
@@ -192,16 +197,20 @@ By redefining integration variables we can state the sum of equations  \eqref{eq
 where $[A,B]_+ := AB + BA$. We would like to point out the spiritual similarity to a discretized symmetric laplacian operator, which takes a doubled center point and subtracts the two boundary points.
 
 Our next goal is to take this expression for a given interaction term $G$ and integrate over the distribution for randomized interactions .
-We do so by computing the matrix elements $\bra{i,j} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \big|_{\alpha = 0} dG \ket{k,l}$. This then puts us only a partial trace away from computing the second order term in the coupling coefficient expansion for the overall channel $\Phi$. Our main approach for computing these matrix elements is to factor a term, for example Eq. \eqref{eq:second_order_duhamel_one}, into three parts: a phase integral, a $G$ eigenvalue integral, and a Haar integral. To do so we make two assumptions: we assume that the input state is diagonal in the combined system-environment $H$ basis $\rho = \sum_{m,n} \rho_{m,n} \ketbra{m,n}{m,n}$, and second that the eigenvalues of the random interaction $G$ are i.i.d, which leads to a covariance matrix $Cov(\lambda_{i,j}, \lambda_{k,l}) = \sigma^2 \delta(i,j | k,l)$, where $\delta(i,j | k,l) := \delta_{i,k} \delta_{j,l}$ is a shorthand kronecker delta function. Note due to the invariance of the Haar eigenvectors we can always write the eigenvalues $D$ as diagonal in the 
+We do so by computing the matrix elements $\bra{i,j} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \big|_{\alpha = 0} dG \ket{k,l}$. This then puts us only a partial trace away from computing the second order term in the coupling coefficient expansion for the overall channel $\Phi$. Our main approach for computing these matrix elements is to factor a term, for example Eq. \eqref{eq:second_order_duhamel_one}, into three parts: a phase integral, a $G$ eigenvalue integral, and a Haar integral. To do so we make two assumptions: we assume that the input state is diagonal in the combined system-environment $H$ basis $\rho = \sum_{m,n} \rho_{m,n} \ketbra{m,n}{m,n}$, and second that the eigenvalues of the random interaction $G$ are i.i.d, which leads to a covariance matrix $Cov(\lambda_{i,j}, \lambda_{k,l}) = \sigma^2 \delta(i,j | k,l)$, where $\delta(i,j | k,l) := \delta_{i,k} \delta_{j,l}$ is a shorthand Kronecker delta function. Note due to the invariance of the Haar eigenvectors we can always write the eigenvalues $D$ as diagonal in the 
 \begin{align}
-    2t^2 \int_0^1 G(s_1t) ds_1 \rho(t) \int_0^1 G(s_2 t) ds_2 &= 2 t^2 \bra{i,j} \int_{0}^1 \int_0^1 e^{i H s_1 t} G e^{-iH s_1 t} e^{i H t} \rho e^{-i H t} e^{i H s_2 t} G e^{-iH s_2 t} ds_1 ds_2 \ket{k,l} \\
-    &= 2 t^2 \sum_{m,n} \rho_{m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l}) s_2 t} ds_1 ds_2 \bra{i,j}G \ketbra{m,n}{m,n} G \ket{k,l} \\
-    &= \sum_{i',j',k',l',m,n} 2t^2 \rho_{m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l}) s_2 t} ds_1 ds_2 \nonumber \\
+    &2t^2 \int_0^1 G(s_1t) ds_1 \rho(t) \int_0^1 G(s_2 t) ds_2 \\
+    =&~ 2 t^2 \bra{i,j} \int_{0}^1 \int_0^1 e^{i H s_1 t} G e^{-iH s_1 t} e^{i H t} \rho e^{-i H t} e^{i H s_2 t} G e^{-iH s_2 t} ds_1 ds_2 \ket{k,l} \\
+    =& 2 t^2 \sum_{m,n} \rho_{m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l}) s_2 t} ds_1 ds_2 \bra{i,j}G \ketbra{m,n}{m,n} G \ket{k,l} \\
+    =& \sum_{i',j',k',l',m,n} 2t^2 \rho_{m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l}) s_2 t} ds_1 ds_2 \nonumber \\
      &\quad \quad \quad \quad \times \lambda_{i',j'} \lambda_{k',l'} \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{k',l'} \bra{k',l'} U_G^\dagger \ket{k,l}.
 \end{align}
-The phase, eigenvalue, and Haar contributions to this term are apparent. We can compute the remaining two terms Eqs. \eqref{eq:second_order_duhamel_two} and \eqref{eq:second_order_duhamel_three} as follows, starting with Eq. \eqref{eq:second_order_duhamel_two}
+We have now factored the individual contributions from the phase, Haar, and random eigenvalues to uncoupled factors (wording?). 
+
+We now compute the remaining two terms Eqs. \eqref{eq:second_order_duhamel_two} and \eqref{eq:second_order_duhamel_three} as follows, starting with Eq. \eqref{eq:second_order_duhamel_two}
 \begin{align}
-    -t^2 \bra{i,j} \int_0^1 \int_0^1 [\rho(t), G(s_1 t) G(s_1 s_2 t)]_+ ~s_1 ds_1 ds_2 \ket{k,l} &= -t^2 (\rho_{i,j} + \rho_{k,l}) \sum_{i',j',k',l',m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 ds_1 ds_2 \\
+    &-t^2 \bra{i,j} \int_0^1 \int_0^1 [\rho(t), G(s_1 t) G(s_1 s_2 t)]_+ ~s_1 ds_1 ds_2 \ket{k,l} \\
+    =& -t^2 (\rho_{i,j} + \rho_{k,l}) \sum_{i',j',k',l',m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 ds_1 ds_2 \\
     &\times \lambda_{i',j'} \lambda_{k',l'} \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{k',l'} \bra{k',l'} U_G^\dagger \ket{k,l},
 \end{align}
 followed by Eq. \eqref{eq:second_order_duhamel_three}
@@ -216,44 +225,58 @@ where the eigenvalue and Haar contributions are the same as the previous two ter
     &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 \\
     &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1) \bigg) ds_1 ds_2 \\
     &\times \lambda_{i',j'} \lambda_{k',l'} \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{k',l'} \bra{k',l'} U_G^\dagger \ket{k,l} \\
-    &=: t^2 \sum_{i',j',k',l',m,n} C_{E} ~ C_{\lambda} ~ C_{H},
+    &\eqqcolon t^2 \sum_{i',j',k',l',m,n} C_{E} ~ C_{\lambda} ~ C_{H},
 \end{align}
-where $C_E$ captures the phase integrals, $C_{\lambda}$ the random eigenvalue factors, and $C_{H}$ the Haar contributions. 
+where $C_E$, $C_{\lambda}$, and $C_{H}$ are defined as
+\begin{align}
+    C_E \coloneqq& \int_0^1 \int_0^1 \bigg(  2 \rho_{m,n} e^{i(E_{i,j} - E_{m,n})s_1t} e^{i(E_{m,n} - E_{k,l})s_2 t}  \\
+    &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 \\
+    &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1) \bigg) ds_1 ds_2 \\
+    C_{\lambda} \coloneqq& \lambda_{i',j'} \lambda_{k',l'} \\
+    C_H \coloneqq& \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{k',l'} \bra{k',l'} U_G^\dagger \ket{k,l}. \\
+\end{align} 
 
-We now average these over the randomized interaction measure $dG$. We first perform the eigenvalue integral as this will simplify the Haar integral significantly. 
+As our goal is to compute the correction to the total channel, that is $\Phi = \partrace{env}{\int \Phi_G ~dG}$, we will first compute the averaged quantities $C_H$ and $C_\lambda$. We first perform the eigenvalue integral as it will contribute Kronecker delta products which will simplify the Haar integral significantly. 
 \begin{align}
-    \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{k,l} dG &= t^2 \sum_{i',j',k',l',m,n} C_E \int C_{\lambda} dD \int C_{H} dU_G.
+    \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{k,l} dG &= t^2 \sum_{i',j',k',l',m,n} C_E \int C_{\lambda} dD \int C_{H} dU_G. \label{eq:second_order_alpha_factored}
 \end{align}
-We know that $\int C_{\lambda} dD = \sigma^2 \delta(i',j' | k',l')$ by construction. Due to the delta function we can simply set $(i',j') = (k',l')$ by performing the sum over $k',l'$, which turns the Haar integration into
+We know that $\int C_{\lambda} dD = \sigma^2 \delta(i',j' | k',l')$ by construction. Due to the delta function we can simply set $(i',j') = (k',l')$ by performing the sum over $k',l'$. This turns the Haar integration into
 \begin{align}
-    \int C_{H} dU_G &= \int \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{k,l} dU_G \\
+    \sum_{k', l'} \int \delta_{i', k'} \delta_{j', l'} C_{H} dU_G &= \int \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{k,l} dU_G \\
     &= \int \bra{i,j} U_G \ket{i',j'}  \bra{m,n} U_G \ket{i',j'} \overline{\bra{m,n} U_G \ket{i',j'}} ~ \overline{ \bra{k,l} U_G \ket{i',j'} }~ dU_G \\
     &= \frac{\delta(i,j | k,l)}{\dim^2 - 1} \parens{\delta(i,j | m,n) + \frac{\dim - 1 - \delta(i,j | m,n)}{\dim}} \\
     &= \frac{\delta(i,j | k,l)}{\dim^2 - 1} \frac{\dim - 1}{\dim} \parens{1 + \delta(i,j | m,n)} \\
-    &= \frac{\delta(i, j | k,l)}{\dim (\dim + 1)} (1 + \delta(i,j | m,n))
+    &= \frac{\delta(i, j | k,l)}{\dim (\dim + 1)} (1 + \delta(i,j | m,n)),
 \end{align}
-where we used Lemma \ref{lem:haar_two_moment} for the last line. This, combined with the eigenvalue integration, yields
+where we used Lemma \ref{lem:haar_two_moment} for the actual integration.
+
+Combining these results back into Eq. \eqref{eq:second_order_alpha_factored} yields
 \begin{align}
     \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{k,l} dG &= t^2 \sigma^2 \sum_{i',j',m,n} C_E(\rho; m,n; i,j) \frac{\delta(i, j | k,l)}{\dim (\dim + 1)} (1 + \delta(i,j | m,n)) \\
     &= t^2 \sigma^2 \sum_{m,n} C_E(\rho; m,n; i,j) \frac{\delta(i, j | k,l)}{\dim + 1
-    } (1 + \delta(i,j | m,n))
+    } (1 + \delta(i,j | m,n)).
 \end{align}
+Here we see that the $\delta(i,j | k,l)$ delta function implies that the second order correction only affects the diagonal terms of $\rho$ in the system-environment eigenbasis.
 
-Our next goal is to simplify the phase contributions to this second order correction. We use the fact that the Haar integration forces the index equalities $i = k, j = l$ to simplify the phase integrals. Substituting $E_{k,l} \mapsto E_{i,j}$ yields:
+Our next goal is to simplify the phase contribution $C_E$ . We use the fact that the Haar integration forces the index equalities $i = k, j = l$ to simplify the phase integrals. Substituting $E_{k,l} \mapsto E_{i,j}$ yields:
 \begin{align}
     C_E &= 2 \rho_{m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})(s_1 - s_2)t} ds_1 ds_2 \nonumber \\
-    &~ ~ - 2 \rho_{i,j} \parens{\int_0^1 \int_0^1 e^{i (E_{i,j} - E_{m,n})s_1 (1- s_2)t}s_1 ds_1 ds_2 + \int_0^1 \int_0^1 e^{-i(E_{i,j} - E_{m,n})s_2(1-s_1)t}((1-s_1)ds_1 ds_2)} \label{eq:phase_int_equal_energy} \\
-    &= \frac{4 \rho_{m,n}}{(E_{i,j} - E_{m,n})^2 t^2} (1 - \cos((E_{i,j} - E_{m,n})t)) - \frac{2 \rho_{i,j}}{(E_{i,j} - E_{m,n})^2 t^2} \parens{1 - e^{i (E_{i,j} - E_{m,n})t} + i (E_{i,j} - E_{m,n})t } \\
+    &~ ~ - 2 \rho_{i,j} \int_0^1 \int_0^1 e^{i (E_{i,j} - E_{m,n})s_1 (1- s_2)t}s_1 ds_1 ds_2 \nonumber \\
+    &~ ~ - 2 \rho_{i,j} \int_0^1 \int_0^1 e^{-i(E_{i,j} - E_{m,n})s_2(1-s_1)t}((1-s_1)ds_1 ds_2) \label{eq:phase_int_equal_energy} \\
+    &= \frac{4 \rho_{m,n}}{(E_{i,j} - E_{m,n})^2 t^2} (1 - \cos((E_{i,j} - E_{m,n})t)) \nonumber \\
+    &~ ~ - \frac{2 \rho_{i,j}}{(E_{i,j} - E_{m,n})^2 t^2} \parens{1 - e^{i (E_{i,j} - E_{m,n})t} + i (E_{i,j} - E_{m,n})t } \nonumber \\
     & ~ ~ - \frac{2 \rho_{i,j}}{(E_{i,j} - E_{m,n})^2 t^2} \parens{1 - i (E_{i,j} - E_{m,n})t - e^{i(E_{i,j} - E_{m,n})t}} \\
-    &= \frac{2}{(E_{i,j} - E_{m,n})^2 t^2} \parens{(2 \rho_{m,n} - \rho_{i,j}) - 2(\rho_{m,n} - \rho_{i,j}) \cos ((E_{i,j} - E_{m,n})t)}  
+    &= \frac{2}{(E_{i,j} - E_{m,n})^2 t^2} \parens{(2 \rho_{m,n} - \rho_{i,j}) - 2(\rho_{m,n} - \rho_{i,j}) \cos ((E_{i,j} - E_{m,n})t)}
 \end{align}
 
 Note that this expression is indeterminate whenever $m = i, n = j$. To get around this we revisit Eq. \eqref{eq:phase_int_equal_energy} and isolate the condition $E_{m,n} = E_{i,j}$. In this scenario we have
 \begin{align}
-    C_E(m,n;i,j | E_{m,n} = E_{i,j}) &= 2 \rho_{m,n} \int_0^1 \int_0^1 1 ds_1 ds_2 - 2 \rho_{i,j} \parens{\int_0^1 \int_0^1 s_1 ds_1 ds_2 + \int_0^1 \int_0^1 (1-s_1) ds_1 ds_2} \\
-    &= 2 (\rho_{m,n} - \rho_{i,j}).
+    C_E(m,n;i,j | E_{m,n} = E_{i,j}) =&~ 2 \rho_{m,n} \int_0^1 \int_0^1 1 ds_1 ds_2 \nonumber \\
+    &~ ~ - 2 \rho_{i,j} \int_0^1 \int_0^1 s_1 ds_1 ds_2 \nonumber \\
+    &~ ~ - 2 \rho_{i,j} \int_0^1 \int_0^1 (1-s_1) ds_1 ds_2 \\
+    =&~ 2 (\rho_{m,n} - \rho_{i,j}).
 \end{align}
-Now it is apparent that if $(m,n) = (i,j)$ this term clearly is zero. It is not obvious that in other situations this is zero. Expanding the $\rho_{m,n}$ term, we see that if $\beta_{env} = \beta_{sys}$
+Now it is apparent that if $(m,n) = (i,j)$ this term clearly is zero. It is not obvious that in other situations, for example when the combined system-environment energy is equal but the indices are not, that these contributions are zero. Expanding the $\rho_{m,n}$ term, we see that if $\beta_{env} = \beta_{sys}$
 \begin{align}
     \rho_{m,n} &= \frac{e^{-\beta_{sys} E_m}}{\partfun_{sys}} \frac{e^{-\beta_{env} E_{n}}}{\partfun_{env}} \\
     \xRightarrow{\beta_{env} = \beta_{sys}} \rho_{m,n} &= \frac{e^{-\beta_{sys}E_{m,n}}}{\partfun_{sys} \partfun_{env}} \\
