@@ -144,7 +144,7 @@ class QHMC:
     def test_distance_with_interactions(self):
         self.system_state = thermal_state(self.ham_sys, self.sys_start_beta);
         system_target_state = thermal_state(self.ham_sys, self.betas[0])
-        for ix in range(100):
+        for ix in range(500):
             print("interaction number: ", ix)
             rho_env = thermal_state(self.ham_env_base, self.betas[0])
             rho_tot = np.kron(self.system_state, rho_env)

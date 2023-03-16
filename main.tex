@@ -124,11 +124,28 @@ Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the r
         \frac{\partial}{\partial \alpha} \Phi(\rho_S) \bigg|_{\alpha = 0} &= \frac{\partial}{\partial \alpha} \partrace{\mathcal{H}_E}{\int \Phi_G(\rho_s) dG} \bigg|_{\alpha = 0} \\
          &= \partrace{\mathcal{H}_E}{\int \frac{\partial}{\partial \alpha} \Phi_G(\rho_S) dG} \bigg|_{\alpha = 0}.
     \end{align}
-    Now we use Eq. \eqref{eq:phi_g_definition} to compute the derivatives
+    Now we use Eq. \eqref{eq:phi_g_definition} to compute the derivatives, we remind the reader that $\rho = \rho_S \otimes \rho_E$,
     \begin{align}
-        \frac{\partial}{\partial \alpha} \Phi_G (\rho_S) &= \parens{\frac{\partial}{\partial \alpha} e^{+ i (H + \alpha G)t}} \rho_S e^{-i (H + \alpha G) t} + e^{+i (H + \alpha G)t} \rho_S \parens{\frac{\partial}{\partial \alpha} e^{- i (H + \alpha G)t}} \\
-        &=  
+        \frac{\partial}{\partial \alpha} \Phi_G (\rho_S) &= \parens{\frac{\partial}{\partial \alpha} e^{+ i (H + \alpha G)t}} \rho e^{-i (H + \alpha G) t} + e^{+i (H + \alpha G)t} \rho \parens{\frac{\partial}{\partial \alpha} e^{- i (H + \alpha G)t}} \\
+        &= \parens{\int_{0}^{1} e^{i s (H+\alpha G)t} (i t G) e^{i (1-s) (H+\alpha G)t} ds} \rho e^{-i(H+\alpha G)t} \nonumber \\
+    &~ ~+ e^{i(H+\alpha G)t} \rho \parens{\int_{0}^1 e^{-i s (H+\alpha G) t} (- i t G) e^{-i (1-s) (H+\alpha G)t} ds}. \label{eq:first_order_alpha_derivative} \\
     \end{align}
+    We can further simplify this by bringing in the evaluation of $\alpha = 0$ through the partial trace and integration, as they are uniformly convergent over $\alpha$ (is that the correct notion that allows us to switch orders?)
+    \begin{align}
+        \frac{\partial}{\partial \alpha} \Phi_G(\rho_S) \bigg|_{\alpha = 0} &= i t \int_0^1 e^{i s H t} G e^{-i s H t} ds e^{i H t} \rho e^{-i H t} - i t e^{+i H t} \rho \int_0^1 e^{-is H t} G e^{-i(1-s) Ht} ds \\
+        &= i t \parens{\int_0^1 G(s t) ds} \rho(t) - it \rho(t) \parens{\int_0^1 G(s t) ds} \\
+        &= i t \int_0^1 [G(s t), \rho(t)] ds,
+    \end{align}
+    where we have used the Heisenberg picture $\rho(t) = e^{i H t} \rho e^{-i H t}$ to simplify the notation.
+
+    This expression is now amenable to computing the correction to the total channel. We do so by performing the integration over the randomized interactions. We take advantage of the structure of our interaction measure, that is $G = U_G D U_G^\dagger$ and $dG = dU_G dD$, which allows us to write
+    \begin{align}
+        \int \frac{\partial}{\partial \alpha} \Phi_G(\rho_S) \bigg|_{\alpha = 0} dG &= it \int \int_0^1 \left[ e^{i H s t} G e^{-i H s t}, \rho(t) \right] ds ~dG \\
+        &= it \int_0^1 \left[ e^{i H s t} \parens{\int \int U_G D U_G^\dagger ~dU_G ~ dD} e^{-i H s t}, \rho(t)  \right] ds \\
+        &= i t \int_0^1 \left[ e^{i H s t} \parens{\int U_G \parens{\int D ~ dD} ~ U_G^\dagger dU_G } e^{-i H s t}, \rho(t) \right] ds \\
+        &= 0.
+    \end{align}
+    This last step relies on the use of random eigenvalues with mean 0, implying $\int D ~dD = 0$. Since the partial trace of 0 is 0, this shows that $\frac{\partial}{\partial \alpha} \Phi(\rho_S) \big|_{\alpha = 0 } = 0$.
 \end{proof}
 
 \begin{lemma}[Second Order Correction]
@@ -159,7 +176,7 @@ For ease of writing, let $\rho_E \coloneqq \frac{e^{-\beta_E H_E}}{\partfun_E(\b
 \begin{align}
     \frac{\partial}{\partial \alpha} \Phi_G(\rho_S) \bigg|_{\alpha = 0} &= \frac{\partial}{\partial \alpha} e^{+i(H + \alpha G) t} \rho_T e^{-i(H + \alpha G) t} \\
     &= \int_{0}^{1} e^{i s (H+\alpha G)t} (i t G) e^{i (1-s) (H+\alpha G)t} ds \rho_T e^{-i(H+\alpha G)t} \bigg|_{\alpha=0} \nonumber \\
-    &~ + e^{i(H+\alpha G)t} \rho_T \int_{0}^1 e^{-i s (H+\alpha G) t} (- i t G) e^{-i (1-s) (H+\alpha G)t} ds \bigg|_{\alpha = 0} \label{eq:first_order_alpha_derivative}\\
+    &~ + e^{i(H+\alpha G)t} \rho_T \int_{0}^1 e^{-i s (H+\alpha G) t} (- i t G) e^{-i (1-s) (H+\alpha G)t} ds \bigg|_{\alpha = 0} \\
     &= i t \int_0^1 e^{i s H t} G e^{-i s H t} ds e^{i H t} \rho_T e^{-i H t} - i t e^{+i H t} \rho_T \int_0^1 e^{-is H t} G e^{-i(1-s) Ht} ds \\
     &= i t \int_0^1 G(s t) ds \rho_T(t) - it \rho_T(t) \int_0^1 G(s t) ds \\
     &= i t \int_0^1 [G(s t), \rho_T(t)] ds,
