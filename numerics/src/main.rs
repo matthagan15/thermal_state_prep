@@ -19,6 +19,8 @@ use rayon::prelude::*;
 use rand::prelude::*;
 use rand_distr::{StandardNormal, Normal};
 
+const MAX_INTERACTIONS: usize = 10000;
+
 fn sample_haar_unitary(dim: usize) -> Array2<c64> {
     let mut rng = thread_rng();
     let mut real_gauss: Vec<c64> = Vec::with_capacity(dim * dim);
@@ -103,20 +105,69 @@ fn multi_interaction_mc(
     num_samples: usize,
     system_hamiltonian: &Array2<c64>,
     env_hamiltonian: &Array2<c64>,
-    system_state: &Array2<c64>,
-    env_state: &Array2<c64>,
+    system_start_beta: f64,
+    env_beta: f64,
     alpha: f64,
     time: f64,
 ) -> Array2<c64> {
-    let mut out = system_state.clone();
+    let sys_start_state = thermal_state(system_hamiltonian, system_start_beta);
+    let mut out = sys_start_state.clone();
+    // Note this does not have to be recomputed each time as it is immutable
+    let env_state = thermal_state(env_hamiltonian, env_beta);
     for i in 0..num_interactions {
-        let interacted = one_shot_mc(num_samples, system_hamiltonian, env_hamiltonian, &out, env_state, alpha, time);
+        let interacted = one_shot_mc(num_samples, system_hamiltonian, env_hamiltonian, &out, &env_state, alpha, time);
         out.assign(&interacted);
         // if i % (num_samples / 10) == 0 {
         println!("{:}% done.", (i as f64) / (num_interactions as f64));
         // }
     }
     out
+}
+
+fn find_interactions_needed_for_error(
+    num_samples: usize,
+    system_hamiltonian: &Array2<c64>,
+    env_hamiltonian: &Array2<c64>,
+    system_start_beta: f64,
+    env_beta: f64,
+    error: f64,
+    alpha: f64,
+    time: f64,
+) -> usize {
+    let mut sys_state = thermal_state(system_hamiltonian, system_start_beta);
+    let system_target_state = thermal_state(system_hamiltonian, env_beta);
+    let env_state = thermal_state(env_hamiltonian, env_beta);
+    for ix in 0..MAX_INTERACTIONS {
+        println!("[find_interactions_needed_for_error] performing interaction: {:}", ix);
+        let out = one_shot_mc(num_samples, system_hamiltonian, env_hamiltonian, &sys_state, &env_state, alpha, time);
+        let distance_to_target = schatten_2_norm(&out, &system_target_state);
+        println!("[find_interactions_needed_for_error] distance to target: {:}", distance_to_target);
+        if distance_to_target <= error {
+            return ix;
+        } else {
+            sys_state.assign(&out);
+        }
+    }
+    println!("[find_interactions_needed_for_error] did not converge, returning MAX_INTERACTIONS.");
+    MAX_INTERACTIONS
+}
+
+fn test_minimum_interactions() {
+    let alpha = 0.01;
+    let t = 100.;
+    let num_mc_samples = 500;
+    let sys_dim = 20;
+    let env_dim = 5;
+    let h_sys = harmonic_oscillator_hamiltonian(sys_dim);
+    let h_env = harmonic_oscillator_hamiltonian(env_dim);
+    let env_beta = 1.;
+    let betas = vec![1., 0.8, 0.6, 0.4, 0.2, 0.0];
+    for beta in betas {
+        let min_interactions = find_interactions_needed_for_error(num_mc_samples, &h_sys, &h_env, beta, env_beta, 0.1, alpha, t);
+        println!("{:}", "*".repeat(75));
+        println!("system start beta: {:}", beta);
+        println!("interactions needed: {:}", min_interactions);
+    }
 }
 
 /// Computes Schatten-2 Norm, AKA frobenius error between two
@@ -206,7 +257,7 @@ fn interaction_at_alpha(alpha: f64) -> f64 {
     let rho_sys = thermal_state(&h_sys, beta);
     let rho_env = thermal_state(&h_env, beta);
     let rho_tot = kron(&rho_sys, &rho_env);
-    let channel_output = multi_interaction_mc(10, 20000, &h_sys, &h_env, &rho_sys, &rho_env, alpha, t);
+    let channel_output = multi_interaction_mc(10, 20000, &h_sys, &h_env, beta, beta, alpha, t);
     // println!("channel_output shape: {:?}", channel_output.shape());
     // schatten_2_norm(&channel_output, &rho_tot)
     let diff = &channel_output - &rho_sys;
@@ -246,8 +297,9 @@ fn test_beta_fix_dimension() {
 
 fn main() {
     let start = Instant::now();
-    test_beta_fix_dimension();
+    // test_beta_fix_dimension();
     // test_dimension_fix_beta();
+    test_minimum_interactions();
     let duration = start.elapsed();
     println!("took this many millis: {:}", duration.as_millis());
 }

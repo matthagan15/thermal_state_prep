@@ -74,9 +74,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-Going to leave this blank for now. 
-
-Want to include here the main methods for preparing thermal states that currently exist, mainly the Poulin and Wocjan paper and Quantum-Quantum Metropolis Hastings. Where should more niche/advanced methods go? \cite{shiraishi_undecidability_2021}
+Going to leave this blank for now. \cite{shiraishi_undecidability_2021}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -114,6 +112,24 @@ Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the r
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Fixed Points}
 
+\begin{lemma}[First Order $\alpha$ Correction to $\Phi$]
+   Given a randomized environment interaction channel $\Phi$ with coupling coefficient $\alpha$, the first order correction is
+   \begin{equation}
+        \frac{\partial}{\partial \alpha} \Phi(\rho_S) \bigg|_{\alpha = 0} = 0.
+   \end{equation}
+\end{lemma}
+\begin{proof}
+    We start by using linearity of derivatives, integration, and partial trace to pull the $\alpha$ derivative to act on $\Phi_G$ as
+    \begin{align}
+        \frac{\partial}{\partial \alpha} \Phi(\rho_S) \bigg|_{\alpha = 0} &= \frac{\partial}{\partial \alpha} \partrace{\mathcal{H}_E}{\int \Phi_G(\rho_s) dG} \bigg|_{\alpha = 0} \\
+         &= \partrace{\mathcal{H}_E}{\int \frac{\partial}{\partial \alpha} \Phi_G(\rho_S) dG} \bigg|_{\alpha = 0}.
+    \end{align}
+    Now we use Eq. \eqref{eq:phi_g_definition} to compute the derivatives
+    \begin{align}
+        \frac{\partial}{\partial \alpha} \Phi_G (\rho_S) &= \parens{\frac{\partial}{\partial \alpha} e^{+ i (H + \alpha G)t}} \rho_S e^{-i (H + \alpha G) t} + e^{+i (H + \alpha G)t} \rho_S \parens{\frac{\partial}{\partial \alpha} e^{- i (H + \alpha G)t}} \\
+        &=  
+    \end{align}
+\end{proof}
 
 \begin{lemma}[Second Order Correction]
     Given a system Hamiltonian $H_{S} = \sum_{i = 1}^{\dim_S} E_i \ketbra{i}{i}$, an environment Hamiltonian $H_{E} = \sum_{j = 1}^{\dim_E} E_j \ketbra{j}{j}$, a simulation time $t$, and coupling coefficient $\alpha$ we can simulate the overall system-environment evolution of Hamiltonian $H = H_S \otimes \identity + \identity \otimes H_E$ with randomized interaction $G$ as
@@ -139,14 +155,14 @@ The first object of interest is the Taylor Series
 \end{equation}
 
  where the remainder $R$ is of order $\bigo{\alpha^3}$. We first focus on computing the first two non-trivial terms and focus on bounding the magnitude of $R$ later. 
-For ease of writing, let $\rho_E \coloneqq \frac{e^{-\beta_E H_E}}{\partfun_E(\beta_E)}$ represent the resource state that the environment is prepared in. Using this, the first order term can be computed as
+For ease of writing, let $\rho_E \coloneqq \frac{e^{-\beta_E H_E}}{\partfun_E(\beta_E)}$ represent the resource state that the environment is prepared in. Letting $\rho_S$ denote the input system state, we use $\rho_T = \rho_S \otimes \rho_E$ to denote the input state of the combined system and environment. Using this, the first order term can be computed as
 \begin{align}
-    \frac{\partial}{\partial \alpha} \Phi_G(\rho) \bigg|_{\alpha = 0} &= \frac{\partial}{\partial \alpha} e^{+i(H + \alpha G) t} \parens{\rho \otimes \rho_E} e^{-i(H + \alpha G) t} \\
-    &= \int_{0}^{1} e^{i s (H+\alpha G)t} (i t G) e^{i (1-s) (H+\alpha G)t} ds \parens{\rho \otimes \rho_E} e^{-i(H+\alpha G)t} \bigg|_{\alpha=0} \nonumber \\
-    &~ + e^{i(H+\alpha G)t} \parens{\rho \otimes \rho_E} \int_{0}^1 e^{-i s (H+\alpha G) t} (- i t G) e^{-i (1-s) (H+\alpha G)t} ds \bigg|_{\alpha = 0} \label{eq:first_order_alpha_derivative}\\
-    &= i t \int_0^1 e^{i s H t} G e^{-i s H t} ds e^{i H t} \parens{\rho \otimes \rho_E} e^{-i H t} - i t e^{+i H t} \parens{\rho \otimes \rho_E} \int_0^1 e^{-is H t} G e^{-i(1-s) Ht} ds \\
-    &= i t \int_0^1 G(s t) ds \parens{\rho \otimes \rho_E}(t) - it \parens{\rho \otimes \rho_E}(t) \int_0^1 G(s t) ds \\
-    &= i t \int_0^1 [G(s t), \parens{\rho \otimes \rho_E}(t)] ds,
+    \frac{\partial}{\partial \alpha} \Phi_G(\rho_S) \bigg|_{\alpha = 0} &= \frac{\partial}{\partial \alpha} e^{+i(H + \alpha G) t} \rho_T e^{-i(H + \alpha G) t} \\
+    &= \int_{0}^{1} e^{i s (H+\alpha G)t} (i t G) e^{i (1-s) (H+\alpha G)t} ds \rho_T e^{-i(H+\alpha G)t} \bigg|_{\alpha=0} \nonumber \\
+    &~ + e^{i(H+\alpha G)t} \rho_T \int_{0}^1 e^{-i s (H+\alpha G) t} (- i t G) e^{-i (1-s) (H+\alpha G)t} ds \bigg|_{\alpha = 0} \label{eq:first_order_alpha_derivative}\\
+    &= i t \int_0^1 e^{i s H t} G e^{-i s H t} ds e^{i H t} \rho_T e^{-i H t} - i t e^{+i H t} \rho_T \int_0^1 e^{-is H t} G e^{-i(1-s) Ht} ds \\
+    &= i t \int_0^1 G(s t) ds \rho_T(t) - it \rho_T(t) \int_0^1 G(s t) ds \\
+    &= i t \int_0^1 [G(s t), \rho_T(t)] ds,
 \end{align}
 where we utilize the Heisenberg picture $G(t) = e^{+i H t} G e^{-i H t}$, similarly for $\rho \otimes \rho_E$.
 
@@ -154,12 +170,12 @@ Now before we compute the second order correction for $\alpha$ we will show that
 \begin{align}
     \frac{\partial}{\partial \alpha} \Phi(\rho) \bigg|_{\alpha = 0} &= \frac{\partial}{\partial \alpha} \partrace{env}{\int \Phi_G(\rho) ~dG} \bigg|_{\alpha=0} \\
     &= \partrace{env}{\int\frac{\partial \Phi_G(\rho)}{\partial \alpha} \bigg|_{\alpha=0} dG } \\
-    &= i t \partrace{env}{\int_0^1 \int [e^{i H s t} G e^{-i H s t}, \parens{\rho \otimes \rho_E}(t)] dG ds}.
+    &= i t \partrace{env}{\int_0^1 \int [e^{i H s t} G e^{-i H s t}, \rho_T(t)] dG ds}.
 \end{align}
-From here we use the fact that partial traces, integrations, and our anticommutator is linear in one of the inputs to pull the averaging over $G$ into the commutator. Then we use the fact that any given $G$ can be written as $G = U_G D U_G^\dagger$ to yield
+From here we use the fact that partial traces, integrations, and our commutator is linear in one of the inputs to pull the averaging over $G$ into the commutator. Then we use the fact that any given $G$ can be written as $G = U_G D U_G^\dagger$ to yield
 \begin{align}
-    &= i t \partrace{env}{\int_0^1  [e^{i H s t} \int U_G D U_G^\dagger ~ dD ~ dU_G e^{-i H s t}, \parens{\rho \otimes \rho_E}(t)] ds} \\
-    &= i t \partrace{env}{\int_0^1  [e^{i H s t} \int U_G \parens{\int D dD} U_G^\dagger ~ dU_G ~ e^{-i H s t}, \parens{\rho \otimes \rho_E}(t)] ds}.
+    &= i t \partrace{env}{\int_0^1  [e^{i H s t} \int U_G D U_G^\dagger ~ dD ~ dU_G e^{-i H s t}, \rho_T(t)] ds} \\
+    &= i t \partrace{env}{\int_0^1  [e^{i H s t} \int U_G \parens{\int D dD} U_G^\dagger ~ dU_G ~ e^{-i H s t}, \rho_T(t)] ds}.
 \end{align}
 We now impose our restriction on the random matrix ensembles allowed for $G$, namely that they have eigenvalues with mean $0$ and variance $\sigma^2$, which allows us to say $\int D ~dD = 0$. This then implies that the total first order correction vanishes as $\frac{\partial}{\partial \alpha} \Phi(\rho) \big|_{\alpha = 0} = 0$. 
 
@@ -397,7 +413,66 @@ Now we look at the RHS in detail
 \section{Leftovers}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Simplifying $\Phi(\rho)$ with Perturbation Theory}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Simplifying $\Phi(\rho)$ with Trotter}
+The idea here is to try and see what very short time evolution does to our channel. At the very least this might give some intuition as to what is happening?
+\begin{align}
+    \Phi_G(\rho_{PS}) &= \partrace{2}{e^{+i\widetilde{H}t} \rho_{PS} e^{-i \widetilde{H} t}} \\
+    &= \partrace{2}{\parens{e^{i G \alpha t} e^{i H t} + \bigo{t^2}} \rho_{PS} \parens{e^{-iHt} e^{-i G \alpha t} + \bigo{t^2}}} \\
+    &= \partrace{2}{e^{i G \alpha t} \rho_{PS} e^{-i G \alpha t}} + \bigo{t^2} 
+\end{align}
+
+\section{Energy and Entropic concerns}
+One requirement that our construction should satisfy is that a system in a thermal state should be invariant under contact with an environment at the same temperature. Formally, we would like that $\Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}} = \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}$. Exact equality may be too strong to enforce, so we instead consider that the energy of the system remains unchanged after coupling with the environment. 
+
+\begin{equation}
+    \trace{H_{sys} \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}} = \trace{H_{sys} \Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}}}.
+\end{equation}
+Now we look at the RHS in detail
+\begin{align}
+    \trace{H_{sys} \Phi \parens{\rho} } &= \trace{ H_{sys} \partrace{env}{\int e^{i \widetilde{H} t} \rho e^{-i \widetilde{H} t} dG}} \\
+    &= \int \trace{H_{sys} \otimes \openone_{env} e^{i \widetilde{H} t} \rho e^{-i \widetilde{H} t} } dG \\
+    &=  \trace{\int e^{- i (H + \alpha G) t} H_{sys} \otimes \openone_{env} e^{+ i (H + \alpha G) t} dG ~ \rho }
+\end{align}
+
+ \subsection{Phase Contribution complicated}
+ Now we investigate the phase integrals $C_E$. 
+ \begin{align}
+     C_E &= \int_0^1 \int_0^1 \bigg(  2 \rho_{m,n} e^{i(E_{i,j} - E_{m,n})s_1t} e^{i(E_{m,n} - E_{k,l})s_2 t}  \\
+     &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 \\
+     &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1) \bigg) ds_1 ds_2 \\
+ \end{align}
+ These can be solved analytically as
+ \begin{align}
+     \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1t} e^{i(E_{m,n} - E_{k,l})s_2 t} ds_1 ds_2 &= \frac{(e^{i(E_{i,j} - E_{m,n})t} - 1)(e^{i(E_{m,n} - E_{k,l})t} - 1)}{t^2 (E_{i,j} - E_{m,n})(E_{k,l} - E_{m,n})} \\
+     \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 ds_1 ds_2 &= \nonumber \\
+     \frac{e^{i(E_{i,j} - E_{k,l})t}(E_{i,j} - E_{m,n}) + (E_{m,n} - E_{k,l}) - e^{i(E_{i,j} - E_{m,n})t}(E_{i,j} - E_{k,l})}{t^2(E_{i,j} - E_{m,n})(E_{k,l} - E_{m,n})(E_{i,j} - E_{k,l})} \\
+     \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1) ds_1 ds_2 &= \nonumber \\
+     \frac{-(E_{i,j} - E_{m,n}) + e^{i(E_{m,n} - E_{k,l})t}\parens{E_{i,j} - E_{k,l} - e^{i(E_{i,j} - E_{m,n})t}(E_{m,n} - E_{k,l})}}{t^2 (E_{i,j} - E_{m,n})(E_{m,n} - E_{k,l})(E_{i,j} - E_{k,l})}
+ \end{align}
+ Now we introduce some minor notation to help readability $\Delta_{ij,kl} := E_{i,j} - E_{k,l}$. This reduces the phase contribution to
+ \begin{align}
+      t^2 C_E(\rho) = &e^{i\Delta_{ij,kl}t} \parens{\frac{2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} + \frac{(\rho_{ij} + \rho_{k,l}) \Delta_{ij,mn}}{\Delta_{ij,kl} \Delta_{ij,mn} \Delta_{kl,mn}}} \\
+     +& e^{i \Delta_{ij,mn}t} \parens{\frac{- 2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} - \frac{(\rho_{ij} + \rho_{k,l}) \Delta_{mn,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}} - \frac{(\rho_{i,j} + \rho_{k,l})\Delta_{ij,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}}} \\
+     +& e^{i \Delta_{mn,kl}t} \parens{\frac{- 2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} - \frac{(\rho_{i,j} + \rho_{k,l}) \Delta_{ij,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}}} \\
+     +& \parens{2 \rho_{m,n} + (\rho_{i,j} + \rho_{k,l}) \frac{\Delta_{mn,kl} + \Delta_{ij,mn}}{\Delta_{ij,kl} \Delta_{ij,mn} \Delta_{kl,mn}}}
+ \end{align}
+ 
+ Since we have the factor of $\delta_{i,j | k,l}$ from the Haar integral contribution we can further simplify these as
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Approximating $e^{i (H + \alpha G) t}$ evolution}
+
+\bibliographystyle{unsrt}
+\bibliography{bib}
+
+\appendix
+\section{Perturbation Theory Attempt}
 The goal is to use perturbation theory to write the output of the channel in terms of powers of the coupling strength $\alpha$. It remains to be seen if first order perturbation theory will be enough. We also are specifically interested when $\rho$ is a product state of thermal states, in other words $\rho_{PS} = \frac{e^{-\beta_1 H_1}}{\partfun_1} \otimes \frac{e^{-\beta_2 H_2}}{\partfun_2}$. We also denote the action of our channel with respect to a particular choice of $G$ as $\Phi_G$, which combined with linearity of partial traces gives $\Phi = \int dG \Phi_G$. 
 \begin{align}
     \Phi_G(\rho_{PS}) &= \partrace{2}{e^{+i \widetilde{H} t} \rho_{PS} e^{-i \widetilde{H} t}} \\
@@ -469,61 +544,5 @@ The second order corrections have 10 possible sources for terms, however many ar
 \end{align}
 
 Two potential issues. 1) How can we normalize the output state? This may depend on how we approach the second. 2) How do we bound the remaining terms in the perturbation series? Are there any dumb bounds I can work out? 
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Simplifying $\Phi(\rho)$ with Trotter}
-The idea here is to try and see what very short time evolution does to our channel. At the very least this might give some intuition as to what is happening?
-\begin{align}
-    \Phi_G(\rho_{PS}) &= \partrace{2}{e^{+i\widetilde{H}t} \rho_{PS} e^{-i \widetilde{H} t}} \\
-    &= \partrace{2}{\parens{e^{i G \alpha t} e^{i H t} + \bigo{t^2}} \rho_{PS} \parens{e^{-iHt} e^{-i G \alpha t} + \bigo{t^2}}} \\
-    &= \partrace{2}{e^{i G \alpha t} \rho_{PS} e^{-i G \alpha t}} + \bigo{t^2} 
-\end{align}
-
-\section{Energy and Entropic concerns}
-One requirement that our construction should satisfy is that a system in a thermal state should be invariant under contact with an environment at the same temperature. Formally, we would like that $\Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}} = \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}$. Exact equality may be too strong to enforce, so we instead consider that the energy of the system remains unchanged after coupling with the environment. 
-
-\begin{equation}
-    \trace{H_{sys} \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}} = \trace{H_{sys} \Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}}}.
-\end{equation}
-Now we look at the RHS in detail
-\begin{align}
-    \trace{H_{sys} \Phi \parens{\rho} } &= \trace{ H_{sys} \partrace{env}{\int e^{i \widetilde{H} t} \rho e^{-i \widetilde{H} t} dG}} \\
-    &= \int \trace{H_{sys} \otimes \openone_{env} e^{i \widetilde{H} t} \rho e^{-i \widetilde{H} t} } dG \\
-    &=  \trace{\int e^{- i (H + \alpha G) t} H_{sys} \otimes \openone_{env} e^{+ i (H + \alpha G) t} dG ~ \rho }
-\end{align}
-
- \subsection{Phase Contribution complicated}
- Now we investigate the phase integrals $C_E$. 
- \begin{align}
-     C_E &= \int_0^1 \int_0^1 \bigg(  2 \rho_{m,n} e^{i(E_{i,j} - E_{m,n})s_1t} e^{i(E_{m,n} - E_{k,l})s_2 t}  \\
-     &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 \\
-     &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1) \bigg) ds_1 ds_2 \\
- \end{align}
- These can be solved analytically as
- \begin{align}
-     \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1t} e^{i(E_{m,n} - E_{k,l})s_2 t} ds_1 ds_2 &= \frac{(e^{i(E_{i,j} - E_{m,n})t} - 1)(e^{i(E_{m,n} - E_{k,l})t} - 1)}{t^2 (E_{i,j} - E_{m,n})(E_{k,l} - E_{m,n})} \\
-     \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 ds_1 ds_2 &= \nonumber \\
-     \frac{e^{i(E_{i,j} - E_{k,l})t}(E_{i,j} - E_{m,n}) + (E_{m,n} - E_{k,l}) - e^{i(E_{i,j} - E_{m,n})t}(E_{i,j} - E_{k,l})}{t^2(E_{i,j} - E_{m,n})(E_{k,l} - E_{m,n})(E_{i,j} - E_{k,l})} \\
-     \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1) ds_1 ds_2 &= \nonumber \\
-     \frac{-(E_{i,j} - E_{m,n}) + e^{i(E_{m,n} - E_{k,l})t}\parens{E_{i,j} - E_{k,l} - e^{i(E_{i,j} - E_{m,n})t}(E_{m,n} - E_{k,l})}}{t^2 (E_{i,j} - E_{m,n})(E_{m,n} - E_{k,l})(E_{i,j} - E_{k,l})}
- \end{align}
- Now we introduce some minor notation to help readability $\Delta_{ij,kl} := E_{i,j} - E_{k,l}$. This reduces the phase contribution to
- \begin{align}
-      t^2 C_E(\rho) = &e^{i\Delta_{ij,kl}t} \parens{\frac{2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} + \frac{(\rho_{ij} + \rho_{k,l}) \Delta_{ij,mn}}{\Delta_{ij,kl} \Delta_{ij,mn} \Delta_{kl,mn}}} \\
-     +& e^{i \Delta_{ij,mn}t} \parens{\frac{- 2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} - \frac{(\rho_{ij} + \rho_{k,l}) \Delta_{mn,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}} - \frac{(\rho_{i,j} + \rho_{k,l})\Delta_{ij,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}}} \\
-     +& e^{i \Delta_{mn,kl}t} \parens{\frac{- 2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} - \frac{(\rho_{i,j} + \rho_{k,l}) \Delta_{ij,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}}} \\
-     +& \parens{2 \rho_{m,n} + (\rho_{i,j} + \rho_{k,l}) \frac{\Delta_{mn,kl} + \Delta_{ij,mn}}{\Delta_{ij,kl} \Delta_{ij,mn} \Delta_{kl,mn}}}
- \end{align}
- 
- Since we have the factor of $\delta_{i,j | k,l}$ from the Haar integral contribution we can further simplify these as
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Approximating $e^{i (H + \alpha G) t}$ evolution}
-
-\bibliographystyle{unsrt}
-\bibliography{bib}
 
 \end{document}

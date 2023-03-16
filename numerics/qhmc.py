@@ -125,7 +125,6 @@ class QHMC:
         # print("b,e:", b, ", ", e)
         # return (avg_out, b, e)
         return avg_out
-        
 
     def simulate_interactions(self):
         self.system_state = thermal_state(self.ham_sys, self.sys_start_beta)
@@ -141,6 +140,25 @@ class QHMC:
                 out = partrace(raw, self.ham_sys.shape[0], self.ham_env_base.shape[0])
                 new_output += out.view(np.complex128) / self.num_monte_carlo
             self.system_state = new_output
+
+    def test_distance_with_interactions(self):
+        self.system_state = thermal_state(self.ham_sys, self.sys_start_beta);
+        system_target_state = thermal_state(self.ham_sys, self.betas[0])
+        for ix in range(100):
+            print("interaction number: ", ix)
+            rho_env = thermal_state(self.ham_env_base, self.betas[0])
+            rho_tot = np.kron(self.system_state, rho_env)
+            new_output = np.zeros((self.system_state.shape[0], self.system_state.shape[1] * 2)).view(np.complex128)
+            for sample in range(self.num_monte_carlo):
+                g = gue(self.ham_sys.shape[0] * self.ham_env_base.shape[0])
+                ham_tot = self.total_hamiltonian + self.alphas[0] * g
+                u = linalg.expm(1j * ham_tot * self.times[0])
+                raw = u @ rho_tot @ u.conj().T
+                out = partrace(raw, self.ham_sys.shape[0], self.ham_env_base.shape[0])
+                new_output += out.view(np.complex128) / self.num_monte_carlo
+            self.system_state = new_output
+            diff = system_target_state - self.system_state
+            print("system distance to target: ", np.linalg.norm(diff, ord='fro'))
 
     def compute_error_with_target_beta(self):
         """
@@ -222,7 +240,7 @@ def test_dimension():
 def test_beta():
     betas = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
     env_dimension = 10
-    sys_dim = 20
+    sys_dim = 40
     env_hamiltonian = harmonic_oscillator_hamiltonian(env_dimension)
     for beta in betas:
         qhmc = QHMC(ham_sys = harmonic_oscillator_hamiltonian(sys_dim), env_betas=[1.], sim_times=[100.], alphas = [0.01], ham_env_base = env_hamiltonian, num_monte_carlo=500, sys_start_beta=beta)
@@ -233,6 +251,8 @@ if __name__ == "__main__":
     # test()
     start = time_this.time()
     # test_dimension()
-    test_beta()
+    # test_beta()
+    qhmc = QHMC(ham_sys = harmonic_oscillator_hamiltonian(20), ham_env_base = harmonic_oscillator_hamiltonian(5), sys_start_beta = 0.5, env_betas = [1.], sim_times = [100.], alphas = [0.001], num_monte_carlo = 500)
+    qhmc.test_distance_with_interactions()
     end = time_this.time()
     print("took this many seconds: ", end - start)
