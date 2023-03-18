@@ -62,7 +62,11 @@ fn one_shot_interaction(
     time: f64,
 ) -> Array2<c64> {
     let sys_env_interaction_sample: Array2<c64> = (c64::from_real(alpha)) * random_hermite(system_state.nrows() * env_state.nrows());
-    let hamiltonian = kron(system_hamiltonian, env_hamiltonian);
+    let sys_identity = Array2::<c64>::eye(system_hamiltonian.nrows());
+    let env_identity = Array2::<c64>::eye(env_hamiltonian.nrows());
+
+    
+    let hamiltonian = kron(system_hamiltonian, &env_identity) + kron(&sys_identity, env_hamiltonian);
     let mut tot_hamiltonian = &sys_env_interaction_sample + &hamiltonian;
     tot_hamiltonian *= i() * time;
 
@@ -86,7 +90,7 @@ fn one_shot_mc(
 ) -> Array2<c64> {
     let out = Array2::<c64>::zeros((system_state.nrows(), system_state.ncols()).f());
     let locker = RwLock::new(out);
-    (0..num_samples).into_par_iter().for_each(|_|{
+    (0..num_samples).into_par_iter().for_each(|_| {
         let sample =  one_shot_interaction(system_hamiltonian, env_hamiltonian, system_state, env_state, alpha, time);
         let mut x = locker.write().unwrap();
         for ix in 0..x.nrows() {
@@ -297,9 +301,9 @@ fn test_beta_fix_dimension() {
 
 fn main() {
     let start = Instant::now();
-    // test_beta_fix_dimension();
+    test_beta_fix_dimension();
     // test_dimension_fix_beta();
-    test_minimum_interactions();
+    // test_minimum_interactions();
     let duration = start.elapsed();
     println!("took this many millis: {:}", duration.as_millis());
 }

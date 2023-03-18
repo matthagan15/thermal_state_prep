@@ -1,0 +1,1 @@
+alpha 0.001 converged to 0.000712 with marginal slowdown after 500 interactions

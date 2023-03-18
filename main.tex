@@ -44,8 +44,8 @@
 \newcommand{\openone}{\mathds{1}}
 \newcommand{\expect}[1]{\mathbb{E}\brackets{#1}}
 \newcommand{\prob}[1]{\text{Pr}\left[ #1 \right]}
-\newcommand{\bigo}[1]{\mathcal{O}\left( #1 \right)}
-\newcommand{\bigotilde}[1]{\widetilde{\mathcal{O}} \left( #1 \right)}
+\newcommand{\bigo}[1]{O\left( #1 \right)}
+\newcommand{\bigotilde}[1]{\widetilde{O} \left( #1 \right)}
 \newcommand{\ts}{\textsuperscript}
 
 \DeclareMathOperator{\Tr}{Tr}
@@ -80,13 +80,18 @@ Going to leave this blank for now. \cite{shiraishi_undecidability_2021}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Preliminaries}
-We denote the Hilbert space of the system as $\hilb_{sys}$ and the environment as $\hilb_{env}$, with the Hamiltonians governing each as $H_{sys}$ and $H_{env}$. The Hamiltonian for the joint system on $\hilb_{sys} \otimes \hilb_{env}$ is then $H = H_{sys} \otimes \identity + \identity \otimes H_{env}$. We study the effects of simulating the time dynamics of the system-environment space with randomized interactions. Our goal is to produce a channel that can reduce the entropy of a system thermal state by utilizing easily prepared thermal states of the environment. We consider using the Haar measure over eigenvectors for the randomized interaction and i.i.d eigenvalues from a zero mean $\sigma^2$ variance distribution. We consider input states of the form $\rho(\beta_S, \beta_E) = \frac{e^{-\beta_S H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{-\beta_E H_{env}}}{\partfun_{env}}$ and will simply use $\rho$ until the thermal nature of our inputs are necessary. The thermal states for the environment are supposed to be easily preparable.
+We denote the Hilbert space of the system as $\hilb_{S}$ and the environment as $\hilb_{E}$, with the Hamiltonians governing each as $H_{S}$ and $H_{E}$. We will assume without loss of generality that the system's Hilbert space can be encoded with $n$ qubits, giving $\dim_S = 2^{n}$, and the environment's Hilbert space can be encoded with $m$ qubits giving $\dim_E = 2^{m}$. The Hamiltonian for the joint system on $\hilb_{S} \otimes \hilb_{E}$ is then $H = H_{S} \otimes \identity + \identity \otimes H_{E}$. The Hilbert space of the combined system and environment is of dimension $\dim = \dim_E \cdot \dim_S = 2^{n + m}$. 
 
-The Hamiltonians $H_{sys}$ and $H_{env}$ form a basis for the tensor product space. As we are not concerned with specific details of the eigenvectors of each, we will refer to them by an arbitrary index. Let $E_{i,j}$ denote the eigenvalue $E_i(H_{sys}) + E_j(H_{env})$ and $\ket{i,j}$ the corresponding eigenvector. Without loss of generality we will focus on spaces in which the system can be represented with $n$ qubits and the environment with $m$ qubits. So we have
+We will primarily work in the eigenbasis for each Hamiltonian:
 \begin{equation}
-    H_{sys} = \sum_{i = 0}^{2^n - 1} E_i \ketbra{i}{i} ~,~ H_{env} = \sum_{j=0}^{2^m - 1} E_j \ketbra{j}{j} ~,~ H = \sum_{i=0}^{2^n - 1} \sum_{j=0}^{2^m - 1} E_{i,j} \ketbra{i,j}{i,j}.
+    H_{S} = \sum_{i = 0}^{2^n - 1} \lambda_S(i) \ketbra{s_i}{s_i} ~,~ H_{E} = \sum_{j=0}^{2^m - 1} \lambda_E(j) \ketbra{e_j}{e_j} ~,~ H = \sum_{i=0}^{2^n - 1} \sum_{j=0}^{2^m - 1} \lambda(i,j) (\ket{s_i} \otimes \ket{e_j})(\bra{s_i} \otimes \bra{e_j}),
 \end{equation}
-The above is just to put all the chosen notation in a convenient place. 
+for convenience we will denote the tensor product of eigenvectors simply by their indices $\ket{i,j} \coloneqq \ket{s_i} \otimes \ket{e_j}$. Note that $\lambda(i,j) \coloneqq \lambda_S(i) + \lambda_E(j)$. 
+Let $\lambda(i,j)$ denote the eigenvalue $E_i(H_{sys}) + E_j(H_{env})$ and $\ket{i,j}$ the corresponding eigenvector. 
+
+We study the effects of simulating the time dynamics of the system-environment space with randomized interactions. Our goal is to produce a channel that can reduce the entropy of a system thermal state by utilizing easily prepared thermal states of the environment. We consider using the Haar measure over eigenvectors for the randomized interaction and i.i.d eigenvalues from a zero mean $\sigma^2$ variance distribution. 
+
+For input states we will typically assume thermal states of the form $\rho_S(\beta) = \frac{e^{-\beta H_S}}{\partfun_S}$, where $\partfun_S = \trace{e^{-\beta H_S}}$, where the inverse temperature $\beta$ of the partition function will typically be assumed but written explicitly if need be. We will assume environment states of the form $\rho_E(\beta) = \frac{e^{-\beta H_E}}{\partfun_E}$ and we will typically denote the tensor product of the system and environment states as $\rho(\beta_S, \beta_E) = \rho_S(\beta_S) \otimes \rho_E(\beta_E)$. The inputs $\beta_S, \beta_E$ will typically be surpressed in most cases as well.
 
 
 Overall one application of our channel is represented as
@@ -122,7 +127,7 @@ Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the r
     We start by using linearity of derivatives, integration, and partial trace to pull the $\alpha$ derivative to act on $\Phi_G$ as
     \begin{align}
         \frac{\partial}{\partial \alpha} \Phi(\rho_S) \bigg|_{\alpha = 0} &= \frac{\partial}{\partial \alpha} \partrace{\mathcal{H}_E}{\int \Phi_G(\rho_s) dG} \bigg|_{\alpha = 0} \\
-         &= \partrace{\mathcal{H}_E}{\int \frac{\partial}{\partial \alpha} \Phi_G(\rho_S) dG} \bigg|_{\alpha = 0}.
+         &= \partrace{\mathcal{H}_E}{\int \frac{\partial}{\partial \alpha} \Phi_G(\rho_S) dG \bigg|_{\alpha = 0} } .
     \end{align}
     Now we use Eq. \eqref{eq:phi_g_definition} to compute the derivatives, we remind the reader that $\rho = \rho_S \otimes \rho_E$,
     \begin{align}
@@ -149,17 +154,21 @@ Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the r
 \end{proof}
 
 \begin{lemma}[Second Order Correction]
-    Given a system Hamiltonian $H_{S} = \sum_{i = 1}^{\dim_S} E_i \ketbra{i}{i}$, an environment Hamiltonian $H_{E} = \sum_{j = 1}^{\dim_E} E_j \ketbra{j}{j}$, a simulation time $t$, and coupling coefficient $\alpha$ we can simulate the overall system-environment evolution of Hamiltonian $H = H_S \otimes \identity + \identity \otimes H_E$ with randomized interaction $G$ as
+    Given a system Hamiltonian $H_{S}$, an environment Hamiltonian $H_{E}$, a simulation time $t$, and coupling coefficient $\alpha$, let $\Phi(\rho_S)$ denote the fixed interaction system-environment channel 
+    \begin{equation}
+        \Phi_G(\rho_S) = e^{+i (H + \alpha G)t} (\rho_S \otimes \rho_E) e^{-i (H + \alpha G)t},
+    \end{equation}
+    where $H = H_S \otimes \identity + \identity \otimes H_E$. 
+    Then the interaction averaged $\bigo{\alpha^2}$ correction to this channel is given by
+    \begin{equation}
+        \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S) \bigg|_{\alpha = 0} dG = \sum_{i,j} T(i,j) \ketbra{i, j}{i, j},
+    \end{equation}
+    where $T$ is defined as
     \begin{align}
-        \Phi(\rho) &= \int  \partrace{\mathcal{H}_E}{e^{+i (H + \alpha G)t} \parens{\rho \otimes \frac{e^{-\beta_E H_E}}{\partfun_E(\beta_E)} } e^{-i (H + \alpha G) t} } dG \\
-        &= \rho + \alpha^2 \sum_{i,j} T_{i,j} \ketbra{i,j}{i,j} + \bigo{\alpha^3},
+        T(i, j) &\coloneqq \frac{\sigma^2}{\dim + 1} \sum_{(m,n) : \lambda(m,n) \neq \lambda(i,j)} \frac{2 \rho_{m,n}(1 - \cos ((\lambda(i,j) - \lambda(m,n))t)) + \rho_{i,j} (2 \cos ((\lambda(i,j) - \lambda(m,n))t) - 1 )}{(\lambda(i,j) - \lambda(m,n))^2} \\
+        &~ + \frac{\sigma^2}{\dim + 1} \sum_{(m,n) : \lambda(m,n) = \lambda(i,j)} 2 (\rho_{m,n} - \rho_{i,j}).
     \end{align}
-    where 
-    
-    \begin{align}
-        T_{i,j} &\coloneqq \frac{\sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} \neq E_{i,j}} \frac{2 \rho_{m,n}(1 - \cos ((E_{i,j} - E_{m,n})t)) + \rho_{i,j} (2 \cos ((E_{i,j} - E_{m,n})t) - 1 )}{(E_{i,j} - E_{m,n})^2} \\
-        &~ + \frac{\sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} = E_{i,j}} 2 (\rho_{m,n} - \rho_{i,j})
-    \end{align}
+
 \end{lemma}
 \begin{proof}
 Our first goal is to compute the Taylor's series for $\Phi$ with respect to the coupling constant $\alpha$. To do this we compute the Taylor Series for the fixed interaction channel $\Phi_G$ and then compute the effects of integrating. We leave all partial traces until the last step of the computation. We make use Duhamel's formula for differentiation of the exponent of a matrix exponential
