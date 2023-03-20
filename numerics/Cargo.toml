@@ -10,7 +10,8 @@ ndarray = {version = "0.15.6", features = ["blas"]}
 blas = {version = "0.20"}
 blas-src = {version = "0.8.0", features=["accelerate"]}
 num-complex = "*"
-ndarray-linalg = {version = "*", path = "/Users/matt/repos/ndarray-linalg/ndarray-linalg"}
+# ndarray-linalg = {version = "*", path = "/Users/matt/repos/ndarray-linalg/ndarray-linalg"}
+ndarray-linalg = {version = "*", git = "https://github.com/matthagan15/ndarray-linalg", branch="stable_expm"}
 rayon = "1.5.3"
 rand = "0.8.5"
 rand_distr = "0.4.3"

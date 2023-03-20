@@ -2,22 +2,22 @@ extern crate blas_src;
 extern crate ndarray;
 extern crate num_complex;
 
-use std::sync::RwLock;
 use std::sync::mpsc::channel;
+use std::sync::RwLock;
 use std::time::{Duration, Instant};
 
 use ndarray::linalg::kron;
 use ndarray::prelude::*;
-use ndarray_linalg::{Scalar, OperationNorm};
 use ndarray_linalg::expm::expm;
 use ndarray_linalg::random_hermite;
-use ndarray_linalg::Trace;
 use ndarray_linalg::QRSquare;
+use ndarray_linalg::Trace;
+use ndarray_linalg::{OperationNorm, Scalar};
 use num_complex::Complex64 as c64;
 use num_complex::ComplexFloat;
-use rayon::prelude::*;
 use rand::prelude::*;
-use rand_distr::{StandardNormal, Normal};
+use rand_distr::{Normal, StandardNormal};
+use rayon::prelude::*;
 
 const MAX_INTERACTIONS: usize = 10000;
 
@@ -25,7 +25,10 @@ fn sample_haar_unitary(dim: usize) -> Array2<c64> {
     let mut rng = thread_rng();
     let mut real_gauss: Vec<c64> = Vec::with_capacity(dim * dim);
     for _ in 0..(dim * dim) {
-        real_gauss.push(c64::new(rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.), rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.)));
+        real_gauss.push(c64::new(
+            rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.),
+            rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.),
+        ));
     }
     let gauss_array = Array2::<c64>::from_shape_vec((dim, dim), real_gauss).unwrap();
     let (q, r) = gauss_array.qr_square().unwrap();
@@ -61,12 +64,13 @@ fn one_shot_interaction(
     alpha: f64,
     time: f64,
 ) -> Array2<c64> {
-    let sys_env_interaction_sample: Array2<c64> = (c64::from_real(alpha)) * random_hermite(system_state.nrows() * env_state.nrows());
+    let sys_env_interaction_sample: Array2<c64> =
+        (c64::from_real(alpha)) * random_hermite(system_state.nrows() * env_state.nrows());
     let sys_identity = Array2::<c64>::eye(system_hamiltonian.nrows());
     let env_identity = Array2::<c64>::eye(env_hamiltonian.nrows());
 
-    
-    let hamiltonian = kron(system_hamiltonian, &env_identity) + kron(&sys_identity, env_hamiltonian);
+    let hamiltonian =
+        kron(system_hamiltonian, &env_identity) + kron(&sys_identity, env_hamiltonian);
     let mut tot_hamiltonian = &sys_env_interaction_sample + &hamiltonian;
     tot_hamiltonian *= i() * time;
 
@@ -91,7 +95,14 @@ fn one_shot_mc(
     let out = Array2::<c64>::zeros((system_state.nrows(), system_state.ncols()).f());
     let locker = RwLock::new(out);
     (0..num_samples).into_par_iter().for_each(|_| {
-        let sample =  one_shot_interaction(system_hamiltonian, env_hamiltonian, system_state, env_state, alpha, time);
+        let sample = one_shot_interaction(
+            system_hamiltonian,
+            env_hamiltonian,
+            system_state,
+            env_state,
+            alpha,
+            time,
+        );
         let mut x = locker.write().unwrap();
         for ix in 0..x.nrows() {
             for jx in 0..x.ncols() {
@@ -119,7 +130,15 @@ fn multi_interaction_mc(
     // Note this does not have to be recomputed each time as it is immutable
     let env_state = thermal_state(env_hamiltonian, env_beta);
     for i in 0..num_interactions {
-        let interacted = one_shot_mc(num_samples, system_hamiltonian, env_hamiltonian, &out, &env_state, alpha, time);
+        let interacted = one_shot_mc(
+            num_samples,
+            system_hamiltonian,
+            env_hamiltonian,
+            &out,
+            &env_state,
+            alpha,
+            time,
+        );
         out.assign(&interacted);
         // if i % (num_samples / 10) == 0 {
         println!("{:}% done.", (i as f64) / (num_interactions as f64));
@@ -142,10 +161,26 @@ fn find_interactions_needed_for_error(
     let system_target_state = thermal_state(system_hamiltonian, env_beta);
     let env_state = thermal_state(env_hamiltonian, env_beta);
     for ix in 0..MAX_INTERACTIONS {
-        println!("[find_interactions_needed_for_error] performing interaction: {:}", ix);
-        let out = one_shot_mc(num_samples, system_hamiltonian, env_hamiltonian, &sys_state, &env_state, alpha, time);
+        if ix % 50 == 0 {
+            println!(
+                "[find_interactions_needed_for_error] performing interaction: {:}",
+                ix
+            );
+        }
+        let out = one_shot_mc(
+            num_samples,
+            system_hamiltonian,
+            env_hamiltonian,
+            &sys_state,
+            &env_state,
+            alpha,
+            time,
+        );
         let distance_to_target = schatten_2_norm(&out, &system_target_state);
-        println!("[find_interactions_needed_for_error] distance to target: {:}", distance_to_target);
+        // println!(
+        //     "[find_interactions_needed_for_error] distance to target: {:}",
+        //     distance_to_target
+        // );
         if distance_to_target <= error {
             return ix;
         } else {
@@ -167,7 +202,16 @@ fn test_minimum_interactions() {
     let env_beta = 1.;
     let betas = vec![1., 0.8, 0.6, 0.4, 0.2, 0.0];
     for beta in betas {
-        let min_interactions = find_interactions_needed_for_error(num_mc_samples, &h_sys, &h_env, beta, env_beta, 0.1, alpha, t);
+        let min_interactions = find_interactions_needed_for_error(
+            num_mc_samples,
+            &h_sys,
+            &h_env,
+            beta,
+            env_beta,
+            0.1,
+            alpha,
+            t,
+        );
         println!("{:}", "*".repeat(75));
         println!("system start beta: {:}", beta);
         println!("interactions needed: {:}", min_interactions);
@@ -182,15 +226,15 @@ fn schatten_2_norm(a: &Array2<c64>, b: &Array2<c64>) -> f64 {
     let psd = diff.dot(&diff_adjoint);
     let trace = psd.trace().unwrap();
     // imaginary part should be very small
-    assert!( trace.im() < f64::EPSILON * a.nrows() as f64);
+    assert!(trace.im() < f64::EPSILON * a.nrows() as f64);
     // real part should be positive
-    assert!( trace.re() > 0.);
+    assert!(trace.re() > 0.);
     // If above assertions pass then this is fine.
     ComplexFloat::abs(trace.sqrt())
 }
 
 fn thermal_state(hamiltonian: &Array2<c64>, beta: f64) -> Array2<c64> {
-    let scaled_h = hamiltonian * (beta + zero());
+    let scaled_h = hamiltonian * (c64::from_real(-1. * beta));
     let mut out = expm(&scaled_h).expect("we ballin");
     let partition_function = out.trace().unwrap();
     if ComplexFloat::abs(partition_function) < 1e-12 {
@@ -209,12 +253,57 @@ fn harmonic_oscillator_hamiltonian(dim: usize) -> Array2<c64> {
     out
 }
 
+/// Returns a hamiltonian with a highly degenerate spectrum. Has a single
+/// ground state at energy = 0 and the remaining energies all at the
+/// provided gap.
 fn marked_state_hamiltonian(dim: usize, gap: f64) -> Array2<c64> {
     let mut out = Array2::<c64>::zeros((dim, dim).f());
     for ix in 1..dim {
         out[[ix, ix]] = gap.into();
     }
     out
+}
+
+fn harmonic_oscillator_alpha_and_time_grid() {
+    let alphas = vec![5e-4, 1e-3, 5e-3, 1e-2];
+    let times = vec![1e2];
+    let mut results = Vec::new();
+    for alpha in alphas.clone() {
+        for time in times.clone() {
+            println!("{:}", "*".repeat(100));
+            println!( 
+                "finding minimum interactions needed for alpha = {:}, time = {:}",
+                alpha, time
+            );
+            results.push(find_interactions_needed_for_error(500, &&harmonic_oscillator_hamiltonian(10), &harmonic_oscillator_hamiltonian(5), 0.8, 1., 0.05, alpha, time));
+        }
+    }
+    println!("alphas: {:?}", alphas);
+    println!("results: {:?}", results)
+}
+
+fn marked_state_grid_gap_and_dim() {
+    let gaps = vec![2.];
+    let dims = vec![4, 8, 16];
+    for gap in gaps {
+        for dim in dims.clone() {
+            println!("{:}", "*".repeat(100));
+            println!(
+                "finding minimum interactions needed for dim = {:}, gap = {:}",
+                dim, gap
+            );
+            find_interactions_needed_for_error(
+                500,
+                &marked_state_hamiltonian(16, gap),
+                &harmonic_oscillator_hamiltonian(dim),
+                0.,
+                1.,
+                0.1,
+                0.01,
+                100.,
+            );
+        }
+    }
 }
 
 /// Performs the partial trace over dim2, yeilding a dim1 x dim1 Array2 object. For example,
@@ -277,9 +366,20 @@ fn two_harmonic_oscillators(sys_dim: usize, env_dim: usize, sys_initial_beta: f6
     let state_sys = thermal_state(&h_sys, sys_initial_beta);
     let state_env = thermal_state(&h_env, env_beta);
     let target = thermal_state(&h_sys, env_beta);
-    let channel_output = one_shot_mc(num_mc_samples, &h_sys, &h_env, &state_sys, &state_env, alpha, t);
+    let channel_output = one_shot_mc(
+        num_mc_samples,
+        &h_sys,
+        &h_env,
+        &state_sys,
+        &state_env,
+        alpha,
+        t,
+    );
 
-    println!("output frobenius distance to target: {:}", schatten_2_norm(&channel_output, &target));
+    println!(
+        "output frobenius distance to target: {:}",
+        schatten_2_norm(&channel_output, &target)
+    );
 }
 
 fn test_dimension_fix_beta() {
@@ -291,7 +391,7 @@ fn test_dimension_fix_beta() {
 }
 
 fn test_beta_fix_dimension() {
-    let sys_dim = 40;
+    let sys_dim = 20;
     let betas = vec![0.0, 0.2, 0.4, 0.6, 0.8, 1.0];
     for beta in betas {
         println!("beta: {:}", beta);
@@ -301,19 +401,31 @@ fn test_beta_fix_dimension() {
 
 fn main() {
     let start = Instant::now();
-    test_beta_fix_dimension();
+    println!("beta test");
+    // println!("{:}", "^".repeat(100));
+    // test_beta_fix_dimension();
+    // println!("dimension test");
+    // println!("{:}", "^".repeat(100));
     // test_dimension_fix_beta();
+    // println!("min interactions test");
+    // println!("{:}", "^".repeat(100));
     // test_minimum_interactions();
+    // println!("grid test");
+    // println!("{:}", "^".repeat(100));
+    // marked_state_grid_gap_and_dim();
+
+    println!("{:}", "^".repeat(100));
+    harmonic_oscillator_alpha_and_time_grid();
     let duration = start.elapsed();
     println!("took this many millis: {:}", duration.as_millis());
 }
 
 // millis unoptimized : 48760
 // millis release     : 2714
-// reduction 18x 
+// reduction 18x
 
 mod tests {
-    use crate::{adjoint, i, partial_trace, zero, sample_haar_unitary};
+    use crate::{adjoint, i, partial_trace, sample_haar_unitary, zero};
     use ndarray::{linalg::kron, prelude::*};
     use ndarray_linalg::{expm::expm, random_hermite, OperationNorm, Trace};
     use num_complex::{Complex64 as c64, ComplexFloat};
