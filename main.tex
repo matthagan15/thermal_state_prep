@@ -105,10 +105,10 @@ For simplicity we will denote the time evolution channel for a specific random i
 Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the randomized interaction term, where $G = U_G D U_G^\dagger$. The measure we choose for the eigenbasis of $G$ is $U_G \sim Haar$ and the eigenvalues are i.i.d with mean 0 and variance $\sigma^2$. This gives the overall measure decomposition $dG = dD ~ dU_G$. 
 
 \begin{restatable}{lemma}{haar_two_moment} \label{lem:haar_two_moment}
-    Let $U$ be a unitary matrix over $d$ dimensions that is distributed according to the Haar measure. The $k=2$ polynomial can be integrated as
+    Let $U$ be a unitary matrix over $\dim$ dimensions that is distributed according to the Haar measure. Then the following average is
     \begin{align}
-        \int \bra{i_1} U \ket{j_1} \bra{i_2} U \ket{j_2} \overline{\bra{k_1} U \ket{l_1}} ~ \overline{\bra{k_2} U \ket{l_2}} dU =& ~\frac{1}{d^2 - 1} \parens{\delta_{i_1, k_1} \delta_{j_1, l_1} \delta_{i_2, k_2} \delta_{j_2, l_2} + \delta_{i_1, k_2} \delta_{j_1, l_2} \delta_{i_2, k_1} \delta_{j_2, l_1}} \nonumber \\
-        &- \frac{1}{d(d^2 - 1)} \parens{\delta_{i_1, k_2} \delta_{j_1, l_1} \delta_{i_2, k_1} \delta_{j_2, l_2} + \delta_{i_1, k_1} \delta_{j_1, l_2} \delta_{i_2, k_2} \delta_{j_2, l_1}}. \label{eq:haar_two_moment_integral}
+        \int \bra{i_1} U \ket{j_1} \bra{i_2} U \ket{j_2} \bra{k_1} U^\dagger \ket{l_1} ~ \bra{k_2} U^\dagger \ket{l_2} dU =& ~\frac{1}{\dim^2 - 1} \parens{\delta_{i_1, l_1} \delta_{j_1, k_1} \delta_{i_2, l_2} \delta_{j_2, k_2} + \delta_{i_1, l_2} \delta_{j_1, k_2} \delta_{i_2, l_1} \delta_{j_2, k_1}} \nonumber \\
+        &- \frac{1}{\dim(\dim^2 - 1)} \parens{\delta_{i_1, l_2} \delta_{j_1, k_1} \delta_{i_2, l_1} \delta_{j_2, k_2} + \delta_{i_1, l_1} \delta_{j_1, k_2} \delta_{i_2, l_2} \delta_{j_2, k_1}}. \label{eq:haar_two_moment_integral}
     \end{align}
     \end{restatable}
 
@@ -224,37 +224,68 @@ We now combine terms $(A) - (F)$ with minor adjustments
 \begin{align}
     \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S) \bigg|_{\alpha = 0} &= -t^2 \int_0^1 \int_0^1 G(s_1 s_2 t) G(s_1 t) s_1 ds_1 ds_2 \rho(t) \\
     &~ ~ -t^2 \int_0^1 \int_0^1 G(s_1 t) G((s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 ~ \rho(t) \\
-    &~ ~ + t^2 \int_0^1 G(st) ds ~ \rho(t) \int_0^1 G((1-s)t) ds \\
-    & ~ ~ + t^2 \int_0^1 G(st) ds ~ \rho(t) ~ \int_0^1 G((1-s)t) ds \\
+    &~ ~ + 2 t^2 \int_0^1 G(st) ds ~ \rho(t) \int_0^1 G((1-s)t) ds \\
     & ~ ~ -t^2 \rho(t) \int_0^1 \int_0^1 G((1- s_1 s_2) t) G((1-s_1)t) s_1 ds_1 ds_2 \\
     & ~ ~ -t^2 \rho(t) \int_0^1 \int_0^1 G(s_1 t) G(s_1 s_2 t) s_1 ds_1 ds_2 ~ .
 \end{align}
-Our last step is to decompose each factor into phase, eigenvalue, or Haar contributions. We do so with the following breakdown
+Our last step is to decompose each factor into phase, eigenvalue, or Haar contributions. We start with the following breakdown of the Heisenberg evolution of $G$
 \begin{align}
     G(x) &= e^{i H x} G e^{-i H x} \\
     &= \parens{\sum_{i,j} e^{i \lambda(i,j) x} \ketbra{i,j}{i, j}} G \parens{\sum_{k,l} e^{-i \lambda(k,l) x} \ketbra{k, l}{k, l}} \\
     &= \parens{\sum_{i,j} e^{i \lambda(i,j) x} \ketbra{i,j}{i, j}} U_G D U_G^\dagger \parens{\sum_{k,l} e^{-i \lambda(k,l) x} \ketbra{k, l}{k, l}} \\
     &= \parens{\sum_{i,j} e^{i \lambda(i,j) x} \ketbra{i,j}{i, j}} U_G \parens{ \sum_{m, n} D(m,n) \ketbra{m,n}{m,n}} U_G^\dagger \parens{\sum_{k,l} e^{-i \lambda(k,l) x} \ketbra{k, l}{k, l}} \\
-    &= \sum_{i,j,k,l,m,n} e^{i (\lambda(i,j) - \lambda(k,l))x} D(m,n) \bra{i,j} U_G \ket{m,n} \bra{k,l} \overline{U_G} \ket{m,n} ~\ketbra{i,j}{k,l}.
+    &= \sum_{i,j,k,l,m,n} e^{i (\lambda(i,j) - \lambda(k,l))x} D(m,n) \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} ~\ketbra{i,j}{k,l}.
 \end{align}
 The product of two time-evolved random interactions is then 
 \begin{align}
-    G(x) G(y) &= \sum_{i,j,k,l,m,n} e^{i (\lambda(i,j) - \lambda(k,l))x} D(m,n) \bra{i,j} U_G \ket{m,n} \bra{k,l} \overline{U_G} \ket{m,n} \ketbra{i,j}{k,l} \nonumber \\
-    &~ \times \sum_{a,b,c,d,e,f} e^{i(\lambda(a,b) - \lambda(c,d))y} D(e,f) \bra{a,b} U_G \ket{e,f} \bra{c,d} \overline{U_G} \ket{e,f} \ketbra{a,b}{c,d} \\ 
+    G(x) G(y) &= \sum_{i,j,k,l,m,n} e^{i (\lambda(i,j) - \lambda(k,l))x} D(m,n) \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \ketbra{i,j}{k,l} \nonumber \\
+    &~ \times \sum_{a,b,c,d,e,f} e^{i(\lambda(a,b) - \lambda(c,d))y} D(e,f) \bra{a,b} U_G \ket{e,f} \bra{e,f} U_G^\dagger \ket{c,d} \ketbra{a,b}{c,d} \\ 
     &= \sum_{i,j,k,l,m,n} \sum_{c,d,e,f} \bigg[ e^{i(\lambda(i,j) - \lambda(k,l))x} e^{i(\lambda(k,l) - \lambda(c,d))y} D(m,n) D(e,f) \nonumber \\
-    & \quad \bra{i,j} U_G \ket{m,n} \bra{k,l} \overline{U_g} \ket{m,n} \bra{k,l} U_G \ket{e,f} \bra{c,d} \overline{U_G} \ket{e,f} \bigg] \ketbra{i,j}{c,d}.
+    & \quad \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \bra{k,l} U_G \ket{e,f} \bra{e,f} U_G^\dagger \ket{c,d} \bigg] \ketbra{i,j}{c,d}.
 \end{align}
 Although this expression is verbose, we note that $x$ and $y$ only appear in the phase factors. This will allow us to pull out the eigenvalue contributions $D(m,n), D(e,f)$ of each term along with the Haar contributions. As these expressions are fairly verbose we will introduce the following notation:
 \begin{align}
-    C_\lambda(i,j,k,l,c,d; x, y) &\coloneqq e^{i(\lambda(i,j) - \lambda(k,l))} e^{i(\lambda(k,l) - \lambda(c,d))y} \\
+    C_\lambda(i,j,k,l,c,d; x, y) &\coloneqq e^{i(\lambda(i,j) - \lambda(k,l))x} e^{i(\lambda(k,l) - \lambda(c,d))y} \\
     C_D(m,n,e,f) &\coloneqq D(m,n) D(e,f) \\
-    C_U(i,j,k,l,m,n,c,d,e,f) &\coloneqq \bra{i,j} U_G \ket{m,n} \bra{k,l} \overline{U_g} \ket{m,n} \bra{k,l} U_G \ket{e,f} \bra{c,d} \overline{U_G} \ket{e,f}.
+    C_U(i,j,k,l,m,n,c,d,e,f) &\coloneqq \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \bra{k,l} U_G \ket{e,f} \bra{e,f} U_G^\dagger \ket{c,d}.
 \end{align}
 Unfortunately these are not much shorter, so we will simply drop the indices and use the exact same indices for each term. Using implicit indices we get
 \begin{align}
     G(x) G(y) &= \sum_{i,j,k,l,m,n} \sum_{c,d,e,f} C_\lambda(x,y) C_D C_U \ketbra{i,j}{c,d}.
 \end{align}
 
+We are now in a position to compute $\int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S) \bigg|_{\alpha = 0} dG$. In order to do so we use our assumption that $\rho_S$ is a thermal state, implying that the state of the combined system-environment is $\rho = \frac{e^{-\beta_S H_s}}{\partfun_S} \otimes \frac{e^{-\beta_E H_E}}{\partfun_E}$. We use $\rho = \sum_{r,s} B(r,s) \ketbra{r,s}{r,s}$ to denote the diagonal elements. We note that this commutes with the overall time evolution, so the Heisenberg evolution does nothing: $\rho(t) = \rho$ for all $t$. 
+\begin{align}
+    \int (A) dG &= -t^2 \int \int_0^1 \int_0^1 G(s_1 s_2 t) G(s_1 t) s_1 ds_1 ds_2~ \rho \\
+    &= -t^2 \sum_{i,j,k,l,m,n} \sum_{c,d,e,f} \bigg[ \ketbra{i,j}{c,d}\int C_D C_U dD dU \nonumber \\
+    &\quad \int_0^1 \int_0^1 C_{\lambda}(s_1 s_2 t, s_1 t) s_1 ds_1 ds_2 \bigg] \sum_{r, s} B(r,s) \ketbra{r,s}{r,s} .
+\end{align}
+The first step we take to simplify is to compute $\int C_D dD$, which is straightforward.
+\begin{align}
+    \int C_D dD &= \int D(m,n) D(e,f) dD \\
+    &= Cov(D(m,n), D(e,f) ) \\
+    &= \delta(m,e) \delta(n,f),
+\end{align}
+where we used the assumption of i.i.d random eigenvalues of G. We can further use Lemma \ref{lem:haar_two_moment} to compute the Haar contribution
+\begin{align}
+    \sum_{e,f}\int C_U \delta(m,e) \delta(n,f) dU &= \sum_{e,f} \delta_{m,e} \delta_{n,f} \int \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \bra{k,l} U_G \ket{e,f} \bra{e,f} U_G^\dagger \ket{c,d} dU \\ 
+    &= \int \bra{i,j} U_G \ket{m,n} \bra{k,l} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \bra{m,n} U_G^\dagger \ket{c,d} dU \\ 
+    &= \frac{1}{\dim^2 - 1} \parens{\delta(i,j| k,l) \delta(k,l | c,d)} - \frac{1}{\dim(\dim^2 - 1)} \parens{\delta(i,j|c,d) + \delta(i,j| k,l) \delta(k,l|c,d)} \\
+    &= \frac{\delta(i,j|k,l) \delta(k,l | c,d)}{\dim^2 - 1} \parens{1 - \frac{1}{\dim}} - \frac{\delta(i,j|c,d)}{\dim(\dim^2 - 1)} \\
+    &= \frac{\delta(i,j|c,d)}{\dim^2 - 1} \parens{\delta(i,j|k,l)\parens{1 - \frac{1}{\dim}} - \frac{1}{\dim}}
+\end{align}
+Plugging these into our computation for $(A)$ yields
+\begin{align}
+    \int (A) dG &= -t^2 \sum_{i,j,k,l,m,n} \sum_{c,d, e, f} \ketbra{i,j}{c,d} B(c,d) \int C_D dD ~ \int C_U dU_G \int_0^1 \int_0^1 C_{\lambda}(s_1 s_2 t, s_1 t) s_1 ds_1 ds_2 \\
+    &= -t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} \ketbra{i,j}{c,d} B(c,d)\int_0^1 \int_0^1 C_{\lambda}(s_1 s_2 t, s_1 t) s_1 ds_1 ds_2 \sum_{e,f}\delta(m,n|e,f) \int C_U dU_G \\
+    &= -t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} B(c,d) \ketbra{i,j}{c,d} \int_0^1 \int_0^1 C_{\lambda}(s_1 s_2 t, s_1 t) s_1 ds_1 ds_2 \frac{\delta(i,j| c,d)}{\dim^2 - 1} \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim} \\
+    &= -t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} B(c,d) \ketbra{i,j}{c,d} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l)) s_1 s_2 t} e^{i(\lambda(k,l) - \lambda(c,d))s_1t} s_1 ds_1 ds_2 \frac{\delta(i,j| c,d)}{\dim^2 - 1} \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim} \\
+    &= -t^2 \sum_{i,j,k,l,m,n} \frac{B(i,j)}{\dim^2 - 1} \ketbra{i,j}{i,j} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))(s_1 s_2 - s_1)t} s_1 ds_1 ds_2 \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim}
+\end{align}
+Now doing the $s_1, s_2$ integrals are given by Mathematica as
+\begin{equation}
+    \int_0^1 \int_0^1 e^{i (\lambda(i,j) - \lambda(k,l))(s_1s_2 - s_1)t} s_1 ds_1 ds_2 = \frac{1 - e^{-i (\lambda(i,j) - \lambda(k,l))t} -i t (\lambda(i,j) - \lambda(k,l))}{t^2 (\lambda(i,j) - \lambda(k,l))^2}
+\end{equation}
 % The remaining terms we compute using a similar process, and are stated as
 % \begin{align}
 %     & -t^2 \int_0^1 \int_0^1 G(s_1 t) G((s_1 + s_2 - s_1 s_2) t) (1-s_1) ds_1 ds_2 \rho (t) \\
