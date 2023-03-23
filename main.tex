@@ -280,8 +280,18 @@ Plugging these into our computation for $(A)$ yields
     &= -t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} \ketbra{i,j}{c,d} B(c,d)\int_0^1 \int_0^1 C_{\lambda}(s_1 s_2 t, s_1 t) s_1 ds_1 ds_2 \sum_{e,f}\delta(m,n|e,f) \int C_U dU_G \\
     &= -t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} B(c,d) \ketbra{i,j}{c,d} \int_0^1 \int_0^1 C_{\lambda}(s_1 s_2 t, s_1 t) s_1 ds_1 ds_2 \frac{\delta(i,j| c,d)}{\dim^2 - 1} \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim} \\
     &= -t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} B(c,d) \ketbra{i,j}{c,d} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l)) s_1 s_2 t} e^{i(\lambda(k,l) - \lambda(c,d))s_1t} s_1 ds_1 ds_2 \frac{\delta(i,j| c,d)}{\dim^2 - 1} \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim} \\
-    &= -t^2 \sum_{i,j,k,l,m,n} \frac{B(i,j)}{\dim^2 - 1} \ketbra{i,j}{i,j} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))(s_1 s_2 - s_1)t} s_1 ds_1 ds_2 \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim}
+    &= -t^2 \sum_{i,j,k,l,m,n} \frac{B(i,j)}{\dim^2 - 1} \ketbra{i,j}{i,j} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))(s_1 s_2 - s_1)t} s_1 ds_1 ds_2 \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim} \\
+    &= -t^2 \sum_{i,j,k,l} \frac{B(i,j) \dim}{\dim^2 - 1} \ketbra{i,j}{i,j} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))(s_1 s_2 - s_1)t} s_1 ds_1 ds_2 \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim}.
 \end{align}
+
+We now unfortunately have to proceed by case analysis due to the result of the phase integration. We split the summation over $k,l$ into terms where $\lambda(i,j) = \lambda(k,l)$ and those where $\lambda(i,j) \neq \lambda(k,l)$. By pulling the factors $\frac{B(i,j) \dim}{\dim^2-1} \ketbra{i,j}{i,j}$ out of the $k,l$ summation, we can proceed as:
+\begin{align}
+    &\sum_{(k,l) : \lambda(i,j) = \lambda(k,l)} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))(s_1 s_2 - s_1)t} s_1 ds_1 ds_2 (\delta(i,j | k,l)(1 - 1/\dim) - 1/\dim) \\
+    &\int_0^1 \int_0^1 s_1 ds_1 ds_2 \sum_{(k,l) : \lambda(i,j) = \lambda(k,l)} (\delta(i,j | k,l)(1 - 1/\dim) - 1/\dim) \\
+    &\frac{1}{2} \parens{\frac{\dim - 1}{\dim} - \frac{\eta(i,j)}{\dim}} \\
+    &\frac{\dim - \eta(i,j) - 1}{2 \dim},
+\end{align}
+where $\eta(i,j)$ represents the degeneracy, or number of times the eigenvalue $\lambda(i,j)$ appears in the spectrum of $H$. 
 Now doing the $s_1, s_2$ integrals are given by Mathematica as
 \begin{equation}
     \int_0^1 \int_0^1 e^{i (\lambda(i,j) - \lambda(k,l))(s_1s_2 - s_1)t} s_1 ds_1 ds_2 = \frac{1 - e^{-i (\lambda(i,j) - \lambda(k,l))t} -i t (\lambda(i,j) - \lambda(k,l))}{t^2 (\lambda(i,j) - \lambda(k,l))^2}
