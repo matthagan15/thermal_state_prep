@@ -296,14 +296,31 @@ Now doing the $s_1, s_2$ integrals are given by Mathematica as
 \begin{equation}
     \int_0^1 \int_0^1 e^{i (\lambda(i,j) - \lambda(k,l))(s_1s_2 - s_1)t} s_1 ds_1 ds_2 = \frac{1 - e^{-i (\lambda(i,j) - \lambda(k,l))t} -i t (\lambda(i,j) - \lambda(k,l))}{t^2 (\lambda(i,j) - \lambda(k,l))^2}
 \end{equation}
-% The remaining terms we compute using a similar process, and are stated as
-% \begin{align}
-%     & -t^2 \int_0^1 \int_0^1 G(s_1 t) G((s_1 + s_2 - s_1 s_2) t) (1-s_1) ds_1 ds_2 \rho (t) \\
-%     & +t^2 \int_0^1 G(st) ds \rho(t) \int_0^1 G(st) ds \\
-%     & +t^2 \int_0^1 G(st) ds \rho(t) \int_0^1 G(st) ds \\
-%     & -t^2 \rho(t) \int_0^1 \int_0^1 G((1-s_1)t) G((1-s_1 s_2) t) s_1 ds_1 ds_2 \\
-%     & -t^2 \rho(t) \int_0^1 \int_0^1 G((1-s_1)t) G((1-s_1)(1 - s_2) t) (1-s_1) ds_1 ds_2. \label{eq:second_deriv_alpha_last_term}
-% \end{align}
+
+Now we can compute the ``center" term where $\rho(t)$ is sandwiched between the two random interaction matrices
+\begin{align}
+    (C) &= t^2 \int_0^1 G(st) ds ~ \rho(t) ~ \int_0^1 G((1-s)t) ds \\
+    &= t^2 \sum_{i,j,k,l,m,n} \ketbra{i,j}{k,l} \int_0^1 e^{i (\lambda(i,j) - \lambda(k,l)s t} ds D(m,n) \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \parens{\sum_{o,p} B(o,p) \ketbra{o,p}{o,p}} \nonumber \\
+    & ~\times \sum_{a,b,c,d,e,f} \ketbra{a,b}{c,d} \int_0^1 e^{i (\lambda(a,b) - \lambda(c,d)(1-s)t} ds D(e,f) \bra{a,b} U_G \ket{e,f} \bra{e,f} U_G^\dagger \ket{c,d}\\
+    &= t^2 \sum_{i,j,k,l,m,n} \sum_{a,b,c,d,e,f} \sum_{o,p} B(o,p) \bigg[ \ketbra{i,j}{c,d} \delta(k,l|o,p) \delta(o,p | a,b) \nonumber \\
+    &\quad D(m,n) D(e,f) \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l)s t} ds \int_0^1 e^{i(\lambda(a,b) - \lambda(c,d))(1-s)t} ds \nonumber \\
+    &\quad \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \bra{a,b} U_G \ket{e,f} \bra{e,f} U_G^\dagger \ket{c,d} \bigg] \\
+    &= t^2 \sum_{i,j,k,l,m,n} \sum_{c,d,e,f} \bigg[ B(k,l) \ketbra{i,j}{c,d} D(m,n) D(e,f) \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l)s t} ds \int_0^1 e^{i(\lambda(k,l) - \lambda(c,d))(1-s)t} ds \nonumber \\
+    &\quad \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \bra{k,l} U_G \ket{e,f} \bra{e,f} U_G^\dagger \ket{c,d} \bigg].
+\end{align}
+
+Next we perform the random interaction eigenvalue integral $\int (C) dG = \int \parens{\int (C) dD} dU_G$. This is the same as prior computations and yields $\int D(m,n) D(e,f) dD = \delta(m,n | e,f) \sigma^2$. Plugging this into the last step and doing the $e,f$ summation yields
+\begin{align}
+    \int (C) dD &= \sigma^2 t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} \bigg[ B(k,l) \ketbra{i,j}{c,d} \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l)s t} ds \int_0^1 e^{i(\lambda(k,l) - \lambda(c,d))(1-s)t} ds \nonumber \\
+    &\quad \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \bra{k,l} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{c,d} \bigg].
+\end{align}
+Now performing the Haar integration, which was done in prior terms $(A)$ and $(B)$ yields
+\begin{align}
+    \int (C) dG &= \sigma^2 t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} \bigg[B(k,l) \ketbra{i,j}{c,d} \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l)s t} ds \int_0^1 e^{i(\lambda(k,l) - \lambda(c,d))(1-s)t} ds \nonumber \\
+    &\quad \frac{\delta(i,j|c,d)}{\dim^2 - 1} \parens{\delta(i,j|k,l)\parens{1 - \frac{1}{\dim}} - \frac{1}{\dim}} \bigg] \\
+    &= \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j,k,l} \bigg[ B(k,l) \ketbra{i,j}{i,j} \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l)s t} ds \int_0^1 e^{i(\lambda(k,l) - \lambda(i,j))(1-s)t} ds \nonumber \\
+    &\quad \parens{\delta(i,j | k,l)(\dim - 1) - 1} \bigg]
+\end{align}
 
 \newpage
 \hrule
