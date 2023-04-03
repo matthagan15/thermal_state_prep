@@ -15,3 +15,4 @@ ndarray-linalg = {version = "*", git = "https://github.com/matthagan15/ndarray-l
 rayon = "1.5.3"
 rand = "0.8.5"
 rand_distr = "0.4.3"
+node_crunch = "0.1.0"
