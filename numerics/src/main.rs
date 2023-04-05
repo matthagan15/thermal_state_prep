@@ -2,9 +2,11 @@ extern crate blas_src;
 extern crate ndarray;
 extern crate num_complex;
 
+use std::fs;
 use std::sync::mpsc::channel;
 use std::sync::RwLock;
 use std::time::{Duration, Instant};
+use std::env;
 
 use ndarray::linalg::kron;
 use ndarray::prelude::*;
@@ -19,7 +21,34 @@ use rand::prelude::*;
 use rand_distr::{Normal, StandardNormal};
 use rayon::prelude::*;
 
+use serde::{Deserialize, Serialize};
+
 const MAX_INTERACTIONS: usize = 10000;
+
+enum HamiltonianType {
+    HarmonicOscillator,
+    MarkedState
+}
+
+struct NodeConfig {
+    rng_seed: usize,
+    num_interactions: u32,
+    num_samples: usize,
+    interaction_time: f64,
+    coupling_strength: f64,
+    sys_start_beta: f64,
+    env_beta: f64,
+    // Path to stored hamiltonian
+    sys_hamiltonian: HamiltonianType,
+    sys_dim: u32,
+    // currently only support harmonic oscillator env
+    env_dim: u32,
+}
+
+fn run(config: NodeConfig) {
+
+
+}
 
 fn sample_haar_unitary(dim: usize) -> Array2<c64> {
     let mut rng = thread_rng();
@@ -400,6 +429,7 @@ fn test_beta_fix_dimension() {
 }
 
 fn main() {
+    println!("environment: {:?}", env::var("RNG_SEED_NUMBER"));
     let start = Instant::now();
     println!("beta test");
     // println!("{:}", "^".repeat(100));
