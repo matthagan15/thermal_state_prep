@@ -1,3 +1,4 @@
 fn main() {
-    println!("cargo:rustc-link-lib=framework=Accelerate")
+    println!("cargo:rustc-link-lib=openblas");
+    println!("cargo:rustc-link-lib=gfortran");
 }
