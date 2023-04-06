@@ -5,23 +5,25 @@ extern crate num_complex;
 use std::collections::HashMap;
 use std::fs;
 use std::sync::mpsc::channel;
-use std::sync::RwLock;
+use std::sync::{RwLock, Mutex, Arc};
 use std::time::{Duration, Instant};
 use std::env;
 
 use ndarray::linalg::kron;
 use ndarray::prelude::*;
 use ndarray_linalg::expm::expm;
-use ndarray_linalg::random_hermite;
+use ndarray_linalg::{random_hermite, random_hermite_using};
 use ndarray_linalg::QRSquare;
 use ndarray_linalg::Trace;
 use ndarray_linalg::{OperationNorm, Scalar};
 use num_complex::Complex64 as c64;
 use num_complex::ComplexFloat;
 use rand::prelude::*;
+use rand_chacha::ChaCha8Rng;
 use rand_distr::{Normal, StandardNormal};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
+use serde_json::Serializer;
 
 use numerics::*;
 
@@ -40,8 +42,40 @@ struct NodeConfig {
     sys_dim: usize,
     // currently only support harmonic oscillator env
     env_dim: usize,
+    base_dir: String,
 }
 
+struct RandomInteractionGen {
+    rng: Arc<Mutex<ChaCha8Rng>>,
+    dim: usize,
+}
+
+impl RandomInteractionGen {
+    fn new(seed: u64, dim: usize) -> Self {
+        RandomInteractionGen { rng: Arc::new(Mutex::new(ChaCha8Rng::seed_from_u64(seed))) , dim: dim}
+    }
+
+    fn sample_interaction(&self) -> Array2<c64> {
+        let mut chacha = self.rng.lock().expect("couldn't get cha cha");
+        let mut g = Array2::<c64>::zeros((self.dim, self.dim).f());
+        for i in 0..self.dim {
+            for j in 0..i {
+                let x: c64 = chacha.gen();
+                g[[i,j]] = x;
+                g[[j,i]] = x.conj();
+            }
+            let y: c64 = chacha.gen();
+            g[[i,i]] = y + y.conj();
+        }
+        g
+    }
+}
+
+impl Clone for RandomInteractionGen {
+    fn clone(&self) -> Self {
+        Self { rng: self.rng.clone(), dim: self.dim.clone() }
+    }
+}
 
 fn one_shot_interaction(
     system_hamiltonian: &Array2<c64>,
@@ -67,6 +101,58 @@ fn one_shot_interaction(
     out = time_evolution_op.dot(&out);
     out = out.dot(&time_evolution_op_adjoint);
     partial_trace(&out, system_state.nrows(), env_state.nrows())
+}
+
+fn multi_interaction(
+    tot_hamiltonian: &Array2<c64>,
+    env_state: &Array2<c64>,
+    sys_state: &Array2<c64>,
+    alpha: f64,
+    time: f64,
+    num_interactions: usize,
+    rng: RandomInteractionGen,
+) -> Array2<c64> {
+    let mut sys_out = sys_state.clone();
+    for _ in 0..num_interactions {
+        let interaction_sample: Array2<c64> = (c64::from_real(alpha)) * rng.sample_interaction();
+        let h_with_interaction =  c64::new(0., time)* (tot_hamiltonian + &interaction_sample);
+        let time_evolution_op = expm(&h_with_interaction).expect("we ball");
+        let time_evolution_op_adjoint = adjoint(&time_evolution_op);
+        let mut out = kron(&sys_out, env_state);
+        out = time_evolution_op.dot(&out);
+        out = out.dot(&time_evolution_op_adjoint);
+        sys_out = partial_trace(&out, sys_state.nrows(), env_state.nrows());
+    }
+    sys_out
+}
+
+fn multi_interaction_error_mc(
+    num_samples: usize,
+    num_interactions: usize,
+    sys_hamiltonian: &Array2<c64>,
+    env_hamiltonian: &Array2<c64>,
+    sys_initial_beta: f64,
+    env_beta: f64,
+    alpha: f64,
+    time: f64,
+    rng: RandomInteractionGen,
+) -> Vec<f64> {
+    let h = kron(sys_hamiltonian, &Array2::<c64>::eye(env_hamiltonian.nrows())) + kron(&Array2::<c64>::eye(sys_hamiltonian.nrows()), env_hamiltonian);
+    let rho_env = thermal_state(env_hamiltonian, env_beta);
+    let rho_sys = thermal_state(sys_hamiltonian, sys_initial_beta);
+    let sys_ideal = thermal_state(sys_hamiltonian, env_beta);
+    let mut errors: Vec<f64> = Vec::with_capacity(num_samples);
+    let mut locker = RwLock::new(errors);
+    for interaction in 1..=num_interactions {
+        (0..num_samples).into_par_iter().for_each(|_| {
+            let rho_evolved_sample = multi_interaction(&h, &rho_env, &rho_sys, alpha, time, num_interactions, rng.clone());
+            let error = schatten_2_distance(&rho_evolved_sample
+                , &sys_ideal);
+            let mut v = locker.write().expect("no locker");
+            v.push(error);
+        });
+    }
+    locker.into_inner().expect("poisoned lock")
 }
 
 /// Averages over one_shot_interaction
@@ -163,7 +249,7 @@ fn find_interactions_needed_for_error(
             alpha,
             time,
         );
-        let distance_to_target = schatten_2_norm(&out, &system_target_state);
+        let distance_to_target = schatten_2_distance(&out, &system_target_state);
         // println!(
         //     "[find_interactions_needed_for_error] distance to target: {:}",
         //     distance_to_target
@@ -207,7 +293,7 @@ fn test_minimum_interactions() {
 
 /// Computes Schatten-2 Norm, AKA frobenius error between two
 /// operators
-fn schatten_2_norm(a: &Array2<c64>, b: &Array2<c64>) -> f64 {
+fn schatten_2_distance(a: &Array2<c64>, b: &Array2<c64>) -> f64 {
     let diff = a - b;
     let diff_adjoint = adjoint(&diff);
     let psd = diff.dot(&diff_adjoint);
@@ -293,31 +379,7 @@ fn marked_state_grid_gap_and_dim() {
     }
 }
 
-/// Performs the partial trace over dim2, yeilding a dim1 x dim1 Array2 object. For example,
-/// if matrix = kron(A, B), then this will trace out over the B dimension. there is probably a
-/// more efficient way of doing this but  I'm not sure how to at the moment.
-fn partial_trace(matrix: &Array2<c64>, dim1: usize, dim2: usize) -> Array2<c64> {
-    assert!(matrix.is_square());
-    assert_eq!(matrix.nrows(), dim1 * dim2);
-    let mut out = Array2::<c64>::zeros((dim1, dim1));
-    for row_ix in 0..dim1 {
-        for col_ix in 0..dim1 {
-            let mut tot = zero();
-            for row_jx in 0..dim2 {
-                tot += matrix[[dim2 * row_ix + row_jx, dim2 * col_ix + row_jx]];
-            }
-            out[[row_ix, col_ix]] = tot;
-        }
-    }
-    out
-}
 
-fn zero() -> c64 {
-    c64::new(0., 0.)
-}
-fn i() -> c64 {
-    c64::new(0., 1.)
-}
 
 
 /// Return the schatten-2 norm of the difference between the output of the channel
@@ -359,7 +421,7 @@ fn two_harmonic_oscillators(sys_dim: usize, env_dim: usize, sys_initial_beta: f6
 
     println!(
         "output frobenius distance to target: {:}",
-        schatten_2_norm(&channel_output, &target)
+        schatten_2_distance(&channel_output, &target)
     );
 }
 
@@ -385,7 +447,7 @@ fn one_shot_mc_with_errors() {
 }
 
 fn error_vs_interaction_number(config: NodeConfig) {
-    let mut interaction_number_to_error = HashMap::new();
+    let mut interaction_to_errors: HashMap<usize, Vec<f64>> = HashMap::new();
     let h_sys = match config.sys_hamiltonian {
         HamiltonianType::HarmonicOscillator => {
             harmonic_oscillator_hamiltonian(config.sys_dim)
@@ -395,25 +457,36 @@ fn error_vs_interaction_number(config: NodeConfig) {
         }
     };
     let h_env = harmonic_oscillator_hamiltonian(config.env_dim);
-    let mut rho_sys = thermal_state(&h_sys, config.sys_start_beta);
-    let rho_env = thermal_state(&h_env, config.env_beta);
-    for ix in 1..=1000 {
-        let channel_output = one_shot_mc(
-            config.num_samples, 
-            &h_sys,
-            &h_env,
-            &rho_sys,
-            &rho_env,
-            config.alpha,
-            config.time
-        );
+    let chacha = RandomInteractionGen::new(config.rng_seed as u64, h_env.nrows() * h_sys.nrows());
+    for interaction in 1..=config.num_interactions as usize {
+        println!("interaction: {:}", interaction);
+        let errors = multi_interaction_error_mc(config.num_samples, interaction, &h_sys, &h_env, config.sys_start_beta, config.env_beta, config.alpha, config.time, chacha.clone());
+        interaction_to_errors.insert(interaction, errors);
     }
+    let mut filepath = config.base_dir;
+    filepath.push_str(&config.rng_seed.to_string());
+    let s = serde_json::to_string(&interaction_to_errors).expect("no serialization.");
+    std::fs::write(filepath, s).expect("no writing");
 }
 
 fn main() {
     println!("environment: {:?}", env::var("RNG_SEED_NUMBER"));
+    let c = NodeConfig {
+        rng_seed: 1,
+        num_interactions: 50,
+        num_samples: 100,
+        time: 100.,
+        alpha: 0.01,
+        sys_start_beta: 0.0,
+        env_beta: 1.,
+        sys_hamiltonian: HamiltonianType::HarmonicOscillator,
+        sys_dim: 10,
+        env_dim: 2,
+        base_dir: String::from("/Users/matt/scratch/tsp_test/"),
+    };
     let start = Instant::now();
-    println!("beta test");
+    error_vs_interaction_number(c);
+    // println!("beta test");
     // println!("{:}", "^".repeat(100));
     // test_beta_fix_dimension();
     // println!("dimension test");
@@ -426,8 +499,6 @@ fn main() {
     // println!("{:}", "^".repeat(100));
     // marked_state_grid_gap_and_dim();
 
-    println!("{:}", "^".repeat(100));
-    harmonic_oscillator_alpha_and_time_grid();
     let duration = start.elapsed();
     println!("took this many millis: {:}", duration.as_millis());
 }
@@ -437,11 +508,18 @@ fn main() {
 // reduction 18x
 
 mod tests {
-    use crate::{adjoint, i, partial_trace, sample_haar_unitary, zero};
+    use crate::{adjoint, i, partial_trace, sample_haar_unitary, zero, RandomInteractionGen};
     use ndarray::{linalg::kron, prelude::*};
     use ndarray_linalg::{expm::expm, random_hermite, OperationNorm, Trace};
     use num_complex::{Complex64 as c64, ComplexFloat};
 
+    #[test]
+    fn test_random_interaction_gen() {
+        let mut gen1 = RandomInteractionGen::new(1, 2);
+        let mut gen2 = RandomInteractionGen::new(1, 2);
+        assert_eq!(gen1.sample_interaction(), gen2.sample_interaction());
+    }
+ 
     #[test]
     fn test_haar_one_design() {
         let dim = 100;

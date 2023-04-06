@@ -9,6 +9,32 @@ pub enum HamiltonianType {
     MarkedState
 }
 
+/// Performs the partial trace over dim2, yeilding a dim1 x dim1 Array2 object. For example,
+/// if matrix = kron(A, B), then this will trace out over the B dimension. there is probably a
+/// more efficient way of doing this but  I'm not sure how to at the moment.
+pub fn partial_trace(matrix: &Array2<c64>, dim1: usize, dim2: usize) -> Array2<c64> {
+    assert!(matrix.is_square());
+    assert_eq!(matrix.nrows(), dim1 * dim2);
+    let mut out = Array2::<c64>::zeros((dim1, dim1));
+    for row_ix in 0..dim1 {
+        for col_ix in 0..dim1 {
+            let mut tot = zero();
+            for row_jx in 0..dim2 {
+                tot += matrix[[dim2 * row_ix + row_jx, dim2 * col_ix + row_jx]];
+            }
+            out[[row_ix, col_ix]] = tot;
+        }
+    }
+    out
+}
+
+pub fn zero() -> c64 {
+    c64::new(0., 0.)
+}
+pub fn i() -> c64 {
+    c64::new(0., 1.)
+}
+
 pub fn sample_haar_unitary(dim: usize) -> Array2<c64> {
     let mut rng = thread_rng();
     let mut real_gauss: Vec<c64> = Vec::with_capacity(dim * dim);
