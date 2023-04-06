@@ -2,6 +2,7 @@ extern crate blas_src;
 extern crate ndarray;
 extern crate num_complex;
 
+use std::collections::HashMap;
 use std::fs;
 use std::sync::mpsc::channel;
 use std::sync::RwLock;
@@ -20,70 +21,27 @@ use num_complex::ComplexFloat;
 use rand::prelude::*;
 use rand_distr::{Normal, StandardNormal};
 use rayon::prelude::*;
-
 use serde::{Deserialize, Serialize};
 
-const MAX_INTERACTIONS: usize = 10000;
+use numerics::*;
 
-enum HamiltonianType {
-    HarmonicOscillator,
-    MarkedState
-}
+const MAX_INTERACTIONS: usize = 100000;
 
 struct NodeConfig {
     rng_seed: usize,
     num_interactions: u32,
     num_samples: usize,
-    interaction_time: f64,
-    coupling_strength: f64,
+    time: f64,
+    alpha: f64,
     sys_start_beta: f64,
     env_beta: f64,
     // Path to stored hamiltonian
     sys_hamiltonian: HamiltonianType,
-    sys_dim: u32,
+    sys_dim: usize,
     // currently only support harmonic oscillator env
-    env_dim: u32,
+    env_dim: usize,
 }
 
-fn run(config: NodeConfig) {
-
-
-}
-
-fn sample_haar_unitary(dim: usize) -> Array2<c64> {
-    let mut rng = thread_rng();
-    let mut real_gauss: Vec<c64> = Vec::with_capacity(dim * dim);
-    for _ in 0..(dim * dim) {
-        real_gauss.push(c64::new(
-            rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.),
-            rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.),
-        ));
-    }
-    let gauss_array = Array2::<c64>::from_shape_vec((dim, dim), real_gauss).unwrap();
-    let (q, r) = gauss_array.qr_square().unwrap();
-    let mut lambda = Array2::<c64>::zeros((dim, dim).f());
-    for ix in 0..dim {
-        lambda[[ix, ix]] = r[[ix, ix]] / r[[ix, ix]].norm();
-    }
-    q.dot(&lambda)
-}
-
-fn sample_perturbation_eigenvalues(dim: usize, variance: f64) -> Array2<c64> {
-    let normal = Normal::new(0., variance.sqrt()).unwrap();
-    let mut out = Array2::<c64>::zeros((dim, dim).f());
-    for ix in 0..dim {
-        out[[ix, ix]] = c64::from_real(normal.sample(&mut rand::thread_rng()));
-    }
-    out
-}
-
-fn sample_perturbation(dim: usize, variance: f64) -> Array2<c64> {
-    let u = sample_haar_unitary(dim);
-    let v = sample_perturbation_eigenvalues(dim, variance);
-    let u_dagger = adjoint(&u);
-    let out = v.dot(&u_dagger);
-    u.dot(&out)
-}
 
 fn one_shot_interaction(
     system_hamiltonian: &Array2<c64>,
@@ -361,12 +319,6 @@ fn i() -> c64 {
     c64::new(0., 1.)
 }
 
-// Cannot transpose in place? so return a copy.
-fn adjoint(matrix: &Array2<c64>) -> Array2<c64> {
-    let mut out = matrix.t().into_owned();
-    out.mapv_inplace(|x| x.conj());
-    out
-}
 
 /// Return the schatten-2 norm of the difference between the output of the channel
 /// and the input state (going to use thermal state for input.) to be used in a finite
@@ -425,6 +377,36 @@ fn test_beta_fix_dimension() {
     for beta in betas {
         println!("beta: {:}", beta);
         two_harmonic_oscillators(sys_dim, 10, beta, 1.);
+    }
+}
+
+fn one_shot_mc_with_errors() {
+
+}
+
+fn error_vs_interaction_number(config: NodeConfig) {
+    let mut interaction_number_to_error = HashMap::new();
+    let h_sys = match config.sys_hamiltonian {
+        HamiltonianType::HarmonicOscillator => {
+            harmonic_oscillator_hamiltonian(config.sys_dim)
+        },
+        HamiltonianType::MarkedState => {
+            marked_state_hamiltonian(config.sys_dim, 1.)
+        }
+    };
+    let h_env = harmonic_oscillator_hamiltonian(config.env_dim);
+    let mut rho_sys = thermal_state(&h_sys, config.sys_start_beta);
+    let rho_env = thermal_state(&h_env, config.env_beta);
+    for ix in 1..=1000 {
+        let channel_output = one_shot_mc(
+            config.num_samples, 
+            &h_sys,
+            &h_env,
+            &rho_sys,
+            &rho_env,
+            config.alpha,
+            config.time
+        );
     }
 }
 
