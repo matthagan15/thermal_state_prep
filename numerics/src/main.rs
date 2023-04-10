@@ -29,8 +29,8 @@ use numerics::*;
 
 const MAX_INTERACTIONS: usize = 100000;
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct NodeConfig {
-    rng_seed: usize,
     num_interactions: u32,
     num_samples: usize,
     time: f64,
@@ -49,6 +49,7 @@ struct RandomInteractionGen {
     rng: Arc<Mutex<ChaCha8Rng>>,
     dim: usize,
 }
+
 
 impl RandomInteractionGen {
     fn new(seed: u64, dim: usize) -> Self {
@@ -74,6 +75,14 @@ impl RandomInteractionGen {
 impl Clone for RandomInteractionGen {
     fn clone(&self) -> Self {
         Self { rng: self.rng.clone(), dim: self.dim.clone() }
+    }
+}
+
+fn read_config(config_path: String) -> NodeConfig {
+    if let Ok(conf_string) = std::fs::read_to_string(config_path.clone()) {
+        serde_json::from_str(&conf_string).expect("Config file could not be deserialized.")
+    } else {
+        panic!("No config file found at: {:}", config_path)
     }
 }
 
@@ -291,40 +300,7 @@ fn test_minimum_interactions() {
     }
 }
 
-/// Computes Schatten-2 Norm, AKA frobenius error between two
-/// operators
-fn schatten_2_distance(a: &Array2<c64>, b: &Array2<c64>) -> f64 {
-    let diff = a - b;
-    let diff_adjoint = adjoint(&diff);
-    let psd = diff.dot(&diff_adjoint);
-    let trace = psd.trace().unwrap();
-    // imaginary part should be very small
-    assert!(trace.im() < f64::EPSILON * a.nrows() as f64);
-    // real part should be positive
-    assert!(trace.re() > 0.);
-    // If above assertions pass then this is fine.
-    ComplexFloat::abs(trace.sqrt())
-}
 
-fn thermal_state(hamiltonian: &Array2<c64>, beta: f64) -> Array2<c64> {
-    let scaled_h = hamiltonian * (c64::from_real(-1. * beta));
-    let mut out = expm(&scaled_h).expect("we ballin");
-    let partition_function = out.trace().unwrap();
-    if ComplexFloat::abs(partition_function) < 1e-12 {
-        println!("[thermal_state] encountered near zero partition function. You're gonna have a bad time.");
-        panic!("see printed msg")
-    }
-    out.mapv_inplace(|x| x / partition_function);
-    out
-}
-
-fn harmonic_oscillator_hamiltonian(dim: usize) -> Array2<c64> {
-    let mut out = Array2::<c64>::zeros((dim, dim).f());
-    for ix in 0..dim {
-        out[[ix, ix]] = c64::new(0.5 + ix as f64, 0.);
-    }
-    out
-}
 
 /// Returns a hamiltonian with a highly degenerate spectrum. Has a single
 /// ground state at energy = 0 and the remaining energies all at the
@@ -445,7 +421,6 @@ fn test_beta_fix_dimension() {
 fn one_shot_mc_with_errors() {
 
 }
-
 fn error_vs_interaction_number(config: NodeConfig) {
     let mut interaction_to_errors: HashMap<usize, Vec<f64>> = HashMap::new();
     let h_sys = match config.sys_hamiltonian {
@@ -457,58 +432,45 @@ fn error_vs_interaction_number(config: NodeConfig) {
         }
     };
     let h_env = harmonic_oscillator_hamiltonian(config.env_dim);
-    let chacha = RandomInteractionGen::new(config.rng_seed as u64, h_env.nrows() * h_sys.nrows());
+    let rng_seed = get_rng_seed();
+    let chacha = RandomInteractionGen::new(rng_seed, h_env.nrows() * h_sys.nrows());
     for interaction in 1..=config.num_interactions as usize {
         println!("interaction: {:}", interaction);
         let errors = multi_interaction_error_mc(config.num_samples, interaction, &h_sys, &h_env, config.sys_start_beta, config.env_beta, config.alpha, config.time, chacha.clone());
         interaction_to_errors.insert(interaction, errors);
     }
     let mut filepath = config.base_dir;
-    filepath.push_str(&config.rng_seed.to_string());
-    let s = serde_json::to_string(&interaction_to_errors).expect("no serialization.");
+    filepath.push_str(&rng_seed.to_string());
+    let out: HashMap<usize, (usize, f64, f64)> = interaction_to_errors.drain().map(|(k,v)| {
+        let processed = process_error_data(v);
+        (k, processed)
+    }).collect();
+    let s = serde_json::to_string(&out).expect("no serialization.");
     std::fs::write(filepath, s).expect("no writing");
 }
 
-fn main() {
-    println!("environment: {:?}", env::var("RNG_SEED_NUMBER"));
-    let c = NodeConfig {
-        rng_seed: 1,
-        num_interactions: 50,
-        num_samples: 100,
-        time: 100.,
-        alpha: 0.01,
-        sys_start_beta: 0.0,
-        env_beta: 1.,
-        sys_hamiltonian: HamiltonianType::HarmonicOscillator,
-        sys_dim: 10,
-        env_dim: 2,
-        base_dir: String::from("/Users/matt/scratch/tsp_test/"),
-    };
-    let start = Instant::now();
-    error_vs_interaction_number(c);
-    // println!("beta test");
-    // println!("{:}", "^".repeat(100));
-    // test_beta_fix_dimension();
-    // println!("dimension test");
-    // println!("{:}", "^".repeat(100));
-    // test_dimension_fix_beta();
-    // println!("min interactions test");
-    // println!("{:}", "^".repeat(100));
-    // test_minimum_interactions();
-    // println!("grid test");
-    // println!("{:}", "^".repeat(100));
-    // marked_state_grid_gap_and_dim();
+fn get_conf_path() -> String {
+    let args: Vec<String> = std::env::args().collect();
+    let mut s = args[1].to_string();
+    s.push_str("tsp.conf");
+    s
+}
 
+fn run_node() {
+    let conf_path = get_conf_path();
+    let config = read_config(conf_path);
+    error_vs_interaction_number(config)
+}
+
+fn main() {
+    let start = Instant::now();
+    run_node();
     let duration = start.elapsed();
     println!("took this many millis: {:}", duration.as_millis());
 }
 
-// millis unoptimized : 48760
-// millis release     : 2714
-// reduction 18x
-
 mod tests {
-    use crate::{adjoint, i, partial_trace, sample_haar_unitary, zero, RandomInteractionGen};
+    use crate::{adjoint, i, partial_trace, sample_haar_unitary, zero, RandomInteractionGen, NodeConfig, read_config};
     use ndarray::{linalg::kron, prelude::*};
     use ndarray_linalg::{expm::expm, random_hermite, OperationNorm, Trace};
     use num_complex::{Complex64 as c64, ComplexFloat};
@@ -520,6 +482,31 @@ mod tests {
         assert_eq!(gen1.sample_interaction(), gen2.sample_interaction());
     }
  
+    #[test]
+    fn serialize_a_config() {
+        let nc = NodeConfig {
+            num_interactions: 100,
+            num_samples: 1000,
+            time: 100.,
+            alpha: 0.01,
+            sys_start_beta: 0.,
+            env_beta: 1.,
+            sys_hamiltonian: numerics::HamiltonianType::HarmonicOscillator,
+            sys_dim: 10,
+            env_dim: 2,
+            base_dir: "/Users/matt/scratch/tsp/test_config/".to_string(),
+        };
+        let nc_string = serde_json::to_string(&nc).expect("no serialization?");
+        std::fs::write("/Users/matt/scratch/tsp/test_config/tsp.conf", nc_string).expect("couldn't write");
+    }
+
+    #[test]
+    fn deserialize_config() {
+        let nc_path = "/Users/matt/scratch/tsp/test_config/tsp.conf".to_string();
+        let nc = read_config(nc_path);
+        println!("retrieved nc: {:#?}", nc);
+    }
+
     #[test]
     fn test_haar_one_design() {
         let dim = 100;
