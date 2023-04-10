@@ -14,5 +14,7 @@ num-complex = "*"
 ndarray-linalg = {version = "*", git = "https://github.com/matthagan15/ndarray-linalg", branch="stable_expm"}
 rayon = "1.5.3"
 rand = "0.8.5"
+rand_chacha = "0.3.1"
 rand_distr = "0.4.3"
-serde = "1.0.159"
+serde = { version = "1.0.159", features = ["derive"] }
+serde_json = "1.0.95"
