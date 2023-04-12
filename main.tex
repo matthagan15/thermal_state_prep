@@ -291,41 +291,37 @@ Plugging these into our computation for $(A)$ yields
     &= -\sigma^2 t^2 \sum_{i,j,k,l} \frac{B(i,j) \dim}{\dim^2 - 1} \ketbra{i,j}{i,j} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))(s_1 s_2 - s_1)t} s_1 ds_1 ds_2 \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim}.
 \end{align}
 
-We now unfortunately have to proceed by case analysis due to the result of the phase integration. We split the summation over $k,l$ into terms where $\lambda(i,j) = \lambda(k,l)$ and those where $\lambda(i,j) \neq \lambda(k,l)$. By pulling the factors $\frac{B(i,j) \dim}{\dim^2-1} \ketbra{i,j}{i,j}$ out of the $k,l$ summation, we can proceed as:
+We now proceed by pulling out the $i,j = k,l$ term from the $k,l$ summation and performing the phase integration. This yields
 \begin{align}
-    &\sum_{(k,l) : \lambda(i,j) = \lambda(k,l)} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))(s_1 s_2 - s_1)t} s_1 ds_1 ds_2 (\delta(i,j | k,l)(1 - 1/\dim) - 1/\dim) \\
-    &\int_0^1 \int_0^1 s_1 ds_1 ds_2 \sum_{(k,l) : \lambda(i,j) = \lambda(k,l)} (\delta(i,j | k,l)(1 - 1/\dim) - 1/\dim) \\
-    &\frac{1}{2} \parens{\frac{\dim - 1}{\dim} - \frac{\eta(i,j)}{\dim}} \\
-    &\frac{\dim - \eta(i,j) - 1}{2 \dim},
+    &\sum_{k,l} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))(s_1 s_2 - s_1)t} s_1 ds_1 ds_2 \parens{\delta(i,j|k,l)(\dim-1) - 1} \\
+    &= \frac{\dim - 2}{2} - \sum_{(k,l) \neq (i,j)} \frac{1 - i t (\lambda(i,j) - \lambda(k,l)) - e^{-i(\lambda(i,j) - \lambda(k,l))t}}{t^2(\lambda(i,j) - \lambda(k,l))^2}
 \end{align}
-where $\eta(i,j)$ represents the degeneracy, or number of times the eigenvalue $\lambda(i,j)$ appears in the spectrum of $H$. 
-Now the $s_1, s_2$ integrals can be computed as, given that $\lambda(i,j) \neq \lambda(k,l)$
-\begin{equation}
-    \int_0^1 \int_0^1 e^{i (\lambda(i,j) - \lambda(k,l))(s_1s_2 - s_1)t} s_1 ds_1 ds_2 = \frac{1 - e^{-i (\lambda(i,j) - \lambda(k,l))t} -i t (\lambda(i,j) - \lambda(k,l))}{t^2 (\lambda(i,j) - \lambda(k,l))^2}.
-\end{equation}
-
 Combining all of the above gives the final computation of the $(A)$ term
 \begin{align}
-    (A) &= -\sigma^2 t^2 \sum_{i,j} \frac{B(i,j) \dim}{\dim^2 - 1} \parens{\frac{
-    \dim - \eta(i,j) - 1}{2 \dim} - \frac{1}{\dim}\sum_{(k,l) : \lambda(i,j) \neq \lambda(k,l)} \frac{1 - e^{-i(\lambda(i,j) - \lambda(k,l))t} -it(\lambda(i,j) - \lambda(k,l))}{t^2(\lambda(i,j) - \lambda(k,l))^2}} .
+    \int (A) dG &= -\sigma^2 t^2 \sum_{i,j} \frac{B(i,j) \dim}{\dim^2 - 1} \parens{\frac{
+    \dim - \eta(i,j) - 1}{2 \dim} - \frac{1}{\dim}\sum_{(k,l) : \lambda(i,j) \neq \lambda(k,l)} \frac{1 - e^{-i(\lambda(i,j) - \lambda(k,l))t} -it(\lambda(i,j) - \lambda(k,l))}{t^2(\lambda(i,j) - \lambda(k,l))^2}} \\
+    &= \frac{\sigma^2 t^2}{\dim^2 -1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ -\frac{\dim - 2}{2} + \sum_{(k,l) \neq (i,j)} \frac{1 - i t (\lambda(i,j) - \lambda(k,l)) - e^{-i(\lambda(i,j) - \lambda(k,l))t}}{t^2(\lambda(i,j) - \lambda(k,l))^2} \bigg]
 \end{align}
 
 We now can compute the $(B)$ term in a similar fashion
 \begin{align}
-    (B) &= -t^2 \int_0^1 \int_0^1 G(s_1 t) G((s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 ~ \rho(t) \\
+    \int (B) dG &= -t^2 \int \int_0^1 \int_0^1 G(s_1 t) G((s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 dG ~ \rho(t) \\
     &= -t^2 \sum_{i,j,k,l,m,n} \sum_{c,d,e,f} B(c,d) \ketbra{i,j}{c,d} \int C_D dD \int C_U dU_G \int_0^1 \int_0^1 C_{\lambda}(s_1 t, (s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 \\
     &= -\sigma^2 t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} B(c,d) \ketbra{i,j}{c,d} \sum_{e,f} \parens{\delta(m,n | e,f) \int C_U dU_G }\int_0^1 \int_0^1 C_{\lambda}(s_1 t, (s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 \\
     &= -\sigma^2 t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} B(c,d) \ketbra{i,j}{c,d} \frac{\delta(i,j| c,d)}{\dim^2 - 1} \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim} \int_0^1 \int_0^1 C_{\lambda}(s_1 t, (s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 \\
     &= -\sigma^2 t^2 \sum_{i,j,k,l,m,n} B(i,j) \ketbra{i,j}{i,j} \frac{\delta(i,j | k,l)(1-1/\dim) - 1/\dim}{\dim^2 - 1} \int_0^1 \int_0^1 C_{\lambda}(s_1 t, (s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 \\
     &= -\sigma^2 t^2 \sum_{i,j} \sum_{k,l} B(i,j) \ketbra{i,j}{i,j} \frac{\delta(i,j | k,l)(\dim-1) - 1}{\dim^2 - 1} \int_0^1 \int_0^1 C_{\lambda}(s_1 t, (s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 .
 \end{align}
-Now we split the sum over $k,l$ into the equal eigenvalue and unequal eigenvalue contributions
+Now we compute the phase contribution in a similar manner as $(A)$:
 \begin{align}
-    (B) &= -\sigma^2 t^2 \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ \sum_{(k,l) : \lambda(i,j) = \lambda(k,l)} \frac{\delta(i,j| k,l)(\dim - 1) - 1}{\dim^2 - 1} \int_0^1 \int_0^1 (1-s_1) ds_1 ds_2 \nonumber \\
-    &~ ~ - \frac{1}{\dim^2 - 1} \sum_{(k,l): \lambda(i,j) \neq \lambda(k,l)} \int_0^1 \int_0^1 e^{-i (\lambda(i,j) - \lambda(k,l))(s_2 (1-s_1) t)} (1-s_1) ds_1 ds_2 \bigg] \\
-    &= -\frac{\sigma^2 t^2}{\dim^2-1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ \frac{\dim - 1 - \eta(i,j)}{2} - \sum_{(k,l) : \lambda(i,j) \neq \lambda(k,l)} \frac{1 - e^{-it(\lambda(i,j) - \lambda(k,l))} -i t (\lambda(i,j) - \lambda(k,l))}{t^2 (\lambda(i,j) - \lambda(k,l))^2} \bigg].
+    &\sum_{k,l} (\delta(i,j|k,l)(\dim - 1) - 1) \int_0^1 \int_0^1 e^{-i (\lambda(i,j) - \lambda(k,l))s_2 (1-s_1)t} (1 - s_1) ds_1 ds_2 \\
+    &= \frac{\dim - 2}{2} - \sum_{(k,l) \neq (i,j)} \frac{1 - i t (\lambda(i,j) - \lambda(k,l)) - e^{-i (\lambda(i,j) - \lambda(k,l))t}}{t^2 (\lambda(i,j) - \lambda(k,l))^2},
 \end{align}
-We note that this term is surprisingly equal to the contribution from $(A)$.
+where we note that all signs are the same as those in $(A)$. Plugging this back in to $(B)$ yields
+\begin{align}
+    \int (B) dG &= \frac{\sigma^2 t^2}{\dim^2-1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ - \frac{\dim - 2}{2} + \sum_{(k,l) \neq (i,j)} \frac{1  -i t (\lambda(i,j) - \lambda(k,l)) - e^{-it(\lambda(i,j) - \lambda(k,l))}}{t^2 (\lambda(i,j) - \lambda(k,l))^2} \bigg].
+\end{align}
+We note that this term is exactly equal to the contribution from $(A)$.
 Now we can compute the ``center" term where $\rho(t)$ is sandwiched between the two random interaction matrices
 \begin{align}
     (C) &= t^2 \int_0^1 G(st) ds ~ \rho(t) ~ \int_0^1 G((1-s)t) ds \\
@@ -350,35 +346,51 @@ Now performing the Haar integration, which was done in prior terms $(A)$ and $(B
     &= \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j,k,l} \bigg[ B(k,l) \ketbra{i,j}{i,j} \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l)s t} ds \int_0^1 e^{i(\lambda(k,l) - \lambda(i,j))(1-s)t} ds \nonumber \\
     &\quad \parens{\delta(i,j | k,l)(\dim - 1) - 1} \bigg]
 \end{align}
-We now have to split the $k,l$ summation into two parts, following the previous terms:
+
+We now compute the phase contribution to simplify the $k,l$ summands
 \begin{align}
-    \int(C) dG &= \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j} \ketbra{i,j}{i,j} \bigg[\sum_{(k,l) : \lambda(i,j) = \lambda(k,l)} B(k,l) (\delta(i,j| k,l)(\dim - 1) - 1) \nonumber \\
-    & +\sum_{(k,l) : \lambda(i,j) \neq \lambda(k,l)} B(k,l) \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))st } ds \int_0^1 e^{-i(\lambda(i,j) - \lambda(k,l))st} ds (\delta(i,j| k,l)(\dim - 1) - 1) \bigg] \\
-    &= \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j} \ketbra{i,j}{i,j} \bigg[ \sum_{(k,l) : \lambda(i,j) = \lambda(k,l)} B(k,l) (\delta(i,j| k,l)(\dim -1 ) - 1) \nonumber \\ 
-    &- \sum_{(k,l) : \lambda(i,j) \neq \lambda(k,l)} B(k,l) \frac{(e^{i(\lambda(i,j) - \lambda(k,l))t} - 1)(e^{-i(\lambda(i,j) - \lambda(k,l))t} - 1)}{t^2 (\lambda(i,j) - \lambda(k,l))^2} \\
-    &=\frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j} \ketbra{i,j}{i,j} \bigg[ \sum_{(k,l) : \lambda(i,j) = \lambda(k,l)} B(k,l) (\delta(i,j| k,l)(\dim -1 ) - 1) \nonumber \\ 
-    &- \sum_{(k,l) : \lambda(i,j) \neq \lambda(k,l)} B(k,l) \frac{2(1 - \cos\parens{(\lambda(i,j) - \lambda(k,l))t})}{t^2 (\lambda(i,j) - \lambda(k,l))^2} \bigg]
+    &\sum_{k,l} B(k,l) \parens{\delta(i,j | k,l)(\dim - 1) - 1} \int_0^1 e^{i (\lambda(i,j) - \lambda(k,l))st} ds \int_0^1 e^{-i (\lambda(i,j) - \lambda(k,l))(1-s)t} ds \\
+    &= B(i,j) (\dim - 2) - 2 \sum_{(k,l) \neq (i,j)} B(k,l) \frac{1 - \cos((\lambda(i,j) - \lambda(k,l))t)}{t^2 (\lambda(i,j) - \lambda(k,l))^2}.
+\end{align}
+Plugging back in yields
+\begin{align}
+    \int (C) dG &= \frac{2 \sigma^2 t^2}{\dim^2 - 1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ \frac{\dim -2 }{2} - \sum_{(k,l) \neq (i,j)} \frac{B(k,l)}{B(i,j)} \frac{1 - \cos((\lambda(i,j) - \lambda(k,l))t)}{t^2 (\lambda(i,j) - \lambda(k,l))^2} \bigg]
 \end{align}
 Since $(D) = (C)$ we can move on to the remaining two terms $(E)$ and $(F)$.
 \begin{align}
     \int (E) dG &= -t^2 \int  \rho(t) \int_0^1 \int_0^1 G((1- s_1 s_2) t) G((1-s_1)t) s_1 ds_1 ds_2 dG \\
     &= -\sigma^2 t^2 \sum_{o,p} B(o,p) \ketbra{o,p}{o,p} \sum_{i,j,k,l} \ketbra{i,j}{i,j} \int_0^1 \int_0^1 C_{\lambda}((1-s_1 s_2)t, (1-s_1)t) s_1 ds_1 ds_2 \frac{\delta(i,j|k,l)(\dim -1) - 1}{\dim^2 - 1} \\
-    &= -\sigma^2 t^2 \sum_{i,j,k,l} B(i,j) \ketbra{i,j}{i,j} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))(s_1 (1- s_2) )t} s_1 ds_1 ds_2 \frac{\delta(i,j|k,l)(\dim -1) - 1}{\dim^2 - 1} \\
-    &= -\frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ \frac{1}{2} \sum_{(k,l) : \lambda(i,j) = \lambda(k,l)} \parens{\delta(i,j|k,l)(\dim -1) - 1} \nonumber \\
-    & - \sum_{(k,l) : \lambda(i,j) \neq \lambda(k,l)} \frac{1 - e^{i(\lambda(i,j) - \lambda(k,l))t} + i (\lambda(i,j) - \lambda(k,l))t}{t^2 (\lambda(i,j) - \lambda(k,l))^2} \bigg] \\
-    &= - \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ \frac{\dim - 1 - \eta(i,j)}{2} - \sum_{(k,l) : \lambda(i,j) \neq \lambda(k,l)} \frac{1 - e^{i(\lambda(i,j) - \lambda(k,l))t} + i (\lambda(i,j) - \lambda(k,l))t}{t^2 (\lambda(i,j) - \lambda(k,l))^2} \bigg],
+    &= -\sigma^2 t^2 \sum_{i,j,k,l} B(i,j) \ketbra{i,j}{i,j} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))(s_1 (1- s_2) )t} s_1 ds_1 ds_2 \frac{\delta(i,j|k,l)(\dim -1) - 1}{\dim^2 - 1}
+\end{align} 
+We now compute the phase contribution
+\begin{align}
+    &\sum_{k,l} (\delta(i,j | k,l) (\dim - 1) - 1) \int_0^1 \int_0^1 e^{i (\lambda(i,j) - \lambda(k,l))(s_1 (1 - s_2))t} s_1 ds_1 ds_2 \\
+    &= \frac{\dim - 2}{2} - \sum_{(k,l) \neq (i,j)} \frac{1 + i t (\lambda(i,j) - \lambda(k,l)) - e^{i (\lambda(i,j) - \lambda(k,l))t}}{t^2 (\lambda(i,j) - \lambda(k,l))^2}
 \end{align}
-where we note that this is equal to the contributions from $(A)$ and $(B)$.
+Plugging back in yields
+\begin{align}
+    \int (E) dG &= \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ - \frac{\dim - 2}{2} + \sum_{(k,l) \neq (i,j)} \frac{1 + i t (\lambda(i,j) - \lambda(k,l)) - e^{i (\lambda(i,j) - \lambda(k,l))t}}{t^2 (\lambda(i,j) - \lambda(k,l))^2} \bigg].
+\end{align}
+We note that this expression is the complex conjugate of the expression derived for $(A)$ and $(B)$. 
 
 The last term is computed similarly:
 \begin{align}
     \int(F) dG &= -t^2 \rho(t) \int \int_0^1 \int_0^1 G((1-s_1)t) G((1 - s_1 )(1-s_2)t) (1-s_1) ds_1 ds_2 dG \\
-    &= - \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j,k,l} B(i,j) \ketbra{i,j}{i,j} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))s_1 t} e^{-i(\lambda(i,j) - \lambda(k,l))(s_1 (1- s_2))t} s_1 ds_1 ds_2 (\delta(i,j|k,l)(\dim - 1) - 1) \\
-    &= - \frac{\sigma^2 t^2}{\dim^2 -1 } \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[\sum_{(k,l) : \lambda(i,j) = \lambda(k,l)} \frac{\delta(i,j| k,l)(\dim - 1) - 1}{2} \nonumber \\
-    &- \sum_{(k,l) : \lambda(i,j) \neq (\lambda(k,l))} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))s_1 s_2 t} s_1 ds_1 ds_2 \bigg] \\
-    &= - \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ \frac{\dim - 1 - \eta(i,j)}{2} - \sum_{(k,l) : \lambda(i,j) \neq \lambda(k,l)} \frac{1 - e^{i(\lambda(i,j) - \lambda(k,l))t} + i (\lambda(i,j) - \lambda(k,l))t}{t^2 (\lambda(i,j) - \lambda(k,l))^2} \bigg],
+    &= - \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j,k,l} B(i,j) \ketbra{i,j}{i,j} \int_0^1 \int_0^1 \bigg[ \nonumber \\
+    &\quad \quad e^{i(\lambda(i,j) - \lambda(k,l))s_1 t} e^{-i(\lambda(i,j) - \lambda(k,l))(s_1 s_2 )t} s_1 ds_1 ds_2 (\delta(i,j|k,l)(\dim - 1) - 1) \bigg] \\
+    &= - \frac{\sigma^2 t^2}{\dim^2 -1 } \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[\frac{\dim - 2}{2} - \sum_{(k,l) \neq (i,j)}\int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))s_1 s_2 t} s_1 ds_1 ds_2 \bigg] \\
+    &= \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ - \frac{\dim - 2}{2} + \sum_{(k,l) \neq (i,j)} \frac{1 + i (\lambda(i,j) - \lambda(k,l))t - e^{i(\lambda(i,j) - \lambda(k,l))t} }{t^2 (\lambda(i,j) - \lambda(k,l))^2} \bigg],
 \end{align}
-which we note is equal to terms $(A), (B),$ and $(E)$. 
+which we note is equal to term $(E)$. 
+
+Combining terms $(A)$ through $(F)$ yields
+\begin{align}
+    \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S) \bigg|_{\alpha = 0} dG &= \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \sum_{(k,l) \neq (i,j)} \frac{4 + 4 \cos((\lambda(i,j) - \lambda(k,l)t))}{t^2 (\lambda(i,j) - \lambda(k,l))^2} - 4 \frac{B(k,l)}{B(i,j)} \frac{1 - \cos((\lambda(i,j) - \lambda(k,l))t)}{t^2 (\lambda(i,j) - \lambda(k,l))^2} 
+\end{align}
+We note that this can be drastically simplified by time averaging:
+\begin{align}
+    \lim_{T \to \infty} \frac{1}{T} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S) \bigg|_{\alpha = 0} dG &= \frac{4 \sigma^2}{\dim^2 - 1} \sum_{i,j} \ketbra{i,j}{i,j} \sum_{(k,l) \neq (i,j)} \frac{B(i,j) - B(k,l)}{(\lambda(i,j) - \lambda(k,l))^2}
+\end{align}
 \newpage
 \hrule
 \hfill \\
