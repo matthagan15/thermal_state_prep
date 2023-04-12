@@ -12,10 +12,6 @@ pub enum HamiltonianType {
     MarkedState
 }
 
-pub fn get_rng_seed() -> u64 {
-    let var_data = std::env::var("NODE_RNG_SEED").expect("couldn't get rng seed from environment.");
-    var_data.parse().expect("couldn't parse environment rng seed to u64.")
-}
 
 /// Computes Schatten-2 Norm, AKA frobenius error between two
 /// operators

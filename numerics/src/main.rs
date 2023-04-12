@@ -456,6 +456,11 @@ fn get_conf_path() -> String {
     s
 }
 
+fn get_rng_seed() -> u64 {
+    let args: Vec<String> = std::env::args().collect();
+    args[2].parse().expect("could not parse input parameter for rng_seed as u64")
+}
+
 fn run_node() {
     let conf_path = get_conf_path();
     let config = read_config(conf_path);
