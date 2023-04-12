@@ -3,18 +3,18 @@ extern crate ndarray;
 extern crate num_complex;
 
 use std::collections::HashMap;
+use std::env;
 use std::fs;
 use std::sync::mpsc::channel;
-use std::sync::{RwLock, Mutex, Arc};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant};
-use std::env;
 
 use ndarray::linalg::kron;
 use ndarray::prelude::*;
 use ndarray_linalg::expm::expm;
-use ndarray_linalg::{random_hermite, random_hermite_using};
 use ndarray_linalg::QRSquare;
 use ndarray_linalg::Trace;
+use ndarray_linalg::{random_hermite, random_hermite_using};
 use ndarray_linalg::{OperationNorm, Scalar};
 use num_complex::Complex64 as c64;
 use num_complex::ComplexFloat;
@@ -37,7 +37,7 @@ struct NodeConfig {
     alpha: f64,
     sys_start_beta: f64,
     env_beta: f64,
-    // Path to stored hamiltonian
+    // Currently only support harmonic oscillator and marked state
     sys_hamiltonian: HamiltonianType,
     sys_dim: usize,
     // currently only support harmonic oscillator env
@@ -50,10 +50,12 @@ struct RandomInteractionGen {
     dim: usize,
 }
 
-
 impl RandomInteractionGen {
     fn new(seed: u64, dim: usize) -> Self {
-        RandomInteractionGen { rng: Arc::new(Mutex::new(ChaCha8Rng::seed_from_u64(seed))) , dim: dim}
+        RandomInteractionGen {
+            rng: Arc::new(Mutex::new(ChaCha8Rng::seed_from_u64(seed))),
+            dim: dim,
+        }
     }
 
     fn sample_interaction(&self) -> Array2<c64> {
@@ -62,11 +64,11 @@ impl RandomInteractionGen {
         for i in 0..self.dim {
             for j in 0..i {
                 let x: c64 = chacha.gen();
-                g[[i,j]] = x;
-                g[[j,i]] = x.conj();
+                g[[i, j]] = x;
+                g[[j, i]] = x.conj();
             }
             let y: c64 = chacha.gen();
-            g[[i,i]] = y + y.conj();
+            g[[i, i]] = y + y.conj();
         }
         g
     }
@@ -74,7 +76,10 @@ impl RandomInteractionGen {
 
 impl Clone for RandomInteractionGen {
     fn clone(&self) -> Self {
-        Self { rng: self.rng.clone(), dim: self.dim.clone() }
+        Self {
+            rng: self.rng.clone(),
+            dim: self.dim.clone(),
+        }
     }
 }
 
@@ -124,7 +129,7 @@ fn multi_interaction(
     let mut sys_out = sys_state.clone();
     for _ in 0..num_interactions {
         let interaction_sample: Array2<c64> = (c64::from_real(alpha)) * rng.sample_interaction();
-        let h_with_interaction =  c64::new(0., time)* (tot_hamiltonian + &interaction_sample);
+        let h_with_interaction = c64::new(0., time) * (tot_hamiltonian + &interaction_sample);
         let time_evolution_op = expm(&h_with_interaction).expect("we ball");
         let time_evolution_op_adjoint = adjoint(&time_evolution_op);
         let mut out = kron(&sys_out, env_state);
@@ -146,7 +151,13 @@ fn multi_interaction_error_mc(
     time: f64,
     rng: RandomInteractionGen,
 ) -> Vec<f64> {
-    let h = kron(sys_hamiltonian, &Array2::<c64>::eye(env_hamiltonian.nrows())) + kron(&Array2::<c64>::eye(sys_hamiltonian.nrows()), env_hamiltonian);
+    let h = kron(
+        sys_hamiltonian,
+        &Array2::<c64>::eye(env_hamiltonian.nrows()),
+    ) + kron(
+        &Array2::<c64>::eye(sys_hamiltonian.nrows()),
+        env_hamiltonian,
+    );
     let rho_env = thermal_state(env_hamiltonian, env_beta);
     let rho_sys = thermal_state(sys_hamiltonian, sys_initial_beta);
     let sys_ideal = thermal_state(sys_hamiltonian, env_beta);
@@ -154,9 +165,16 @@ fn multi_interaction_error_mc(
     let mut locker = RwLock::new(errors);
     for interaction in 1..=num_interactions {
         (0..num_samples).into_par_iter().for_each(|_| {
-            let rho_evolved_sample = multi_interaction(&h, &rho_env, &rho_sys, alpha, time, num_interactions, rng.clone());
-            let error = schatten_2_distance(&rho_evolved_sample
-                , &sys_ideal);
+            let rho_evolved_sample = multi_interaction(
+                &h,
+                &rho_env,
+                &rho_sys,
+                alpha,
+                time,
+                num_interactions,
+                rng.clone(),
+            );
+            let error = schatten_2_distance(&rho_evolved_sample, &sys_ideal);
             let mut v = locker.write().expect("no locker");
             v.push(error);
         });
@@ -300,8 +318,6 @@ fn test_minimum_interactions() {
     }
 }
 
-
-
 /// Returns a hamiltonian with a highly degenerate spectrum. Has a single
 /// ground state at energy = 0 and the remaining energies all at the
 /// provided gap.
@@ -312,51 +328,6 @@ fn marked_state_hamiltonian(dim: usize, gap: f64) -> Array2<c64> {
     }
     out
 }
-
-fn harmonic_oscillator_alpha_and_time_grid() {
-    let alphas = vec![5e-4, 1e-3, 5e-3, 1e-2];
-    let times = vec![1e2];
-    let mut results = Vec::new();
-    for alpha in alphas.clone() {
-        for time in times.clone() {
-            println!("{:}", "*".repeat(100));
-            println!( 
-                "finding minimum interactions needed for alpha = {:}, time = {:}",
-                alpha, time
-            );
-            results.push(find_interactions_needed_for_error(500, &&harmonic_oscillator_hamiltonian(10), &harmonic_oscillator_hamiltonian(5), 0.8, 1., 0.05, alpha, time));
-        }
-    }
-    println!("alphas: {:?}", alphas);
-    println!("results: {:?}", results)
-}
-
-fn marked_state_grid_gap_and_dim() {
-    let gaps = vec![2.];
-    let dims = vec![4, 8, 16];
-    for gap in gaps {
-        for dim in dims.clone() {
-            println!("{:}", "*".repeat(100));
-            println!(
-                "finding minimum interactions needed for dim = {:}, gap = {:}",
-                dim, gap
-            );
-            find_interactions_needed_for_error(
-                500,
-                &marked_state_hamiltonian(16, gap),
-                &harmonic_oscillator_hamiltonian(dim),
-                0.,
-                1.,
-                0.1,
-                0.01,
-                100.,
-            );
-        }
-    }
-}
-
-
-
 
 /// Return the schatten-2 norm of the difference between the output of the channel
 /// and the input state (going to use thermal state for input.) to be used in a finite
@@ -401,50 +372,39 @@ fn two_harmonic_oscillators(sys_dim: usize, env_dim: usize, sys_initial_beta: f6
     );
 }
 
-fn test_dimension_fix_beta() {
-    let sys_dims = vec![5, 10, 15, 20, 25, 30];
-    for dim in sys_dims {
-        println!("dimension: {:}", dim);
-        two_harmonic_oscillators(dim, 10, 0.5, 1.);
-    }
-}
-
-fn test_beta_fix_dimension() {
-    let sys_dim = 20;
-    let betas = vec![0.0, 0.2, 0.4, 0.6, 0.8, 1.0];
-    for beta in betas {
-        println!("beta: {:}", beta);
-        two_harmonic_oscillators(sys_dim, 10, beta, 1.);
-    }
-}
-
-fn one_shot_mc_with_errors() {
-
-}
 fn error_vs_interaction_number(config: NodeConfig) {
     let mut interaction_to_errors: HashMap<usize, Vec<f64>> = HashMap::new();
     let h_sys = match config.sys_hamiltonian {
-        HamiltonianType::HarmonicOscillator => {
-            harmonic_oscillator_hamiltonian(config.sys_dim)
-        },
-        HamiltonianType::MarkedState => {
-            marked_state_hamiltonian(config.sys_dim, 1.)
-        }
+        HamiltonianType::HarmonicOscillator => harmonic_oscillator_hamiltonian(config.sys_dim),
+        HamiltonianType::MarkedState => marked_state_hamiltonian(config.sys_dim, 1.),
     };
     let h_env = harmonic_oscillator_hamiltonian(config.env_dim);
     let rng_seed = get_rng_seed();
     let chacha = RandomInteractionGen::new(rng_seed, h_env.nrows() * h_sys.nrows());
     for interaction in 1..=config.num_interactions as usize {
         println!("interaction: {:}", interaction);
-        let errors = multi_interaction_error_mc(config.num_samples, interaction, &h_sys, &h_env, config.sys_start_beta, config.env_beta, config.alpha, config.time, chacha.clone());
+        let errors = multi_interaction_error_mc(
+            config.num_samples,
+            interaction,
+            &h_sys,
+            &h_env,
+            config.sys_start_beta,
+            config.env_beta,
+            config.alpha,
+            config.time,
+            chacha.clone(),
+        );
         interaction_to_errors.insert(interaction, errors);
     }
     let mut filepath = config.base_dir;
     filepath.push_str(&rng_seed.to_string());
-    let out: HashMap<usize, (usize, f64, f64)> = interaction_to_errors.drain().map(|(k,v)| {
-        let processed = process_error_data(v);
-        (k, processed)
-    }).collect();
+    let out: HashMap<usize, (usize, f64, f64)> = interaction_to_errors
+        .drain()
+        .map(|(k, v)| {
+            let processed = process_error_data(v);
+            (k, processed)
+        })
+        .collect();
     let s = serde_json::to_string(&out).expect("no serialization.");
     std::fs::write(filepath, s).expect("no writing");
 }
@@ -458,7 +418,9 @@ fn get_conf_path() -> String {
 
 fn get_rng_seed() -> u64 {
     let args: Vec<String> = std::env::args().collect();
-    args[2].parse().expect("could not parse input parameter for rng_seed as u64")
+    args[2]
+        .parse()
+        .expect("could not parse input parameter for rng_seed as u64")
 }
 
 fn run_node() {
@@ -475,7 +437,10 @@ fn main() {
 }
 
 mod tests {
-    use crate::{adjoint, i, partial_trace, sample_haar_unitary, zero, RandomInteractionGen, NodeConfig, read_config};
+    use crate::{
+        adjoint, i, partial_trace, read_config, sample_haar_unitary, zero, NodeConfig,
+        RandomInteractionGen,
+    };
     use ndarray::{linalg::kron, prelude::*};
     use ndarray_linalg::{expm::expm, random_hermite, OperationNorm, Trace};
     use num_complex::{Complex64 as c64, ComplexFloat};
@@ -486,7 +451,7 @@ mod tests {
         let mut gen2 = RandomInteractionGen::new(1, 2);
         assert_eq!(gen1.sample_interaction(), gen2.sample_interaction());
     }
- 
+
     #[test]
     fn serialize_a_config() {
         let nc = NodeConfig {
@@ -502,7 +467,8 @@ mod tests {
             base_dir: "/Users/matt/scratch/tsp/test_config/".to_string(),
         };
         let nc_string = serde_json::to_string(&nc).expect("no serialization?");
-        std::fs::write("/Users/matt/scratch/tsp/test_config/tsp.conf", nc_string).expect("couldn't write");
+        std::fs::write("/Users/matt/scratch/tsp/test_config/tsp.conf", nc_string)
+            .expect("couldn't write");
     }
 
     #[test]

@@ -1,17 +1,15 @@
 use ndarray::{Array2, ShapeBuilder};
-use ndarray_linalg::{c64, QRSquare, Scalar, Trace, expm};
+use ndarray_linalg::{c64, expm, QRSquare, Scalar, Trace};
 use num_complex::ComplexFloat;
 use rand::{thread_rng, Rng};
-use rand_distr::{StandardNormal, Normal, Distribution};
+use rand_distr::{Distribution, Normal, StandardNormal};
 use serde::{Deserialize, Serialize};
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HamiltonianType {
     HarmonicOscillator,
-    MarkedState
+    MarkedState,
 }
-
 
 /// Computes Schatten-2 Norm, AKA frobenius error between two
 /// operators
@@ -31,9 +29,8 @@ pub fn schatten_2_distance(a: &Array2<c64>, b: &Array2<c64>) -> f64 {
 pub fn process_error_data(vals: Vec<f64>) -> (usize, f64, f64) {
     let samples = vals.len();
     let mean = vals.iter().sum::<f64>() / (samples as f64);
-    let std = f64::sqrt(
-        vals.iter().map(|x| f64::powi(x - mean, 2)).sum::<f64>() / (samples as f64)
-    );
+    let std =
+        f64::sqrt(vals.iter().map(|x| f64::powi(x - mean, 2)).sum::<f64>() / (samples as f64));
     (samples, mean, std)
 }
 
