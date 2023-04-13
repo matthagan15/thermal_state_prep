@@ -5,5 +5,8 @@ datasets = ["alpha_0_005/1", "alpha_0_01/correct_data", "alpha_0_05/1", "alpha_0
 for data_file in datasets:
     with open(base_dir + data_file, 'r') as f:
         json_string = f.read()
+        x = json.loads(json_string)
         print("file: ", base_dir + data_file)
-        print("data: ", json_string)
+        for k,v in x.items():
+            print("k = ", k)
+            print("v = ", v)
