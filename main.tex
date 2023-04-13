@@ -86,8 +86,7 @@ We will primarily work in the eigenbasis for each Hamiltonian:
 \begin{equation}
     H_{S} = \sum_{i = 0}^{2^n - 1} \lambda_S(i) \ketbra{s_i}{s_i} ~,~ H_{E} = \sum_{j=0}^{2^m - 1} \lambda_E(j) \ketbra{e_j}{e_j} ~,~ H = \sum_{i=0}^{2^n - 1} \sum_{j=0}^{2^m - 1} \lambda(i,j) (\ket{s_i} \otimes \ket{e_j})(\bra{s_i} \otimes \bra{e_j}),
 \end{equation}
-for convenience we will denote the tensor product of eigenvectors simply by their indices $\ket{i,j} \coloneqq \ket{s_i} \otimes \ket{e_j}$. Note that $\lambda(i,j) \coloneqq \lambda_S(i) + \lambda_E(j)$. 
-Let $\lambda(i,j)$ denote the eigenvalue $E_i(H_{sys}) + E_j(H_{env})$ and $\ket{i,j}$ the corresponding eigenvector. 
+for convenience we will denote the tensor product of eigenvectors simply by their indices $\ket{i,j} \coloneqq \ket{s_i} \otimes \ket{e_j}$. For convenience we define $\lambda(i,j) \coloneqq \lambda_S(i) + \lambda_E(j)$.
 
 We study the effects of simulating the time dynamics of the system-environment space with randomized interactions. Our goal is to produce a channel that can reduce the entropy of a system thermal state by utilizing easily prepared thermal states of the environment. We consider using the Haar measure over eigenvectors for the randomized interaction and i.i.d eigenvalues from a zero mean $\sigma^2$ variance distribution. 
 
@@ -96,7 +95,7 @@ For input states we will typically assume thermal states of the form $\rho_S(\be
 
 Overall one application of our channel is represented as
 \begin{equation}
-    \Phi(\rho) := \int \partrace{env}{e^{+i(H + \alpha G)t} \rho e^{-i(H + \alpha G) t}} dG.
+    \Phi(\rho) := \int \partrace{\hilb_E}{e^{+i(H + \alpha G)t} \rho e^{-i(H + \alpha G) t}} dG.
 \end{equation}
 For simplicity we will denote the time evolution channel for a specific random interaction $G$ as
 \begin{equation}
@@ -158,17 +157,10 @@ Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the r
     \begin{equation}
         \Phi_G(\rho_S) = e^{+i (H + \alpha G)t} (\rho_S \otimes \rho_E) e^{-i (H + \alpha G)t},
     \end{equation}
-    where $H = H_S \otimes \identity + \identity \otimes H_E$. 
-    Then the interaction averaged $\bigo{\alpha^2}$ correction to this channel is given by
-    \begin{equation}
-        \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S) \bigg|_{\alpha = 0} dG = \sum_{i,j} T(i,j) \ketbra{i, j}{i, j},
-    \end{equation}
-    where $T$ is defined as
+    where $H = H_S \otimes \identity + \identity \otimes H_E$. For simplicity we assume no degeneracies in the total Hamiltonian $H$, and therefore in $H_S$ and $G$ is our randomized interaction. Further we let $\rho \coloneqq \rho_S \otimes \rho_E = \sum_{i,j} B(i,j) \ketbra{i,j}{i,j}$. The long time average and random interaction average second order correction is given by the following
     \begin{align}
-        T(i, j) &\coloneqq \frac{\sigma^2}{\dim + 1} \sum_{(m,n) : \lambda(m,n) \neq \lambda(i,j)} \frac{2 \rho_{m,n}(1 - \cos ((\lambda(i,j) - \lambda(m,n))t)) + \rho_{i,j} (2 \cos ((\lambda(i,j) - \lambda(m,n))t) - 1 )}{(\lambda(i,j) - \lambda(m,n))^2} \\
-        &~ + \frac{\sigma^2}{\dim + 1} \sum_{(m,n) : \lambda(m,n) = \lambda(i,j)} 2 (\rho_{m,n} - \rho_{i,j}).
+        \lim_{T \to \infty} \frac{1}{T} \int_0^T \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S)\bigg|_{\alpha = 0} dG ~dt &=  \frac{4 \sigma^2}{\dim^2 - 1} \sum_{i,j} \ketbra{i,j}{i,j} \sum_{(k,l) \neq (i,j)} \frac{B(i,j) - B(k,l)}{(\lambda(i,j) - \lambda(k,l))^2}.
     \end{align}
-
 \end{lemma}
 \begin{proof}
 We start from the expression for the first derivative of the channel $\frac{\partial}{\partial \alpha} \Phi_G(\rho_S)$ given by Eq. \eqref{eq:first_order_alpha_derivative}. To take the second derivative there are six factors involving $\alpha$, so we will end up with six terms. We repeat Eq. \eqref{eq:first_order_alpha_derivative} below, add a derivative, and label each factor containing an $\alpha$ for easier computation
@@ -298,9 +290,7 @@ We now proceed by pulling out the $i,j = k,l$ term from the $k,l$ summation and 
 \end{align}
 Combining all of the above gives the final computation of the $(A)$ term
 \begin{align}
-    \int (A) dG &= -\sigma^2 t^2 \sum_{i,j} \frac{B(i,j) \dim}{\dim^2 - 1} \parens{\frac{
-    \dim - \eta(i,j) - 1}{2 \dim} - \frac{1}{\dim}\sum_{(k,l) : \lambda(i,j) \neq \lambda(k,l)} \frac{1 - e^{-i(\lambda(i,j) - \lambda(k,l))t} -it(\lambda(i,j) - \lambda(k,l))}{t^2(\lambda(i,j) - \lambda(k,l))^2}} \\
-    &= \frac{\sigma^2 t^2}{\dim^2 -1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ -\frac{\dim - 2}{2} + \sum_{(k,l) \neq (i,j)} \frac{1 - i t (\lambda(i,j) - \lambda(k,l)) - e^{-i(\lambda(i,j) - \lambda(k,l))t}}{t^2(\lambda(i,j) - \lambda(k,l))^2} \bigg]
+    \int (A) dG &= \frac{\sigma^2 t^2}{\dim^2 -1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ -\frac{\dim - 2}{2} + \sum_{(k,l) \neq (i,j)} \frac{1 - i t (\lambda(i,j) - \lambda(k,l)) - e^{-i(\lambda(i,j) - \lambda(k,l))t}}{t^2(\lambda(i,j) - \lambda(k,l))^2} \bigg]
 \end{align}
 
 We now can compute the $(B)$ term in a similar fashion
@@ -391,6 +381,7 @@ We note that this can be drastically simplified by time averaging:
 \begin{align}
     \lim_{T \to \infty} \frac{1}{T} \int_0^T \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S) \bigg|_{\alpha = 0} dG ~ dt &= \frac{4 \sigma^2}{\dim^2 - 1} \sum_{i,j} \ketbra{i,j}{i,j} \sum_{(k,l) \neq (i,j)} \frac{B(i,j) - B(k,l)}{(\lambda(i,j) - \lambda(k,l))^2}
 \end{align}
+\end{proof}
 \newpage
 \hrule
 \hfill \\
@@ -498,7 +489,10 @@ For this simply note that each of the phases in the exponents of the integrals a
     \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{i,j} dG &= \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} \neq E_{i,j}} \frac{(2 \rho_{m,n} - \rho_{i,j}) - 2(\rho_{m,n} - \rho_{i,j}) \cos ((E_{i,j} - E_{m,n})t)}{(E_{i,j} - E_{m,n})^2} \nonumber \\
     &~ + \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} = E_{i,j}} 2 (\rho_{m,n} - \rho_{i,j}) \label{eq:second_order_final}
 \end{align}
-\end{proof}
+% \end{proof}
+
+The next goal is to find a suitable expression for the trace distance:
+
 
 % \subsection{Convergence to low temperature system state}
 % For simplicity later on we make the following definitions:
