@@ -20,4 +20,12 @@ for ix in range(len(datasets)):
         means[alphas[ix]] = mean_data
         stds[alphas[ix]] = std_data
 fig = plt.figure()
-for alpha in alphas
+for alpha in alphas:
+    x, means = means[alpha]
+    _, stds = stds[alpha]
+    plt.errorbar(x, means, stds, label="{:.3f}".format(alpha))
+plt.legend(loc = 'upper left')
+plt.title("Schatten-2 error vs interaction number for 20d Harmonic Osc. w/ single qubit bath")
+plt.xlabel("interaction number")
+plt.ylabel("Schatten-2 error")
+plt.savefig("/scratch/n/nawiebe/hagan/tsp/error_v_interaction/first_results.png")
