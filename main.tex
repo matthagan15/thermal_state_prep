@@ -382,6 +382,22 @@ We note that this can be drastically simplified by time averaging:
     \lim_{T \to \infty} \frac{1}{T} \int_0^T \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S) \bigg|_{\alpha = 0} dG ~ dt &= \frac{4 \sigma^2}{\dim^2 - 1} \sum_{i,j} \ketbra{i,j}{i,j} \sum_{(k,l) \neq (i,j)} \frac{B(i,j) - B(k,l)}{(\lambda(i,j) - \lambda(k,l))^2}
 \end{align}
 \end{proof}
+
+We now move on to linearizing the second order corrections with respect to $\beta_S$. Let $\beta_S = \beta_E - \delta$:
+\begin{align}
+    \frac{\partial}{\partial \delta} B(i,j) \bigg|_{\delta = 0} &= \frac{\partial}{\partial \delta} \frac{e^{-\beta_S \lambda_S(i)}}{\partfun_S(\beta_S)} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)} \bigg|_{\delta = 0} \\
+    &= \frac{e^{-\beta_E \lambda_E(j)} e^{-\beta_E \lambda_S(i)}}{\partfun_E(\beta_E)} \parens{\frac{\lambda_S(i) e^{\delta \lambda_S(i)}}{\partfun_S(\beta_E - \delta)} - \frac{e^{\delta \lambda_S(i)} \trace{H_S e^{(-\beta_E  + \delta) H_S}}}{\partfun_S(\beta_E - \delta)^2}} \bigg|_{\delta = 0} \\
+    &= \frac{e^{-\beta_E \lambda(i,j)}}{\partfun_S(\beta_E) \partfun_E(\beta_E)} \parens{\lambda_S(i) - \trace{H_S \rho_S(\beta_E)}} \\
+    &= B(i,j; \beta_E) \parens{\lambda_S(i) - \trace{H_S \rho_S(\beta_E)}}
+\end{align}
+which allows us to write 
+\begin{align}
+    B(i,j; \beta_E - \delta) &= B(i,j; \beta_E) + \delta B(i,j; \beta_E) \parens{\lambda_S(i) - \trace{H_S \rho_S (\beta_E)}} + \bigo{\delta^2}.
+\end{align}
+This gives the second order $\alpha$ correction as
+\begin{align}
+    T(i,j; \beta_S) &= \frac{2 \sigma^2 \alpha^2}{\dim^2 - 1} \sum_{(k,l) \neq (i,j)} \frac{B(i,j; \beta_E)(1 + \delta(\lambda_S(i) - \trace{H_S \rho_S(\beta_E)}) ) - B(k,l; \beta_E)(1 + \delta(\lambda_S(k) - \trace{H_S \rho_S(\beta_E)}) ) }{(\lambda(i,j) - \lambda(k,l))^2} + \bigo{\delta^2}
+\end{align}
 \newpage
 \hrule
 \hfill \\
