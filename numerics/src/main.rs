@@ -3,27 +3,20 @@ extern crate ndarray;
 extern crate num_complex;
 
 use std::collections::HashMap;
-use std::env;
-use std::fs;
-use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex, RwLock};
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 use ndarray::linalg::kron;
 use ndarray::prelude::*;
 use ndarray_linalg::expm::expm;
-use ndarray_linalg::QRSquare;
-use ndarray_linalg::Trace;
-use ndarray_linalg::{random_hermite, random_hermite_using};
+use ndarray_linalg::random_hermite;
 use ndarray_linalg::{OperationNorm, Scalar};
 use num_complex::Complex64 as c64;
 use num_complex::ComplexFloat;
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
-use rand_distr::{Normal, StandardNormal};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use serde_json::Serializer;
 
 use numerics::*;
 
@@ -42,7 +35,6 @@ struct NodeConfig {
     sys_dim: usize,
     // currently only support harmonic oscillator env
     env_dim: usize,
-    base_dir: String,
 }
 
 struct RandomInteractionGen {
@@ -83,8 +75,11 @@ impl Clone for RandomInteractionGen {
     }
 }
 
-fn read_config(config_path: String) -> NodeConfig {
-    if let Ok(conf_string) = std::fs::read_to_string(config_path.clone()) {
+fn read_config(mut config_path: String) -> NodeConfig {
+    if config_path.ends_with("tsp.conf") == false {
+        config_path.push_str("tsp.conf");
+    }
+    if let Ok(conf_string) = std::fs::read_to_string(&config_path) {
         serde_json::from_str(&conf_string).expect("Config file could not be deserialized.")
     } else {
         panic!("No config file found at: {:}", config_path)
@@ -372,7 +367,7 @@ fn two_harmonic_oscillators(sys_dim: usize, env_dim: usize, sys_initial_beta: f6
     );
 }
 
-fn error_vs_interaction_number(config: NodeConfig) {
+fn error_vs_interaction_number(config: NodeConfig) -> HashMap<usize, (usize, f64, f64)> {
     let mut interaction_to_errors: HashMap<usize, Vec<f64>> = HashMap::new();
     let h_sys = match config.sys_hamiltonian {
         HamiltonianType::HarmonicOscillator => harmonic_oscillator_hamiltonian(config.sys_dim),
@@ -396,23 +391,30 @@ fn error_vs_interaction_number(config: NodeConfig) {
         );
         interaction_to_errors.insert(interaction, errors);
     }
-    let mut filepath = config.base_dir;
-    filepath.push_str(&rng_seed.to_string());
-    let out: HashMap<usize, (usize, f64, f64)> = interaction_to_errors
+    interaction_to_errors
         .drain()
         .map(|(k, v)| {
             let processed = process_error_data(v);
             (k, processed)
         })
-        .collect();
-    let s = serde_json::to_string(&out).expect("no serialization.");
-    std::fs::write(filepath, s).expect("no writing");
+        .collect()
 }
 
-fn get_conf_path() -> String {
+fn write_results(results: HashMap<usize, (usize, f64, f64)>, base_dir: String) {
+    let s = serde_json::to_string(&results).expect("no serialization.");
+    let write_expect = format!("Could not write output to file: {:}", base_dir);
+    let mut filepath = base_dir;
+    let seed = get_rng_seed();
+    filepath.push_str(&seed.to_string());
+    std::fs::write(filepath, s).expect("no writing at: ");
+}
+
+fn get_base_dir() -> String {
     let args: Vec<String> = std::env::args().collect();
     let mut s = args[1].to_string();
-    s.push_str("tsp.conf");
+    if s.ends_with('/') == false {
+        s.push('/');
+    }
     s
 }
 
@@ -424,9 +426,10 @@ fn get_rng_seed() -> u64 {
 }
 
 fn run_node() {
-    let conf_path = get_conf_path();
-    let config = read_config(conf_path);
-    error_vs_interaction_number(config)
+    let base_dir = get_base_dir();
+    let config = read_config(base_dir.clone());
+    let outputs = error_vs_interaction_number(config);
+    write_results(outputs, base_dir);
 }
 
 fn main() {
@@ -464,7 +467,6 @@ mod tests {
             sys_hamiltonian: numerics::HamiltonianType::HarmonicOscillator,
             sys_dim: 10,
             env_dim: 2,
-            base_dir: "/Users/matt/scratch/tsp/test_config/".to_string(),
         };
         let nc_string = serde_json::to_string(&nc).expect("no serialization?");
         std::fs::write("/Users/matt/scratch/tsp/test_config/tsp.conf", nc_string)
