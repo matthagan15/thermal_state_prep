@@ -158,22 +158,20 @@ fn multi_interaction_error_mc(
     let sys_ideal = thermal_state(sys_hamiltonian, env_beta);
     let mut errors: Vec<f64> = Vec::with_capacity(num_samples);
     let mut locker = RwLock::new(errors);
-    for interaction in 1..=num_interactions {
-        (0..num_samples).into_par_iter().for_each(|_| {
-            let rho_evolved_sample = multi_interaction(
-                &h,
-                &rho_env,
-                &rho_sys,
-                alpha,
-                time,
-                num_interactions,
-                rng.clone(),
-            );
-            let error = schatten_2_distance(&rho_evolved_sample, &sys_ideal);
-            let mut v = locker.write().expect("no locker");
-            v.push(error);
-        });
-    }
+    (0..num_samples).into_par_iter().for_each(|_| {
+        let rho_evolved_sample = multi_interaction(
+            &h,
+            &rho_env,
+            &rho_sys,
+            alpha,
+            time,
+            num_interactions,
+            rng.clone(),
+        );
+        let error = schatten_2_distance(&rho_evolved_sample, &sys_ideal);
+        let mut v = locker.write().expect("no locker");
+        v.push(error);
+    });
     locker.into_inner().expect("poisoned lock")
 }
 
