@@ -426,7 +426,51 @@ which allows us to write
 \end{align}
 This gives the second order $\alpha$ correction as
 \begin{align}
-    T(i,j; \beta_S) &= \frac{2 \sigma^2 \alpha^2}{\dim^2 - 1} \sum_{(k,l) \neq (i,j)} \frac{B(i,j; \beta_E)(1 + \delta(\lambda_S(i) - \trace{H_S \rho_S(\beta_E)}) ) - B(k,l; \beta_E)(1 + \delta(\lambda_S(k) - \trace{H_S \rho_S(\beta_E)}) ) }{(\lambda(i,j) - \lambda(k,l))^2} + \bigo{\delta^2}
+    T(i,j; \beta_S) &= \frac{2 \sigma^2 \alpha^2}{\dim^2 - 1} \sum_{(k,l) \neq (i,j)} \frac{B(i,j; \beta_E)(1 + \delta(\lambda_S(i) - \trace{H_S \rho_S(\beta_E)}) ) - B(k,l; \beta_E)(1 + \delta(\lambda_S(k) - \trace{H_S \rho_S(\beta_E)}) ) }{(\lambda(i,j) - \lambda(k,l))^2} + \bigo{\delta^2} 
+\end{align}
+
+Now we would like to show that the system state $\rho(\beta_E)$ is an approximate fixed point of the channel to $\bigo{\alpha^2}$.
+
+\begin{align}
+    \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_1 &= \norm{\partrace{\hilb_E}{\frac{2 \sigma^2 \alpha^2}{\dim^2 - 1}\sum_{i,j} \ketbra{i,j}{i,j} \sum_{(k,l) \neq (i,j)}\frac{\bra{i,j} \rho \ket{i,j} - \bra{k,l} \rho \ket{k,l}}{(\lambda(i,j) - \lambda(k,l))^2} }} + \bigo{\alpha^4} \\
+    &= \frac{2 \sigma^2 \alpha^2}{\dim^2 - 1} \sum_{i,j} \abs{\sum_{(k,l) \neq (i,j)} \frac{1}{\partfun(\beta_E)} \frac{e^{-\beta_E \lambda(i,j)} - e^{-\beta_E \lambda(k,l)}}{(\lambda(i,j) - \lambda(k,l))^2}} \\ 
+    &\leq \frac{2 \sigma^2 \alpha^2}{\partfun(\beta_E) (\dim^2 - 1)} \sum_{i,j; (k,l) \neq (i,j)} \frac{\abs{e^{-\beta_E \lambda(i,j)} - e^{-\beta_E \lambda(k,l)}}}{(\lambda(i,j) - \lambda(k,l))^2} \\
+    &\leq \frac{2 \sigma^2 \alpha^2}{\partfun(\beta_E) \Delta^2 (\dim^2 - 1)} \sum_{i,j; (k,l) \neq (i,j)} \abs{e^{-\beta_E \lambda(i,j)} - e^{-\beta_E \lambda(k,l)}} \\
+    &\leq \frac{2 \sigma^2 \alpha^2}{\partfun(\beta_E) \Delta^2 (\dim^2 - 1)}  \sum_{i,j; (k,l) \neq (i,j)} e^{-\beta_E \min(\lambda(i,j), \lambda(k,l))} \\
+    &\leq \frac{2 \sigma^2 \alpha^2 e^{-\beta_E \min_{i,j} \lambda(i,j)}}{\partfun(\beta_E) \Delta^2}
+\end{align}
+Requiring the output to be an $\epsilon_{fix}$ distance at most is satisfied by $\sigma \alpha \leq \frac{\epsilon_{fix} \Delta^2 \partfun(\beta_E) e^{\beta_E \lambda_{min}}}{2}$.
+
+We now would like to show that the distance to $\rho_S(\beta_E)$ is reduced by the channel. $$\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_S))}_1 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta_S)}_1.$$ We do so by assuming $\beta_S = \beta_E - \delta$, where $0 \leq \delta$ is small.  
+\begin{align}
+    \bra{i,j} \rho_S(\beta_S) \otimes \rho_E(\beta_E) \ket{i,j} &= \frac{e^{-\beta_E \lambda_S (i) + \delta \lambda_S(i)} e^{-\beta_E \lambda_E(j)}}{\partfun_S(\beta_S) \partfun_E(\beta_E)} = \frac{e^{-\beta_E \lambda(i,j)}}{\partfun_S(\beta_E - \delta) \partfun_E(\beta_E) } e^{\delta \lambda_S(i)}
+\end{align}
+
+Our next goal is to show that any thermal state for $\delta$ above a certain value are not even approximate fixed points. We do so by lower bounding the distance 
+\begin{align}
+    \norm{\rho_S(\beta_S) - \Phi(\rho_S(\beta_S))}_1 &\geq \norm{\partrace{\hilb_E}{\frac{2 \sigma^2 \alpha^2}{\dim^2 - 1} \sum_{i,j} \ketbra{i,j}{i,j} \sum_{(k,l) \neq (i,j)} \frac{\bra{i,j} \rho \ket{i,j} - \bra{k,l} \rho \ket{k,l}}{(\lambda(i,j) - \lambda(k,l))^2}}}_1 \\
+    &= \frac{2 \sigma^2 \alpha^2}{\dim^2 - 1} \sum_i \abs{\sum_j \sum_{(k,l) \neq (i,j)} \frac{\bra{i,j} \rho \ket{i,j} - \bra{k,l} \rho \ket{k,l}}{(\lambda(i,j) - \lambda(k,l))^2}} \\
+    &\geq \frac{2 \sigma^2 \alpha^2}{\dim^2 - 1} \abs{\sum_{j} \sum_{(k,l) \neq (0,j)} \frac{\bra{0,j} \rho \ket{0,j} - \bra{k,l} \rho \ket{k,l}}{(\lambda(0,j) - \lambda(k,l))^2}} \label{eq:i_need_an_eq_label}
+\end{align}
+We now want to look at the condition $\bra{0,j} \rho \ket{0,j} > \bra{k,l} \rho \ket{k,l}$ for $k > 0$ (note the partition function cancels). We can see that if $j=0$ this is satisfied trivially (due to monotonicity of eigenvalues). In order to push this to it's limit we can set $\lambda_E(j)$ to the largest eigenvalue $\norm{H_E}$. This then means that we can push $k$ to the second smallest eigenvalue and $l$ to the ground state of the environment. Also note without loss of generality we can require that $\lambda_E(0) = 0$, as we control the environment.
+\begin{align}
+    e^{-\beta_E \lambda_S (0) + \delta \lambda_S(0)} e^{-\beta_E \norm{H_E}} &> e^{-\beta_E \lambda_S(1) + \delta \lambda_S(1)} e^{-\beta_E \lambda_E(0)} \\
+    e^{(\beta_E - \delta) \Delta_S} &> e^{\beta_E(\norm{H_E} - \lambda_E(0))} \\
+    \beta_S \Delta_S &> \beta_E \norm{H_E} \\
+    \norm{H_E} &< \frac{\beta_S \Delta_S}{\beta_E} = \parens{1 - \frac{\delta}{\beta_E}} \Delta_S
+\end{align}
+
+\begin{align}
+    e^{-\beta_S \lambda_S(0) - \beta_E \norm{H_E}} - e^{-\beta_S \lambda_S(1)} &\geq \epsilon_1 \\
+    e^{-\beta_S \lambda_S(0) - \beta_E \norm{H_E}} (1 - e^{-\beta_S (\lambda_S(1) - \lambda_S(0)) + \beta_E \norm{H_E} }) & \geq 
+\end{align}
+We now add this to our growing list of random assumptions. 
+
+Given the above assumption, we can safely assume that each summand in Eq. \eqref{eq:i_need_an_eq_label} is positive. This allows us to drop the absolute value without concern.
+\begin{align}
+    \norm{\rho_S(\beta_S) - \Phi(\rho_S(\beta_S))}_1 &\geq \frac{2 \sigma^2 \alpha^2}{\dim^2 - 1} \sum_j \sum_{(k,l) \neq (0,j)} \frac{\bra{0,j} \rho \ket{0,j} - \bra{k,l} \rho \ket{k,l}}{(\lambda(0,j) - \lambda(k,l))^2} \\
+    & \geq \frac{2 \sigma^2 \alpha^2}{\norm{H}^2 \partfun_S(\beta_S) \partfun_E(\beta_E) (\dim^2 - 1)} \sum_{j} \sum_{(k,l) \neq (0,j)} e^{-\beta_S \lambda_S(0) - \beta_E \lambda_E(j)} - e^{-\beta_S \lambda_S(k) - \beta_E \lambda_E(l)} \\
+    &\geq \frac{2 \sigma^2 \alpha^2 \dim_E (\dim - 1) x}{\norm{H}^2 \partfun_S(\beta_S) \partfun_E(\beta_E)(\dim + 1) (\dim-1)}
 \end{align}
 \newpage
 \hrule
