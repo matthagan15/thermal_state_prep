@@ -111,9 +111,6 @@ fn multi_interaction_error_mc(
     locker.into_inner().expect("poisoned lock")
 }
 
-
-
-
 fn error_vs_interaction_number(config: NodeConfig) -> HashMap<usize, (usize, f64, f64)> {
     let mut interaction_to_errors: HashMap<usize, Vec<f64>> = HashMap::new();
     let h_sys = match config.sys_hamiltonian {

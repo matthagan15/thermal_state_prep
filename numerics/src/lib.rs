@@ -1,4 +1,4 @@
-use std::sync::{Mutex, Arc};
+use std::sync::{Arc, Mutex};
 
 use ndarray::{Array2, ShapeBuilder};
 use ndarray_linalg::{c64, expm, QRSquare, Scalar, Trace};
@@ -12,10 +12,9 @@ pub mod fixed_points;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HamiltonianType {
-    HarmonicOscillator ,
-    MarkedState ,
+    HarmonicOscillator,
+    MarkedState,
 }
-
 
 pub struct RandomInteractionGen {
     rng: Arc<Mutex<ChaCha8Rng>>,
@@ -55,13 +54,19 @@ impl Clone for RandomInteractionGen {
     }
 }
 
-pub fn perform_fixed_interaction_channel(h_tot: &Array2<c64>, interaction: &Array2<c64>, rho: &Array2<c64>, time: f64, dim_sys: usize) -> Array2<c64> {
+pub fn perform_fixed_interaction_channel(
+    h_tot: &Array2<c64>,
+    interaction: &Array2<c64>,
+    rho: &Array2<c64>,
+    time: f64,
+    dim_sys: usize,
+) -> Array2<c64> {
     let x = c64::new(0., time) * (h_tot + interaction);
     let u = expm(&x).expect("Could not exponentiate");
     let u_dagger = adjoint(&u);
     let mut out = rho.dot(&u_dagger);
     out = u.dot(&out);
-    partial_trace(&out, dim_sys, h_tot.nrows() / dim_sys )
+    partial_trace(&out, dim_sys, h_tot.nrows() / dim_sys)
 }
 
 /// Returns a hamiltonian with a highly degenerate spectrum. Has a single

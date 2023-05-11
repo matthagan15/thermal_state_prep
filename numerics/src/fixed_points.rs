@@ -1,12 +1,19 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
 use ndarray_linalg::Scalar;
 use num_complex::Complex64 as c64;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 
-use crate::{HamiltonianType, harmonic_oscillator_hamiltonian, marked_state_hamiltonian, thermal_state, RandomInteractionGen, get_rng_seed, perform_fixed_interaction_channel};
-use ndarray::{Array, Array2, linalg::kron};
+use crate::{
+    get_rng_seed, harmonic_oscillator_hamiltonian, marked_state_hamiltonian,
+    perform_fixed_interaction_channel, process_error_data, schatten_2_distance, thermal_state,
+    HamiltonianType, RandomInteractionGen,
+};
+use ndarray::{linalg::kron, Array, Array2};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct FixedPointDistanceConfig {
@@ -36,19 +43,61 @@ pub struct FixedPointDistanceResults {
     stds: Vec<f64>,
 }
 
+impl FixedPointDistanceResults {
+    pub fn new(num_samples: usize) -> Self {
+        FixedPointDistanceResults {
+            num_samples,
+            alphas_and_betas: Vec::new(),
+            means: Vec::new(),
+            stds: Vec::new(),
+        }
+    }
+
+    pub fn add_result(&mut self, alpha: f64, beta: f64, mean: f64, std: f64) {
+        self.alphas_and_betas.push((alpha, beta));
+        self.means.push(mean);
+        self.stds.push(std);
+    }
+
+    pub fn write_self_to_file(self, filename: String) {
+        if let Ok(s) = serde_json::to_string(&self) {
+            std::fs::write(&filename, s).expect(
+                &format!("Could not write FixedPointResults to file: {:}", filename)
+            );
+        }
+    }
+}
+
 fn gen_alphas(config: &FixedPointDistanceConfig) -> Vec<f64> {
     if config.alpha_use_linear_step {
         Array::linspace(config.alpha_start, config.alpha_stop, config.alpha_steps).to_vec()
     } else {
-        Array::logspace(10., config.alpha_start, config.alpha_stop, config.alpha_steps).to_vec()
+        Array::logspace(
+            10.,
+            config.alpha_start.log10(),
+            config.alpha_stop.log10(),
+            config.alpha_steps,
+        )
+        .to_vec()
     }
 }
 
 fn gen_betas(config: &FixedPointDistanceConfig) -> Vec<f64> {
     if config.sys_beta_use_linear_step {
-        Array::linspace(config.sys_beta_start, config.sys_beta_stop, config.sys_beta_steps).to_vec()
+        Array::linspace(
+            config.sys_beta_start,
+            config.sys_beta_stop,
+            config.sys_beta_steps,
+        )
+        .to_vec()
     } else {
-        Array::logspace(10., config.sys_beta_start, config.sys_beta_stop, config.sys_beta_steps).to_vec()
+        Array::logspace(
+            10.,
+            config.sys_beta_start.log10(),
+            config.sys_beta_stop.log10(),
+            config.sys_beta_steps,
+        )
+        .to_vec()
     }
 }
 
@@ -57,33 +106,52 @@ pub fn fixed_point_distances(config: FixedPointDistanceConfig) {
     let betas = gen_betas(&config);
     let h_env = harmonic_oscillator_hamiltonian(config.env_dim);
     let h_sys = match config.sys_hamiltonian {
-        HamiltonianType::HarmonicOscillator => {
-            harmonic_oscillator_hamiltonian(config.sys_dim)
-        },
-        HamiltonianType::MarkedState => {
-            marked_state_hamiltonian(config.sys_dim)
-        }
+        HamiltonianType::HarmonicOscillator => harmonic_oscillator_hamiltonian(config.sys_dim),
+        HamiltonianType::MarkedState => marked_state_hamiltonian(config.sys_dim),
     };
     let rho_env = thermal_state(&h_env, config.env_beta);
-    let h_tot = kron(&h_sys, &Array2::<c64>::eye(config.env_dim)) + kron(&Array2::<c64>::eye(config.sys_dim), &h_env);
-    let rand_interaction_gen = RandomInteractionGen::new(get_rng_seed(), config.sys_dim * config.env_dim);
-    let locker = Mutex::new(Vec::<(f64, f64)>::new());
+    let h_tot = kron(&h_sys, &Array2::<c64>::eye(config.env_dim))
+        + kron(&Array2::<c64>::eye(config.sys_dim), &h_env);
+    // let rand_interaction_gen =
+    //     RandomInteractionGen::new(get_rng_seed(), config.sys_dim * config.env_dim);
+    let rand_interaction_gen =
+        RandomInteractionGen::new(1, config.sys_dim * config.env_dim);
+    let locker = Arc::new(Mutex::new(Vec::<f64>::new()));
+    let mut results = FixedPointDistanceResults::new(config.num_samples);
     for alpha in alphas {
         for beta in betas.clone() {
+            println!("Executing alpha = {:}, beta = {:}", alpha, beta);
             let rho_sys = thermal_state(&h_sys, beta);
             let rho = kron(&rho_sys, &rho_env);
             (0..config.num_samples).into_par_iter().for_each(|_| {
                 let g = rand_interaction_gen.sample_interaction() * c64::from_real(alpha);
-                perform_fixed_interaction_channel(&h_tot, &g, &rho, config.time, config.sys_dim);
+                let out = perform_fixed_interaction_channel(
+                    &h_tot,
+                    &g,
+                    &rho,
+                    config.time,
+                    config.sys_dim,
+                );
+                let error = schatten_2_distance(&rho_sys, &out);
+                let mut v = locker.lock().expect("Could not obtain lock.");
+                v.push(error);
             });
+            let errors: Vec<f64> = locker
+                .lock()
+                .expect("Could not obtain lock for processing.")
+                .drain(..)
+                .collect();
+            let (_, mean, std) = process_error_data(errors);
+            results.add_result(alpha, beta, mean, std);
         }
     }
+    results.write_self_to_file("/Users/matt/scratch/fixed_point_results.json".to_string());
 }
 
 mod tests {
     use std::collections::HashMap;
 
-    use super::FixedPointDistanceResults;
+    use super::{FixedPointDistanceResults, FixedPointDistanceConfig, fixed_point_distances};
 
     #[test]
     fn test_serialize_results() {
@@ -95,5 +163,26 @@ mod tests {
         };
         let s = serde_json::to_string(&res).expect("couldn't serialize");
         std::fs::write("/Users/matt/scratch/fixed_point_result.json", s).expect("error writing.");
+    }
+
+    #[test]
+    fn test_fixed_point_distance() {
+        let conf = FixedPointDistanceConfig {
+            num_samples: 5000,
+            time: 100.,
+            alpha_start: 0.1,
+            alpha_stop: 0.0001,
+            alpha_steps: 20,
+            alpha_use_linear_step: false,
+            sys_beta_start: 0.0,
+            sys_beta_stop: 2.0,
+            sys_beta_steps: 20,
+            sys_beta_use_linear_step: true,
+            env_beta: 1.0,
+            sys_hamiltonian: crate::HamiltonianType::HarmonicOscillator,
+            sys_dim: 20,
+            env_dim: 2,
+        };
+        fixed_point_distances(conf);
     }
 }
