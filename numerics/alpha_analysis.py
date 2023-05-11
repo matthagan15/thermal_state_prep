@@ -4,25 +4,26 @@ from os import walk
 from os.path import isfile, join
 import matplotlib.pyplot as plt
 from math import sqrt
+import numpy as np
 
 def get_experiments():
     base = input("what base directory to use: ")
     for root, runs, files in walk(base):
         return (base, runs)
 
-def analyze_run(base, directory):
+def analyze_run(directory):
     files = []
-    for _, _, f in walk(join(base, directory)):
+    for _, _, f in walk(directory):
         files = f
     x_vals = set()
     means = {}
     errors = {}
     for file in files:
         try:
-            print('file:', file)
-            print('parsed: ', int(file))
+            # print('file:', file)
+            # print('parsed: ', int(file))
             seed = int(file)
-            path = join(base, directory, file)
+            path = join(directory, file)
             print('path:', path)
             with open(path) as f:
                 j = json.load(f)
@@ -38,24 +39,28 @@ def analyze_run(base, directory):
                     else:
                         errors[x] = [(v[0], v[2])]
         except Exception as e:
-            print("not a data file:", file)
-            print('exception: ', e)
+            pass
+            # print("not a data file:", file)
+            # print('exception: ', e)
     processed = {}
     for x in x_vals:
         tmp = means[x]
         avg = 0.
         std = 0.
-        # for u,v in tmp:
-        #     avg += v / float(u)
-        # for n, s in errors[x]:
-        #     std += s / sqrt(float(n))
+        tot_samples = 0
+        for u,v in tmp:
+            tot_samples += u
+        for u, v in tmp:
+            avg += float(u) * v / float(tot_samples)
+        for n, s in errors[x]:
+            std += s * np.sqrt(float(n) / tot_samples)
         processed[x] = (avg, std)
     print('processed: ', processed)
 
 if __name__ == '__main__':
     x,y = get_experiments()
     for dir in y:
-        analyze_run(x, dir)
+        analyze_run(join(x, dir))
 
 def all_in_one():
     base_dir = "/Users/matt/scratch/tsp/"

@@ -1,14 +1,78 @@
+use std::sync::{Mutex, Arc};
+
 use ndarray::{Array2, ShapeBuilder};
 use ndarray_linalg::{c64, expm, QRSquare, Scalar, Trace};
 use num_complex::ComplexFloat;
-use rand::{thread_rng, Rng};
+use rand::{thread_rng, Rng, SeedableRng};
+use rand_chacha::ChaCha8Rng;
 use rand_distr::{Distribution, Normal, StandardNormal};
 use serde::{Deserialize, Serialize};
 
+pub mod fixed_points;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HamiltonianType {
-    HarmonicOscillator,
-    MarkedState,
+    HarmonicOscillator ,
+    MarkedState ,
+}
+
+
+pub struct RandomInteractionGen {
+    rng: Arc<Mutex<ChaCha8Rng>>,
+    dim: usize,
+}
+
+impl RandomInteractionGen {
+    pub fn new(seed: u64, dim: usize) -> Self {
+        RandomInteractionGen {
+            rng: Arc::new(Mutex::new(ChaCha8Rng::seed_from_u64(seed))),
+            dim: dim,
+        }
+    }
+
+    pub fn sample_interaction(&self) -> Array2<c64> {
+        let mut chacha = self.rng.lock().expect("couldn't get cha cha");
+        let mut g = Array2::<c64>::zeros((self.dim, self.dim).f());
+        for i in 0..self.dim {
+            for j in 0..i {
+                let x: c64 = chacha.gen();
+                g[[i, j]] = x;
+                g[[j, i]] = x.conj();
+            }
+            let y: c64 = chacha.gen();
+            g[[i, i]] = y + y.conj();
+        }
+        g
+    }
+}
+
+impl Clone for RandomInteractionGen {
+    fn clone(&self) -> Self {
+        Self {
+            rng: self.rng.clone(),
+            dim: self.dim.clone(),
+        }
+    }
+}
+
+pub fn perform_fixed_interaction_channel(h_tot: &Array2<c64>, interaction: &Array2<c64>, rho: &Array2<c64>, time: f64, dim_sys: usize) -> Array2<c64> {
+    let x = c64::new(0., time) * (h_tot + interaction);
+    let u = expm(&x).expect("Could not exponentiate");
+    let u_dagger = adjoint(&u);
+    let mut out = rho.dot(&u_dagger);
+    out = u.dot(&out);
+    partial_trace(&out, dim_sys, h_tot.nrows() / dim_sys )
+}
+
+/// Returns a hamiltonian with a highly degenerate spectrum. Has a single
+/// ground state at energy = 0 and the remaining energies all at the
+/// provided gap.
+pub fn marked_state_hamiltonian(dim: usize) -> Array2<c64> {
+    let mut out = Array2::<c64>::zeros((dim, dim).f());
+    for ix in 1..dim {
+        out[[ix, ix]] = c64::from_real(1.);
+    }
+    out
 }
 
 /// Computes Schatten-2 Norm, AKA frobenius error between two
@@ -120,4 +184,11 @@ pub fn adjoint(matrix: &Array2<c64>) -> Array2<c64> {
     let mut out = matrix.t().into_owned();
     out.mapv_inplace(|x| x.conj());
     out
+}
+
+pub fn get_rng_seed() -> u64 {
+    let args: Vec<String> = std::env::args().collect();
+    args[2]
+        .parse()
+        .expect("could not parse input parameter for rng_seed as u64")
 }
