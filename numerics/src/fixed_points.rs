@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, RwLock},
 };
 
 use ndarray_linalg::Scalar;
@@ -14,6 +14,13 @@ use crate::{
     HamiltonianType, RandomInteractionGen,
 };
 use ndarray::{linalg::kron, Array, Array2};
+
+enum FixedPointTestType {
+    SingleInteractionAverageAfter,
+    SingleInteractionAverageBefore,
+    MultiInteractionAverageAfter (usize),
+    MultiInteractionAverageBefore (usize),
+}
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct FixedPointDistanceConfig {
@@ -116,33 +123,29 @@ pub fn fixed_point_distances(config: FixedPointDistanceConfig) {
     //     RandomInteractionGen::new(get_rng_seed(), config.sys_dim * config.env_dim);
     let rand_interaction_gen =
         RandomInteractionGen::new(1, config.sys_dim * config.env_dim);
-    let locker = Arc::new(Mutex::new(Vec::<f64>::new()));
     let mut results = FixedPointDistanceResults::new(config.num_samples);
     for alpha in alphas {
         for beta in betas.clone() {
+            let out = Array2::<c64>::zeros((h_tot.nrows(), h_tot.ncols()));
+            let locker = Arc::new(RwLock::new(out));
             println!("Executing alpha = {:}, beta = {:}", alpha, beta);
             let rho_sys = thermal_state(&h_sys, beta);
             let rho = kron(&rho_sys, &rho_env);
             (0..config.num_samples).into_par_iter().for_each(|_| {
-                let g = rand_interaction_gen.sample_interaction() * c64::from_real(alpha);
-                let out = perform_fixed_interaction_channel(
+                let g = rand_interaction_gen.sample_gue() * c64::from_real(0.001);
+                let chan_out = perform_fixed_interaction_channel(
                     &h_tot,
                     &g,
                     &rho,
-                    config.time,
+                    1./ alpha,
                     config.sys_dim,
                 );
-                let error = schatten_2_distance(&rho_sys, &out);
-                let mut v = locker.lock().expect("Could not obtain lock.");
-                v.push(error);
+                let mut rho_out = locker.write().expect("Could not obtain lock.");
+                rho_out.scaled_add(1. / c64::from_real(config.num_samples as f64), &chan_out);
             });
-            let errors: Vec<f64> = locker
-                .lock()
-                .expect("Could not obtain lock for processing.")
-                .drain(..)
-                .collect();
-            let (_, mean, std) = process_error_data(errors);
-            results.add_result(alpha, beta, mean, std);
+            
+            let final_state = locker.read().expect("Lock poisoned :(").clone();
+            results.add_result(alpha, beta, schatten_2_distance(&final_state, &rho_sys), 0.0);
         }
     }
     results.write_self_to_file("/Users/matt/scratch/fixed_point_results.json".to_string());
@@ -168,10 +171,10 @@ mod tests {
     #[test]
     fn test_fixed_point_distance() {
         let conf = FixedPointDistanceConfig {
-            num_samples: 5000,
+            num_samples: 1000,
             time: 100.,
-            alpha_start: 0.1,
-            alpha_stop: 0.0001,
+            alpha_start: 0.01,
+            alpha_stop: 0.00001,
             alpha_steps: 20,
             alpha_use_linear_step: false,
             sys_beta_start: 0.0,

@@ -25,7 +25,6 @@ def fixed_points_analysis():
             flipper = not flipper
             if flipper:
                 continue
-            
             print("in alpha = ", alpha)
             x = []
             y = []
@@ -34,6 +33,8 @@ def fixed_points_analysis():
                 x.append(k)
                 y.append(v[0])
                 yerr.append(v[1])
+            for i in range(len(x)):
+                print("beta = ", x[i], ", y = ", y[i], " +- ", yerr[i])
             plt.errorbar(x, y, yerr, label="{:.4f}".format(alpha))
         plt.legend(loc = 'upper left')
         plt.title("distance from input state after 1 interaction, env beta = 1.")

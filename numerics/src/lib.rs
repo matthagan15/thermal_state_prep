@@ -9,7 +9,8 @@ use rand_distr::{Distribution, Normal, StandardNormal};
 use serde::{Deserialize, Serialize};
 
 pub mod fixed_points;
-
+pub mod channel;
+pub mod quantities;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HamiltonianType {
     HarmonicOscillator,
@@ -29,7 +30,7 @@ impl RandomInteractionGen {
         }
     }
 
-    pub fn sample_interaction(&self) -> Array2<c64> {
+    pub fn sample_gue(&self) -> Array2<c64> {
         let mut chacha = self.rng.lock().expect("couldn't get cha cha");
         let mut g = Array2::<c64>::zeros((self.dim, self.dim).f());
         for i in 0..self.dim {
@@ -42,6 +43,55 @@ impl RandomInteractionGen {
             g[[i, i]] = y + y.conj();
         }
         g
+    }
+
+    /// Samples a haar random unitary.
+    pub fn sample_haar_unitary(&self) -> Array2<c64> {
+        let mut rng = self.rng.lock().expect("Couldn't lock rng.");
+        let dim = self.dim;
+        let mut real_gauss: Vec<c64> = Vec::with_capacity(dim * dim);
+        for _ in 0..(dim * dim) {
+            real_gauss.push(c64::new(
+                rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.),
+                rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.),
+            ));
+        }
+        let gauss_array = Array2::<c64>::from_shape_vec((dim, dim), real_gauss).unwrap();
+        let (q, r) = gauss_array.qr_square().unwrap();
+        let mut lambda = Array2::<c64>::zeros((dim, dim).f());
+        for ix in 0..dim {
+            lambda[[ix, ix]] = r[[ix, ix]] / r[[ix, ix]].norm();
+        }
+        q.dot(&lambda)
+    }
+
+    /// Samples a matrix with Haar random eigenvectors and 
+    /// i.i.d gaussian eigenvalues.
+    pub fn sample_iid_interaction(&self) -> Array2<c64> {
+        let mut rng = self.rng.lock().expect("Couldn't lock rng.");
+        let dim = self.dim;
+        let mut real_gauss: Vec<c64> = Vec::with_capacity(dim * dim);
+        for _ in 0..(dim * dim) {
+            real_gauss.push(c64::new(
+                rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.),
+                rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.),
+            ));
+        }
+        let gauss_array = Array2::<c64>::from_shape_vec((dim, dim), real_gauss).unwrap();
+        let (q, r) = gauss_array.qr_square().unwrap();
+        let mut lambda = Array2::<c64>::zeros((dim, dim).f());
+        for ix in 0..dim {
+            lambda[[ix, ix]] = r[[ix, ix]] / r[[ix, ix]].norm();
+        }
+        let u = q.dot(&lambda);
+        let u_dagger = adjoint(&u);
+        let normal = Normal::new(0., 1.).unwrap();
+        let mut out = Array2::<c64>::zeros((self.dim, self.dim).f());
+        for ix in 0..dim {
+            out[[ix, ix]] = c64::from_real(rng.sample(normal));
+        }
+        out = out.dot(&u_dagger);
+        u.dot(&out)
     }
 }
 
@@ -149,41 +199,6 @@ pub fn i() -> c64 {
     c64::new(0., 1.)
 }
 
-pub fn sample_haar_unitary(dim: usize) -> Array2<c64> {
-    let mut rng = thread_rng();
-    let mut real_gauss: Vec<c64> = Vec::with_capacity(dim * dim);
-    for _ in 0..(dim * dim) {
-        real_gauss.push(c64::new(
-            rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.),
-            rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.),
-        ));
-    }
-    let gauss_array = Array2::<c64>::from_shape_vec((dim, dim), real_gauss).unwrap();
-    let (q, r) = gauss_array.qr_square().unwrap();
-    let mut lambda = Array2::<c64>::zeros((dim, dim).f());
-    for ix in 0..dim {
-        lambda[[ix, ix]] = r[[ix, ix]] / r[[ix, ix]].norm();
-    }
-    q.dot(&lambda)
-}
-
-pub fn sample_perturbation_eigenvalues(dim: usize, variance: f64) -> Array2<c64> {
-    let normal = Normal::new(0., variance.sqrt()).unwrap();
-    let mut out = Array2::<c64>::zeros((dim, dim).f());
-    for ix in 0..dim {
-        out[[ix, ix]] = c64::from_real(normal.sample(&mut rand::thread_rng()));
-    }
-    out
-}
-
-pub fn sample_perturbation(dim: usize, variance: f64) -> Array2<c64> {
-    let u = sample_haar_unitary(dim);
-    let v = sample_perturbation_eigenvalues(dim, variance);
-    let u_dagger = adjoint(&u);
-    let out = v.dot(&u_dagger);
-    u.dot(&out)
-}
-
 // Cannot transpose in place? so return a copy.
 pub fn adjoint(matrix: &Array2<c64>) -> Array2<c64> {
     let mut out = matrix.t().into_owned();
@@ -196,4 +211,21 @@ pub fn get_rng_seed() -> u64 {
     args[2]
         .parse()
         .expect("could not parse input parameter for rng_seed as u64")
+}
+
+mod test {
+    use ndarray::Array2;
+    use ndarray_linalg::OperationNorm;
+    use num_complex::Complex64 as c64;
+
+    use crate::{RandomInteractionGen, adjoint};
+
+    #[test]
+    fn test_haar_unitary() {
+        let chacha = RandomInteractionGen::new(1, 10);
+        let u = chacha.sample_haar_unitary();
+        let u_dagger = adjoint(&u);
+        let diff = u.dot(&u_dagger) - Array2::<c64>::eye(10);
+        println!("diff magnitude per epsilon: {:}", diff.opnorm_one().unwrap() / f64::EPSILON);
+    }
 }

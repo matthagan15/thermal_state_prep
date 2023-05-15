@@ -59,7 +59,7 @@ fn multi_interaction(
 ) -> Array2<c64> {
     let mut sys_out = sys_state.clone();
     for _ in 0..num_interactions {
-        let interaction_sample: Array2<c64> = (c64::from_real(alpha)) * rng.sample_interaction();
+        let interaction_sample: Array2<c64> = (c64::from_real(alpha)) * rng.sample_gue();
         let h_with_interaction = c64::new(0., time) * (tot_hamiltonian + &interaction_sample);
         let time_evolution_op = expm(&h_with_interaction).expect("we ball");
         let time_evolution_op_adjoint = adjoint(&time_evolution_op);
@@ -176,7 +176,7 @@ fn main() {
 
 mod tests {
     use crate::{
-        adjoint, i, partial_trace, read_config, sample_haar_unitary, zero, NodeConfig,
+        adjoint, i, partial_trace, read_config, zero, NodeConfig,
         RandomInteractionGen,
     };
     use ndarray::{linalg::kron, prelude::*};
@@ -187,7 +187,7 @@ mod tests {
     fn test_random_interaction_gen() {
         let mut gen1 = RandomInteractionGen::new(1, 2);
         let mut gen2 = RandomInteractionGen::new(1, 2);
-        assert_eq!(gen1.sample_interaction(), gen2.sample_interaction());
+        assert_eq!(gen1.sample_gue(), gen2.sample_gue());
     }
 
     #[test]
@@ -215,28 +215,6 @@ mod tests {
         println!("retrieved nc: {:#?}", nc);
     }
 
-    #[test]
-    fn test_haar_one_design() {
-        let dim = 100;
-        let rand_mat = random_hermite(dim);
-        let rand_mat_conj = adjoint(&rand_mat);
-        let psd = rand_mat.dot(&rand_mat_conj);
-        let rho = psd.clone() / psd.trace().unwrap();
-        let num_samps = 10000;
-        let mut out = Array2::<c64>::zeros((dim, dim).f());
-        for _ in 0..num_samps {
-            let u = sample_haar_unitary(dim);
-            let u_adj = adjoint(&u);
-            let intermediat = rho.dot(&u_adj);
-            out = out + u.dot(&intermediat);
-        }
-        out.mapv_inplace(|x| x / (num_samps as f64));
-        for ix in 0..dim {
-            out[[ix, ix]] -= 1. / (dim as f64);
-        }
-        println!("{:}", out);
-        println!("diff norm: {:}", out.opnorm_one().unwrap());
-    }
 
     #[test]
     fn test_partial_trace() {
