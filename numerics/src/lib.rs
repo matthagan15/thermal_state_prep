@@ -8,8 +8,8 @@ use rand_chacha::ChaCha8Rng;
 use rand_distr::{Distribution, Normal, StandardNormal};
 use serde::{Deserialize, Serialize};
 
-pub mod fixed_points;
 pub mod channel;
+pub mod fixed_points;
 pub mod quantities;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HamiltonianType {
@@ -65,7 +65,7 @@ impl RandomInteractionGen {
         q.dot(&lambda)
     }
 
-    /// Samples a matrix with Haar random eigenvectors and 
+    /// Samples a matrix with Haar random eigenvectors and
     /// i.i.d gaussian eigenvalues.
     pub fn sample_iid_interaction(&self) -> Array2<c64> {
         let mut rng = self.rng.lock().expect("Couldn't lock rng.");
@@ -218,7 +218,7 @@ mod test {
     use ndarray_linalg::OperationNorm;
     use num_complex::Complex64 as c64;
 
-    use crate::{RandomInteractionGen, adjoint};
+    use crate::{adjoint, RandomInteractionGen};
 
     #[test]
     fn test_haar_unitary() {
@@ -226,6 +226,9 @@ mod test {
         let u = chacha.sample_haar_unitary();
         let u_dagger = adjoint(&u);
         let diff = u.dot(&u_dagger) - Array2::<c64>::eye(10);
-        println!("diff magnitude per epsilon: {:}", diff.opnorm_one().unwrap() / f64::EPSILON);
+        println!(
+            "diff magnitude per epsilon: {:}",
+            diff.opnorm_one().unwrap() / f64::EPSILON
+        );
     }
 }

@@ -18,8 +18,8 @@ use ndarray::{linalg::kron, Array, Array2};
 enum FixedPointTestType {
     SingleInteractionAverageAfter,
     SingleInteractionAverageBefore,
-    MultiInteractionAverageAfter (usize),
-    MultiInteractionAverageBefore (usize),
+    MultiInteractionAverageAfter(usize),
+    MultiInteractionAverageBefore(usize),
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -68,9 +68,10 @@ impl FixedPointDistanceResults {
 
     pub fn write_self_to_file(self, filename: String) {
         if let Ok(s) = serde_json::to_string(&self) {
-            std::fs::write(&filename, s).expect(
-                &format!("Could not write FixedPointResults to file: {:}", filename)
-            );
+            std::fs::write(&filename, s).expect(&format!(
+                "Could not write FixedPointResults to file: {:}",
+                filename
+            ));
         }
     }
 }
@@ -121,8 +122,7 @@ pub fn fixed_point_distances(config: FixedPointDistanceConfig) {
         + kron(&Array2::<c64>::eye(config.sys_dim), &h_env);
     // let rand_interaction_gen =
     //     RandomInteractionGen::new(get_rng_seed(), config.sys_dim * config.env_dim);
-    let rand_interaction_gen =
-        RandomInteractionGen::new(1, config.sys_dim * config.env_dim);
+    let rand_interaction_gen = RandomInteractionGen::new(1, config.sys_dim * config.env_dim);
     let mut results = FixedPointDistanceResults::new(config.num_samples);
     for alpha in alphas {
         for beta in betas.clone() {
@@ -133,19 +133,19 @@ pub fn fixed_point_distances(config: FixedPointDistanceConfig) {
             let rho = kron(&rho_sys, &rho_env);
             (0..config.num_samples).into_par_iter().for_each(|_| {
                 let g = rand_interaction_gen.sample_gue() * c64::from_real(0.001);
-                let chan_out = perform_fixed_interaction_channel(
-                    &h_tot,
-                    &g,
-                    &rho,
-                    1./ alpha,
-                    config.sys_dim,
-                );
+                let chan_out =
+                    perform_fixed_interaction_channel(&h_tot, &g, &rho, 1. / alpha, config.sys_dim);
                 let mut rho_out = locker.write().expect("Could not obtain lock.");
                 rho_out.scaled_add(1. / c64::from_real(config.num_samples as f64), &chan_out);
             });
-            
+
             let final_state = locker.read().expect("Lock poisoned :(").clone();
-            results.add_result(alpha, beta, schatten_2_distance(&final_state, &rho_sys), 0.0);
+            results.add_result(
+                alpha,
+                beta,
+                schatten_2_distance(&final_state, &rho_sys),
+                0.0,
+            );
         }
     }
     results.write_self_to_file("/Users/matt/scratch/fixed_point_results.json".to_string());
@@ -154,7 +154,7 @@ pub fn fixed_point_distances(config: FixedPointDistanceConfig) {
 mod tests {
     use std::collections::HashMap;
 
-    use super::{FixedPointDistanceResults, FixedPointDistanceConfig, fixed_point_distances};
+    use super::{fixed_point_distances, FixedPointDistanceConfig, FixedPointDistanceResults};
 
     #[test]
     fn test_serialize_results() {

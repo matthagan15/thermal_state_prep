@@ -175,10 +175,7 @@ fn main() {
 }
 
 mod tests {
-    use crate::{
-        adjoint, i, partial_trace, read_config, zero, NodeConfig,
-        RandomInteractionGen,
-    };
+    use crate::{adjoint, i, partial_trace, read_config, zero, NodeConfig, RandomInteractionGen};
     use ndarray::{linalg::kron, prelude::*};
     use ndarray_linalg::{expm::expm, random_hermite, OperationNorm, Trace};
     use num_complex::{Complex64 as c64, ComplexFloat};
@@ -214,7 +211,6 @@ mod tests {
         let nc = read_config(nc_path);
         println!("retrieved nc: {:#?}", nc);
     }
-
 
     #[test]
     fn test_partial_trace() {
