@@ -225,17 +225,17 @@ mod test {
         let phi = Channel::new(
             harmonic_oscillator_hamiltonian(2),
             harmonic_oscillator_hamiltonian(2),
-            0.,
+            100.,
             rn,
         );
         println!(
             "output state: {:}",
-            phi.total_map_monte_carlo_avg(
+            phi.map_monte_carlo_avg(
                 &array![[c64::from_real(0.5), 0.0.into()], [0.0.into(), 0.5.into()]],
-                1.,
-                1.,
-                100,
-                1
+                0.01,
+                100.,
+                1000,
+                500
             )
         );
     }

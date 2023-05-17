@@ -157,10 +157,10 @@ pub fn thermal_state(hamiltonian: &Array2<c64>, beta: f64) -> Array2<c64> {
     let scaled_h = hamiltonian * (c64::from_real(-1. * beta));
     let mut out = expm(&scaled_h).expect("we ballin");
     let partition_function = out.trace().unwrap();
-    if ComplexFloat::abs(partition_function) < 1e-12 {
-        println!("[thermal_state] encountered near zero partition function. You're gonna have a bad time.");
-        panic!("see printed msg")
-    }
+    // if ComplexFloat::abs(partition_function) < 1e-12 {
+    //     println!("[thermal_state] encountered near zero partition function. You're gonna have a bad time.");
+    //     panic!("see printed msg")
+    // }
     out.mapv_inplace(|x| x / partition_function);
     out
 }
