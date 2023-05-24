@@ -159,6 +159,48 @@ Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the r
     This last step relies on the use of random eigenvalues with mean 0, implying $\int D ~dD = 0$ which shows that $\frac{\partial}{\partial \alpha} \Phi(\rho_S) \big|_{\alpha = 0 } = 0$.
 \end{proof}
 
+\begin{lemma} \label{lem:sandwiched_interaction}
+    Our goal is to compute $\int G(x) A G(y) dG$, where $A = \sum_i A(i) \ketbra{i}{i}$ is diagonal in the Hamiltonian basis.
+\end{lemma}
+\begin{proof}
+    \begin{align}
+        \int G(x) A G(y) dG &= \sum_i A(i) \int e^{i H x} U_G D U_G^{\dagger} e^{-i H x} \ketbra{i}{i} e^{i H y} U_G D U_G^\dagger e^{-i H y} ~dG \\
+        &= \sum_{i, a, b,c, d} A(i) e^{i (\lambda(a) - \lambda(i))x} e^{i (\lambda(i) - \lambda(d))y} \nonumber \\
+        &\quad \times \int \ketbra{a}{a} U_G D(b) \ketbra{b}{b} U_G^\dagger \ketbra{i}{i} U_G D(c) \ketbra{c}{c} U_G^\dagger \ketbra{d}{d} dG \\
+        &= \sum_{i, a, b,c, d} A(i) e^{i (\lambda(a) - \lambda(i))x} e^{i (\lambda(i) - \lambda(d))y} \ketbra{a}{d} \nonumber \\
+        &\quad \times \int D(b) D(c) dD \int \bra{a} U_G \ket{b} \bra{i} U_G \ket{c} \bra{b} U_G^\dagger \ket{i} \bra{c} U_G^\dagger \ket{d} dU_G \\
+        &= \sigma^2 \sum_{i,a,b,d} A(i) e^{i (\lambda(a) - \lambda(i))x} e^{i (\lambda(i) - \lambda(d))y} \ketbra{a}{d} \nonumber \\ 
+        &\quad \times \int \bra{a} U_G \ket{b} \bra{i} U_G \ket{b} \bra{b} U_G^\dagger \ket{i} \bra{b} U_G^\dagger \ket{d} dU_G \\
+        &= \frac{\sigma^2}{\dim^2 - 1} \sum_{i,a,b,d} A(i) e^{i (\lambda(a) - \lambda(i))x} e^{i (\lambda(i) - \lambda(d))y} \ketbra{a}{d} (\delta_{ai} \delta_{ad} + \delta_{ad})(1 - \frac{1}{\dim}) \\
+        &= \frac{\sigma^2}{\dim + 1} \sum_{i, a} A(i) e^{i (\lambda(a) - \lambda(i))(x - y)} \ketbra{a}{a} (\delta_{ai} + 1) \\
+        &= \frac{\sigma^2}{\dim + 1} \parens{ A + \sum_{i, a} A(i) e^{i (\lambda(a) - \lambda(i))(x - y)} \ketbra{a}{a} }
+    \end{align}
+\end{proof}
+
+\begin{lemma} \label{lem:two_heisenberg_interactions}
+    Take two time-evolved random interactions $\int G(x)G(y) dG$.
+\end{lemma}
+\begin{proof}
+    \begin{align}
+        \int G(x) G(y) dG &= \int e^{+i H x} U_G D U_G^\dagger e^{-i H x} e^{+i H y} U_G D U_G^\dagger e^{-i H y} dU_G ~dD \\
+        &= \int \bigg[\sum_a e^{+i \lambda(a)x}\ketbra{a}{a}  U_G \sum_b D(b)\ketbra{b}{b} U_G^\dagger \nonumber \\
+        &\quad \sum_c e^{-i \lambda(c) (x - y)} \ketbra{c}{c} U_G \sum_d D(d)\ketbra{d}{d} U_G^\dagger \sum_e e^{-i \lambda(e) y} \ketbra{e}{e} \bigg] dU_G ~dD\\
+        &=\sum_{a,b,c,d,e} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \nonumber \\
+        &\quad \times \int \bra{a} U_G \ket{b} \bra{c} U_G \ket{d} \bra{b} U_G^{\dagger} \ket{c} \bra{d} U_G^\dagger \ket{e} dU_G \int D(b) D(d) dD \\
+        &= \sigma^2 \sum_{a, b, c, d, e} \delta_{bd} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \nonumber \\
+        &\quad \times \int \bra{a} U_G \ket{b} \bra{c} U_G \ket{d} \bra{b} U_G^{\dagger} \ket{c} \bra{d} U_G^\dagger \ket{e} dU_G. \\
+    \end{align}
+    Now use Lemma \ref{lem:haar_two_moment} to compute the Haar integral, which this specific integral simplifies greatly due to the repeated $b$ index. Plugging the result into the above yields the following
+    \begin{align}
+        &= \frac{\sigma^2}{\dim^2 - 1} \sum_{a, b, c, e} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \parens{\delta_{ac} \delta_{ce} + \delta_{ae} - \frac{1}{\dim} \parens{\delta_{ac} \delta_{ce} + \delta_{ae}}}  \\
+        &= \frac{\sigma^2}{\dim^2 - 1} \parens{1 - \frac{1}{\dim}} \sum_{a, b, c, e} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \delta_{ae} (1 + \delta_{ac}) \\
+        &= \frac{\sigma^2}{\dim^2 - 1} \parens{1 - \frac{1}{\dim}} \sum_{a, b, c} \ketbra{a}{a} e^{i (\lambda(a) - \lambda(c))(x-y)} (1 + \delta_{ac}) \\
+        &= \frac{\sigma^2 \parens{\dim - 1}}{\dim^2 - 1} \sum_{a,c} \ketbra{a}{a} e^{i (\lambda(a) - \lambda(c))(x - y)} (1 + \delta_{ac}) \\
+        &= \frac{\sigma^2}{\dim + 1} \parens{\sum_{a,c} e^{i (\lambda(a) - \lambda(c))(x-y)} \ketbra{a}{a} + \identity}
+    \end{align}
+    We leave the summation this way for simplification later. 
+\end{proof}
+
 \begin{lemma}[Second Order Correction]
     Given a system Hamiltonian $H_{S}$, an environment Hamiltonian $H_{E}$, a simulation time $t$, and coupling coefficient $\alpha$, let $\Phi(\rho_S)$ denote the fixed interaction system-environment channel 
     \begin{equation}
@@ -217,6 +259,38 @@ We will work through the first term in detail and will simply state the remainin
     &= (-it)^2 e^{i (H + \alpha G)t} \rho \int_0^1 e^{-i s_1 (H + \alpha G)t} G \parens{\int_0^1 e^{-i(1-s_1) s_2 (H + \alpha G)t} (1-s_1) G e^{-i(1-s_1) (1-s_2) (H + \alpha G) t} ds_2} ds_1 \bigg|_{\alpha = 0} \\
     &= -t^2 e^{-i H t} \rho e^{-i H t} \int_0^1 \int_0^1 e^{i (1- s_1) H t} G e^{-i (1-s_1) H t} e^{i (1-s_1)(1-s_2) H t} G e^{-i(1-s_1)(1-s_2) H t} (1-s_1) ds_1 ds_2 \\
     &= -t^2 \rho(t) \int_0^1 \int_0^1 G((1-s_1)t) G((1-s_1)(1 - s_2) t) (1-s_1)ds_1 ds_2
+\end{align}
+
+Now our goal is to compute the effects of averaging over the interaction $G$ on the above terms, starting with $(A)$. We will make heavy use of Lemma \ref{lem:two_heisenberg_interactions}.
+\begin{align}
+    \int (A) dG &= -t^2 \int_0^1 \int_0^1 \int G(s_1 s_2 t) G(s_1 t) dG s_1 ds_1 ds_2 \rho(t) \\
+    &= \frac{-t^2 \sigma^2}{\dim + 1} \int_0^1 \int_0^1 \parens{\sum_{i,j} e^{i (\lambda(i) - \lambda(j)) (s_1 s_2 t - s_1 t)} \ketbra{i}{i} + \identity} s_1 ds_1 ds_2 \rho \\
+    &= \frac{- t^2 \sigma^2}{\dim + 1} \parens{\sum_{(i,j) : \lambda(i) \neq \lambda(j)} \int_0^1 \int_0^1 e^{i(\lambda(i) - \lambda(j))t (s_1 s_2 - s_1)} s_1 ds_1 ds_2 \ketbra{i}{i} + \sum_{(i,j) : \lambda(i) = \lambda(j)}\frac{1}{2} \ketbra{i}{i} + \frac{1}{2} \identity} \rho \\
+    &= \frac{- t^2 \sigma^2}{\dim + 1} \parens{\sum_{(i,j) : \lambda(i) \neq \lambda(j)} \frac{1 - i (\lambda(i) - \lambda(j))t - e^{-i (\lambda(i) - \lambda(j))t}}{t^2 (\lambda(i) - \lambda(j))^2} \ketbra{i}{i} + \frac{1}{2}\Pi^{(i)} + \frac{1}{2} \identity } \rho.
+\end{align}
+
+We can similarly compute the averaged $(B)$ term:
+\begin{align}
+    \int (B) dG &= -t^2 \int_0^1 \int_0^1 \int G(s_1 t) G((s_1 + s_2 - s_1 s_2) t) dG (1-s_1) ds_1 ds_2 ~ \rho(t) \\
+    &= \frac{- t^2 \sigma^2}{\dim + 1} \int_0^1 \int_0^1 \parens{\sum_{i,j} e^{i (\lambda(i) - \lambda(j))(s_1 s_2 - s_2) t} \ketbra{i}{i} + \identity} (1 -s_1) ds_1 ds_2 \rho \\
+    &= \frac{- t^2 \sigma^2}{\dim + 1} \parens{\sum_{(i,j) : \lambda(i) \neq \lambda(j)} \int_0^1 \int_0^1 e^{i(\lambda(i) - \lambda(j))t (s_1 s_2 - s_2)} (1 - s_1) ds_1 ds_2 \ketbra{i}{i} + \sum_{(i,j) : \lambda(i) = \lambda(j)}\frac{1}{2} \ketbra{i}{i} + \frac{1}{2} \identity} \rho \\
+    &= \frac{- t^2 \sigma^2}{\dim + 1} \parens{\sum_{(i,j) : \lambda(i) \neq \lambda(j)} \frac{1 - i (\lambda(i) - \lambda(j))t - e^{-i (\lambda(i) - \lambda(j))t}}{t^2 (\lambda(i) - \lambda(j))^2} \ketbra{i}{i} + \frac{1}{2}\Pi^{(i)} + \frac{1}{2} \identity } \rho,
+\end{align}
+which we note is identical to $\int (A) dG$. As terms $(C)$ and $(D)$ involve a different method of computation we skip them for now and compute $(E)$ and $(F)$. 
+\begin{align}
+    \int (E) dG &= -t^2 \rho(t) \int_0^1 \int_0^1 \int G((1- s_1 s_2) t) G((1-s_1)t) dG s_1 ds_1 ds_2 \\
+    &= \frac{- t^2 \sigma^2}{\dim + 1} \rho \int_0^1 \int_0^1 \parens{\sum_{i,j} e^{i(\lambda(i) - \lambda(j)) t (s_1 - s_1 s_2)} \ketbra{i}{i} + \identity } s_1 ds_1 ds_2 \\
+    &= \frac{- t^2 \sigma^2}{\dim + 1} \rho \parens{\sum_{(i,j) : \lambda(i) \neq \lambda(j)} \frac{1 + i (\lambda(i) - \lambda(j))t - e^{i(\lambda(i) - \lambda(j))t}}{t^2 (\lambda(i) - \lambda(j))^2}\ketbra{i}{i} + \frac{1}{2} \sum_{(i,j) : \lambda(i) = \lambda(j)} \ketbra{i}{i} + \frac{1}{2} \identity}.
+\end{align}
+Computing $(F)$ yields
+\begin{align}
+    \int (F) dG &= -t^2 \rho(t) \int_0^1 \int_0^1 \int G((1-s_1)t) G((1-s_1)(1 - s_2) t) dG (1-s_1)ds_1 ds_2 \\
+    &= \frac{- t^2 \sigma ^2}{\dim + 1} \rho \int_0^1 \int_0^1 \parens{\sum_{i,j} e^{i(\lambda(i) - \lambda(j))t (s_2 - s_1 s_2)}\ketbra{i}{i} + \identity} (1-s_1) ds_1 ds_2 \\
+    &= \frac{- t^2 \sigma^2}{\dim + 1} \rho \parens{\sum_{(i,j) : \lambda(i) \neq \lambda(j)} \frac{1 + i (\lambda(i) - \lambda(j))t - e^{i (\lambda(i) - \lambda(j))t}}{t^2 (\lambda(i) - \lambda(j))^2} \ketbra{i}{i} +\frac{1}{2} \sum_{(i,j) : \lambda(i) = \lambda(j)} \ketbra{i}{i} + \frac{1}{2} \identity },
+\end{align}
+ which is identical to $\int (E) dG$. Noticing that the sums over the non-equal energy contributions in $(E)$ and $(F)$ are complex conjugates of those in $(A)$ and $(B)$, in addition to the fact that $[\rho, \ketbra{i}{i}] = 0$ for all $i$, allows us to combine them as
+\begin{align}
+    \int (A) + (B) + (C) + (D) dG &= \frac{- \sigma^2}{\dim + 1} \rho \parens{\sum_{(i,j) : \lambda(i) \neq \lambda(j)} \frac{4(1 - \cos((\lambda(i) - \lambda(j))t))}{(\lambda(i) - \lambda(j))^2} \ketbra{i}{i} + 2t^2 \sum_{(i,j) : \lambda(i) = \lambda(j)} \ketbra{i}{i} + 2t^2 \identity }
 \end{align}
 
 We now combine terms $(A) - (F)$ with minor adjustments 
