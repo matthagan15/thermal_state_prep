@@ -329,6 +329,20 @@ which we notice approaches the degenerate case as $\Delta_{ab} \to 0$. Finally w
     a = b \implies \bra{a} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a}{a}) \bigg|_{\alpha = 0} dG \ket{a} = -\frac{ \sigma^2 \alpha^2}{\dim + 1} \parens{\sum_{j: \Delta_{aj} \neq 0} \frac{2( 1- \cos (\Delta_{aj}t)) }{\Delta_{aj}^2} + t^2 (\eta(a) - 1)}.
 \end{align}
 We can then see that by summing over all diagonal outputs that the second order correction is traceless, implying that to this order in $\alpha$ the channel preserves trace (the $\bigo{\alpha^0}$ correction is simply the channel itself). 
+
+
+We now investigate detailed balance to this order. We want to show that the distribution $e^{- \beta \lambda(i)} / \partfun (\beta)$ is a fixed point of the system and environment. We let the system and environment be in the thermal state of their respective systems at the same inverse temperature $\beta$. We consider the transition probability before taking the partial trace over the environment. 
+We first show that for $\lambda(i) = \lambda(j)$ with $i \neq j$ that detailed balance is trivially satisfied
+\begin{align}
+    \frac{e^{-\beta \lambda(i)}}{\partfun(\beta)} \prob{\ketbra{i}{i} \to \ketbra{j}{j}} &= \frac{e^{-\beta \lambda(j)}}{\partfun(\beta)} \prob{\ketbra{j}{j} \to \ketbra{i}{i}} \\
+    \bra{j} \int \Phi_G(\ketbra{i}{i}) dG \ket{j} &= \bra{i} \int \Phi_G(\ketbra{j}{j}) dG \ket{i} \\
+    \delta_{ij} + \frac{\alpha^2 \sigma^2 t^2}{\dim + 1} + \bigo{\alpha^3} &= \delta_{ij} + \frac{\alpha^2 \sigma^2 t^2}{\dim + 1} + \bigo{\alpha^3},
+\end{align}
+which we see agrees up to order $\bigo{\alpha^2}$. We now investigate $\lambda(i) \neq \lambda(j)$:
+\begin{align}
+    \frac{e^{-\beta \lambda(i)}}{\partfun(\beta)} \prob{\ketbra{i}{i} \to \ketbra{j}{j}} &= \frac{e^{-\beta \lambda(j)}}{\partfun(\beta)} \prob{\ketbra{j}{j} \to \ketbra{i}{i}} \\
+    e^{-\beta \lambda(i)} \parens{\delta_{ij} + \frac{2 \sigma^2 \alpha^2}{\dim + 1} \frac{1 - \cos(\Delta_{ij} t)}{\Delta_{ij}^2}} &= e^{-\beta \lambda(j)} \parens{\delta_{ij} + \frac{2 \sigma^2 \alpha^2}{\dim + 1} \frac{1 - \cos(\Delta_{ij} t)}{\Delta_{ij}^2}} + \bigo{\alpha^3}
+\end{align}
 \newpage
 
 
