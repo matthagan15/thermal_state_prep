@@ -2,7 +2,7 @@ use core::num;
 use std::{
     env,
     ops::AddAssign,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex}, cmp::min,
 };
 
 use ndarray::{linalg::kron, Array2, ShapeBuilder};
@@ -16,8 +16,8 @@ pub struct Channel {
     h_sys: Array2<c64>,
     h_env: Array2<c64>,
     h_tot: Array2<c64>,
-    dim_sys: usize,
-    dim_env: usize,
+    pub dim_sys: usize,
+    pub dim_env: usize,
     rho_env: Array2<c64>,
     interaction_generator: RandomInteractionGen,
 }
@@ -51,6 +51,29 @@ impl Channel {
             rho_env: r,
             interaction_generator: rng,
         }
+    }
+
+    /// Set the state of the environment to an energy eigenstate projector, aka
+    /// |i><i| . The index is 0 being the ground state and dim_env - 1. Sets 
+    /// the state to the highest energy eigenstate if it is out of bounds.
+    pub fn set_env_state_to_energy_projector(&mut self, index: usize) {
+        self.rho_env.mapv_inplace(|x| x * 0.);
+        let ix = min(index, self.dim_env - 1);
+        self.rho_env[[ix, ix]] = c64::from_real(1.);
+    }
+
+    pub fn set_env_to_thermal_state(&mut self, beta: f64) {
+        self.rho_env = thermal_state(&self.h_env, beta);
+    }
+
+    pub fn get_copy_of_h_tot(&self) -> Array2<c64> {
+        self.h_tot.clone()
+    }
+
+    /// operates under the assumption that the kronecker product is 
+    /// system \otimes environment.
+    pub fn convert_pair_indices_to_system(&self, sys_ix: usize, env_ix: usize) -> usize {
+        sys_ix * self.dim_env + env_ix
     }
 
     /// Performs a single application of the channel returning the reduced
