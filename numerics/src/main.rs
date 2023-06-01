@@ -37,16 +37,20 @@ struct NodeConfig {
     env_dim: usize,
 }
 
-fn read_config(mut config_path: String) -> NodeConfig {
-    if config_path.ends_with("tsp.conf") == false {
-        config_path.push_str("tsp.conf");
-    }
-    if let Ok(conf_string) = std::fs::read_to_string(&config_path) {
-        serde_json::from_str(&conf_string).expect("Config file could not be deserialized.")
-    } else {
-        panic!("No config file found at: {:}", config_path)
+impl NodeConfig {
+    pub fn from_path(config_path: String) -> Self {
+        let mut p = config_path.clone();
+        if p.ends_with("tsp.conf") == false {
+            p.push_str("tsp.conf");
+        }
+        if let Ok(conf_string) = std::fs::read_to_string(&p) {
+            serde_json::from_str(&conf_string).expect("Config file could not be deserialized.")
+        } else {
+            panic!("No config file found at: {:}", p)
+        }
     }
 }
+
 
 fn multi_interaction(
     tot_hamiltonian: &Array2<c64>,
@@ -162,7 +166,7 @@ fn get_base_dir() -> String {
 }
 fn run_node() {
     let base_dir = get_base_dir();
-    let config = read_config(base_dir.clone());
+    let config = NodeConfig::from_path(base_dir.clone());
     let outputs = error_vs_interaction_number(config);
     write_results(outputs, base_dir);
 }
@@ -175,7 +179,7 @@ fn main() {
 }
 
 mod tests {
-    use crate::{adjoint, i, partial_trace, read_config, zero, NodeConfig, RandomInteractionGen};
+    use crate::{adjoint, i, partial_trace, zero, NodeConfig, RandomInteractionGen};
     use ndarray::{linalg::kron, prelude::*};
     use ndarray_linalg::{expm::expm, random_hermite, OperationNorm, Trace};
     use num_complex::{Complex64 as c64, ComplexFloat};
@@ -208,7 +212,7 @@ mod tests {
     #[test]
     fn deserialize_config() {
         let nc_path = "/Users/matt/scratch/tsp/test_config/tsp.conf".to_string();
-        let nc = read_config(nc_path);
+        let nc = NodeConfig::from_path(nc_path);
         println!("retrieved nc: {:#?}", nc);
     }
 

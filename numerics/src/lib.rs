@@ -17,6 +17,7 @@ pub enum HamiltonianType {
     MarkedState,
 }
 
+#[derive(Debug)]
 pub struct RandomInteractionGen {
     rng: Arc<Mutex<ChaCha8Rng>>,
     dim: usize,

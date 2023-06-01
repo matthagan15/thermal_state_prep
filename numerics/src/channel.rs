@@ -12,6 +12,7 @@ use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
 use crate::{adjoint, partial_trace, thermal_state, RandomInteractionGen};
 
+#[derive(Debug)]
 pub struct Channel {
     h_sys: Array2<c64>,
     h_env: Array2<c64>,
@@ -245,21 +246,15 @@ mod test {
     #[test]
     fn test_monte_carlo_avg() {
         let rn = RandomInteractionGen::new(1, 4);
-        let phi = Channel::new(
+        let mut phi = Channel::new(
             harmonic_oscillator_hamiltonian(2),
             harmonic_oscillator_hamiltonian(2),
             100.,
             rn,
         );
-        println!(
-            "output state: {:}",
-            phi.map_monte_carlo_avg(
-                &array![[c64::from_real(0.5), 0.0.into()], [0.0.into(), 0.5.into()]],
-                0.01,
-                100.,
-                1000,
-                500
-            )
-        );
+        let rho_sys: Array2<c64> = array![[0.0.into(), 0.0.into()], [0.0.into(), 1.0.into()]];
+        phi.set_env_state_to_energy_projector(1);
+        let total_output = phi.total_map_monte_carlo_avg(&rho_sys, 0.001, 100., 100, 1);
+        println!("total map monte carlo:\n{:?}", total_output);
     }
 }
