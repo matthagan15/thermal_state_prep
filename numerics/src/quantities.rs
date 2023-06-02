@@ -12,7 +12,7 @@ fn get_transition_probability(phi: &mut Channel, sys_start: usize, sys_end: usiz
     let sys_ix = min(sys_start, phi.dim_sys - 1);
     rho_sys[[sys_ix, sys_ix]] = c64::from_real(1.);
     phi.set_env_state_to_energy_projector(env_start);
-    let output = phi.total_map_monte_carlo_avg(&rho_sys, alpha, time, 1000, 1);
+    let output = phi.total_map_monte_carlo_avg(&rho_sys, alpha, time, 100000, 1);
 
     let mut tmp_sys = Array2::<c64>::zeros((phi.dim_sys, phi.dim_sys).f());
     let tgt_ix = min(sys_end, phi.dim_sys - 1);
@@ -75,6 +75,7 @@ fn compare_transitions(phi: &mut Channel, alpha: f64, time: f64) {
             let diff_over_analytic = diff_abs.pow(2.) / analytic;
             println!("diff over analytic: {:}", diff_over_analytic);
             println!("diff over alpha cubed: {:}", diff_over_alpha_cubed);
+            break;
         }
     }
 }

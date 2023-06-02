@@ -116,6 +116,18 @@ impl Channel {
         guard.clone()
     }
 
+    pub fn total_estimate_mean_and_var<F>(
+        &self,
+        rho_sys: &Array2<c64>,
+        alpha: f64,
+        time: f64,
+        num_samples: usize,
+        num_interactions: usize,
+    ) -> (f64, f64)
+    where F: Fn(&Array2<c64>) -> f64 {
+        (0., 0.)
+    }
+
     pub fn map_monte_carlo_avg(
         &self,
         rho_sys: &Array2<c64>,
