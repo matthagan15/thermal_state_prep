@@ -8,11 +8,9 @@ use crate::{zero, harmonic_oscillator_hamiltonian, RandomInteractionGen, channel
 
 /// Returns transition probabilities along the diagonal
 fn get_transition_probability(phi: &mut Channel, sys_start: usize, sys_end: usize, env_start: usize, env_end: usize, alpha: f64, time: f64) -> f64 {
-    let mut rho_sys = Array2::<c64>::zeros((phi.dim_sys, phi.dim_sys).f());
-    let sys_ix = min(sys_start, phi.dim_sys - 1);
-    rho_sys[[sys_ix, sys_ix]] = c64::from_real(1.);
     phi.set_env_state_to_energy_projector(env_start);
-    let output = phi.total_map_monte_carlo_avg(&rho_sys, alpha, time, 100000, 1);
+    phi.set_sys_to_energy_projector(sys_start);
+    let output = phi.total_map(1000, 1);
 
     let mut tmp_sys = Array2::<c64>::zeros((phi.dim_sys, phi.dim_sys).f());
     let tgt_ix = min(sys_end, phi.dim_sys - 1);
@@ -105,44 +103,6 @@ pub fn analytic_second_order(
     out
 }
 
-fn numeric_first_derivative(
-    phi: &Channel,
-    rho_sys: &Array2<c64>,
-    alpha: f64,
-    time: f64,
-) -> Array2<c64> {
-    let delta = 1e-6;
-    let center = phi.map_monte_carlo_avg(rho_sys, alpha + delta, time, 1000, 1);
-    let right = phi.map_monte_carlo_avg(rho_sys, alpha, time, 1000, 1);
-    let mut x = (&center - right);
-    x.mapv_inplace(|x| x / c64::from_real(delta));
-    x
-}
-
-fn numeric_second_derivative(
-    phi: &Channel,
-    rho_sys: &Array2<c64>,
-    time: f64,
-    alpha: f64,
-) -> Array2<c64> {
-    let delta = 1e-6;
-    let center = phi.map_monte_carlo_avg(rho_sys, alpha, time, 2000, 1);
-    let right = phi.map_monte_carlo_avg(rho_sys, alpha + delta, time, 2000, 1);
-    let left = phi.map_monte_carlo_avg(rho_sys, alpha - delta, time, 2000, 1);
-    (right + left - c64::from_real(2.) * center) / (c64::from_real(delta) * c64::from_real(delta))
-}
-
-fn first_order_taylors() {
-    let h_sys = harmonic_oscillator_hamiltonian(15);
-    let h_env = harmonic_oscillator_hamiltonian(2);
-    let rho_sys = thermal_state(&h_sys, 0.75);
-    let rng = RandomInteractionGen::new(1, 15 * 2);
-    let phi = Channel::new(h_sys, h_env, 1., rng);
-    let x = numeric_first_derivative(&phi, &rho_sys, 0.0, 100.);
-    let y = numeric_second_derivative(&phi, &rho_sys, 100., 0.0);
-    println!("norm of first order derivative: {:}", x.opnorm_one().unwrap());
-    println!("norm of second order derivative: {:}", y.opnorm_one().unwrap());
-}
 
 mod test {
     use ndarray::{Array2, array, linalg::kron};
@@ -151,7 +111,7 @@ mod test {
 
     use crate::{thermal_state, harmonic_oscillator_hamiltonian, channel::Channel, RandomInteractionGen};
 
-    use super::{first_order_taylors, analytic_second_order, compare_transitions};
+    use super::{analytic_second_order, compare_transitions};
 
 
     #[test]
@@ -159,7 +119,7 @@ mod test {
         let h_sys = harmonic_oscillator_hamiltonian(35);
         let h_env = harmonic_oscillator_hamiltonian(2);
         let rng = RandomInteractionGen::new(1, h_sys.nrows() * h_env.nrows());
-        let mut phi = Channel::new(h_sys, h_env, f64::MAX, rng);
+        let mut phi = Channel::new(h_sys, h_env, 0.01, 100., rng);
         compare_transitions(&mut phi, 0.01, 100.);
     }
 

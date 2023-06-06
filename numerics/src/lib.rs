@@ -1,3 +1,4 @@
+use core::num;
 use std::sync::{Arc, Mutex};
 
 use ndarray::{Array2, ShapeBuilder};
@@ -44,6 +45,25 @@ impl RandomInteractionGen {
             g[[i, i]] = y + y.conj();
         }
         g
+    }
+
+    pub fn sample_multiple_gue(&self, num_samples: usize) -> Vec<Array2<c64>> {
+        let mut ret = Vec::with_capacity(num_samples);
+        let mut chacha = self.rng.lock().expect("couldn't get cha cha");
+        for _ in 0..num_samples {
+            let mut g = Array2::<c64>::zeros((self.dim, self.dim).f());
+            for i in 0..self.dim {
+                for j in 0..i {
+                    let x: c64 = chacha.gen();
+                    g[[i, j]] = x;
+                    g[[j, i]] = x.conj();
+                }
+                let y: c64 = chacha.gen();
+                g[[i, i]] = y + y.conj();
+            }
+            ret.push(g);
+        }
+        ret
     }
 
     /// Samples a haar random unitary.
