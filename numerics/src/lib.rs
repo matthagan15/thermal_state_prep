@@ -12,6 +12,8 @@ use serde::{Deserialize, Serialize};
 pub mod channel;
 pub mod fixed_points;
 pub mod quantities;
+pub mod thermalization;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HamiltonianType {
     HarmonicOscillator,
@@ -172,6 +174,16 @@ pub fn process_error_data(vals: Vec<f64>) -> (usize, f64, f64) {
     let std =
         f64::sqrt(vals.iter().map(|x| f64::powi(x - mean, 2)).sum::<f64>() / (samples as f64));
     (samples, mean, std)
+}
+
+/// Computes the mean and standard deviation, returning 
+/// (mean, std). 
+pub fn mean_and_std(vals: Vec<f64>) -> (f64, f64) {
+    let samples = vals.len();
+    let mean = vals.iter().sum::<f64>() / (samples as f64);
+    let std =
+        f64::sqrt(vals.iter().map(|x| f64::powi(x - mean, 2)).sum::<f64>() / (samples as f64));
+    (mean, std)
 }
 
 pub fn thermal_state(hamiltonian: &Array2<c64>, beta: f64) -> Array2<c64> {

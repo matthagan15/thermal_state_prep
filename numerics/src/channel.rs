@@ -10,7 +10,7 @@ use ndarray_linalg::{expm, krylov::R, Scalar};
 use num_complex::Complex64 as c64;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
-use crate::{adjoint, partial_trace, thermal_state, RandomInteractionGen};
+use crate::{adjoint, partial_trace, thermal_state, RandomInteractionGen, mean_and_std};
 
 #[derive(Debug)]
 pub struct Channel {
@@ -145,16 +145,47 @@ impl Channel {
         }
         rho_tot
     }
-    pub fn total_estimate_mean_and_var<F>(
+
+    fn sample_of_k_interactions_system(
         &self,
-        rho_sys: &Array2<c64>,
-        alpha: f64,
-        time: f64,
+        num_interactions: usize,
+    ) -> Array2<c64> {
+        let out = self.sample_of_k_interactions_tot(num_interactions);
+        partial_trace(&out, self.dim_sys, self.dim_env)
+    }
+
+    pub fn estimator_sys_env<F>(
+        &self,
+        metric: F,
         num_samples: usize,
         num_interactions: usize,
     ) -> (f64, f64)
-    where F: Fn(&Array2<c64>) -> f64 {
-        (0., 0.)
+    where F: Fn(&Array2<c64>) -> f64 + Sync + Send {
+        let locker = Arc::new(Mutex::new(Vec::<f64>::new()));
+        (0..num_samples).into_par_iter().for_each(|_| {
+            let sample = self.sample_of_k_interactions_tot(num_interactions);
+            let mut results = locker.lock().expect("could not lock output holder.");
+            results.push(metric(&sample));
+        });
+        let lock = Arc::try_unwrap(locker).expect("Poisoned lock in total_estimate_mean_and_var");
+        mean_and_std(lock.into_inner().expect("mutex machine broke."))
+    }
+
+    pub fn estimator_sys<F>(
+        &self,
+        metric: F,
+        num_samples: usize,
+        num_interactions: usize,
+    ) -> (f64, f64)
+    where F: Fn(&Array2<c64>) -> f64 + Sync + Send {
+        let locker = Arc::new(Mutex::new(Vec::<f64>::new()));
+        (0..num_samples).into_par_iter().for_each(|_| {
+            let sample = self.sample_of_k_interactions_system(num_interactions);
+            let mut results = locker.lock().expect("could not lock output holder.");
+            results.push(metric(&sample));
+        });
+        let lock = Arc::try_unwrap(locker).expect("Poisoned lock in total_estimate_mean_and_var");
+        mean_and_std(lock.into_inner().expect("mutex machine broke."))
     }
 }
 
@@ -164,10 +195,24 @@ mod test {
     use num_complex::Complex64 as c64;
 
     use crate::{
-        harmonic_oscillator_hamiltonian, perform_fixed_interaction_channel, thermal_state,
-        HamiltonianType, RandomInteractionGen,
+        harmonic_oscillator_hamiltonian, perform_fixed_interaction_channel,thermal_state,
+        HamiltonianType, RandomInteractionGen, schatten_2_distance,
     };
 
     use super::Channel;
 
+    #[test]
+    fn test_estimators() {
+        let h_sys = harmonic_oscillator_hamiltonian(10);
+        let h_env = harmonic_oscillator_hamiltonian(2);
+        let rho_sys = thermal_state(&h_sys, 0.75);
+        let rng = RandomInteractionGen::new(1, 20);
+        let mut phi = Channel::new(h_sys, h_env, 0.001, 100., rng);
+        phi.set_env_to_thermal_state(0.75);
+        let distance_estimator = |matrix: &Array2<c64>| {
+            schatten_2_distance(matrix, &rho_sys)
+        };
+        let out = phi.estimator_sys(distance_estimator, 1000, 100);
+        println!("observed metrics: {:} +- {:}", out.0, out.1);
+    }
 }

@@ -13,6 +13,7 @@ use ndarray_linalg::random_hermite;
 use ndarray_linalg::{OperationNorm, Scalar};
 use num_complex::Complex64 as c64;
 use num_complex::ComplexFloat;
+use numerics::channel::Channel;
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
@@ -173,7 +174,21 @@ fn run_node() {
 
 fn main() {
     let start = Instant::now();
-    run_node();
+    let h_sys = harmonic_oscillator_hamiltonian(10);
+    let h_env = harmonic_oscillator_hamiltonian(2);
+    let rho_sys = thermal_state(&h_sys, 0.75);
+    let rng = RandomInteractionGen::new(1, 20);
+    let mut phi = Channel::new(h_sys, h_env, 0.01, 100., rng);
+    phi.set_env_to_thermal_state(0.75);
+    let distance_estimator = |matrix: &Array2<c64>| {
+        schatten_2_distance(matrix, &rho_sys)
+    };
+    let out = phi.estimator_sys(distance_estimator, 1000, 100);
+    println!("observed metrics: {:} +- {:}", out.0, out.1);
+    let state = phi.map(1000, 100);
+    println!("state: {:}", state);
+    let diag = state.diag().map(|x| x.re);
+    println!("diag:\n{:#?}", diag);
     let duration = start.elapsed();
     println!("took this many millis: {:}", duration.as_millis());
 }
