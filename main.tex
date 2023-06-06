@@ -17,6 +17,7 @@
 %%%%%%%%    THEOREM DEFINITIONS AND RESTATABLE
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
 
 \usepackage{todonotes}
 
@@ -198,15 +199,17 @@ Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the r
     \end{align}
 \end{proof}
 
-\begin{lemma}[Second Order Correction]
-    Given a system Hamiltonian $H_{S}$, an environment Hamiltonian $H_{E}$, a simulation time $t$, and coupling coefficient $\alpha$, let $\Phi(\rho_S)$ denote the fixed interaction system-environment channel 
+\begin{lemma}[Second Order Correction] \label{lem:the_double_duhamel}
+    Given a system Hamiltonian $H_{S}$, an environment Hamiltonian $H_{E}$, a simulation time $t$, and coupling coefficient $\alpha$, let $\Phi_G : \hilb_S \otimes \hilb_E \to \hilb_S \otimes \hilb_E$ denote the fixed interaction channel 
     \begin{equation}
-        \Phi_G(\rho_S) = e^{+i (H + \alpha G)t} (\rho_S \otimes \rho_E) e^{-i (H + \alpha G)t},
+        \Phi_G(\rho) = e^{+i (H + \alpha G)t} \rho e^{-i (H + \alpha G)t},
     \end{equation}
-    where $H = H_S \otimes \identity + \identity \otimes H_E$. For simplicity we assume no degeneracies in the total Hamiltonian $H$, and therefore in $H_S$ and $G$ is our randomized interaction. Further we let $\rho \coloneqq \rho_S \otimes \rho_E = \sum_{i,j} B(i,j) \ketbra{i,j}{i,j}$. The long time average and random interaction average second order correction is given by the following
-    \begin{align}
-        \lim_{T \to \infty} \frac{1}{T} \int_0^T \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S)\bigg|_{\alpha = 0} dG ~dt &=  \frac{4 \sigma^2}{\dim^2 - 1} \sum_{i,j} \ketbra{i,j}{i,j} \sum_{(k,l) \neq (i,j)} \frac{B(i,j) - B(k,l)}{(\lambda(i,j) - \lambda(k,l))^2}.
-    \end{align}
+    where $H = H_S \otimes \identity + \identity \otimes H_E$. We compute the output of the averaged channel at $\alpha = 0$ for the basis $\ketbra{a}{b}$ of linear operators as:
+ \begin{align}
+     &\int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a}{b})\bigg|_{\alpha = 0} dG \\
+     &= -\frac{2 \sigma^2 e^{i \Delta_{ab} t}}{\dim + 1} \bigg(\sum_{j: \Delta_{aj} \neq 0} \frac{1 - i \Delta_{aj}t - e^{-i \Delta_{aj} t}}{\Delta_{aj}^2} + \sum_{j: \Delta_{bj} \neq 0} \frac{1 + i \Delta_{bj} t - e^{i \Delta_{bj} t}}{\Delta_{bj}^2} + \frac{t^2}{2}(\eta(a) + \eta(b)) \bigg) \ketbra{a}{b} \nonumber \\
+    &~ +\delta_{ab} \frac{2\sigma^2 e^{i \Delta_{ab}t}}{\dim+1} \parens{ \sum_{i: \Delta_{ai} \neq 0 } \frac{2(1- \cos (\Delta_{ai}t))}{\Delta_{ai}^2} \ketbra{i}{i} + t^2 \sum_{i : \Delta_{ai} = 0} \ketbra{i}{i}}
+ \end{align}
 \end{lemma}
 \begin{proof}
 We start from the expression for the first derivative of the channel $\frac{\partial}{\partial \alpha} \Phi_G(\rho_S)$ given by Eq. \eqref{eq:first_order_alpha_derivative}. To take the second derivative there are six factors involving $\alpha$, so we will end up with six terms. We repeat Eq. \eqref{eq:first_order_alpha_derivative} below, add a derivative, and label each factor containing an $\alpha$ for easier computation
@@ -258,9 +261,6 @@ We will work through the first term in detail and will simply state the remainin
     &= -t^2 \rho(t) \int_0^1 \int_0^1 G((1-s_1)t) G((1-s_1)(1 - s_2) t) (1-s_1)ds_1 ds_2
 \end{align}
 
-\end{proof}
-
-
 Now our goal is to compute the effects of averaging over the interaction $G$ on the above terms, starting with $(A)$. We will make heavy use of Lemma \ref{lem:two_heisenberg_interactions}.
 \begin{align}
     \int (A) dG &= -t^2 \int_0^1 \int_0^1 \int G(s_1 s_2 t) G(s_1 t) dG s_1 ds_1 ds_2 \rho(t) \\
@@ -306,31 +306,94 @@ Computing $(F)$ yields
  \begin{align}
      &\int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a}{b})\bigg|_{\alpha = 0} dG \\
      &= -\frac{2 \sigma^2 e^{i \Delta_{ab} t}}{\dim + 1} \bigg(\sum_{j: \Delta_{aj} \neq 0} \frac{1 - i \Delta_{aj}t - e^{-i \Delta_{aj} t}}{\Delta_{aj}^2} + \sum_{j: \Delta_{bj} \neq 0} \frac{1 + i \Delta_{bj} t - e^{i \Delta_{bj} t}}{\Delta_{bj}^2} + \frac{t^2}{2}(\eta(a) + \eta(b)) \bigg) \ketbra{a}{b} \nonumber \\
-    &~ +\frac{2\sigma^2 e^{i \Delta_{ab}t}}{\dim+1} \parens{\delta_{ab} \sum_{i: \Delta_{ai} \neq 0 } \frac{2(1- \cos (\Delta_{ai}t))}{\Delta_{ai}^2} \ketbra{i}{i} + t^2 \delta_{ab} \sum_{i : \Delta_{ai} = 0} \ketbra{i}{i}}
+    &~ +\frac{2\sigma^2 e^{i \Delta_{ab}t}}{\dim+1} \parens{\delta_{ab} \sum_{i: \Delta_{ai} \neq 0 } \frac{2(1- \cos (\Delta_{ai}t))}{\Delta_{ai}^2} \ketbra{i}{i} + t^2 \delta_{ab} \sum_{i : \Delta_{ai} = 0} \ketbra{i}{i}} \label{eq:second_order_output}
  \end{align}
 
-Note that this allows us to easily show that a diagonal entry does not transition to an off-diagonal entry at this order in $\alpha$, so we assume $c \neq d$ in the following:
+\end{proof}
+
+We can now leverage this lemma to show transition probabilities among diagonal matrix elements and to argue that off-diagonal transitions are suppressed to order $\bigo{\alpha^2}$.
+\begin{theorem}
+    Given the setup in Lemma \ref{lem:the_double_duhamel}, let $\prob{a \to b}$ denote the transition probability from $a$ to $b$ for the joint system-environment Hilbert space be given to second order in alpha $\bigo{\alpha^2}$ as:
+    \begin{equation}
+    \prob{a \to b} \coloneqq \trace{\ketbra{b}{b} \parens{\ketbra{a}{a} + \frac{\alpha^2}{2} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a}{a}) \bigg|_{\alpha = 0} dG}}
+    \end{equation}
+    we can compute the following transition probabilities among diagonal matrix elements
+    \begin{equation}
+        \prob{a \to b} = \begin{cases}
+            1 -\frac{ \sigma^2 \alpha^2}{\dim + 1} \parens{\sum_{j: \Delta_{aj} \neq 0} \frac{2( 1- \cos (\Delta_{aj}t)) }{\Delta_{aj}^2} + t^2 (\eta(a) - 1)} & a = b \\
+            \frac{\sigma^2 \alpha^2 t^2}{\dim + 1} & a \neq b, \lambda(a) = \lambda(b) \\
+            \frac{2\sigma^2 \alpha^2}{\dim + 1} \frac{1 - \cos( \Delta_{ab} t)}{\Delta_{ab}^2} & \lambda(a) \neq \lambda(b).
+        \end{cases}
+    \end{equation}
+    We further note that in order for these to be valid transition probabilities we have to make the assumption that $t^2 \leq \frac{\dim + 1}{\alpha^2 \sigma^2}$. 
+\end{theorem}
+\begin{proof}
+    We focus exclusively on diagonal inputs and outputs for density matrices, $\ketbra{a}{a}$ and $\ketbra{b}{b}$. We use Eq. \eqref{eq:second_order_output}, starting with transitions within the degenerate subspace of $a$. For the following we assume $a \neq b$ and $\Delta_{ab} = 0$: 
+    \begin{align}
+        &\prob{a \to b | a \neq b, \Delta_{ab} = 0} = \trace{\ketbra{b}{b} \int \Phi_G(\ketbra{a}{a}) dG} \\
+        &= \braket{b}{a} \braket{a}{b} + \frac{\alpha^2}{2} \bra{b} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a}{a})\bigg|_{\alpha = 0} dG \ket{b} \\
+        &= -\frac{\sigma^2 \alpha^2}{\dim + 1} \bigg(\sum_{j: \Delta_{aj} \neq 0} \frac{1 - i \Delta_{aj}t - e^{-i \Delta_{aj} t}}{\Delta_{aj}^2} + \sum_{j: \Delta_{aj} \neq 0} \frac{1 + i \Delta_{aj} t - e^{i \Delta_{aj} t}}{\Delta_{aj}^2} + t^2 \eta(a) \bigg) \braket{b}{a} \braket{a}{b} \nonumber \\
+        &~+ \frac{\alpha^2 \sigma^2}{\dim + 1} \parens{\sum_{i: \Delta_{ai} \neq 0} \frac{2(1- \cos(\Delta_{ai} t)}{\Delta_{ai}^2} \braket{b}{i}\braket{i}{b} + t^2 \sum_{i: \Delta_{ai} = 0 } \braket{b}{i} \braket{i}{b}} \label{eq:transition_intermediate} \\
+        &= \frac{\sigma^2 \alpha^2 t^2}{\dim + 1}. 
+    \end{align}
+    We now proceed to the case that $b \neq a$ and $\Delta_{ab} \neq 0$, where we can start from Eq. \eqref{eq:transition_intermediate} and we get
+    \begin{equation}
+        \prob{a \to b | a \neq b, \Delta_{ab} \neq 0} = \frac{2 \sigma^2 \alpha^2 }{\dim + 1} \frac{1 - \cos (\Delta_{ab} t)}{\Delta_{ab}^2}.
+    \end{equation}
+
+    The remaining case to consider is when $b = a$. This involves simplifying the summations in Eq. \eqref{eq:second_order_output} and including the zeroth order $\bigo{\alpha^0}$ term which simply contributes a 1. 
+    \begin{align}
+        \prob{a \to a} &= 1 -\frac{\sigma^2 \alpha^2 }{\dim + 1} \bigg(\sum_{j: \Delta_{aj} \neq 0} \frac{1 - i \Delta_{aj}t - e^{-i \Delta_{aj} t}}{\Delta_{aj}^2} + \sum_{j: \Delta_{aj} \neq 0} \frac{1 + i \Delta_{aj} t - e^{i \Delta_{aj} t}}{\Delta_{aj}^2} + t^2 \eta(a) \bigg) \nonumber \\
+    &~ +\frac{\sigma^2 \alpha^2 }{\dim+1} \parens{ \sum_{i: \Delta_{ai} \neq 0 } \frac{2(1- \cos (\Delta_{ai}t))}{\Delta_{ai}^2} \braket{a}{i} \braket{i}{a} + t^2  \sum_{i : \Delta_{ai} = 0} \braket{a}{i} \braket{i}{a}} \\
+    &= 1 - \frac{\sigma^2 \alpha^2}{\dim + 1} \parens{\sum_{i: \Delta_{ai} \neq 0} \frac{2(1 - \cos(\Delta_{ai}t))}{\Delta_{ai}^2} + t^2 (\eta(a) - 1)}.
+    \end{align}
+    This completes the transition probability computation. It is straightforward to see that $\sum_{b} \prob{a \to b} = 1$ and that $0 \leq \prob{a \to b} \leq 1$ given that $t^2 \leq \frac{\dim + 1}{\alpha^2 \sigma^2}$.
+\end{proof}
+
+Note that we can also easily show that a diagonal entry does not transition to an off-diagonal entry at this order in $\alpha$, so we assume $c \neq d$ in the following:
 \begin{align}
     \bra{c} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a}{a}) \bigg|_{\alpha = 0} dG \ket{d} &= \frac{2 \sigma^2}{\dim + 1} \parens{\sum_{j : \Delta_{aj} \neq 0} \frac{2(\cos(\Delta_{aj}t) - 1)}{\Delta_{aj}^2} - t^2 \eta(a)} \delta_{ac} \delta_{ad} \nonumber \\
     & + \frac{2 \sigma^2}{\dim + 1}  \parens{\sum_{i: \Delta_{ai \neq 0} }\frac{2(1 - \cos(\Delta_{ai}t))}{\Delta_{ai}^2} \delta_{ci} \delta_{id} + \sum_{i : \Delta_{ai} = 0} t^2 \delta_{ci} \delta_{id}} \\
     &= 0.
 \end{align}
+It is also evident that off-diagonal elements do not transition to other off diagonal elements based on the only off-diagonal output state of Eq. \eqref{eq:second_order_output} being the exact same as the off-diagonal input. 
 
-We can further look at transitions from energy diagonal basis within the degenerate subspace. So we want to analyze the second order correction to $\bra{b} \int \Phi_G(\ketbra{a}{a}) dG \ket{b}$ such that $\lambda(a) = \lambda(b)$ but $a \neq b$:
+We now give the following result showing the transition amplitudes for the system register when it is coupled with a single qubit environment.
+\begin{corollary}
+    Let $H_E = \begin{bmatrix} 0 & 0 \\ 0 & \gamma \end{bmatrix}$ be a single qubit environment and $\rho_E = e^{-\beta H_E} / \partfun_E(\beta)$ be the state of the environment for application of $\Phi$. Then we show that if $\lambda_S(a) > \lambda_S(b)$, then $\prob{a \to b} > \prob{b \to a}$ after time-averaging, indicating that our channel prefers to move probability mass from high energy to lower energy. 
+\end{corollary}
+\begin{proof}
+Our goal is to look at the system transitions at this order. This involves tracing out the environment, so we switch back to double index notation. Further for now we assume $a \neq b$ and compute the self-transition later.
 \begin{align}
-    \lambda(a) = \lambda(b) \implies \bra{b} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a}{a}) \bigg|_{\alpha = 0} dG \ket{b} &= \frac{\sigma^2 \alpha^2 t^2}{\dim + 1}.
+    \bra{b} \Phi(\ketbra{a}{a}) \ket{b} &= \sum_{i} \bra{b, i} \int \Phi_G(\ketbra{a}{a} \otimes \rho_E) dG \ket{b,i} \\
+    &= \sum_i \bra{b,i} \parens{\ketbra{a}{a} \otimes \rho_E + \frac{\alpha^2}{2} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a}{a} \otimes \rho_E) \bigg|_{\alpha =0} ~dG } \ket{b, i} + \bigo{\alpha^3} \\
+    &= \frac{\alpha^2}{2} \sum_i \bra{b,i}  \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a}{a} \otimes \rho_E) \bigg|_{\alpha =0} ~dG  \ket{b, i} + \bigo{\alpha^3}.
 \end{align}
-Now if we look at transitions between energy subspaces, so $\lambda(b) \neq \lambda(a)$ then we have
-\begin{equation}
-    \lambda(b) \neq \lambda(a) \implies \bra{b} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a}{a}) \bigg|_{\alpha = 0} dG \ket{b} = \frac{2\sigma^2 \alpha^2}{\dim + 1} \frac{1 - \cos( \Delta_{ab} t)}{\Delta_{ab}^2},
-\end{equation}
-which we notice approaches the degenerate case as $\Delta_{ab} \to 0$. Finally we compute the self-loop term $\ketbra{a}{a} \to \ketbra{a}{a}$
+To further simplify, we let $\rho_E = e^{-\beta H_E} / \partfun_E(\beta) = \partfun_E(\beta)^{-1} \ketbra{0}{0}  +  e^{-\beta \gamma} \partfun_E(\beta)^{-1} \ketbra{1}{1}$ and we ignore all terms of order $\bigo{\alpha^3}$. Another further simplification we make is that $\lambda_S(a) \neq \lambda_S(b)$ and that $\lambda_S(a) - \lambda_S(b) \neq \gamma$. This allows us to assume that all system-environment transitions occur at different energy levels, aka $\Delta(a,j | b, i) \neq 0$ for all $i$ and $j$. Given that the transition amplitudes replicate the degenerate condition, we can always make this assumption and look at the resulting behavior as the energy differences approach zero.
 \begin{align}
-    a = b \implies \bra{a} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a}{a}) \bigg|_{\alpha = 0} dG \ket{a} = -\frac{ \sigma^2 \alpha^2}{\dim + 1} \parens{\sum_{j: \Delta_{aj} \neq 0} \frac{2( 1- \cos (\Delta_{aj}t)) }{\Delta_{aj}^2} + t^2 (\eta(a) - 1)}.
+    \bra{b} \Phi(\ketbra{a}{a}) \ket{b} &= \sum_{i, j} \frac{e^{-\beta \lambda_E(j)}}{\partfun_E(\beta)} \frac{2 \alpha^2 \sigma^2}{\dim + 1} \frac{1 - \cos(\Delta(a,j | b,i)t}{\Delta(a,j | b, i)^2} \\
+    \bra{b} \Phi(\ketbra{a}{a}) \ket{b} \frac{(\dim + 1) \partfun_E(\beta)}{2 \alpha^2 \sigma^2} &= \frac{1 - \cos ( \Delta(a, 0 | b, 0) t)}{\Delta(a, 0 | b, 0)} + \frac{1 - \cos ( \Delta(a, 0 | b, 1) t)}{\Delta(a, 0 | b, 1)} \nonumber \\
+    &~ + e^{-\beta \gamma} \frac{1 - \cos ( \Delta(a, 1 | b, 0) t)}{\Delta(a, 1 | b, 0)} + e^{-\beta \gamma} \frac{1 - \cos ( \Delta(a, 1 | b, 1) t)}{\Delta(a, 1 | b, 1)} \\
+    &= \frac{1 - \cos(\Delta_S(a,b)t)}{\Delta_S(a,b)^2}(1 + e^{-\beta \gamma}) \nonumber \\
+    &+ \frac{1 - \cos((\Delta_S(a,b) - \gamma)t)}{(\Delta_S(a,b) - \gamma)^2} + e^{-\beta \gamma} \frac{1 - \cos((\Delta_S(a,b) + \gamma)t)}{(\Delta_S(a,b) + \gamma)^2}.
 \end{align}
-We can then see that by summing over all diagonal outputs that the second order correction is traceless, implying that to this order in $\alpha$ the channel preserves trace (the $\bigo{\alpha^0}$ correction is simply the channel itself). 
-
-
+Here we see that the transition is no longer symmetric about $a$ and $b$ as observed in the total system-environment transitions due to the changing of the factor of $e^{-\beta \gamma}$ about the two terms with $\Delta_S(a,b) \pm \gamma$ when $a \leftrightarrow b$. We now analyze this for $\Delta_S(a,b) = \lambda(a) - \lambda(b) > 0$. We also know that $e^{-\beta \gamma} < 1$ for $\beta$ and $\gamma$ larger than 0. This allows us to study the difference:
+\begin{align}
+    \bra{b} \Phi(\ketbra{a}{a}) \ket{b} - \bra{a} \Phi(\ketbra{b}{b}) \ket{a} &= \frac{2 \alpha^2 \sigma^2}{(\dim + 1) \partfun_E(\beta)} \bigg( \frac{1 - \cos((\Delta_S(a,b) - \gamma)t)}{(\Delta_S(a,b) - \gamma)^2}(1 - e^{-\beta \gamma}) +  \nonumber \\
+    &+\frac{1 - \cos((\Delta_S(a,b) + \gamma)t)}{(\Delta_S(a,b) + \gamma)^2}(e^{-\beta \gamma} - 1)
+\end{align}
+Now we further simplify by  time-averaging:
+\begin{align}
+    (\prob{a \to b} - \prob{b \to a}) \frac{(\dim + 1) \partfun_E(\beta) (1 - e^{-\beta \gamma})}{2 \alpha^2 \sigma^2} &= \frac{1}{(\Delta_S(a,b) - \gamma)^2} - \frac{1}{(\Delta_S(a,b) + \gamma)^2}.
+\end{align}
+Now we note that $\Delta_S(a,b) > 0$ and $\gamma > 0$ implies that $(\Delta_S(a,b) - \gamma)^2 < (\Delta_S(a,b) + \gamma)^2$, which follows from expanding both sides. This yields 
+\begin{align}
+(\prob{a \to b} - \prob{b \to a}) \frac{(\dim + 1) \partfun_E(\beta) (1 - e^{-\beta \gamma})}{2 \alpha^2 \sigma^2} &= \frac{1}{(\Delta_S(a,b) - \gamma)^2} - \frac{1}{(\Delta_S(a,b) + \gamma)^2}.
+&\geq 0 \\
+\implies \prob{a \to b} &\geq \prob{b \to a},
+\end{align}
+whenever $\lambda_S(a) > \lambda_S(b)$. 
+\end{proof}
 We now investigate detailed balance to this order. We want to show that the distribution $e^{- \beta \lambda(i)} / \partfun (\beta)$ is a fixed point of the system and environment. We let the system and environment be in the thermal state of their respective systems at the same inverse temperature $\beta$. We consider the transition probability before taking the partial trace over the environment. 
 We first show that for $\lambda(i) = \lambda(j)$ with $i \neq j$ that detailed balance is trivially satisfied
 \begin{align}
