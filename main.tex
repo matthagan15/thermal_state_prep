@@ -322,7 +322,7 @@ We can now leverage this lemma to show transition probabilities among diagonal m
         \prob{a \to b} = \begin{cases}
             1 -\frac{ \sigma^2 \alpha^2}{\dim + 1} \parens{\sum_{j: \Delta_{aj} \neq 0} \frac{2( 1- \cos (\Delta_{aj}t)) }{\Delta_{aj}^2} + t^2 (\eta(a) - 1)} & a = b \\
             \frac{\sigma^2 \alpha^2 t^2}{\dim + 1} & a \neq b, \lambda(a) = \lambda(b) \\
-            \frac{2\sigma^2 \alpha^2}{\dim + 1} \frac{1 - \cos( \Delta_{ab} t)}{\Delta_{ab}^2} & \lambda(a) \neq \lambda(b).
+            \frac{2\sigma^2 \alpha^2}{\dim + 1} \frac{1 - \cos( \Delta_{ab} t)}{\Delta_{ab}^2} & \lambda(a) \neq \lambda(b). \label{eq:transition_rule}
         \end{cases}
     \end{equation}
     We further note that in order for these to be valid transition probabilities we have to make the assumption that $t^2 \leq \frac{\dim + 1}{\alpha^2 \sigma^2}$. 
@@ -372,15 +372,15 @@ Our goal is to look at the system transitions at this order. This involves traci
 To further simplify, we let $\rho_E = e^{-\beta H_E} / \partfun_E(\beta) = \partfun_E(\beta)^{-1} \ketbra{0}{0}  +  e^{-\beta \gamma} \partfun_E(\beta)^{-1} \ketbra{1}{1}$ and we ignore all terms of order $\bigo{\alpha^3}$. Another further simplification we make is that $\lambda_S(a) \neq \lambda_S(b)$ and that $\lambda_S(a) - \lambda_S(b) \neq \gamma$. This allows us to assume that all system-environment transitions occur at different energy levels, aka $\Delta(a,j | b, i) \neq 0$ for all $i$ and $j$. Given that the transition amplitudes replicate the degenerate condition, we can always make this assumption and look at the resulting behavior as the energy differences approach zero.
 \begin{align}
     \bra{b} \Phi(\ketbra{a}{a}) \ket{b} &= \sum_{i, j} \frac{e^{-\beta \lambda_E(j)}}{\partfun_E(\beta)} \frac{2 \alpha^2 \sigma^2}{\dim + 1} \frac{1 - \cos(\Delta(a,j | b,i)t}{\Delta(a,j | b, i)^2} \\
-    \bra{b} \Phi(\ketbra{a}{a}) \ket{b} \frac{(\dim + 1) \partfun_E(\beta)}{2 \alpha^2 \sigma^2} &= \frac{1 - \cos ( \Delta(a, 0 | b, 0) t)}{\Delta(a, 0 | b, 0)} + \frac{1 - \cos ( \Delta(a, 0 | b, 1) t)}{\Delta(a, 0 | b, 1)} \nonumber \\
-    &~ + e^{-\beta \gamma} \frac{1 - \cos ( \Delta(a, 1 | b, 0) t)}{\Delta(a, 1 | b, 0)} + e^{-\beta \gamma} \frac{1 - \cos ( \Delta(a, 1 | b, 1) t)}{\Delta(a, 1 | b, 1)} \\
+    \bra{b} \Phi(\ketbra{a}{a}) \ket{b} \frac{(\dim + 1) \partfun_E(\beta)}{2 \alpha^2 \sigma^2} &= \frac{1 - \cos ( \Delta(a, 0 | b, 0) t)}{\Delta(a, 0 | b, 0)^2} + \frac{1 - \cos ( \Delta(a, 0 | b, 1) t)}{\Delta(a, 0 | b, 1)^2} \nonumber \\
+    &~ + e^{-\beta \gamma} \frac{1 - \cos ( \Delta(a, 1 | b, 0) t)}{\Delta(a, 1 | b, 0)^2} + e^{-\beta \gamma} \frac{1 - \cos ( \Delta(a, 1 | b, 1) t)}{\Delta(a, 1 | b, 1)^2} \\
     &= \frac{1 - \cos(\Delta_S(a,b)t)}{\Delta_S(a,b)^2}(1 + e^{-\beta \gamma}) \nonumber \\
-    &+ \frac{1 - \cos((\Delta_S(a,b) - \gamma)t)}{(\Delta_S(a,b) - \gamma)^2} + e^{-\beta \gamma} \frac{1 - \cos((\Delta_S(a,b) + \gamma)t)}{(\Delta_S(a,b) + \gamma)^2}.
+    &+ \frac{1 - \cos((\Delta_S(a,b) - \gamma)t)}{(\Delta_S(a,b) - \gamma)^2} + e^{-\beta \gamma} \frac{1 - \cos((\Delta_S(a,b) + \gamma)t)}{(\Delta_S(a,b) + \gamma)^2} \label{eq:sys_transition_with_qubit_bath}.
 \end{align}
 Here we see that the transition is no longer symmetric about $a$ and $b$ as observed in the total system-environment transitions due to the changing of the factor of $e^{-\beta \gamma}$ about the two terms with $\Delta_S(a,b) \pm \gamma$ when $a \leftrightarrow b$. We now analyze this for $\Delta_S(a,b) = \lambda(a) - \lambda(b) > 0$. We also know that $e^{-\beta \gamma} < 1$ for $\beta$ and $\gamma$ larger than 0. This allows us to study the difference:
 \begin{align}
     \bra{b} \Phi(\ketbra{a}{a}) \ket{b} - \bra{a} \Phi(\ketbra{b}{b}) \ket{a} &= \frac{2 \alpha^2 \sigma^2}{(\dim + 1) \partfun_E(\beta)} \bigg( \frac{1 - \cos((\Delta_S(a,b) - \gamma)t)}{(\Delta_S(a,b) - \gamma)^2}(1 - e^{-\beta \gamma}) +  \nonumber \\
-    &+\frac{1 - \cos((\Delta_S(a,b) + \gamma)t)}{(\Delta_S(a,b) + \gamma)^2}(e^{-\beta \gamma} - 1)
+    &+\frac{1 - \cos((\Delta_S(a,b) + \gamma)t)}{(\Delta_S(a,b) + \gamma)^2}(e^{-\beta \gamma} - 1) \bigg)
 \end{align}
 Now we further simplify by  time-averaging:
 \begin{align}
@@ -394,6 +394,52 @@ Now we note that $\Delta_S(a,b) > 0$ and $\gamma > 0$ implies that $(\Delta_S(a,
 \end{align}
 whenever $\lambda_S(a) > \lambda_S(b)$. 
 \end{proof}
+
+\begin{lemma}
+    Our next goal is to look at the trace distance for a thermal state system input at the same inverse temperature $\beta$ as the environment, with the aim of showing that it can be made negligibly small with appropriate choice of $\alpha, t$. We consider an extremely simple system of 
+    \begin{equation}
+        H_S = \begin{bmatrix}
+            0 & 0 \\ 0 & 1
+        \end{bmatrix},
+    \end{equation}
+    just a single qubit. Similarly our environment is $H_E = \begin{bmatrix}
+        0 & 0 \\ 0 & \gamma
+    \end{bmatrix}$ incredibly simple. We want to study the trace distance of the thermal state before and after application of $\Phi$
+    \begin{equation}
+        \norm{\rho_S(\beta) - \Phi(\rho_S(\beta))}_1
+    \end{equation}
+    as a function of $\gamma$. 
+\end{lemma}
+\begin{proof}
+its in the pudding    
+\end{proof}
+We first plug in the second order Taylor's Series for $\Phi$, noting that the zeroth order terms cancel
+\begin{align}
+    \norm{\rho_S(\beta) - \Phi(\rho_S(\beta))}_1 &= \norm{\partrace{\hilb_E}{ \frac{\alpha^2}{2} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S(\beta) \otimes \rho_E(\beta) ) \bigg|_{\alpha = 0} dG }} \\
+    &= \frac{\alpha^2}{2 \partfun(\beta)}\norm{\partrace{\hilb_E}{ \sum_{a, i} e^{-\beta \lambda(a, i)} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a,i}{a,i}) \bigg|_{\alpha=0} dG}}
+\end{align}
+We further simplify by noting that the operator within the norm is diagonal in the energy eigenbasis. This can be seen from Eq. \eqref{eq:second_order_output} after letting $a = b$. This allows us to compute the trace norm by solely using the diagonal outputs
+\begin{align}
+    \norm{A}_1 &= \trace{\sqrt{A A^\dagger}} \\
+    &= \trace{\sqrt{\sum_i |a_i|^2 \ketbra{i}{i}}} \\
+    &= \trace{\sum_i |a_i| \ketbra{i}{i}} \\
+    &= \sum_i |a_i|.
+\end{align}
+Therefore we only need to compute 
+\begin{align}
+\bra{b} \partrace{\hilb_E}{\int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a,i}{a,i})\bigg|_{\alpha=0} dG} \ket{b} &= \sum_{j} \bra{b,j} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a,i}{a,i})\bigg|_{\alpha=0} dG \ket{b,j}.
+\end{align}
+To do so we first assume that $a = 1$ and $b = 0$, meaning $\lambda_S(a) = 1$ and $\lambda_S(b) = 0$ and that $\gamma \neq 1$. We make this assumption on $\gamma$ so we can utilize the non-degenerate transitions from Eq. \eqref{eq:transition_rule}. The exact same computation was carried out before up until Eq. \eqref{eq:sys_transition_with_qubit_bath} so we use that intermediate result, noting that we have already accounted for the factors of $\partfun_E(\beta)$ and $\alpha^2$. 
+\begin{align}
+    \bra{b} \partrace{\hilb_E}{\int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a,i}{a,i})\bigg|_{\alpha=0} dG} \ket{b} \parens{\frac{\dim + 1}{4 \sigma^2}} &= \frac{1 - \cos(\Delta_S(a,b)t)}{\Delta_S(a,b)^2}(1 + e^{-\beta \gamma}) \nonumber \\
+    &+ \frac{1 - \cos((\Delta_S(a,b) - \gamma)t)}{(\Delta_S(a,b) - \gamma)^2} \nonumber \\
+    &+ e^{-\beta \gamma} \frac{1 - \cos((\Delta_S(a,b) + \gamma)t)}{(\Delta_S(a,b) + \gamma)^2}
+\end{align}
+
+
+\newpage
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 We now investigate detailed balance to this order. We want to show that the distribution $e^{- \beta \lambda(i)} / \partfun (\beta)$ is a fixed point of the system and environment. We let the system and environment be in the thermal state of their respective systems at the same inverse temperature $\beta$. We consider the transition probability before taking the partial trace over the environment. 
 We first show that for $\lambda(i) = \lambda(j)$ with $i \neq j$ that detailed balance is trivially satisfied
 \begin{align}
