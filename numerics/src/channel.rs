@@ -31,21 +31,21 @@ impl Channel {
     /// to the maximally mixed state and the environment to the
     /// ground state.
     pub fn new(
-        system_hamiltonain: Array2<c64>,
+        system_hamiltonian: Array2<c64>,
         environment_hamiltonian: Array2<c64>,
         alpha: f64,
         time: f64,
         rng: RandomInteractionGen,
     ) -> Self {
-        let ds = system_hamiltonain.nrows();
+        let ds = system_hamiltonian.nrows();
         let de = environment_hamiltonian.nrows();
-        let h_tot = kron(&system_hamiltonain, &Array2::<c64>::eye(de))
+        let h_tot = kron(&system_hamiltonian, &Array2::<c64>::eye(de))
             + kron(&Array2::<c64>::eye(ds), &environment_hamiltonian);
         let rho_sys = Array2::<c64>::eye(ds) / (c64::from_real(ds as f64));
         let mut rho_env = Array2::<c64>::zeros((de, de).f());
         rho_env[[0, 0]] = c64::from_real(1.0);
         Self {
-            h_sys: system_hamiltonain,
+            h_sys: system_hamiltonian,
             h_env: environment_hamiltonian,
             h_tot,
             dim_sys: ds,
