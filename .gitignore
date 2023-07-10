@@ -6,6 +6,7 @@ main.synctex.gz
 main.blg
 main.bbl
 numerics/target/**
+numerics/tmp/**
 main.dvi
 main.pdf
 main.pdf

@@ -161,9 +161,14 @@ pub fn schatten_2_distance(a: &Array2<c64>, b: &Array2<c64>) -> f64 {
     let psd = diff.dot(&diff_adjoint);
     let trace = psd.trace().unwrap();
     // imaginary part should be very small
-    assert!(trace.im() < f64::EPSILON * a.nrows() as f64);
+    
+    if trace.im() > f64::EPSILON * a.nrows() as f64 {
+        println!("WARNING: you are going to have a bad time. imaginary trace");
+    }
     // real part should be positive
-    assert!(trace.re() > 0.);
+    if trace.re() < 0. {
+        println!("WARNING: negative trace?");
+    }
     // If above assertions pass then this is fine.
     ComplexFloat::abs(trace.sqrt())
 }

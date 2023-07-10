@@ -14,7 +14,7 @@ use ndarray_linalg::{OperationNorm, Scalar};
 use num_complex::Complex64 as c64;
 use num_complex::ComplexFloat;
 use numerics::channel::Channel;
-use numerics::thermalization::{output_distance_for_varied_gaps, qubit_thermalization};
+use numerics::thermalization::qubit_thermalization;
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
