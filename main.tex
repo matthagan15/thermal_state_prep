@@ -17,6 +17,7 @@
 %%%%%%%%    THEOREM DEFINITIONS AND RESTATABLE
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
 
 \usepackage{todonotes}
 
@@ -43,6 +44,7 @@
 \newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
 \newcommand{\openone}{\mathds{1}}
 \newcommand{\expect}[1]{\mathbb{E}\brackets{#1}}
+\newcommand{\variance}[1]{\textit{Var} \brackets{ #1 }}
 \newcommand{\prob}[1]{\text{Pr}\left[ #1 \right]}
 \newcommand{\bigo}[1]{O\left( #1 \right)}
 \newcommand{\bigotilde}[1]{\widetilde{O} \left( #1 \right)}
@@ -58,6 +60,7 @@
 \newcommand{\partfun}{\mathcal{Z}}
 \newcommand{\identity}{\mathds{1}}
 \newcommand{\gue}{\rm GUE}
+\DeclareMathOperator{\sinc}{sinc}
 \DeclareMathOperator{\hermMathOp}{Herm}
 \newcommand{\herm}[1]{\hermMathOp\parens{#1}}
 
@@ -86,9 +89,10 @@ We will primarily work in the eigenbasis for each Hamiltonian:
 \begin{equation}
     H_{S} = \sum_{i = 0}^{2^n - 1} \lambda_S(i) \ketbra{s_i}{s_i} ~,~ H_{E} = \sum_{j=0}^{2^m - 1} \lambda_E(j) \ketbra{e_j}{e_j} ~,~ H = \sum_{i=0}^{2^n - 1} \sum_{j=0}^{2^m - 1} \lambda(i,j) (\ket{s_i} \otimes \ket{e_j})(\bra{s_i} \otimes \bra{e_j}),
 \end{equation}
-for convenience we will denote the tensor product of eigenvectors simply by their indices $\ket{i,j} \coloneqq \ket{s_i} \otimes \ket{e_j}$. For convenience we define $\lambda(i,j) \coloneqq \lambda_S(i) + \lambda_E(j)$.
-
-We study the effects of simulating the time dynamics of the system-environment space with randomized interactions. Our goal is to produce a channel that can reduce the entropy of a system thermal state by utilizing easily prepared thermal states of the environment. We consider using the Haar measure over eigenvectors for the randomized interaction and i.i.d eigenvalues from a zero mean $\sigma^2$ variance distribution. 
+for convenience we will denote the tensor product of eigenvectors simply by their indices $\ket{i,j} \coloneqq \ket{s_i} \otimes \ket{e_j}$. For convenience we define $\lambda(i,j) \coloneqq \lambda_S(i) + \lambda_E(j)$. We also make use of the following notation for the energy differences of the system-environment Hamiltonian
+$$\Delta(i,j|k,l) \coloneqq \lambda(i,j) - \lambda(k,l),$$
+and will use $\Delta_S(i,j) \coloneqq \lambda_S(i) - \lambda_S(j)$ for just the system differences. To define the degeneracy of each eigenvalue we use the symbol
+$$\eta(i,j) \coloneqq \sum_{(k,l) : \Delta(i,j|k,l) = 0} 1.$$ We use the notation $\delta(i,j|k,l)$ to denote the product of Kronecker delta functions $\delta(i,j|k,l) = \delta_{i,k} \delta_{j,l}$.
 
 For input states we will typically assume thermal states of the form $\rho_S(\beta) = \frac{e^{-\beta H_S}}{\partfun_S}$, where $\partfun_S = \trace{e^{-\beta H_S}}$, where the inverse temperature $\beta$ of the partition function will typically be assumed but written explicitly if need be. We will assume environment states of the form $\rho_E(\beta) = \frac{e^{-\beta H_E}}{\partfun_E}$ and we will typically denote the tensor product of the system and environment states as $\rho(\beta_S, \beta_E) = \rho_S(\beta_S) \otimes \rho_E(\beta_E)$. The inputs $\beta_S, \beta_E$ will typically be surpressed in most cases as well.
 
@@ -97,11 +101,11 @@ Overall one application of our channel is represented as
 \begin{equation}
     \Phi(\rho) := \int \partrace{\hilb_E}{e^{+i(H + \alpha G)t} \rho e^{-i(H + \alpha G) t}} dG.
 \end{equation}
-For simplicity we will denote the time evolution channel for a specific random interaction $G$ as
+It will prove convenient to study the time evolution of a fixed interaction as a map from the total system-environment space to itself. We denote this channel for a specific random interaction $G$ as
 \begin{equation}
-    \Phi_G(\rho) := e^{+i (H+ \alpha G) t} \rho e^{-i (H + \alpha G) t}. \label{eq:phi_g_definition}
+    \Phi_G(\rho_S \otimes \rho_E) := e^{+i (H+ \alpha G) t} \rho_S \otimes \rho_E e^{-i (H + \alpha G) t}. \label{eq:phi_g_definition}
 \end{equation}
-Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the randomized interaction term, where $G = U_G D U_G^\dagger$. The measure we choose for the eigenbasis of $G$ is $U_G \sim Haar$ and the eigenvalues are i.i.d with mean 0 and variance $\sigma^2$. This gives the overall measure decomposition $dG = dD ~ dU_G$. 
+Clearly then $\Phi(\rho_S) = \partrace{env}{\int \Phi_G (\rho_S \otimes \rho_E) dG}$. We use $G$ to denote the randomized interaction term, where $G = U_G D U_G^\dagger$. The measure we choose for the eigenbasis of $G$ is $U_G \sim Haar$ and the eigenvalues are i.i.d with mean 0 and variance $1$.  This gives the overall interaction measure as the decomposition $\int dG = \int \int dD ~ dU_G$. The interaction strength of $G$ will be controlled through the coupling coefficient $\alpha$.
 
 \begin{restatable}{lemma}{haar_two_moment} \label{lem:haar_two_moment}
     Let $U$ be a unitary matrix over $\dim$ dimensions that is distributed according to the Haar measure. Then the following average is
@@ -109,12 +113,50 @@ Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the r
         \int \bra{i_1} U \ket{j_1} \bra{i_2} U \ket{j_2} \bra{k_1} U^\dagger \ket{l_1} ~ \bra{k_2} U^\dagger \ket{l_2} dU =& ~\frac{1}{\dim^2 - 1} \parens{\delta_{i_1, l_1} \delta_{j_1, k_1} \delta_{i_2, l_2} \delta_{j_2, k_2} + \delta_{i_1, l_2} \delta_{j_1, k_2} \delta_{i_2, l_1} \delta_{j_2, k_1}} \nonumber \\
         &- \frac{1}{\dim(\dim^2 - 1)} \parens{\delta_{i_1, l_2} \delta_{j_1, k_1} \delta_{i_2, l_1} \delta_{j_2, k_2} + \delta_{i_1, l_1} \delta_{j_1, k_2} \delta_{i_2, l_2} \delta_{j_2, k_1}}. \label{eq:haar_two_moment_integral}
     \end{align}
-    \end{restatable}
+\end{restatable}
+
+\begin{lemma}{lemma}\label{lem:sinc_poly_approx}
+    Let $f(x) = \frac{\sin^2(x)}{x^2}$. The polynomial approximation $1 - \frac{x^2}{3}$ has an error bound $\abs{f(x) - 1 + \frac{x^2}{3}} \leq \epsilon_{\sinc}$ for $|x| \leq \sqrt[3]{6 \epsilon_{\sinc}}$. Further, the constant approximation $f(x) = 1$ has error $|f(x) - 1| \leq \epsilon_{\sinc}$ if $|x| \leq \sqrt{2 \epsilon_{\sinc}}$. Further, if $x = \Delta t$ with $\Delta \geq \Delta_{\min{}}$, we note that $t \geq (\Delta_{\min} \sqrt{\epsilon_{\sinc} } )^{-1}$ suffices for $f(\Delta t) \leq \epsilon_{\sinc}$.
+\end{lemma}
+\begin{proof}
+    We use the form $\frac{\sin(x)}{x} = \int_0^1 \cos(sx) ds$. We compute the first 3 derivatives using straightforward algebra
+    \begin{align}
+        \frac{df}{dx} &= -2 \int_0^1 \sin(sx) s ds \int_0^1 \cos(sx) ds \\
+        \frac{d^2f}{dx^2} &= -2 \int_0^1 \cos(sx)s^2 ds \int_0^1 \cos(sx) ds + \int_0^1 \sin(sx) s ds \int_0^1 \sin(sx) s ds \\
+        \frac{d^3 f}{dx^3} &= 2 \int_0^1 \sin(sx)s^3 ds \int_0^1 \cos(sx) ds + 4 \int_0^1 \cos(sx) s^2 ds \int_0^1 \sin(sx) s ds .
+    \end{align}
+    By using the fact that $\cos(sx) \to 1$ and $\sin(sx) \to 0$ as $x \to 0$ we can evaluate the Taylor's series to $f(x)$ directly. We also make use of the inequality $\abs{\int_a^b f(x) dx} \leq \int_a^b \abs{f(x)} dx$ and that sine and cosine are bounded by 1.
+    \begin{align}
+        f(x) &= \frac{\sin^2(x)}{x^2} \bigg|_{x = 0} + x \frac{df}{dx}\bigg|_{x = 0} + \frac{x^2}{2!} \frac{d^2f}{dx^2}\bigg|_{x=0} + \frac{x^3}{3!} \frac{d^3f}{dx^3}\bigg|_{x = c} \\
+        f(x) &= 1 - \frac{x^2}{3} + \frac{x^3}{3!} \frac{d^3f}{dx^3}\bigg|_{x = c} \\
+        \abs{f(x) - 1 + \frac{x^2}{3}} & = \frac{|x|^3}{6} \abs{\frac{d^3f}{dx^3}\bigg|_{x=c}} \\
+        &\leq \frac{|x|^3}{6}.
+    \end{align}
+    Setting $|x|^3/6 \leq \epsilon$ yields the statement.
+    We will also have a need for bounding $f(x)$ when $x$ is of the form $x = \Delta t$. We would like to choose $t$ large enough so that $\Delta \geq \Delta_{\text{min}}$ implies that $f(\Delta t) \leq \epsilon_{\sinc}$. This can be given using the fact that $\sin(x) \leq 1$:
+    \begin{align}
+        f(\Delta t) &= \frac{\sin^2(\Delta t)}{\Delta^2 t^2} \\
+        &\leq \frac{1}{\Delta^2 t^2} \\
+        \frac{1}{\Delta_{\text{min}}^2 t^2} &\leq \frac{1}{\Delta^2 t^2} \leq \epsilon_{\sinc} \\
+        \frac{1}{\Delta_{\text{min}} \sqrt{\epsilon_{\sinc}}} &\leq t.
+    \end{align}
+    We now use this bound on $t$ to investigate when the polynomial approximation given above holds for inputs $x = (\Delta - \gamma)t$. We assume $\gamma \geq 0 $.
+    \begin{align}
+        |(\Delta - \gamma)t| &\leq \sqrt[3]{6\epsilon} \\
+        \abs{\Delta - \gamma} &\leq \frac{\sqrt[3]{6 \epsilon}}{t} \\
+        &\leq \Delta_{\text{min}} \sqrt{\epsilon_{\sinc}}\sqrt[3]{6 \epsilon}.
+    \end{align}
+    We also would like to note the differences if one uses the constant term for $f(x)$ as opposed to a quadratic.
+    $$f(x) = 1 + x \frac{df}{dx}\bigg|_{x=c}$$
+    Using the fact that the first derivative is 0 at $x= 0$ and the second is bounded by $\abs{\frac{d^2f}{dx^2}} \leq 1$, we get
+    $$f(x) = 1 + R(x)$$
+    and $\abs{R(x)} \leq |x|^2 / 2$ implies that $|x| \leq \sqrt{2\epsilon}$ suffices for $\abs{f(x) - 1} \leq \epsilon$. Using this bound with $f((\Delta - \gamma)t)$, we get $\abs{\Delta - \gamma} \leq \Delta_{\text{min}} \sqrt{2 \epsilon_{\sinc} \epsilon} $.
+\end{proof}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Fixed Points}
+\section{Taylor's Series for $\Phi$}
 
 \begin{lemma}[First Order $\alpha$ Correction to $\Phi$]
    Given a randomized environment interaction channel $\Phi$ with coupling coefficient $\alpha$, the first order correction is
@@ -152,23 +194,79 @@ Clearly then $\Phi = \int \partrace{env}{\Phi_G} dG$. We use $G$ to denote the r
     This last step relies on the use of random eigenvalues with mean 0, implying $\int D ~dD = 0$ which shows that $\frac{\partial}{\partial \alpha} \Phi(\rho_S) \big|_{\alpha = 0 } = 0$.
 \end{proof}
 
-\begin{lemma}[Second Order Correction]
-    Given a system Hamiltonian $H_{S}$, an environment Hamiltonian $H_{E}$, a simulation time $t$, and coupling coefficient $\alpha$, let $\Phi(\rho_S)$ denote the fixed interaction system-environment channel 
+\begin{lemma} \label{lem:two_heisenberg_interactions}
+    Let $G(t)$ denote the Heisenberg evolved random interaction $G(t) = e^{iHt} G e^{-iHt}$ for a total Hamiltonian $H$. After averaging over the interaction measure the product $G(x) G(y)$ can be computed as
     \begin{equation}
-        \Phi_G(\rho_S) = e^{+i (H + \alpha G)t} (\rho_S \otimes \rho_E) e^{-i (H + \alpha G)t},
+        \int G(x) G(y) dG = \frac{1}{\dim + 1} \parens{\sum_{(i,j),(k,l)} e^{i \Delta(i,j|k,l) (x-y)} \ketbra{i,j}{i,j} + \identity}.
     \end{equation}
-    where $H = H_S \otimes \identity + \identity \otimes H_E$. For simplicity we assume no degeneracies in the total Hamiltonian $H$, and therefore in $H_S$ and $G$ is our randomized interaction. Further we let $\rho \coloneqq \rho_S \otimes \rho_E = \sum_{i,j} B(i,j) \ketbra{i,j}{i,j}$. The long time average and random interaction average second order correction is given by the following
-    \begin{align}
-        \lim_{T \to \infty} \frac{1}{T} \int_0^T \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S)\bigg|_{\alpha = 0} dG ~dt &=  \frac{4 \sigma^2}{\dim^2 - 1} \sum_{i,j} \ketbra{i,j}{i,j} \sum_{(k,l) \neq (i,j)} \frac{B(i,j) - B(k,l)}{(\lambda(i,j) - \lambda(k,l))^2}.
-    \end{align}
 \end{lemma}
 \begin{proof}
-We start from the expression for the first derivative of the channel $\frac{\partial}{\partial \alpha} \Phi_G(\rho_S)$ given by Eq. \eqref{eq:first_order_alpha_derivative}. To take the second derivative there are six factors involving $\alpha$, so we will end up with six terms. We repeat Eq. \eqref{eq:first_order_alpha_derivative} below, add a derivative, and label each factor containing an $\alpha$ for easier computation
+The overall structure of this proof is to evaluate the product in the Hamiltonian eigenbasis and split the product into three factors: a phase contribution from the time evolution, a Haar integral from the eigenvalues of the random interaction, and the eigenvalue contribution of the random interaction. Since this involves the use of multiple indices, it will greatly simplify the proof to use a single index over the total Hilbert space $\hilb$ as opposed to two indices over $\hilb_S \otimes \hilb_E$. For example, the index $a$ should be thought of as a pair $(a_s, a_e)$, and functions $\lambda(a)$ should be thought of as $\lambda(a_s, a_e)$. Once the final form of the expression is reached we will substitute in pairs of indices for easier use of the lemma in other places.
+    \begin{align}
+        \int G(x) G(y) dG &= \int e^{+i H x} U_G D U_G^\dagger e^{-i H x} e^{+i H y} U_G D U_G^\dagger e^{-i H y} dU_G ~dD \\
+        &= \int \bigg[\sum_a e^{+i \lambda(a)x}\ketbra{a}{a}  U_G \sum_b D(b)\ketbra{b}{b} U_G^\dagger \nonumber \\
+        &\quad \sum_c e^{-i \lambda(c) (x - y)} \ketbra{c}{c} U_G \sum_d D(d)\ketbra{d}{d} U_G^\dagger \sum_e e^{-i \lambda(e) y} \ketbra{e}{e} \bigg] dU_G ~dD\\
+        &=\sum_{a,b,c,d,e} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \nonumber \\
+        &\quad \times \int \bra{a} U_G \ket{b} \bra{c} U_G \ket{d} \bra{b} U_G^{\dagger} \ket{c} \bra{d} U_G^\dagger \ket{e} dU_G \int D(b) D(d) dD \\
+        &=  \sum_{a, b, c, d, e} \delta_{bd} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \nonumber \\
+        &\quad \times \int \bra{a} U_G \ket{b} \bra{c} U_G \ket{d} \bra{b} U_G^{\dagger} \ket{c} \bra{d} U_G^\dagger \ket{e} dU_G. \\
+    \end{align}
+    Now the summation over $d$ fixes $d=b$ and we use Lemma \ref{lem:haar_two_moment} to compute the Haar integral, which simplifies greatly due to the repeated $b$ index. Plugging the result into the above yields the following
+    \begin{align}
+        &= \frac{1}{\dim^2 - 1} \sum_{a, b, c, e} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \parens{\delta_{ac} \delta_{ce} + \delta_{ae} - \frac{1}{\dim} \parens{\delta_{ac} \delta_{ce} + \delta_{ae}}}  \\
+        &= \frac{1}{\dim^2 - 1} \parens{1 - \frac{1}{\dim}} \sum_{a, b, c, e} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \delta_{ae} (1 + \delta_{ac}) \\
+        &= \frac{1}{\dim^2 - 1} \parens{1 - \frac{1}{\dim}} \sum_{a, b, c} \ketbra{a}{a} e^{i (\lambda(a) - \lambda(c))(x-y)} (1 + \delta_{ac}) \\
+        &= \frac{1 \parens{\dim - 1}}{\dim^2 - 1} \sum_{a,c} \ketbra{a}{a} e^{i (\lambda(a) - \lambda(c))(x - y)} (1 + \delta_{ac}) \\
+        &= \frac{1}{\dim + 1} \parens{\sum_{a,c} e^{i (\lambda(a) - \lambda(c))(x-y)} \ketbra{a}{a} + \identity}.
+    \end{align}
+    Reindexing by $a \mapsto i,j$, $c \mapsto k,l$, and plugging in the definition of $\Delta$ yields the statement of the lemma.
+\end{proof}
+
+
+\begin{lemma} \label{lem:sandwiched_interaction}
+    Given two Heisenberg evolved random interactions, $G(x)$ and $G(y)$, we compute their action on an outer-product $\ketbra{i,j}{k,l}$ as
+    \begin{equation}
+        \int G(x) \ketbra{i,j}{k,l} G(y) ~dG = \frac{1}{\dim + 1} \parens{\ketbra{i,j}{k,l} + \delta(i,j|k,l) \sum_{m,n} e^{i \Delta(m,n | i,j) (x-y)} \ketbra{m,n}{m,n}}
+    \end{equation}
+\end{lemma}
+\begin{proof}
+This proof is structured the same as Lemma \ref{lem:two_heisenberg_interactions} and similarly we will use a single index of the total Hilbert space $\hilb$ and switch to two indices to match the rest of the exposition.
+    \begin{align}
+        \int G(x) \ketbra{a}{b} G(y) dG &=  \int e^{i H x} U_G D U_G^{\dagger} e^{-i H x} \ketbra{a}{b} e^{i H y} U_G D U_G^\dagger e^{-i H y} ~dG \\
+        &= \sum_{c, d, e, f} e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \nonumber \\
+        &\quad \times \int \ketbra{c}{c} U_G D(d) \ketbra{d}{d} U_G^\dagger \ketbra{a}{b} U_G D(e) \ketbra{e}{e} U_G^\dagger \ketbra{f}{f} dG \\
+        &= \sum_{c, d, e, f}  e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \ketbra{c}{f} \nonumber \\
+        &\quad \times \int D(d) D(e) dD \int \bra{c} U_G \ket{d} \bra{b} U_G \ket{e} \bra{d} U_G^\dagger \ket{a} \bra{e} U_G^\dagger \ket{f} dU_G \\
+        &=  \sum_{c,d,f} e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \ketbra{c}{f} \nonumber \\ 
+        &\quad \times \int \bra{c} U_G \ket{d} \bra{b} U_G \ket{d} \bra{a} \overline{U_G} \ket{d} \bra{f} \overline{U_G} \ket{d} dU_G \\
+        &= \frac{1}{\dim^2 - 1} \sum_{c,d,f} e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \ketbra{c}{f} (\delta_{ca} \delta_{bf} + \delta_{cf}\delta_{ab})\parens{1 - \frac{1}{\dim}} \\
+        &= \frac{1}{\dim + 1} \sum_{c,f} e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \ketbra{c}{f} (\delta_{ca} \delta_{bf} + \delta_{cf}\delta_{ab}) \\
+        &= \frac{1}{\dim + 1} \parens{\ketbra{a}{b} + \delta_{ab} \sum_{c} e^{i(\lambda(c) - \lambda(a))(x-y)} \ketbra{c}{c} }.
+    \end{align}
+    Now re-indexing by $a \mapsto (i,j)$, $b \mapsto (k,l)$ and $c \mapsto (m,n)$ results in the expression given in the statement of the lemma.
+\end{proof}
+
+
+\begin{lemma}[Second Order Correction] \label{lem:the_double_duhamel}
+    Given a system Hamiltonian $H_{S}$, an environment Hamiltonian $H_{E}$, a simulation time $t$, and coupling coefficient $\alpha$, let $\Phi_G : \hilb_S \otimes \hilb_E \to \hilb_S \otimes \hilb_E$ denote the fixed interaction channel 
+    \begin{equation}
+        \Phi_G(\rho) = e^{+i (H + \alpha G)t} \rho e^{-i (H + \alpha G)t},
+    \end{equation}
+    where $H = H_S \otimes \identity + \identity \otimes H_E$. We compute the output of the averaged channel at $\alpha = 0$ for the basis $\ketbra{a}{b}$ of linear operators as:
+ \begin{align}
+     &\int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{i,j}{k,l})\bigg|_{\alpha = 0} dG \\
+     &= -\frac{2  e^{i \Delta(i,j|k,l) t}}{\dim + 1} \bigg(\sum_{(a,b): \Delta(i,j|a,b) \neq 0} \frac{1 - i \Delta(i,j|a,b)t - e^{-i \Delta(i,j|a,b) t}}{\Delta(i,j|a,b)^2} \nonumber \\
+     &~+ \sum_{(a,b): \Delta(k,l|a,b) \neq 0} \frac{1 + i \Delta(k,l|a,b) t - e^{i \Delta(k,l|a,b) t}}{\Delta(k,l|a,b)^2} + \frac{t^2}{2}(\eta(i,j) + \eta(k,l)) \bigg) \ketbra{i,j}{k,l} \nonumber \\
+    &~ +\delta_{i,k} \delta_{j,l} \frac{2 e^{i \Delta(i,j|k,l)t}}{\dim+1} \parens{ \sum_{(a,b): \Delta(i,j|a,b) \neq 0 } \frac{2(1- \cos (\Delta(i,j|a,b)t))}{\Delta(i,j|a,b)^2} \ketbra{a,b}{a,b} + t^2 \sum_{(a,b) : \Delta(i,j|a,b) = 0} \ketbra{a,b}{a,b}}
+ \end{align}
+\end{lemma}
+\begin{proof}
+To start we would like to note that we will use a single index notation to refer to the joint system-environment eigenbasis during this proof to help shorten the already lengthy expressions. We will convert back to a double index notation to match the statement of the theorem. We start from the expression for the first derivative of the channel $\frac{\partial}{\partial \alpha} \Phi_G(\rho_S)$ given by Eq. \eqref{eq:first_order_alpha_derivative}. To take the second derivative there are six factors involving $\alpha$, so we will end up with six terms. We repeat Eq. \eqref{eq:first_order_alpha_derivative} below, add a derivative, and label each factor containing an $\alpha$ for easier computation
 \begin{align}
     \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S) =& \frac{\partial}{\partial \alpha} \parens{\int_{0}^{1} \underset{\substack{\downarrow \\ (A)}}{e^{i s (H+\alpha G)t}} (i t G) \underset{\substack{\downarrow \\ (B)}}{e^{i (1-s) (H+\alpha G)t}} ds ~ \rho \underset{\substack{\downarrow \\ (C)}}{e^{-i(H+\alpha G)t}} } \nonumber \\
     &~ ~+\frac{\partial}{\partial \alpha} \parens{ \underset{\substack{\downarrow \\ (D)} }{e^{i(H+\alpha G)t}} \rho \int_{0}^1 \underset{\substack{\downarrow \\ (E)} }{e^{-i s (H+\alpha G) t} } (- i t G) \underset{\substack{\downarrow \\ (F)}}{e^{-i (1-s) (H+\alpha G)t}} ds }.
 \end{align}
-We will work through the first term in detail and will simply state the remaining terms. We work in order from left to right and top to bottom. The first term can be computed as
+Our goal is to get each of these terms in a form in which we can use either Lemma \ref{lem:two_heisenberg_interactions} or \ref{lem:sandwiched_interaction}. 
 \begin{align}
     (A) &=i t\int_0^1 \parens{\frac{\partial}{\partial \alpha} e^{i s_1 (H+ \alpha G)t}} G e^{i(1-s_1)(H+\alpha G)t} ds_1 \rho e^{-i (H+\alpha G)t} \bigg|_{\alpha=0} \\
     &= (it)^2 \int_0^1 \parens{\int_0^1 e^{i s_1 s_2 (H+\alpha G)t} s_1 G e^{i s_1 (1-s_2) (H+\alpha G)t} ds_2} G e^{i(1-s_1) (H+\alpha G)t} ds_1 \rho e^{-i(H+\alpha G) t} \bigg|_{\alpha=0} \\
@@ -212,569 +310,224 @@ We will work through the first term in detail and will simply state the remainin
     &= -t^2 \rho(t) \int_0^1 \int_0^1 G((1-s_1)t) G((1-s_1)(1 - s_2) t) (1-s_1)ds_1 ds_2
 \end{align}
 
-We now combine terms $(A) - (F)$ with minor adjustments 
+Now our goal is to compute the effects of averaging over the interaction $G$ on the above terms, starting with $(A)$. As this involves a lot of index manipulations, similarly to the proofs of Lemmas \ref{lem:two_heisenberg_interactions} and \ref{lem:sandwiched_interaction} we will use a single index for the total system-environment Hilbert space and switch back to a double index to state the results. We will make heavy use of Lemma \ref{lem:two_heisenberg_interactions}.
 \begin{align}
-    \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S) \bigg|_{\alpha = 0} &= -t^2 \int_0^1 \int_0^1 G(s_1 s_2 t) G(s_1 t) s_1 ds_1 ds_2 \rho(t) \nonumber \\
-    &~ ~ -t^2 \int_0^1 \int_0^1 G(s_1 t) G((s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 ~ \rho(t) \nonumber \\
-    &~ ~ + 2 t^2 \int_0^1 G(st) ds ~ \rho(t) \int_0^1 G((1-s)t) ds \nonumber \\
-    & ~ ~ -t^2 \rho(t) \int_0^1 \int_0^1 G((1- s_1 s_2) t) G((1-s_1)t) s_1 ds_1 ds_2 \nonumber \\
-    & ~ ~ -t^2 \rho(t) \int_0^1 \int_0^1 G(s_1 t) G(s_1 s_2 t) s_1 ds_1 ds_2 ~ .
-\end{align}
-Our last step is to decompose each factor into phase, eigenvalue, or Haar contributions. We start with the following breakdown of the Heisenberg evolution of $G$
-\begin{align}
-    G(x) &= e^{i H x} G e^{-i H x} \\
-    &= \parens{\sum_{i,j} e^{i \lambda(i,j) x} \ketbra{i,j}{i, j}} G \parens{\sum_{k,l} e^{-i \lambda(k,l) x} \ketbra{k, l}{k, l}} \\
-    &= \parens{\sum_{i,j} e^{i \lambda(i,j) x} \ketbra{i,j}{i, j}} U_G D U_G^\dagger \parens{\sum_{k,l} e^{-i \lambda(k,l) x} \ketbra{k, l}{k, l}} \\
-    &= \parens{\sum_{i,j} e^{i \lambda(i,j) x} \ketbra{i,j}{i, j}} U_G \parens{ \sum_{m, n} D(m,n) \ketbra{m,n}{m,n}} U_G^\dagger \parens{\sum_{k,l} e^{-i \lambda(k,l) x} \ketbra{k, l}{k, l}} \\
-    &= \sum_{i,j,k,l,m,n} e^{i (\lambda(i,j) - \lambda(k,l))x} D(m,n) \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} ~\ketbra{i,j}{k,l}.
-\end{align}
-The product of two time-evolved random interactions is then 
-\begin{align}
-    G(x) G(y) &= \sum_{i,j,k,l,m,n} e^{i (\lambda(i,j) - \lambda(k,l))x} D(m,n) \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \ketbra{i,j}{k,l} \nonumber \\
-    &~ \times \sum_{a,b,c,d,e,f} e^{i(\lambda(a,b) - \lambda(c,d))y} D(e,f) \bra{a,b} U_G \ket{e,f} \bra{e,f} U_G^\dagger \ket{c,d} \ketbra{a,b}{c,d} \\ 
-    &= \sum_{i,j,k,l,m,n} \sum_{c,d,e,f} \bigg[ e^{i(\lambda(i,j) - \lambda(k,l))x} e^{i(\lambda(k,l) - \lambda(c,d))y} D(m,n) D(e,f) \nonumber \\
-    & \quad \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \bra{k,l} U_G \ket{e,f} \bra{e,f} U_G^\dagger \ket{c,d} \bigg] \ketbra{i,j}{c,d}.
-\end{align}
-Although this expression is verbose, we note that $x$ and $y$ only appear in the phase factors. This will allow us to pull out the eigenvalue contributions $D(m,n), D(e,f)$ of each term along with the Haar contributions. As these expressions are fairly verbose we will introduce the following notation:
-\begin{align}
-    C_\lambda(i,j,k,l,c,d; x, y) &\coloneqq e^{i(\lambda(i,j) - \lambda(k,l))x} e^{i(\lambda(k,l) - \lambda(c,d))y} \\
-    C_D(m,n,e,f) &\coloneqq D(m,n) D(e,f) \\
-    C_U(i,j,k,l,m,n,c,d,e,f) &\coloneqq \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \bra{k,l} U_G \ket{e,f} \bra{e,f} U_G^\dagger \ket{c,d}.
-\end{align}
-Unfortunately these are not much shorter, so we will simply drop the indices and use the exact same indices for each term. Using implicit indices we get
-\begin{align}
-    G(x) G(y) &= \sum_{i,j,k,l,m,n} \sum_{c,d,e,f} C_\lambda(x,y) C_D C_U \ketbra{i,j}{c,d}.
+    \int (A) dG &= -t^2 \int_0^1 \int_0^1 \int G(s_1 s_2 t) G(s_1 t) dG s_1 ds_1 ds_2 \rho(t) \\
+    &= \frac{-t^2 }{\dim + 1} \int_0^1 \int_0^1 \parens{\sum_{i,j} e^{i (\lambda(i) - \lambda(j)) (s_1 s_2 t - s_1 t)} \ketbra{i}{i} + \identity} s_1 ds_1 ds_2 \rho(t) \\
+    &= \frac{- t^2 }{\dim + 1} \parens{\sum_{i} \sum_{j : \lambda(i) \neq \lambda(j)} \int_0^1 \int_0^1 e^{i(\lambda(i) - \lambda(j))t (s_1 s_2 - s_1)} s_1 ds_1 ds_2 \ketbra{i}{i} + \sum_{i} \sum_{j : \lambda(i) = \lambda(j)}\frac{1}{2} \ketbra{i}{i} + \frac{1}{2} \identity} \rho(t) \\
+    &= \frac{- t^2 }{\dim + 1} \parens{\sum_i \sum_{j : \lambda(i) \neq \lambda(j)} \frac{1 - i (\lambda(i) - \lambda(j))t - e^{-i (\lambda(i) - \lambda(j))t}}{t^2 (\lambda(i) - \lambda(j))^2} \ketbra{i}{i} + \frac{1}{2} \sum_{i} (\eta(i) + 1) \ketbra{i}{i} } \rho(t) \\
+    &= \frac{- 1}{\dim + 1}\parens{\sum_{i} \sum_{j: \Delta_{ij} \neq 0} \frac{1 - i \Delta_{ij}t - e^{-i \Delta_{ij} t}}{\Delta_{ij}^2} \ketbra{i}{i} + \frac{t^2}{2} \sum_{i} (\eta(i) + 1)\ketbra{i}{i} } \rho(t)
 \end{align}
 
-We are now in a position to compute $\int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S) \bigg|_{\alpha = 0} dG$. In order to do so we use our assumption that $\rho_S$ is a thermal state, implying that the state of the combined system-environment is $\rho = \frac{e^{-\beta_S H_s}}{\partfun_S} \otimes \frac{e^{-\beta_E H_E}}{\partfun_E}$. We use $\rho = \sum_{r,s} B(r,s) \ketbra{r,s}{r,s}$ to denote the diagonal elements. We note that this commutes with the overall time evolution, so the Heisenberg evolution does nothing: $\rho(t) = \rho$ for all $t$. 
+We can similarly compute the averaged $(B)$ term:
 \begin{align}
-    \int (A) dG &= -t^2 \int \int_0^1 \int_0^1 G(s_1 s_2 t) G(s_1 t) s_1 ds_1 ds_2~ \rho \\
-    &= -t^2 \sum_{i,j,k,l,m,n} \sum_{c,d,e,f} \bigg[ \ketbra{i,j}{c,d}\int C_D C_U dD dU \nonumber \\
-    &\quad \int_0^1 \int_0^1 C_{\lambda}(s_1 s_2 t, s_1 t) s_1 ds_1 ds_2 \bigg] \sum_{r, s} B(r,s) \ketbra{r,s}{r,s} .
+    \int (B) dG &= -t^2 \int_0^1 \int_0^1 \int G(s_1 t) G((s_1 + s_2 - s_1 s_2) t) dG (1-s_1) ds_1 ds_2 ~ \rho(t) \\
+    &= \frac{- t^2 }{\dim + 1} \int_0^1 \int_0^1 \parens{\sum_{i,j} e^{i (\lambda(i) - \lambda(j))(s_1 s_2 - s_2) t} \ketbra{i}{i} + \identity} (1 -s_1) ds_1 ds_2 \rho \\
+    &= \frac{- t^2 }{\dim + 1} \parens{\sum_{i} \sum_{j : \lambda(i) \neq \lambda(j)} \int_0^1 \int_0^1 e^{i(\lambda(i) - \lambda(j))t (s_1 s_2 - s_2)} (1 - s_1) ds_1 ds_2 \ketbra{i}{i} + \sum_{i} \sum_{j : \lambda(i) = \lambda(j)}\frac{1}{2} \ketbra{i}{i} + \frac{1}{2} \identity} \rho(t) \\
+    &= \frac{- t^2 }{\dim + 1} \parens{\sum_i \sum_{j : \lambda(i) \neq \lambda(j)} \frac{1 - i (\lambda(i) - \lambda(j))t - e^{-i (\lambda(i) - \lambda(j))t}}{t^2 (\lambda(i) - \lambda(j))^2} \ketbra{i}{i} + \frac{1}{2} \sum_{i} (\eta(i) + 1) \ketbra{i}{i} } \rho(t) \\
+    &= \frac{-1}{\dim + 1}\parens{\sum_{i} \sum_{j: \Delta_{ij} \neq 0} \frac{1 - i \Delta_{ij}t - e^{-i \Delta_{ij} t}}{\Delta_{ij}^2} \ketbra{i}{i} + \frac{t^2}{2} \sum_{i} (\eta(i) + 1)\ketbra{i}{i} } \rho(t),
 \end{align}
-The first step we take to simplify is to compute $\int C_D dD$, which is straightforward.
+which we note is identical to $\int (A) dG$. As terms $(C)$ and $(D)$ involve a different method of computation we skip them for now and compute $(E)$ and $(F)$. 
 \begin{align}
-    \int C_D dD &= \int D(m,n) D(e,f) dD \\
-    &= Cov(D(m,n), D(e,f) ) \\
-    &= \sigma^2 \delta(m,e) \delta(n,f),
+    \int (E) dG &= -t^2 \rho(t) \int_0^1 \int_0^1 \int G((1- s_1 s_2) t) G((1-s_1)t) dG s_1 ds_1 ds_2 \\
+    &= \frac{- t^2}{\dim + 1} \rho(t) \int_0^1 \int_0^1 \parens{\sum_{i,j} e^{i(\lambda(i) - \lambda(j)) t (s_1 - s_1 s_2)} \ketbra{i}{i} + \identity } s_1 ds_1 ds_2 \\
+    &= \frac{- t^2}{\dim + 1} \rho(t) \parens{\sum_i \sum_{j : \lambda(i) \neq \lambda(j)} \frac{1 + i (\lambda(i) - \lambda(j))t - e^{i(\lambda(i) - \lambda(j))t}}{t^2 (\lambda(i) - \lambda(j))^2}\ketbra{i}{i} + \frac{1}{2} \sum_{i} (\eta(i) + 1 )\ketbra{i}{i}} \\
+    &= \frac{- 1}{\dim + 1} \rho(t) \parens{\sum_i \sum_{j: (\Delta_{ij} \neq 0)} \frac{1 + i \Delta_{ij}t - e^{i\Delta_{ij}t}}{\Delta_{ij}^2} \ketbra{i}{i} + \frac{t^2}{2}\sum_i (\eta(i) + 1) \ketbra{i}{i}}.
 \end{align}
-where we used the assumption of i.i.d random eigenvalues of G. We can further use Lemma \ref{lem:haar_two_moment} to compute the Haar contribution
+Computing $(F)$ yields
 \begin{align}
-    \sum_{e,f}\int C_U \delta(m,e) \delta(n,f) dU &= \sum_{e,f} \delta_{m,e} \delta_{n,f} \int \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \bra{k,l} U_G \ket{e,f} \bra{e,f} U_G^\dagger \ket{c,d} dU \\ 
-    &= \int \bra{i,j} U_G \ket{m,n} \bra{k,l} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \bra{m,n} U_G^\dagger \ket{c,d} dU \\ 
-    &= \frac{1}{\dim^2 - 1} \parens{\delta(i,j| k,l) \delta(k,l | c,d)} - \frac{1}{\dim(\dim^2 - 1)} \parens{\delta(i,j|c,d) + \delta(i,j| k,l) \delta(k,l|c,d)} \\
-    &= \frac{\delta(i,j|k,l) \delta(k,l | c,d)}{\dim^2 - 1} \parens{1 - \frac{1}{\dim}} - \frac{\delta(i,j|c,d)}{\dim(\dim^2 - 1)} \\
-    &= \frac{\delta(i,j|c,d)}{\dim^2 - 1} \parens{\delta(i,j|k,l)\parens{1 - \frac{1}{\dim}} - \frac{1}{\dim}}
+    \int (F) dG &= -t^2 \rho(t) \int_0^1 \int_0^1 \int G((1-s_1)t) G((1-s_1)(1 - s_2) t) dG (1-s_1)ds_1 ds_2 \\
+    &= \frac{- t^2 \sigma ^2}{\dim + 1} \rho(t) \int_0^1 \int_0^1 \parens{\sum_{i,j} e^{i(\lambda(i) - \lambda(j))t (s_2 - s_1 s_2)}\ketbra{i}{i} + \identity} (1-s_1) ds_1 ds_2 \\
+    &= \frac{- t^2 }{\dim + 1} \rho(t) \parens{\sum_{i} \sum_{j : \lambda(i) \neq \lambda(j)} \frac{1 + i (\lambda(i) - \lambda(j))t - e^{i (\lambda(i) - \lambda(j))t}}{t^2 (\lambda(i) - \lambda(j))^2} \ketbra{i}{i} +\frac{1}{2} \sum_{i} (\eta(i) + 1) \ketbra{i}{i}} \\
+    &= \frac{- 1}{\dim + 1} \rho(t) \parens{\sum_i \sum_{j: (\Delta_{ij} \neq 0)} \frac{1 + i \Delta_{ij}t - e^{i\Delta_{ij}t}}{\Delta_{ij}^2} \ketbra{i}{i} + \frac{t^2}{2}\sum_i (\eta(i) + 1) \ketbra{i}{i}}
 \end{align}
-Putting these all together gives a final result:
-\begin{align}
-    \int G(x) G(y) dG &= \sum_{i,j,k,l,m,n} C_{\lambda}(x,y) \sum_{c,d,e,f} \int C_D dD \int C_U dU_G \ketbra{i,j}{c,d} \\
-    &= \sum_{i,j,k,l,m,n} C_{\lambda}(x,y) \sum_{c,d} \ketbra{i,j}{c,d} \sigma^2 \frac{\delta(i,j| c,d)}{\dim^2 - 1}\parens{\delta(i,j|k,l)(1 - 1/\dim) -1/\dim} \\
-    &= \sigma^2 \sum_{i,j,k,l} \ketbra{i,j}{i,j} C_{\lambda}(x,y) \frac{\delta(i,j|k,l)(\dim -1) - 1}{\dim^2 - 1}
-\end{align}
+ which is identical to $\int (E) dG$.
 
-Plugging these into our computation for $(A)$ yields
-\begin{align}
-    \int (A) dG &= -\sigma^2 t^2 \sum_{i,j,k,l,m,n} \sum_{c,d, e, f} \ketbra{i,j}{c,d} B(c,d) \int C_D dD ~ \int C_U dU_G \int_0^1 \int_0^1 C_{\lambda}(s_1 s_2 t, s_1 t) s_1 ds_1 ds_2 \\
-    &= -\sigma^2 t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} \ketbra{i,j}{c,d} B(c,d)\int_0^1 \int_0^1 C_{\lambda}(s_1 s_2 t, s_1 t) s_1 ds_1 ds_2 \sum_{e,f}\delta(m,n|e,f) \int C_U dU_G \\
-    &= -\sigma^2 t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} B(c,d) \ketbra{i,j}{c,d} \int_0^1 \int_0^1 C_{\lambda}(s_1 s_2 t, s_1 t) s_1 ds_1 ds_2 \frac{\delta(i,j| c,d)}{\dim^2 - 1} \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim} \\
-    &= -\sigma^2 t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} B(c,d) \ketbra{i,j}{c,d} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l)) s_1 s_2 t} e^{i(\lambda(k,l) - \lambda(c,d))s_1t} s_1 ds_1 ds_2 \frac{\delta(i,j| c,d)}{\dim^2 - 1} \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim} \\
-    &= -\sigma^2 t^2 \sum_{i,j,k,l,m,n} \frac{B(i,j)}{\dim^2 - 1} \ketbra{i,j}{i,j} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))(s_1 s_2 - s_1)t} s_1 ds_1 ds_2 \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim} \\
-    &= -\sigma^2 t^2 \sum_{i,j,k,l} \frac{B(i,j) \dim}{\dim^2 - 1} \ketbra{i,j}{i,j} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))(s_1 s_2 - s_1)t} s_1 ds_1 ds_2 \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim}.
-\end{align}
+ The last two terms $(C) = (D)$ are computed as follows:
+ \begin{align}
+     \int (C) dG &= t^2 \int_0^1 \int_0^1 \int G(s_1 t) \rho(t) G((1-s_2)t) ~dG ~ ds_1 ds_2 \\
+     &= t^2 \sum_{i,j} \rho_{ij} e^{i(\lambda(i) - \lambda(j))t} \int_0^1 \int_0^1 \int G(s_1 t) \ketbra{i}{j} G((1-s_2)t) ~ dG ~ ds_1 ds_2 \\
+     &= \frac{ t^2}{\dim + 1} \sum_{i,j} \rho_{ij} e^{i(\lambda(i) - \lambda(j))t} \parens{ \ketbra{i}{j} + \delta_{ij} \sum_{a} \int_0^1 \int_0^1 e^{i(\lambda(a) - \lambda(i))(s_1 + s_2 - 1)t} ds_1 ds_2 \ketbra{a}{a}} \\
+     &= \frac{ t^2}{\dim + 1} \sum_{i,j} \rho_{ij} e^{i \Delta_{ij} t} \parens{\ketbra{i}{j} + \delta_{ij} \sum_{a : \Delta_{ai} \neq 0} \frac{2( 1- \cos (\Delta_{ai} t))}{\Delta_{ai}^2 t^2} \ketbra{a}{a} + \delta_{ij} \sum_{a : \Delta_{ai} = 0} \ketbra{a}{a}}
+ \end{align}
 
-We now proceed by pulling out the $i,j = k,l$ term from the $k,l$ summation and performing the phase integration. This yields
-\begin{align}
-    &\sum_{k,l} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))(s_1 s_2 - s_1)t} s_1 ds_1 ds_2 \parens{\delta(i,j|k,l)(\dim-1) - 1} \\
-    &= \frac{\dim - 2}{2} - \sum_{(k,l) \neq (i,j)} \frac{1 - i t (\lambda(i,j) - \lambda(k,l)) - e^{-i(\lambda(i,j) - \lambda(k,l))t}}{t^2(\lambda(i,j) - \lambda(k,l))^2}
-\end{align}
-Combining all of the above gives the final computation of the $(A)$ term
-\begin{align}
-    \int (A) dG &= \frac{\sigma^2 t^2}{\dim^2 -1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ -\frac{\dim - 2}{2} + \sum_{(k,l) \neq (i,j)} \frac{1 - i t (\lambda(i,j) - \lambda(k,l)) - e^{-i(\lambda(i,j) - \lambda(k,l))t}}{t^2(\lambda(i,j) - \lambda(k,l))^2} \bigg]
-\end{align}
-
-We now can compute the $(B)$ term in a similar fashion
-\begin{align}
-    \int (B) dG &= -t^2 \int \int_0^1 \int_0^1 G(s_1 t) G((s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 dG ~ \rho(t) \\
-    &= -t^2 \sum_{i,j,k,l,m,n} \sum_{c,d,e,f} B(c,d) \ketbra{i,j}{c,d} \int C_D dD \int C_U dU_G \int_0^1 \int_0^1 C_{\lambda}(s_1 t, (s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 \\
-    &= -\sigma^2 t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} B(c,d) \ketbra{i,j}{c,d} \sum_{e,f} \parens{\delta(m,n | e,f) \int C_U dU_G }\int_0^1 \int_0^1 C_{\lambda}(s_1 t, (s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 \\
-    &= -\sigma^2 t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} B(c,d) \ketbra{i,j}{c,d} \frac{\delta(i,j| c,d)}{\dim^2 - 1} \parens{\delta(i,j|k,l)(1-1/\dim) - 1/\dim} \int_0^1 \int_0^1 C_{\lambda}(s_1 t, (s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 \\
-    &= -\sigma^2 t^2 \sum_{i,j,k,l,m,n} B(i,j) \ketbra{i,j}{i,j} \frac{\delta(i,j | k,l)(1-1/\dim) - 1/\dim}{\dim^2 - 1} \int_0^1 \int_0^1 C_{\lambda}(s_1 t, (s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 \\
-    &= -\sigma^2 t^2 \sum_{i,j} \sum_{k,l} B(i,j) \ketbra{i,j}{i,j} \frac{\delta(i,j | k,l)(\dim-1) - 1}{\dim^2 - 1} \int_0^1 \int_0^1 C_{\lambda}(s_1 t, (s_1 + s_2 - s_1 s_2)t) (1-s_1) ds_1 ds_2 .
-\end{align}
-Now we compute the phase contribution in a similar manner as $(A)$:
-\begin{align}
-    &\sum_{k,l} (\delta(i,j|k,l)(\dim - 1) - 1) \int_0^1 \int_0^1 e^{-i (\lambda(i,j) - \lambda(k,l))s_2 (1-s_1)t} (1 - s_1) ds_1 ds_2 \\
-    &= \frac{\dim - 2}{2} - \sum_{(k,l) \neq (i,j)} \frac{1 - i t (\lambda(i,j) - \lambda(k,l)) - e^{-i (\lambda(i,j) - \lambda(k,l))t}}{t^2 (\lambda(i,j) - \lambda(k,l))^2},
-\end{align}
-where we note that all signs are the same as those in $(A)$. Plugging this back in to $(B)$ yields
-\begin{align}
-    \int (B) dG &= \frac{\sigma^2 t^2}{\dim^2-1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ - \frac{\dim - 2}{2} + \sum_{(k,l) \neq (i,j)} \frac{1  -i t (\lambda(i,j) - \lambda(k,l)) - e^{-it(\lambda(i,j) - \lambda(k,l))}}{t^2 (\lambda(i,j) - \lambda(k,l))^2} \bigg].
-\end{align}
-We note that this term is exactly equal to the contribution from $(A)$.
-Now we can compute the ``center" term where $\rho(t)$ is sandwiched between the two random interaction matrices
-\begin{align}
-    (C) &= t^2 \int_0^1 G(st) ds ~ \rho(t) ~ \int_0^1 G((1-s)t) ds \\
-    &= t^2 \sum_{i,j,k,l,m,n} \ketbra{i,j}{k,l} \int_0^1 e^{i (\lambda(i,j) - \lambda(k,l)s t} ds D(m,n) \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \parens{\sum_{o,p} B(o,p) \ketbra{o,p}{o,p}} \nonumber \\
-    & ~\times \sum_{a,b,c,d,e,f} \ketbra{a,b}{c,d} \int_0^1 e^{i (\lambda(a,b) - \lambda(c,d)(1-s)t} ds D(e,f) \bra{a,b} U_G \ket{e,f} \bra{e,f} U_G^\dagger \ket{c,d}\\
-    &= t^2 \sum_{i,j,k,l,m,n} \sum_{a,b,c,d,e,f} \sum_{o,p} B(o,p) \bigg[ \ketbra{i,j}{c,d} \delta(k,l|o,p) \delta(o,p | a,b) \nonumber \\
-    &\quad D(m,n) D(e,f) \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l)s t} ds \int_0^1 e^{i(\lambda(a,b) - \lambda(c,d))(1-s)t} ds \nonumber \\
-    &\quad \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \bra{a,b} U_G \ket{e,f} \bra{e,f} U_G^\dagger \ket{c,d} \bigg] \\
-    &= t^2 \sum_{i,j,k,l,m,n} \sum_{c,d,e,f} \bigg[ B(k,l) \ketbra{i,j}{c,d} D(m,n) D(e,f) \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l)s t} ds \int_0^1 e^{i(\lambda(k,l) - \lambda(c,d))(1-s)t} ds \nonumber \\
-    &\quad \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \bra{k,l} U_G \ket{e,f} \bra{e,f} U_G^\dagger \ket{c,d} \bigg].
-\end{align}
-
-Next we perform the random interaction eigenvalue integral $\int (C) dG = \int \parens{\int (C) dD} dU_G$. This is the same as prior computations and yields $\int D(m,n) D(e,f) dD = \delta(m,n | e,f) \sigma^2$. Plugging this into the last step and doing the $e,f$ summation yields
-\begin{align}
-    \int (C) dD &= \sigma^2 t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} \bigg[ B(k,l) \ketbra{i,j}{c,d} \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l)s t} ds \int_0^1 e^{i(\lambda(k,l) - \lambda(c,d))(1-s)t} ds \nonumber \\
-    &\quad \bra{i,j} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{k,l} \bra{k,l} U_G \ket{m,n} \bra{m,n} U_G^\dagger \ket{c,d} \bigg].
-\end{align}
-Now performing the Haar integration, which was done in prior terms $(A)$ and $(B)$ yields
-\begin{align}
-    \int (C) dG &= \sigma^2 t^2 \sum_{i,j,k,l,m,n} \sum_{c,d} \bigg[B(k,l) \ketbra{i,j}{c,d} \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l)s t} ds \int_0^1 e^{i(\lambda(k,l) - \lambda(c,d))(1-s)t} ds \nonumber \\
-    &\quad \frac{\delta(i,j|c,d)}{\dim^2 - 1} \parens{\delta(i,j|k,l)\parens{1 - \frac{1}{\dim}} - \frac{1}{\dim}} \bigg] \\
-    &= \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j,k,l} \bigg[ B(k,l) \ketbra{i,j}{i,j} \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l)s t} ds \int_0^1 e^{i(\lambda(k,l) - \lambda(i,j))(1-s)t} ds \nonumber \\
-    &\quad \parens{\delta(i,j | k,l)(\dim - 1) - 1} \bigg]
-\end{align}
-
-We now compute the phase contribution to simplify the $k,l$ summands
-\begin{align}
-    &\sum_{k,l} B(k,l) \parens{\delta(i,j | k,l)(\dim - 1) - 1} \int_0^1 e^{i (\lambda(i,j) - \lambda(k,l))st} ds \int_0^1 e^{-i (\lambda(i,j) - \lambda(k,l))(1-s)t} ds \\
-    &= B(i,j) (\dim - 2) - 2 \sum_{(k,l) \neq (i,j)} B(k,l) \frac{1 - \cos((\lambda(i,j) - \lambda(k,l))t)}{t^2 (\lambda(i,j) - \lambda(k,l))^2}.
-\end{align}
-Plugging back in yields
-\begin{align}
-    \int (C) dG &= \frac{2 \sigma^2 t^2}{\dim^2 - 1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ \frac{\dim -2 }{2} - \sum_{(k,l) \neq (i,j)} \frac{B(k,l)}{B(i,j)} \frac{1 - \cos((\lambda(i,j) - \lambda(k,l))t)}{t^2 (\lambda(i,j) - \lambda(k,l))^2} \bigg]
-\end{align}
-Since $(D) = (C)$ we can move on to the remaining two terms $(E)$ and $(F)$.
-\begin{align}
-    \int (E) dG &= -t^2 \int  \rho(t) \int_0^1 \int_0^1 G((1- s_1 s_2) t) G((1-s_1)t) s_1 ds_1 ds_2 dG \\
-    &= -\sigma^2 t^2 \sum_{o,p} B(o,p) \ketbra{o,p}{o,p} \sum_{i,j,k,l} \ketbra{i,j}{i,j} \int_0^1 \int_0^1 C_{\lambda}((1-s_1 s_2)t, (1-s_1)t) s_1 ds_1 ds_2 \frac{\delta(i,j|k,l)(\dim -1) - 1}{\dim^2 - 1} \\
-    &= -\sigma^2 t^2 \sum_{i,j,k,l} B(i,j) \ketbra{i,j}{i,j} \int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))(s_1 (1- s_2) )t} s_1 ds_1 ds_2 \frac{\delta(i,j|k,l)(\dim -1) - 1}{\dim^2 - 1}
-\end{align} 
-We now compute the phase contribution
-\begin{align}
-    &\sum_{k,l} (\delta(i,j | k,l) (\dim - 1) - 1) \int_0^1 \int_0^1 e^{i (\lambda(i,j) - \lambda(k,l))(s_1 (1 - s_2))t} s_1 ds_1 ds_2 \\
-    &= \frac{\dim - 2}{2} - \sum_{(k,l) \neq (i,j)} \frac{1 + i t (\lambda(i,j) - \lambda(k,l)) - e^{i (\lambda(i,j) - \lambda(k,l))t}}{t^2 (\lambda(i,j) - \lambda(k,l))^2}
-\end{align}
-Plugging back in yields
-\begin{align}
-    \int (E) dG &= \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ - \frac{\dim - 2}{2} + \sum_{(k,l) \neq (i,j)} \frac{1 + i t (\lambda(i,j) - \lambda(k,l)) - e^{i (\lambda(i,j) - \lambda(k,l))t}}{t^2 (\lambda(i,j) - \lambda(k,l))^2} \bigg].
-\end{align}
-We note that this expression is the complex conjugate of the expression derived for $(A)$ and $(B)$. 
-
-The last term is computed similarly:
-\begin{align}
-    \int(F) dG &= -t^2 \rho(t) \int \int_0^1 \int_0^1 G((1-s_1)t) G((1 - s_1 )(1-s_2)t) (1-s_1) ds_1 ds_2 dG \\
-    &= - \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j,k,l} B(i,j) \ketbra{i,j}{i,j} \int_0^1 \int_0^1 \bigg[ \nonumber \\
-    &\quad \quad e^{i(\lambda(i,j) - \lambda(k,l))s_1 t} e^{-i(\lambda(i,j) - \lambda(k,l))(s_1 s_2 )t} s_1 ds_1 ds_2 (\delta(i,j|k,l)(\dim - 1) - 1) \bigg] \\
-    &= - \frac{\sigma^2 t^2}{\dim^2 -1 } \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[\frac{\dim - 2}{2} - \sum_{(k,l) \neq (i,j)}\int_0^1 \int_0^1 e^{i(\lambda(i,j) - \lambda(k,l))s_1 s_2 t} s_1 ds_1 ds_2 \bigg] \\
-    &= \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \bigg[ - \frac{\dim - 2}{2} + \sum_{(k,l) \neq (i,j)} \frac{1 + i (\lambda(i,j) - \lambda(k,l))t - e^{i(\lambda(i,j) - \lambda(k,l))t} }{t^2 (\lambda(i,j) - \lambda(k,l))^2} \bigg],
-\end{align}
-which we note is equal to term $(E)$. 
-
-Combining terms $(A)$ through $(F)$ yields
-\begin{align}
-    \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S) \bigg|_{\alpha = 0} dG &= \frac{\sigma^2 t^2}{\dim^2 - 1} \sum_{i,j} B(i,j) \ketbra{i,j}{i,j} \sum_{(k,l) \neq (i,j)} \frac{4 + 4 \cos((\lambda(i,j) - \lambda(k,l)t))}{t^2 (\lambda(i,j) - \lambda(k,l))^2} - 4 \frac{B(k,l)}{B(i,j)} \frac{1 - \cos((\lambda(i,j) - \lambda(k,l))t)}{t^2 (\lambda(i,j) - \lambda(k,l))^2} 
-\end{align}
-We note that this can be drastically simplified by time averaging:
-\begin{align}
-    \lim_{T \to \infty} \frac{1}{T} \int_0^T \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S) \bigg|_{\alpha = 0} dG ~ dt &= \frac{4 \sigma^2}{\dim^2 - 1} \sum_{i,j} \ketbra{i,j}{i,j} \sum_{(k,l) \neq (i,j)} \frac{B(i,j) - B(k,l)}{(\lambda(i,j) - \lambda(k,l))^2}
-\end{align}
+ We can now combine each of these terms to offer the full picture of the output of the channel to second order. We make two modifications to the results from each sum: first, we will switch to double index notation to make for easier use in other areas, and secondly we let $\rho = \ketbra{i,j}{k,l}$. We note that the first term in the following equation is provided by $(A) + (B)$, the second through $(E) + (F)$, and the last two through $(C) + (D)$. 
+ \begin{align}
+     &\int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{i,j}{k,l})\bigg|_{\alpha = 0} dG \\
+     &= -\frac{2  e^{i \Delta(i,j|k,l) t}}{\dim + 1} \bigg(\sum_{(a,b): \Delta(i,j|a,b) \neq 0} \frac{1 - i \Delta(i,j|a,b)t - e^{-i \Delta(i,j|a,b) t}}{\Delta(i,j|a,b)^2} \nonumber \\
+     &~+ \sum_{(a,b): \Delta(k,l|a,b) \neq 0} \frac{1 + i \Delta(k,l|a,b) t - e^{i \Delta(k,l|a,b) t}}{\Delta(k,l|a,b)^2} + \frac{t^2}{2}(\eta(i,j) + \eta(k,l)) \bigg) \ketbra{i,j}{k,l} \nonumber \\
+    &~ +\delta_{i,k} \delta_{j,l} \frac{2 e^{i \Delta(i,j|k,l)t}}{\dim+1} \parens{ \sum_{(a,b): \Delta(i,j|a,b) \neq 0 } \frac{2(1- \cos (\Delta(i,j|a,b)t))}{\Delta(i,j|a,b)^2} \ketbra{a,b}{a,b} + t^2 \sum_{(a,b) : \Delta(i,j|a,b) = 0} \ketbra{a,b}{a,b}} \label{eq:second_order_output}
+ \end{align}
 \end{proof}
 
-Our next goal is to show that this procedure can be used to increase the overlap of our system state with the ground state of the provided Hamiltonian.
-\begin{align}
-    \overlap{\ketbra{0}{0}}{ \rho_S(\beta_S)} &< \overlap{\ketbra{0}{0}}{ \Phi(\rho_S(\beta_S))} \\
-    &= \overlap{\ketbra{0}{0}}{ \rho_S(\beta_S)} + \overlap{\ketbra{0}{0}}{\partrace{\hilb_E}{\sum_{i,j} \ketbra{i,j}{i,j} T(i,j)}} \\
-    0 &< \overlap{\ketbra{0}{0}}{ \partrace{\hilb_E}{\sum_{i,j} \ketbra{i,j}{i,j} T(i,j)}} \\
-    0 &< \overlap{\ketbra{0}{0}}{ \sum_i \ketbra{i}{i} \sum_{j} T(i,j) } \\
-    0 &< \sum_j T(0,j)
-\end{align}
-Now we will analyze this situation for a simple bath in which $H_E = \begin{bmatrix} 0 & 0 \\ 0 & \Delta \end{bmatrix}$. 
+The goal for the remainder of this section is to simplify the expression for the channel output given by the above lemma. The first thing to note is that our channel does not appear to have large off-diagonal contributions to second order in $\alpha$. 
+\begin{corollary}
+    Given the inputs to Lemma \ref{lem:the_double_duhamel} and a diagonal input state $\rho = \sum_{i,j} \rho_{i,j} \ketbra{i,j}{i,j}$, then we have $$\bra{k,l}  \int \Phi_G(\rho) ~dG~ \ket{m,n} \in \bigo{\alpha^3},$$ for $(k,l) \neq (m,n)$.
+\end{corollary}
+\begin{proof}
+    We start from the Taylor's series of $\Phi_G$ with respect to $\alpha$:
+    \begin{equation}
+        \Phi_G(\rho) = \rho + \frac{\alpha^2}{2!} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) dG + \bigo{\alpha^3}. \label{eq:off_diagonal_taylors}
+    \end{equation}
+    First we note that $\bra{k,l}\rho \ket{m,n} =0$, as $\rho$ is diagonal and we assumed that $(k,l) \neq (m,n)$. Substituting Lemma \ref{lem:the_double_duhamel} for the second order derivative and taking matrix elements yields:
+    \begin{align}
+        &\bra{k,l} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho)\bigg|_{\alpha = 0} dG ~dG ~\ket{m,n}  \\
+     &= -\frac{2 }{\dim + 1} \bigg(\sum_{(a,b): \Delta(i,j|a,b) \neq 0} \frac{1 - i \Delta(i,j|a,b)t - e^{-i \Delta(i,j|a,b) t}}{\Delta(i,j|a,b)^2} \nonumber \\
+     &~+ \sum_{(a,b): \Delta(k,l|a,b) \neq 0} \frac{1 + i \Delta(k,l|a,b) t - e^{i \Delta(k,l|a,b) t}}{\Delta(k,l|a,b)^2} + \frac{t^2}{2}(\eta(i,j) + \eta(k,l)) \bigg) \bra{k,l} \rho \ket{m,n} \nonumber \\
+    &~ + \frac{2}{\dim+1}\sum_{i,j} \rho_{i,j} \bigg(\sum_{(a,b): \Delta(i,j|a,b) \neq 0 } \frac{2(1- \cos (\Delta(i,j|a,b)t))}{\Delta(i,j|a,b)^2} \braket{k,l}{a,b} \braket{a,b}{m,n} \nonumber \\
+    &~ + t^2 \sum_{(a,b) : \Delta(i,j|a,b) = 0} \braket{k,l}{a,b} \braket{a,b}{m,n} \bigg).
+    \end{align}
+    We see that the factors $\bra{k,l}\rho \ket{m,n}$ and $\braket{k,l}{i,j} \braket{i,j}{m,n}$ can never be non-zero due to the assumption $(k,l) \neq (m,n)$. The only remaining term in Eq. \ref{eq:off_diagonal_taylors} is of $\bigo{\alpha^3}$, yielding the stated result.
+\end{proof}
 
+Our last objective in this section is to yield a (relatively) concise statement for transition probabilities among diagonal matrix elements for density matrices. As we will be interested in computing trace distances we will be interested in 
+\begin{theorem} \label{thm:second_order_transition_coeffs}
+Given the inputs to Lemma \ref{lem:the_double_duhamel}, let 
+$$\tau(i,j | k,l) \coloneqq \frac{\alpha^2 }{2} \bra{k,l} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{i,j}{i,j})\bigg|_{\alpha = 0} dG \ket{k,l},$$ denote the second order transition coefficients in $\alpha$. These are expressed in terms of the eigenvalue differences $\Delta(i',j'|k',l')$ and other constants as 
+$$\tau(i,j | k,l) = \begin{cases}
+    - \frac{\alpha^2}{\dim + 1} \parens{\sum_{(a,b) : \Delta(i,j | a,b) \neq 0} \frac{2(1- \cos(\Delta(a,b | i,j)t)}{\Delta(a,b |i,j)^2} + t^2 (\eta(i,j) - 1)} & (i,j) = (k,l) \\
+    \frac{\alpha^2 t^2}{\dim + 1} & (i,j) \neq (k,l), \Delta(i,j | k,l) = 0 \\
+    \frac{2 \alpha^2}{\dim + 1} \frac{1 - \cos(\Delta(i,j | k,l) t)}{\Delta(i,j | k,l)^2} & \Delta(i,j| k,l) \neq 0.
+\end{cases}$$
+. A summation shows that $\tau(i,j|i,j) = -\sum_{(k,l) \neq (i,j)} \tau(i,j|k,l)$, which as a byproduct shows that the mapping $\Phi$ is trace preserving to order $\bigo{\alpha^2}$. Further we note that 
 \begin{align}
-    0 &< \frac{2 \sigma^2 \alpha^2}{\dim^2 - 1} \sum_{(k,l) \neq (0,j)} \frac{B(0, j) - B(k,l)}{(\lambda(0, j) - \lambda(k, l))^2} \\
-    0 &< \sum_{(k,l) \neq (0, 0)} \frac{B(0, 0) - B(k,l)}{(\lambda(0, 0) - \lambda(k, l))^2} + \sum_{(k,l) \neq (0, 1)} \frac{B(0, 1) - B(k,l)}{(\lambda(0, 1) - \lambda(k, l))^2} \\
-    &= \sum_{k \neq 0} \frac{B(0,0) - B(k, 0)}{ (\lambda(0,0) - \lambda(k, 0))^2} + \sum_{k} \frac{B(0,0) - B(k, 1)}{(\lambda(0,0) - \lambda(k, 1))^2} \nonumber \\
-    &\quad + \sum_{k} \frac{B(0,1) - B(k, 0)}{(\lambda(0,1) - \lambda(k, 0))^2}  + \sum_{k \neq 0 }\frac{B(0,1) - B(k, 1)}{(\lambda(0,1) - \lambda(k, 1))^2}
+    \frac{2(1 - \cos(\Delta t)}{\Delta^2} &= \frac{2(1 - \cos^2(\Delta t / 2) + \sin^2(\Delta t /2)}{\Delta^2} \\
+    &= \frac{t^2}{2} \frac{\sin^2 (\Delta t / 2)}{ (\Delta t/ 2)^2} \\
+    &= \frac{t^2}{2} \sinc^2(\Delta t /2).
 \end{align}
-We now use the fact that $B(i,j) = \frac{e^{-\beta_S \lambda_S(i)} e^{-\beta_E \lambda_E(j)}}{\partfun_{S}(\beta_S) \partfun_E (\beta_E)}$ to simplify the numerators. Because the partition functions are constant across $i,j$ we can simply multiply the whole expression by $\partfun_S(\beta_S) \partfun_E(\beta_E)$. To further simplify the analysis we will multiply through by $e^{\beta_S \lambda_S(0)}$. We also remind the reader that $\lambda(i,j) = \lambda_S(i) + \lambda_E(j)$, and $\lambda_E(0) = 0, \lambda_E(1) = \Delta$. 
-\begin{align}
-    0 &< \sum_{k \neq 0 } \frac{1 - e^{-\beta_S(\lambda_S(k) - \lambda_S(0))}}{(\lambda_S(0) - \lambda_S(k))^2} + \sum_{k} \frac{1 - e^{-\beta_S(\lambda_S(k) - \lambda_S(0))} e^{-\beta_E \Delta}}{(\lambda_S(0) - \lambda_S(k) - \Delta)^2} \nonumber \\
-    &\quad + \sum_k \frac{e^{-\beta_E \Delta} - e^{-\beta_S (\lambda_S(k) - \lambda_S(0))}}{(\lambda_S(0) + \Delta - \lambda_S(k))^2} + \sum_{k \neq 0 } \frac{e^{-\beta_E \Delta}(1 - e^{-\beta_S(\lambda_S(k) - \lambda_S(0))})}{(\lambda_S(0) - \lambda_S(k))^2} .
-\end{align}
-To enforce positivity, we could split these sums into positive and negative contributions and determine conditions leading to the positive terms outweighing the negative terms. Or we could be brain dead and require that each term be positive, which leads to the conditions (working from left-to-right, top-to-bottom):
-\begin{align}
-    &\lambda_S(k) > \lambda_S(0) \\
-    &\lambda_S(k) > \lambda_S(0) \text{ and } 0 < \Delta \\
-    & \beta_E \Delta < \beta_S (\lambda_S(k) - \lambda_S(0)) \\
-    & \lambda_S(k) > \lambda_S(0).
-\end{align}
-The only non-trivial requirement is that $\beta_E \Delta < \beta_S \delta_{S}$, where $\delta_{S}$ is the eigenvalue gap of the system $H_S$. 
+\end{theorem}
+\begin{proof}
+    We focus exclusively on diagonal inputs and outputs for density matrices, $\ketbra{a}{a}$ and $\ketbra{b}{b}$. We use Eq. \eqref{eq:second_order_output}, starting with transitions within the degenerate subspace of $a$. For the following we assume $a \neq b$ and $\Delta_{ab} = 0$: 
+    \begin{align}
+        &\prob{a \to b | a \neq b, \Delta_{ab} = 0} = \trace{\ketbra{b}{b} \int \Phi_G(\ketbra{a}{a}) dG} \\
+        &= \braket{b}{a} \braket{a}{b} + \frac{\alpha^2}{2} \bra{b} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a}{a})\bigg|_{\alpha = 0} dG \ket{b} \\
+        &= -\frac{\sigma^2 \alpha^2}{\dim + 1} \bigg(\sum_{j: \Delta_{aj} \neq 0} \frac{1 - i \Delta_{aj}t - e^{-i \Delta_{aj} t}}{\Delta_{aj}^2} + \sum_{j: \Delta_{aj} \neq 0} \frac{1 + i \Delta_{aj} t - e^{i \Delta_{aj} t}}{\Delta_{aj}^2} + t^2 \eta(a) \bigg) \braket{b}{a} \braket{a}{b} \nonumber \\
+        &~+ \frac{\alpha^2 \sigma^2}{\dim + 1} \parens{\sum_{i: \Delta_{ai} \neq 0} \frac{2(1- \cos(\Delta_{ai} t)}{\Delta_{ai}^2} \braket{b}{i}\braket{i}{b} + t^2 \sum_{i: \Delta_{ai} = 0 } \braket{b}{i} \braket{i}{b}} \label{eq:transition_intermediate} \\
+        &= \frac{\sigma^2 \alpha^2 t^2}{\dim + 1}. 
+    \end{align}
+    We now proceed to the case that $b \neq a$ and $\Delta_{ab} \neq 0$, where we can start from Eq. \eqref{eq:transition_intermediate} and we get
+    \begin{equation}
+        \prob{a \to b | a \neq b, \Delta_{ab} \neq 0} = \frac{2 \sigma^2 \alpha^2 }{\dim + 1} \frac{1 - \cos (\Delta_{ab} t)}{\Delta_{ab}^2}.
+    \end{equation}
 
-We now move on to linearizing the second order corrections with respect to $\beta_S$. Let $\beta_S = \beta_E - \delta$:
-\begin{align}
-    \frac{\partial}{\partial \delta} B(i,j) \bigg|_{\delta = 0} &= \frac{\partial}{\partial \delta} \frac{e^{-\beta_S \lambda_S(i)}}{\partfun_S(\beta_S)} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)} \bigg|_{\delta = 0} \\
-    &= \frac{e^{-\beta_E \lambda_E(j)} e^{-\beta_E \lambda_S(i)}}{\partfun_E(\beta_E)} \parens{\frac{\lambda_S(i) e^{\delta \lambda_S(i)}}{\partfun_S(\beta_E - \delta)} - \frac{e^{\delta \lambda_S(i)} \trace{H_S e^{(-\beta_E  + \delta) H_S}}}{\partfun_S(\beta_E - \delta)^2}} \bigg|_{\delta = 0} \\
-    &= \frac{e^{-\beta_E \lambda(i,j)}}{\partfun_S(\beta_E) \partfun_E(\beta_E)} \parens{\lambda_S(i) - \trace{H_S \rho_S(\beta_E)}} \\
-    &= B(i,j; \beta_E) \parens{\lambda_S(i) - \trace{H_S \rho_S(\beta_E)}}
-\end{align}
-which allows us to write 
-\begin{align}
-    B(i,j; \beta_E - \delta) &= B(i,j; \beta_E) + \delta B(i,j; \beta_E) \parens{\lambda_S(i) - \trace{H_S \rho_S (\beta_E)}} + \bigo{\delta^2}.
-\end{align}
-This gives the second order $\alpha$ correction as
-\begin{align}
-    T(i,j; \beta_S) &= \frac{2 \sigma^2 \alpha^2}{\dim^2 - 1} \sum_{(k,l) \neq (i,j)} \frac{B(i,j; \beta_E)(1 + \delta(\lambda_S(i) - \trace{H_S \rho_S(\beta_E)}) ) - B(k,l; \beta_E)(1 + \delta(\lambda_S(k) - \trace{H_S \rho_S(\beta_E)}) ) }{(\lambda(i,j) - \lambda(k,l))^2} + \bigo{\delta^2}
-\end{align}
-\newpage
-\hrule
-\hfill \\
-\hrule
+    The remaining case to consider is when $b = a$. This involves simplifying the summations in Eq. \eqref{eq:second_order_output} and including the zeroth order $\bigo{\alpha^0}$ term which simply contributes a 1. 
+    \begin{align}
+        \prob{a \to a} &= 1 -\frac{\sigma^2 \alpha^2 }{\dim + 1} \bigg(\sum_{j: \Delta_{aj} \neq 0} \frac{1 - i \Delta_{aj}t - e^{-i \Delta_{aj} t}}{\Delta_{aj}^2} + \sum_{j: \Delta_{aj} \neq 0} \frac{1 + i \Delta_{aj} t - e^{i \Delta_{aj} t}}{\Delta_{aj}^2} + t^2 \eta(a) \bigg) \nonumber \\
+    &~ +\frac{\sigma^2 \alpha^2 }{\dim+1} \parens{ \sum_{i: \Delta_{ai} \neq 0 } \frac{2(1- \cos (\Delta_{ai}t))}{\Delta_{ai}^2} \braket{a}{i} \braket{i}{a} + t^2  \sum_{i : \Delta_{ai} = 0} \braket{a}{i} \braket{i}{a}} \\
+    &= 1 - \frac{\sigma^2 \alpha^2}{\dim + 1} \parens{\sum_{i: \Delta_{ai} \neq 0} \frac{2(1 - \cos(\Delta_{ai}t))}{\Delta_{ai}^2} + t^2 (\eta(a) - 1)}.
+    \end{align}
+    This completes the transition probability computation. It is straightforward to see that $\sum_{b} \prob{a \to b} = 1$ and that $0 \leq \prob{a \to b} \leq 1$ given that $t^2 \leq \frac{\dim + 1}{\alpha^2 \sigma^2}$.
+\end{proof}
 
-By redefining integration variables we can state the sum of equations  \eqref{eq:second_deriv_alpha_first_term} through \eqref{eq:second_deriv_alpha_last_term} in a compact manner. Doing so leads to
-\begin{align}
-    \frac{\partial^2}{\partial \alpha^2} \Phi_G \bigg|_{\alpha = 0} &= 2 t^2 \int_0^1 G(st) ds \rho(t) \int_0^1 G(st) ds \label{eq:second_order_duhamel_one} \\
-    &~ - t^2 \int_0^1 \int_0^1 \brackets{\rho(t) , G(s_1 t) G(s_1 s_2 t)}_+ s_1 ds_1 ds_2 \label{eq:second_order_duhamel_two}  \\
-    &~ - t^2 \int_0^1 \int_0^1 \brackets{ \rho(t), G(s_1 t) G((s_1 + s_2 - s_1 s_2) t) }_+ (1-s_1) ds_1 ds_2, \label{eq:second_order_duhamel_three} 
-\end{align}
-where $[A,B]_+ := AB + BA$.
+\section{Single Qubit Environment}
+We now will analyze the effects of $\Phi$ on thermalizing a system state with only a single qubit environment. The single qubit case makes the effect of tracing out the environment tractable. For absolute simplicity, we first study the case of two qubits. After this situation is analyzed in detail we extend the results to arbitrary system Hamiltonians. For the remainder of this section we assume a a system Hamiltonian $H_S = \begin{bmatrix}
+    0 & 0 \\ 0 & \Delta_S
+\end{bmatrix}$ and an environment Hamiltonian $H_E = \begin{bmatrix}
+    0 & 0 \\ 0 & \gamma
+\end{bmatrix}$. Further we will use an environment prepared in the state $\rho_E(\beta) = \frac{e^{-\beta H_E}}{\partfun_E(\beta)}$. Another restriction we will make is that we assume that $t \geq \frac{2}{\Delta_{\min} \sqrt{\epsilon_{\sinc}}}$, where $\lambda(i,j) = \lambda(k,l)$ or $\lambda(i,j) - \lambda(k,l) \geq \Delta_{\min}$, per Lemma \ref{lem:sinc_poly_approx}. 
 
-Our next goal is to take this expression for a given interaction term $G$ and integrate over the distribution for randomized interactions .
-We do so by computing the matrix elements $\bra{i,j} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \big|_{\alpha = 0} dG \ket{k,l}$. This then puts us only a partial trace away from computing the second order term in the coupling coefficient expansion for the overall channel $\Phi$. Our main approach for computing these matrix elements is to factor a term, for example Eq. \eqref{eq:second_order_duhamel_one}, into three parts: a phase integral, a $G$ eigenvalue integral, and a Haar integral. To do so we make two assumptions: we assume that the input state is diagonal in the combined system-environment $H$ basis $\rho = \sum_{m,n} \rho_{m,n} \ketbra{m,n}{m,n}$, and second that the eigenvalues of the random interaction $G$ are i.i.d, which leads to a covariance matrix $Cov(\lambda_{i,j}, \lambda_{k,l}) = \sigma^2 \delta(i,j | k,l)$, where $\delta(i,j | k,l) := \delta_{i,k} \delta_{j,l}$ is a shorthand Kronecker delta function. Note due to the invariance of the Haar eigenvectors we can always write the eigenvalues $D$ as diagonal in the 
-\begin{align}
-    &2t^2 \int_0^1 G(s_1t) ds_1 \rho(t) \int_0^1 G(s_2 t) ds_2 \\
-    =&~ 2 t^2 \bra{i,j} \int_{0}^1 \int_0^1 e^{i H s_1 t} G e^{-iH s_1 t} e^{i H t} \rho e^{-i H t} e^{i H s_2 t} G e^{-iH s_2 t} ds_1 ds_2 \ket{k,l} \\
-    =& 2 t^2 \sum_{m,n} \rho_{m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l}) s_2 t} ds_1 ds_2 \bra{i,j}G \ketbra{m,n}{m,n} G \ket{k,l} \\
-    =& \sum_{i',j',k',l',m,n} 2t^2 \rho_{m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l}) s_2 t} ds_1 ds_2 \nonumber \\
-     &\quad \quad \quad \quad \times \lambda_{i',j'} \lambda_{k',l'} \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{k',l'} \bra{k',l'} U_G^\dagger \ket{k,l}.
-\end{align}
-We have now factored the individual contributions from the phase, Haar, and random eigenvalues to uncoupled factors (wording?). 
-
-We now compute the remaining two terms Eqs. \eqref{eq:second_order_duhamel_two} and \eqref{eq:second_order_duhamel_three} as follows, starting with Eq. \eqref{eq:second_order_duhamel_two}
-\begin{align}
-    &-t^2 \bra{i,j} \int_0^1 \int_0^1 [\rho(t), G(s_1 t) G(s_1 s_2 t)]_+ ~s_1 ds_1 ds_2 \ket{k,l} \\
-    =& -t^2 (\rho_{i,j} + \rho_{k,l}) \sum_{i',j',k',l',m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 ds_1 ds_2 \\
-    &\times \lambda_{i',j'} \lambda_{k',l'} \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{k',l'} \bra{k',l'} U_G^\dagger \ket{k,l},
-\end{align}
-followed by Eq. \eqref{eq:second_order_duhamel_three}
-\begin{align}
-    &-t^2 \bra{i,j} \int_0^1 \int_0^1 [\rho(t), G(s_1 t) G((s_1 + s_2 - s_1 s_2) t)]_+ ~ (1- s_1) ds_1 ds_2 \ket{k,l} \\
-    &= -t^2 (\rho_{i,j} + \rho_{k,l}) \sum_{i',j',k',l',m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1)ds_1 ds_2 \\
-    &\times \lambda_{i',j'} \lambda_{k',l'} \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{k',l'} \bra{k',l'} U_G^\dagger \ket{k,l},
-\end{align}
-where the eigenvalue and Haar contributions are the same as the previous two terms. This allows us to simplify the total equation as
-\begin{align}
-    \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{k,l} &= t^2 \sum_{i',j',k',l',m,n} \int_0^1 \int_0^1 \bigg(  2 \rho_{m,n} e^{i(E_{i,j} - E_{m,n})s_1t} e^{i(E_{m,n} - E_{k,l})s_2 t}  \\
-    &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 \\
-    &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1) \bigg) ds_1 ds_2 \\
-    &\times \lambda_{i',j'} \lambda_{k',l'} \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{k',l'} \bra{k',l'} U_G^\dagger \ket{k,l} \\
-    &\eqqcolon t^2 \sum_{i',j',k',l',m,n} C_{E} ~ C_{\lambda} ~ C_{H},
-\end{align}
-where $C_E$, $C_{\lambda}$, and $C_{H}$ are defined as
-\begin{align}
-    C_E \coloneqq& \int_0^1 \int_0^1 \bigg(  2 \rho_{m,n} e^{i(E_{i,j} - E_{m,n})s_1t} e^{i(E_{m,n} - E_{k,l})s_2 t}  \\
-    &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 \\
-    &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1) \bigg) ds_1 ds_2 \\
-    C_{\lambda} \coloneqq& \lambda_{i',j'} \lambda_{k',l'} \\
-    C_H \coloneqq& \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{k',l'} \bra{k',l'} U_G^\dagger \ket{k,l}. \\
-\end{align} 
-
-As our goal is to compute the correction to the total channel, that is $\Phi = \partrace{env}{\int \Phi_G ~dG}$, we will first compute the averaged quantities $C_H$ and $C_\lambda$. We first perform the eigenvalue integral as it will contribute Kronecker delta products which will simplify the Haar integral significantly. 
-\begin{align}
-    \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{k,l} dG &= t^2 \sum_{i',j',k',l',m,n} C_E \int C_{\lambda} dD \int C_{H} dU_G. \label{eq:second_order_alpha_factored}
-\end{align}
-We know that $\int C_{\lambda} dD = \sigma^2 \delta(i',j' | k',l')$ by construction. Due to the delta function we can simply set $(i',j') = (k',l')$ by performing the sum over $k',l'$. This turns the Haar integration into
-\begin{align}
-    \sum_{k', l'} \int \delta_{i', k'} \delta_{j', l'} C_{H} dU_G &= \int \bra{i,j} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{m,n} \bra{m,n} U_G \ket{i',j'} \bra{i',j'} U_G^\dagger \ket{k,l} dU_G \\
-    &= \int \bra{i,j} U_G \ket{i',j'}  \bra{m,n} U_G \ket{i',j'} \overline{\bra{m,n} U_G \ket{i',j'}} ~ \overline{ \bra{k,l} U_G \ket{i',j'} }~ dU_G \\
-    &= \frac{\delta(i,j | k,l)}{\dim^2 - 1} \parens{\delta(i,j | m,n) + \frac{\dim - 1 - \delta(i,j | m,n)}{\dim}} \\
-    &= \frac{\delta(i,j | k,l)}{\dim^2 - 1} \frac{\dim - 1}{\dim} \parens{1 + \delta(i,j | m,n)} \\
-    &= \frac{\delta(i, j | k,l)}{\dim (\dim + 1)} (1 + \delta(i,j | m,n)),
-\end{align}
-where we used Lemma \ref{lem:haar_two_moment} for the actual integration.
-
-Combining these results back into Eq. \eqref{eq:second_order_alpha_factored} yields
-\begin{align}
-    \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{k,l} dG &= t^2 \sigma^2 \sum_{i',j',m,n} C_E(\rho; m,n; i,j) \frac{\delta(i, j | k,l)}{\dim (\dim + 1)} (1 + \delta(i,j | m,n)) \\
-    &= t^2 \sigma^2 \sum_{m,n} C_E(\rho; m,n; i,j) \frac{\delta(i, j | k,l)}{\dim + 1
-    } (1 + \delta(i,j | m,n)).
-\end{align}
-Here we see that the $\delta(i,j | k,l)$ delta function implies that the second order correction only affects the diagonal terms of $\rho$ in the system-environment eigenbasis.
-
-Our next goal is to simplify the phase contribution $C_E$ . We use the fact that the Haar integration forces the index equalities $i = k, j = l$ to simplify the phase integrals. Substituting $E_{k,l} \mapsto E_{i,j}$ yields:
-\begin{align}
-    C_E &= 2 \rho_{m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})(s_1 - s_2)t} ds_1 ds_2 \nonumber \\
-    &~ ~ - 2 \rho_{i,j} \int_0^1 \int_0^1 e^{i (E_{i,j} - E_{m,n})s_1 (1- s_2)t}s_1 ds_1 ds_2 \nonumber \\
-    &~ ~ - 2 \rho_{i,j} \int_0^1 \int_0^1 e^{-i(E_{i,j} - E_{m,n})s_2(1-s_1)t}((1-s_1)ds_1 ds_2) \label{eq:phase_int_equal_energy} \\
-    &= \frac{4 \rho_{m,n}}{(E_{i,j} - E_{m,n})^2 t^2} (1 - \cos((E_{i,j} - E_{m,n})t)) \nonumber \\
-    &~ ~ - \frac{2 \rho_{i,j}}{(E_{i,j} - E_{m,n})^2 t^2} \parens{1 - e^{i (E_{i,j} - E_{m,n})t} + i (E_{i,j} - E_{m,n})t } \nonumber \\
-    & ~ ~ - \frac{2 \rho_{i,j}}{(E_{i,j} - E_{m,n})^2 t^2} \parens{1 - i (E_{i,j} - E_{m,n})t - e^{i(E_{i,j} - E_{m,n})t}} \\
-    &= \frac{2}{(E_{i,j} - E_{m,n})^2 t^2} \parens{(2 \rho_{m,n} - \rho_{i,j}) - 2(\rho_{m,n} - \rho_{i,j}) \cos ((E_{i,j} - E_{m,n})t)}
-\end{align}
-
-Note that this expression is indeterminate whenever $m = i, n = j$. To get around this we revisit Eq. \eqref{eq:phase_int_equal_energy} and isolate the condition $E_{m,n} = E_{i,j}$. In this scenario we have
-\begin{align}
-    C_E(m,n;i,j | E_{m,n} = E_{i,j}) =&~ 2 \rho_{m,n} \int_0^1 \int_0^1 1 ds_1 ds_2 \nonumber \\
-    &~ ~ - 2 \rho_{i,j} \int_0^1 \int_0^1 s_1 ds_1 ds_2 \nonumber \\
-    &~ ~ - 2 \rho_{i,j} \int_0^1 \int_0^1 (1-s_1) ds_1 ds_2 \\
-    =&~ 2 (\rho_{m,n} - \rho_{i,j}).
-\end{align}
-Now it is apparent that if $(m,n) = (i,j)$ this term clearly is zero. It is not obvious that in other situations, for example when the combined system-environment energy is equal but the indices are not, that these contributions are zero. Expanding the $\rho_{m,n}$ term, we see that if $\beta_{env} = \beta_{sys}$
-\begin{align}
-    \rho_{m,n} &= \frac{e^{-\beta_{sys} E_m}}{\partfun_{sys}} \frac{e^{-\beta_{env} E_{n}}}{\partfun_{env}} \\
-    \xRightarrow{\beta_{env} = \beta_{sys}} \rho_{m,n} &= \frac{e^{-\beta_{sys}E_{m,n}}}{\partfun_{sys} \partfun_{env}} \\
-    \xRightarrow{E_{m,n} = E_{i,j}} \rho_{m,n} &= \rho_{i,j}.
-\end{align}
-This tells us that when the system has thermalized ($\rho = \partfun_{sys}^{-1} e^{-\beta H_{sys}} \otimes \partfun_{env}^{-1} e^{-\beta H_{env}}$), equal energy contributions ($E_{m,n} = E_{i,j}$) are zero. However at non-equilibrium states where $\beta_{env} \neq \beta_{sys}$ we cannot neglect these non-zero contributions. 
-
-For this simply note that each of the phases in the exponents of the integrals are 0, leading to $C_E = 0$. This means we can restrict ourselves to $m \neq i, n \neq j$. 
-
-\begin{align}
-    \int \bra{i,j} \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) \bigg|_{\alpha = 0} \ket{i,j} dG &= \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} \neq E_{i,j}} \frac{(2 \rho_{m,n} - \rho_{i,j}) - 2(\rho_{m,n} - \rho_{i,j}) \cos ((E_{i,j} - E_{m,n})t)}{(E_{i,j} - E_{m,n})^2} \nonumber \\
-    &~ + \frac{2 \sigma^2}{\dim + 1} \sum_{(m,n) : E_{m,n} = E_{i,j}} 2 (\rho_{m,n} - \rho_{i,j}) \label{eq:second_order_final}
-\end{align}
-% \end{proof}
-
-The next goal is to find a suitable expression for the trace distance:
-
-
-% \subsection{Convergence to low temperature system state}
-% For simplicity later on we make the following definitions:
-% \begin{align}
-%     T(\rho) &:= \alpha^2 \int \partrace{Env}{ \frac{\partial^2}{\partial \alpha^2} \Phi_G (\rho) \bigg_{\alpha=0} } dG \\
-%     R(\rho) &:= \Phi(\rho) - \rho - T(\rho),
-% \end{align} 
-% aka the remainder term in the $\alpha$ expansion. It should be clear that $\norm{R} \in \bigo{\alpha^3}$ and $\norm{T} \in \bigo{\alpha^2}$.
-
-\subsection{Linearization of $\beta$}
-In order to show convergence to a thermal state we now will linearize the one norm of our channel with respect to the difference between the system's starting inverse temperature and the environment's inverse temperature, $\beta_{env} - \beta_{sys} := \gamma$. Our goal is to show $\norm{\Phi(\rho(\gamma)) - \rho(0)}_1 \leq \norm{\rho(\gamma) - \rho(0)}_1$, where $\rho(\gamma) = e^{- \beta_{sys} H_sys} \partfun_{sys}(\gamma)^{-1} = e^{-(\beta_{env} - \gamma) H_{sys}} \partfun_{sys}(\gamma)^{-1}$, where $\partfun_{sys}(\gamma) = \trace{e^{-(\beta_{env} - \gamma) H_{sys}}}$.
-
-We start by computing $\frac{\partial}{\partial \gamma}\rho(\gamma)$, which will be used in linearizations of the channel:
-\begin{align}
-    \frac{\partial}{\partial \gamma} \rho(\gamma) &= \frac{\partial}{\partial \gamma} \parens{e^{-\beta_{env} H_{sys} + \gamma H_{sys}} \partfun_{sys}(\gamma)^{-1}} \\
-    &= H_{sys} \frac{e^{-\beta_{env} H_{sy} + \gamma H_{sys}}}{\partfun_{sys}(\gamma)} - \frac{e^{-\beta_{env} H_{sys} + \gamma H_{sys}}}{\partfun_{sys}(\gamma)^2} \frac{\partial \partfun_{sys}(\gamma)}{\partial \gamma} \\
-    &= \frac{e^{-\beta_{env} H_{sy} + \gamma H_{sys}}}{\partfun_{sys}(\gamma)} \parens{H_{sys} - \frac{\trace{H_{sys} e^{-\beta_{env} H_{sys} + \gamma H_{sys}}} }{\partfun_{sys}(\gamma)}} \\
-    &= \rho(\gamma) \parens{H_{sys} - \trace{H_{sys} \rho(\gamma)}}.
-\end{align}
-This allows us to compute the linearization of the channel:
-\begin{align}
-    \Phi(\rho(\gamma)) = \Phi(\rho(0)) + \gamma \frac{\partial}{\partial \gamma} \Phi(\rho(\gamma))\bigg|_{\gamma = 0} + \bigo{\gamma^2}
-\end{align}
-
-Carrying the linearization to the second order term results in a lot of factors of the form $\frac{e^{-\beta_E E_{m,n}}}{\partfun(0)} (\bra{m} H_{sys} \ket{m} - \trace{\rho(0) H_{sys}})$. We need to know when these are negative, so here we go:
-\begin{align}
-    \frac{e^{-\beta_E E_{m,n}}}{\partfun(0)} \parens{\bra{m} H_{sys} \ket{m} - \trace{\rho(0) H_{sys}}} & \leq 0 \\
-    \implies \bra{m} H_{sys} \ket{m} \leq \trace{\rho(0) H_{sys}}
-\end{align}
-What I want to know is what is: (I don't think the partition function should be a function of x, think of this as just selecting the energy to evaluate the above. By selecting a different energy I'm not changing the partition function, but I'm changing this specific matrix element)
-\begin{align}
-    \frac{\partial}{\partial x} \frac{e^{-\beta_E (x + c)}}{\partfun}(x - E) &= (-\beta_E) \frac{e^{-\beta_E (x + c)}}{\partfun}(x - E) + \frac{e^{-\beta_E (x + c)}}{\partfun} \\
-    &= \frac{e^{-\beta_E (x + c)}}{\partfun} \parens{1 + \beta_E (E - x)}
-\end{align}
-
-
-
-\subsection{Harmonic Oscillator Fixed Point}
-Now consider the situation of a system and environment which are both harmonic oscillators of frequency $\omega$, $H_{sys} = \hbar \omega \sum_{i=0}^{N_{sys}} (0.5 + i) \ketbra{i}{i}$ and $H_{env} = \hbar \omega \sum_{i=0}^{N_{env}} (0.5 + i) \ketbra{i}{i}$, yeilding $H = \sum_{i,j} \hbar \omega (1 + i + j) \ketbra{i,j}{i,j}$. We set $\hbar = \omega = 1$ to avoid dimensionful quantities. 
-
-Our hunch is that the second order correction of $\Phi(\rho)$ vanishes whenever $\rho$ is a thermal state of the joint system-environment hamiltonian, i.e. $\rho = \sum_{i,j} \ketbra{i}{i} \otimes \ketbra{j}{j}\rho_{i,j} = \frac{e^{-\beta (1 + i + j)}}{\sum_{e^{-\beta(1+  i + j)}}} \ketbra{i}{i} \otimes \ketbra{j}{j}$. Before we compute this second-order correction, note that the assumption of a thermal state input eliminates the sum over equal energy contributions in Eq. \eqref{eq:second_order_final}. Further, in the interest of simplifying the expression as much as possible, we will only consider the time-averaged contributions $\frac{1}{T} \int_0^T \Phi(\rho, t) dt$, this pretty much just eliminates the cosine term in Eq. \eqref{eq:second_order_final}.
-
-First define $\rho(\gamma) := \frac{e^{-(\beta_E -\gamma) H_{sys}}}{\partfun_{sys}(\gamma)}$
-Our main goal is to show $\norm{\Phi(\rho(\gamma)) - \rho(0)} \leq \norm{\rho(\gamma) - \rho(0)}$, in other words that a higher temperature state ($\beta_{sys} = \beta_{env} - \gamma$) gets closer to a lower temperature state after application of $\Phi$. In order to do this we first use our power series of $\Phi$ in terms of the coupling constant $\alpha$ and use the Schatten-1 norm:
-\begin{align}
-    \norm{\Phi(\rho(\gamma)) - \rho(0)}_1 &= \norm{\rho(\gamma) + T(\rho(\gamma)) + R(\rho(\gamma)) - \rho(0)}_1 \\
-    &= \norm{ \sum_{i} \parens{ e^{-(\beta_{env} + \gamma) E_i} \partfun_{S}^{-1}(\gamma) + T_{i,i}(\rho(\gamma)) - e^{-\beta_{env} E_i} \partfun_{S}^{-1}(\gamma) }\ketbra{i}{i}} + \bigo{\alpha^{4}} \\
-    &= \sum_i \abs{ e^{-(\beta_{env} + \gamma) E_i} \partfun_{S}^{-1}(\gamma) + T_{i,i}(\rho(\gamma)) - e^{-\beta_{env} E_i} \partfun_{S}^{-1}(\gamma) } + \bigo{\alpha^4},
-\end{align}
-where we can avoid using the triangle inequality as our operator is already diagonalized. \todo{Does the $\bigo{\alpha^4}$ term not pick up dimensional factors from the schatten-1 norm?} Now we have to use a linearization of the operator $\rho(\gamma)$ as well as the second order corrections $T_{i,i}$.
-\begin{align}
-    \rho(\gamma) = \frac{e^{-\beta_{env} H_{sys}}}{\partfun_{sys}(\gamma=0)} + \gamma \frac{\partial}{\partial \gamma} \frac{e^{-\beta_{env} H_{sys} + \gamma H_{sys}}}{\partfun_{sys}(\gamma)} \bigg|_{\gamma=0} + \bigo{\gamma^2}.
-\end{align}
-The derivative is easy to compute (I think I wrote this down on the overleaf) 
+Given the two qubit setup as mentioned, we want to compute the trace distance 
 \begin{equation}
-    \frac{\partial}{\partial \gamma} \frac{e^{-\beta_{env} H_{sys} + \gamma H_{sys}}}{\partfun_{sys}(\gamma)} = e^{-\beta_{env}}
+    \norm{\rho_S(\beta) - \Phi(\rho_S(\beta))}_1.
 \end{equation}
-
-
-
-% Now we compute the second term, Eq. \eqref{eq:second_order_duhamel_two}. We avoid duplicating similar steps to the computation of the first computation and simply state the results (aka I need to write this up in an appendix.)
-% The second term, after writing everything in terms of sums over matrix elements, becomes
-% \begin{align}
-%     -t^2 \parens{\bra{i,j} \rho \ket{i,j} + \bra{k,l} \rho \ket{k,l}} \sum_{i',j',k',l',m,n} \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 ds_1 ds_2 \\
-%     \times \bra{i',j'} D \ket{i',j'} \bra{k',l'} D \ket{k',l'} \\
-%     \times \bra{i,j} U_G \ket{i',j'} \bra{m,n} U_G \ket{k',l'} \bra{m,n} \overline{U_G} \ket{i',j'} \bra{k,l} \overline{U_G} \ket{k',l'}
-% \end{align}
-% Plugging in similar results and integrating over the randomized interaction yields 
-% \begin{align}
-%     \sum_{i',j',k',l',m,n}\frac{\bra{i,j} \rho \ket{i,j} \sigma^2 }{E_{m,n} - E_{k,l}} \delta_{i',k'} \delta_{j',l'} \delta_{i,k} \delta_{j,l} 
-% \end{align}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Energy and Entropic concerns}
-One requirement that our construction should satisfy is that a system in a thermal state should be invariant under contact with an environment at the same temperature. Formally, we would like that $\Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}} = \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}$. Exact equality may be too strong to enforce, so we instead consider that the energy of the system remains unchanged after coupling with the environment. 
-
-\begin{equation}
-    \trace{H_{sys} \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}} = \trace{H_{sys} \Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}}}.
-\end{equation}
-Now we look at the RHS in detail
+We first start with the trace distance and reduce it to a computation of transition coefficients. 
 \begin{align}
-    \trace{H_{sys} \Phi \parens{\rho} } &= \trace{ H_{sys} \partrace{env}{\int e^{i \widetilde{H} t} \rho e^{-i \widetilde{H} t} dG}} \\
-    &= \int \trace{H_{sys} \otimes \openone_{env} e^{i \widetilde{H} t} \rho e^{-i \widetilde{H} t} } dG \\
-    &=  \trace{\int e^{- i (H + \alpha G) t} H_{sys} \otimes \openone_{env} e^{+ i (H + \alpha G) t} dG ~ \rho } 
+    \norm{\rho_S(\beta) - \Phi(\rho_S(\beta))}_1  &= \norm{\frac{\alpha^2}{2} \partrace{\hilb_E}{\int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S(\beta) \otimes \rho_E(\beta)) \bigg|_{\alpha = 0} ~dG}}_1 + \bigo{\alpha^3} \\
+    &\approx \norm{\sum_{i,j} e^{-\beta \lambda(i,j)} \partfun(\beta)^{-1}\partrace{\hilb_E}{ \frac{\alpha^2}{2} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{i,j}{i,j})\bigg|_{\alpha=0} dG} }_1 \\
+    &= \norm{\sum_{i,j} e^{-\beta \lambda(i,j)} \partfun(\beta)^{-1} \partrace{\hilb_E}{\sum_{k,l} \tau(i,j | k,l) \ketbra{k,l}{k,l}}}_1 \\
+    &= \norm{\sum_{i,j} e^{-\beta \lambda(i,j)} \partfun(\beta)^{-1} \sum_{k,l} \tau(i,j |k,l) \ketbra{k}{k}}_1 \\
+    &= \sum_k \abs{\sum_{i,j} e^{-\beta \lambda(i,j)} \partfun(\beta)^{-1} \sum_{l} \tau(i,j |k,l)} \\
+    &= \frac{1}{|\partfun(\beta)|} \sum_k \abs{\sum_{i,j} e^{-\beta \lambda(i,j)} \sum_{l} \tau(i,j |k,l)} \label{eq:fixed_point_as_transition_coeffs}
 \end{align}
+    We drop the $\bigo{\alpha^3}$ term, we could possibly upper bound it by some additional error contribution $\epsilon_{\alpha}$ or by stating that since it is less than the $\alpha^2$ contribution we could simply add a factor of 2 in front of the norm. These details should be cleaned up. Our goal is to now compute these sums for fixed $k$ in 0,1.
+    We make heavy use of Lemma \ref{thm:second_order_transition_coeffs}. 
+    We now compute the term for $k=0, i=1$
+    \begin{align}
+        \sum_{j, l} e^{-\beta \lambda(1,j)} \tau(1,j| 0, l) &=  e^{-\beta \Delta_S} \parens{\tau(1, 0| 0, 0) + \tau(1, 0 | 0, 1)} +  e^{-\beta (\Delta_S + \gamma)} \parens{\tau(1, 1 | 0, 0) + \tau(1, 1| 0, 1)} \label{eq:single_qubit_fixed_pt_1} 
+    \end{align}
+    Now we compute the term for $k=0, i= 0$, which involves using the self-transition substitution for $\tau(a,b|a,b)$.
+    \begin{align}
+        \sum_{j,l} e^{-\beta \lambda(0,j)} \tau(0,j|0,l) &= e^{-\beta \cdot 0} \parens{\tau(0,0| 0,0) + \tau(0,0 | 0,1)} + e^{-\beta \gamma} \parens{\tau(0,1 | 0,0) + \tau(0,1|0,1)} \\
+        &= -(\tau(0,0| 0,1) + \tau(0,0| 1,0) + \tau(0,0|1,1)) + \tau(0,0|0,1) \nonumber \\
+        &~ + e^{-\beta \gamma} \parens{\tau(0,1|0,0) - (\tau(0,1|0,0) + \tau(0,1| 1,0) + \tau(0,1|1,1))} \\
+        &= - \tau(0,0|1,0)  - \tau(0,0|1,1) - e^{-\beta \gamma} \tau(0,1|1,0) - e^{-\beta \gamma} \tau(0,1|1,1) \label{eq:single_qubit_fixed_pt_2}
+    \end{align}
+    Using the fact that $\tau(a,b|c,d) = \tau(c,d|a,b)$ we can add Eqs. \ref{eq:single_qubit_fixed_pt_1} and \ref{eq:single_qubit_fixed_pt_2} to get:
+    \begin{align}
+        \sum_{i,j} e^{-\beta \lambda(i,j)} \sum_l \tau(i,j|0,l) &= \tau(0,0|1,0)(e^{-\beta \Delta_S} -1) + \tau(0,1|1,0)(e^{-\beta \Delta_S} - e^{-\beta \gamma}) \nonumber \\
+        &\quad + \tau(0,0,| 1,1) (e^{-\beta (\Delta_S + \gamma)} - 1) + \tau(0,1|1,1) (e^{-\beta (\Delta_S + \gamma)} - e^{-\beta \gamma})
+    \end{align}
+    We can now use the fact that $\tau(a,b|c,d)$ is positive for $(a,b) \neq (c,d)$ and that $\beta > 0, \Delta_S > 0$ and $\gamma > 0$ to rewrite the above as
+    \begin{align}
+        \sum_{i,j} e^{-\beta \lambda(i,j)} \sum_l \tau(i,j|0,l) &= \tau(0,1|1,0)(e^{-\beta \Delta_S} - e^{-\beta \gamma}) - \tau(0,0|1,0)(1 - e^{-\beta \Delta_S})  \nonumber \\
+        &\quad - \tau(0,0,| 1,1) (1 - e^{-\beta (\Delta_S + \gamma)}) - \tau(0,1|1,1) e^{-\beta \gamma} (1 - e^{-\beta \Delta_S})
+    \end{align}
+    Now using the intution that non-degenerate transitions are going to be significantly suppressed, we use the triangle inequality. 
+    \begin{align}
+        &\bigg| \tau(0,1|1,0)(e^{-\beta \Delta_S} - e^{-\beta \gamma}) - \tau(0,0|1,0)(1 - e^{-\beta \Delta_S})  \nonumber \\
+        &\quad - \tau(0,0,| 1,1) (1 - e^{-\beta (\Delta_S + \gamma)}) - \tau(0,1|1,1) e^{-\beta \gamma} (1 - e^{-\beta \Delta_S})\bigg| \\
+        &\leq \abs{\tau(0,1|1,0) (e^{-\beta \Delta_S} - e^{-\beta \gamma})} + \abs{\tau(0,0|1,0)} + |\tau(0,0|1,1)| + |\tau(0,1|1,1)| \\
+        &\leq \abs{\tau(0,1|1,0) (e^{-\beta \Delta_S} - e^{-\beta \gamma})} + 3 \frac{\epsilon_{\sinc} \alpha^2 t^2}{2(\dim + 1)} \\
+        &= \frac{\alpha^2 t^2}{2(\dim + 1)} \parens{\sinc^2((\Delta_S - \gamma)t/2) |e^{-\beta \Delta_S} - e^{-\beta \gamma}| + 3 \epsilon_{\sinc}}\\
+        &= \frac{\alpha^2 t^2}{2 (\dim + 1)} \parens{\sinc^2((\Delta_S - \gamma)t/2) e^{-\beta \Delta_S} |1 - e^{\beta (\Delta_S - \gamma)}| + 3 \epsilon_{\sinc}} \\
+        &=: \frac{\alpha^2 t^2}{2(\dim + 1)} (e^{-\beta \Delta_S} g(\Delta_S - \gamma) + 3 \epsilon_{\sinc})
+    \end{align}
+
+    Now when computing the summation $|\sum_{i,j} e^{-\beta \lambda(i,j)} \sum_l \tau(i,j |1,l)|$, for $k=1$, the same result as $k=0$ is found. This allows us to say that the trace distance is upper bounded by
+    \begin{equation}
+        \norm{\rho_S(\beta) - \Phi(\rho_S(\beta))}_1 \leq \frac{\alpha^2 t^2}{(\dim + 1)\partfun} (e^{-\beta \Delta_S} g(\Delta_S - \gamma) + 3 \epsilon_{\sinc}).
+    \end{equation}
+    We note that the following upper bound is sufficient to show that the trace distance is bounded:
+    \begin{align}
+        g(\Delta_S - \gamma) &= \sinc^2((\Delta_S - \gamma)t/2) \abs{1 - e^{\beta(\Delta_S - \gamma)}} \\
+        &\leq \abs{e^{\beta(\Delta_S - \gamma)} - 1} \\
+        &\leq e^{\beta \Delta_S} - 1,
+    \end{align}
+    where we assumed $\gamma \geq 0$ in the last step. This yields the following upper bound on the trace distance
+    \begin{equation}
+        \norm{\rho_S(\beta) - \Phi(\rho_S(\beta))}_1 \leq \frac{\alpha^2 t^2}{\partfun (\dim+1)} (1 - e^{-\beta \Delta_S} + 3 \epsilon_{\sinc}).
+    \end{equation}
+    We can even drop the $e^{-\beta \Delta_S}$ term and have 
+    $$\alpha^2 \leq \epsilon_{\beta} \frac{ \partfun (\dim + 1)}{t^2 (1 - e^{-\beta \Delta_S} + 3 \epsilon_{\sinc})}$$
+    to imply $\norm{\rho_S(\beta) - \Phi(\rho_S(\beta))}_1 \leq \epsilon_{\beta}$.
+
+    This is not the complete picture, however. We also have to satisfy the inequality $\alpha^2 t^2 / (\dim + 1) \leq 1$ in order for $\tau$ to represent valid transition probabilities. 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Numerics}
+    Another weird thing is that as $\gamma \to \Delta_S$, aka we have a degenerate transition possible, it seems that the contribution of this transition to the trace distance vanishes? If you look at the temperature contributions we have $\tau(0,1|1,0)|e^{-\beta \Delta_S} - e^{-\beta \gamma}|$, which goes to zero as $\gamma \to \Delta_S$. This is seemingly contradictory, as we are getting probability mass shuffling between the energy levels. 
+    
+    Our goal is to produce an upper bound on $g(\Delta_S - \gamma)$. To do so there are two different approaches we explore. The first is to sample $\gamma$ from a probability distribution and look at the expected value of the trace distance. The easiest distribution to start with is a uniform distribution from $\Delta_S - \frac{1}{2} \epsilon \Delta_{\text{min}}$ to $\Delta_S + \frac{1}{2} \epsilon \Delta_{\text{min}}$. Within this range we can approximate $\sinc^2 ((\Delta_S - \gamma)t/2)$ as $1$ with only an error of at most $\epsilon$. 
+    \begin{align}
+        \int_{\Delta_S - \epsilon \Delta_{\text{min}}/2}^{\Delta_S + \epsilon \Delta_{\text{min}}/2} g(\Delta_S - \gamma) \prob{\gamma} d\gamma &= \int_{\epsilon \Delta_{\text{min}}/2}^{-\epsilon \Delta_{\text{min}}/2} g(u) \prob{u(\gamma)} (-du) \\
+        &=\frac{1}{\epsilon \Delta_{\text{min}}} \int_{-\epsilon \Delta_{\text{min}}/2}^{\epsilon \Delta_{\text{min}}/2} \sinc^2(u t /2) |1 - e^{\beta u}| du \\
+        &\leq  \parens{\frac{1}{\epsilon \Delta_{\text{min}}} \int_{-\epsilon \Delta_{\text{min}}/2}^{\epsilon \Delta_{\text{min}}/2} |1 - \epsilon| |1 - e^{\beta u}| du + 3 \epsilon_{\sinc}} \\
+        &= \parens{\frac{1}{ \Delta_{\text{min}}} \parens{\frac{1}{\epsilon } - 1}\frac{2(\cosh (\beta \epsilon \Delta_{\text{min}}/2) - 1)  }{\beta} + 3 \epsilon_{\sinc}}
+    \end{align}
+    We see that in the limit as $\epsilon \to 0$, $\cosh(\beta \epsilon \Delta_{\min} /2) - 1 \in \bigo{\epsilon^2}$, so the total contribution is of order $\bigo{\epsilon}$. Similar logic holds for the limit as $\Delta_{\min} \to 0$. As $\beta \to \infty$, the $\cosh$ term simply approaches an exponential $e^{\beta \epsilon \Delta_{\min} /2} / \beta$. When looking at this as a contribution to the trace distance, we see that $e^{-\beta \Delta_S} g(\Delta_S - \gamma) \to e^{-\beta (\Delta_S - \epsilon \Delta_{\min}/2)} / \beta$, and since $\Delta_{\min} \leq \Delta_S$ by definition we have a vanishing trace distance.
 
+    One thing to note is that if $\gamma$ is too large then we fall into the ``near-zero" approximation regime due to the large value of $t$. We had set $t$ such that for $\Delta \geq \Delta_{\min}$, then $\sinc^2(\Delta t/2) \leq \epsilon_{\sinc}$. This means that we require $\Delta_S - \gamma \leq \Delta_{\min}$ to fall within the window for any reasonable contribution from the $\sinc$. This gives us a window of $\pm \Delta_{\min}$ around $\Delta_S$ that we should have Now we let $\epsilon$ be a constant factor, say $\epsilon = 1/2$. This seems sufficient for now. Plugging in for the upper bound on the trace distance yields:
+    \begin{equation}
+        \norm{\rho_S(\beta) - \Phi(\rho_S(\beta))}_1 \leq \frac{\alpha^2 t^2}{\partfun (\dim + 1)} \parens{ \frac{2 e^{-\beta \Delta_S}}{\beta \Delta_{\min}} (\cosh(\beta \Delta_{\min} / 4) - 1) + 3 \epsilon_{\sinc} }
+    \end{equation}
 
+    What if instead of integrating really close to $\Delta_S$, we actually integrate the function over some much larger interval? Would this work? 
+    \begin{align}
+        \int_{\Delta_{\min}}^{\Delta_{\max}} g(\Delta_S - \gamma) \prob{\gamma} d\gamma &= \int_{\Delta_{\min}}^{\Delta_{\max}} \sinc^2((\Delta_S - \gamma)t/2)  \frac{\abs{1 - e^{\beta (\Delta_S - \gamma)}}}{\Delta_{\max} - \Delta_{\min}} d\gamma \\
+        &= \int_{\Delta_{\min}}^{\Delta_S} \sinc^2((\Delta_S - \gamma)t/2) \frac{e^{\beta (\Delta_S - \gamma)} - 1}{\Delta_{\max} - \Delta_{\min} } d\gamma + \int_{\Delta_S}^{\Delta_{\max}} \sinc^2((\Delta_S - \gamma)t/2) \frac{1 - e^{- \beta (\gamma - \Delta_S)}}{\Delta_{\max} - \Delta_{\min} } d\gamma
+    \end{align}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Approximating $e^{i (H + \alpha G) t}$ evolution}
+    The other approach one could take is imagining cycling $\gamma$ through a series of exponentially decaying strengths. In this case we would choose some upper bound on the eigenvalue gaps, say $\Delta_{\max}$, and let $\gamma(k) = \Delta_{\min} + (\Delta_{\max} - \Delta_{\min}) \frac{2^{k} - 2^{-k}}{2^{k} + 2^{-k}}$. At $k = 0$ we have $\gamma(0) = \Delta_{\min}$ and as $k \to \infty$ we have $\gamma(k) \to \Delta_{\max}$. A simpler approach might just be $\gamma(k) = \Delta_{\max} 2^{-k}$. The dumbest approach might be $\gamma(k) = \Delta_{\min} + (\Delta_{\max} - \Delta_{\min}) \frac{k}{n} \mod n$. I also think the dumbest approach might be the best bet. 
 
-
-\section{Leftovers}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Simplifying $\Phi(\rho)$ with Trotter}
-The idea here is to try and see what very short time evolution does to our channel. At the very least this might give some intuition as to what is happening?
 \begin{align}
-    \Phi_G(\rho_{PS}) &= \partrace{2}{e^{+i\widetilde{H}t} \rho_{PS} e^{-i \widetilde{H} t}} \\
-    &= \partrace{2}{\parens{e^{i G \alpha t} e^{i H t} + \bigo{t^2}} \rho_{PS} \parens{e^{-iHt} e^{-i G \alpha t} + \bigo{t^2}}} \\
-    &= \partrace{2}{e^{i G \alpha t} \rho_{PS} e^{-i G \alpha t}} + \bigo{t^2} 
+    \norm{A}_1 &= \trace{\sqrt{A A^\dagger}} \\
+    &= \trace{\sqrt{\sum_i |a_i|^2 \ketbra{i}{i}}} \\
+    &= \trace{\sum_i |a_i| \ketbra{i}{i}} \\
+    &= \sum_i |a_i|.
 \end{align}
-
-\section{Energy and Entropic concerns}
-One requirement that our construction should satisfy is that a system in a thermal state should be invariant under contact with an environment at the same temperature. Formally, we would like that $\Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}} = \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}$. Exact equality may be too strong to enforce, so we instead consider that the energy of the system remains unchanged after coupling with the environment. 
-
-\begin{equation}
-    \trace{H_{sys} \frac{e^{-\beta H_{sys}}}{\partfun_{sys}}} = \trace{H_{sys} \Phi \parens{\frac{e^{-\beta H_{sys}}}{\partfun_{sys}} \otimes \frac{e^{- \beta H_{env}}}{\partfun_{env}}}}.
-\end{equation}
-Now we look at the RHS in detail
-\begin{align}
-    \trace{H_{sys} \Phi \parens{\rho} } &= \trace{ H_{sys} \partrace{env}{\int e^{i \widetilde{H} t} \rho e^{-i \widetilde{H} t} dG}} \\
-    &= \int \trace{H_{sys} \otimes \openone_{env} e^{i \widetilde{H} t} \rho e^{-i \widetilde{H} t} } dG \\
-    &=  \trace{\int e^{- i (H + \alpha G) t} H_{sys} \otimes \openone_{env} e^{+ i (H + \alpha G) t} dG ~ \rho }
-\end{align}
-
- \subsection{Phase Contribution complicated}
- Now we investigate the phase integrals $C_E$. 
- \begin{align}
-     C_E &= \int_0^1 \int_0^1 \bigg(  2 \rho_{m,n} e^{i(E_{i,j} - E_{m,n})s_1t} e^{i(E_{m,n} - E_{k,l})s_2 t}  \\
-     &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 \\
-     &- (\rho_{i,j} + \rho_{k,l}) e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1) \bigg) ds_1 ds_2 \\
- \end{align}
- These can be solved analytically as
- \begin{align}
-     \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1t} e^{i(E_{m,n} - E_{k,l})s_2 t} ds_1 ds_2 &= \frac{(e^{i(E_{i,j} - E_{m,n})t} - 1)(e^{i(E_{m,n} - E_{k,l})t} - 1)}{t^2 (E_{i,j} - E_{m,n})(E_{k,l} - E_{m,n})} \\
-     \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})s_1 s_2 t} s_1 ds_1 ds_2 &= \nonumber \\
-     \frac{e^{i(E_{i,j} - E_{k,l})t}(E_{i,j} - E_{m,n}) + (E_{m,n} - E_{k,l}) - e^{i(E_{i,j} - E_{m,n})t}(E_{i,j} - E_{k,l})}{t^2(E_{i,j} - E_{m,n})(E_{k,l} - E_{m,n})(E_{i,j} - E_{k,l})} \\
-     \int_0^1 \int_0^1 e^{i(E_{i,j} - E_{m,n})s_1 t} e^{i(E_{m,n} - E_{k,l})(s_1 + s_2 - s_1 s_2)t} (1-s_1) ds_1 ds_2 &= \nonumber \\
-     \frac{-(E_{i,j} - E_{m,n}) + e^{i(E_{m,n} - E_{k,l})t}\parens{E_{i,j} - E_{k,l} - e^{i(E_{i,j} - E_{m,n})t}(E_{m,n} - E_{k,l})}}{t^2 (E_{i,j} - E_{m,n})(E_{m,n} - E_{k,l})(E_{i,j} - E_{k,l})}
- \end{align}
- Now we introduce some minor notation to help readability $\Delta_{ij,kl} := E_{i,j} - E_{k,l}$. This reduces the phase contribution to
- \begin{align}
-      t^2 C_E(\rho) = &e^{i\Delta_{ij,kl}t} \parens{\frac{2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} + \frac{(\rho_{ij} + \rho_{k,l}) \Delta_{ij,mn}}{\Delta_{ij,kl} \Delta_{ij,mn} \Delta_{kl,mn}}} \\
-     +& e^{i \Delta_{ij,mn}t} \parens{\frac{- 2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} - \frac{(\rho_{ij} + \rho_{k,l}) \Delta_{mn,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}} - \frac{(\rho_{i,j} + \rho_{k,l})\Delta_{ij,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}}} \\
-     +& e^{i \Delta_{mn,kl}t} \parens{\frac{- 2 \rho_{m,n}}{\Delta_{ij,mn} \Delta_{kl,mn}} - \frac{(\rho_{i,j} + \rho_{k,l}) \Delta_{ij,kl}}{\Delta_{ij,mn} \Delta_{ij,kl} \Delta_{kl,mn}}} \\
-     +& \parens{2 \rho_{m,n} + (\rho_{i,j} + \rho_{k,l}) \frac{\Delta_{mn,kl} + \Delta_{ij,mn}}{\Delta_{ij,kl} \Delta_{ij,mn} \Delta_{kl,mn}}}
- \end{align}
- 
- Since we have the factor of $\delta_{i,j | k,l}$ from the Haar integral contribution we can further simplify these as
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Approximating $e^{i (H + \alpha G) t}$ evolution}
 
 \bibliographystyle{unsrt}
 \bibliography{bib}
 
 \appendix
-\section{Perturbation Theory Attempt}
-The goal is to use perturbation theory to write the output of the channel in terms of powers of the coupling strength $\alpha$. It remains to be seen if first order perturbation theory will be enough. We also are specifically interested when $\rho$ is a product state of thermal states, in other words $\rho_{PS} = \frac{e^{-\beta_1 H_1}}{\partfun_1} \otimes \frac{e^{-\beta_2 H_2}}{\partfun_2}$. We also denote the action of our channel with respect to a particular choice of $G$ as $\Phi_G$, which combined with linearity of partial traces gives $\Phi = \int dG \Phi_G$. 
-\begin{align}
-    \Phi_G(\rho_{PS}) &= \partrace{2}{e^{+i \widetilde{H} t} \rho_{PS} e^{-i \widetilde{H} t}} \\
-    &= \sum_{k} \openone \otimes v_k^* \parens{\sum_{i, j} e^{i \widetilde{\eta}_{i, j} t} \widetilde{\Pi}_{i,j}} \rho_{PS} \parens{ \sum_{m, n} e^{i \widetilde{\eta}_{m, n} t} \widetilde{\Pi}_{m,n} }
-\end{align}
-Our next goal is to analyze $e^{i \widetilde{\eta}_{i,j} t} \widetilde{\Pi}_{i,j}$ using time-independent perturbation theory. Our goal is to write $e^{i \widetilde{\eta}_{i,j} t}$ as a power series in terms of $\alpha$, which is given by perturbation theory for $\widetilde{H} = H + \alpha G$. We first write the perturbation series for $\widetilde{\eta}$ as 
-\begin{equation}
-    \widetilde{\eta}_{i,j} = \eta_{i,j} + \alpha (u_i \otimes v_j)^* G (u_i \otimes v_j) + \alpha^2 \sum_{(i',j') \neq (i,j)}  \frac{\abs{(u_i \otimes v_j)^* G (u_{i'} \otimes v_{j'})}^{2}}{\eta_{i,j} - \eta_{i',j'}} + \bigo{\alpha^3}.
-\end{equation}
-To simplify the notation, we introduce the indexing $G(i,j,k,l) := (u_i \otimes v_j)^* G (u_k \otimes v_l)$. $G(i,j)$ without a second pair of indices denotes the diagonal matrix element $(u_i \otimes v_j)^* G (u_i \otimes v_j)$. The Taylor's Series for $e^{i \widetilde{\eta}_{i,j} t}$ is
-\begin{align}
-    e^{i \widetilde{\eta}_{i,j} t} &= e^{i \eta_{i,j} t} \\
-    &\quad + \frac{\partial \widetilde{\eta}_{i,j}}{\partial \alpha} e^{i \widetilde{\eta}_{i,j}t} \bigg|_{\alpha = 0} i \alpha t \\
-    &\quad + \frac{ i\alpha^2 t}{2!} \frac{\partial^2 \widetilde{\eta}_{i,j}}{\partial \alpha^2} e^{i \widetilde{\eta}_{i,j}t}\bigg|_{\alpha=0} \\
-    &\quad - \frac{\alpha^2 t^2}{2!} \parens{\frac{\partial \widetilde{\eta}_{i,j}}{\partial \alpha}}^2 e^{i \widetilde{\eta}_{i,j} t} \bigg|_{\alpha=0} + \bigo{\alpha^3} .
-\end{align}
-These are rather straightforward to compute and plug in, yielding
-\begin{equation}
-    e^{i \widetilde{\eta}_{ij} t} = e^{i \eta_{ij} t}\parens{1 + i \alpha t G(i,j) - \frac{\alpha^2 t^2}{2} G(i,j)^2 + i \frac{\alpha^2 t}{2} \sum_{(i',j') \neq (i,j)}\frac{\abs{G(i',j',i,j)}^2}{\eta_{ij} - \eta_{i' j'}} + \bigo{\alpha^3}}.
-\end{equation}
-This is sloppy, need to be able to bound the $\bigo{\alpha^3}$ terms better. Also note that $G(i,j)$ is a real Gaussian variable, the realness is due to the Hermiticity constraint on $G$. 
-
-The other quantity we need to compute a perturbation series for is $\widetilde{\Pi}_{ij}$. We first need to compute the perturbation series for the eigenvectors of $H$, which we do to second order
-\begin{align}
-    \widetilde{u_i \otimes v_j} &= u_i \otimes v_j \\
-    &\quad + \alpha \sum_{(i',j') \neq (i,j)} u_{i'} \otimes v_{j'} \parens{  \frac{G(i,j,i',j')}{\eta_{i,j} - \eta_{i',j'}} } \\
-    &\quad + \alpha^2 \sum_{(i',j') \neq (i,j)} u_{i'} \otimes v_{j'} \parens{ \sum_{(i'',j'') \neq (i,j)} \frac{G(i,j,i'',j'') G(i'',j'',i',j')}{(\eta_{i,j} - \eta_{i'',j''})(\eta_{i,j} - \eta_{i'',j''})} -  \frac{G(i,j,i,j) G(i,j,i',j')}{(\eta_{i,j} - \eta_{i',j'})^2}} \\
-    &\quad + \bigo{\alpha^3}.
-\end{align}
-Now we need to compute the perturbed eigenspace projectors
-\begin{align}
-    \widetilde{\Pi}_{i,j} &= \Pi_{i,j} \\
-    & \quad + \alpha \sum_{(i',j') \neq (i,j)} u_{i'} u_i^* \otimes v_{j'} v_j^* \parens{  \frac{G(i,j,i',j')}{\eta_{i,j} - \eta_{i',j'}} } + \sum_{(i',j') \neq (i,j)} u_i u_{i'}^* \otimes v_j v_{j'}^* \parens{  \frac{G(i,j,i',j')^*}{\eta_{i,j} - \eta_{i',j'}} } \\
-    & \quad + \alpha^2 \sum_{(i',j') \neq (i,j)} u_{i'} u_i^* \otimes v_{j'} v_j^* \parens{ \sum_{(i'',j'') \neq (i,j)} \frac{G(i,j,i'',j'') G(i'',j'',i',j')}{(\eta_{i,j} - \eta_{i'',j''})(\eta_{i,j} - \eta_{i'',j''})} -  \frac{G(i,j,i,j) G(i,j,i',j')}{(\eta_{i,j} - \eta_{i',j'})^2}} \\
-    & \quad + \alpha^2 \sum_{(i',j') \neq (i,j)} u_i u_{i'}^* \otimes v_j v_{j'}^* \parens{ \sum_{(i'',j'') \neq (i,j)} \frac{G(i,j,i'',j'')^* G(i'',j'',i',j')^*}{(\eta_{i,j} - \eta_{i'',j''})(\eta_{i,j} - \eta_{i'',j''})} -  \frac{G(i,j,i,j)^* G(i,j,i',j')^*}{(\eta_{i,j} - \eta_{i',j'})^2}} \\
-    & \quad + \alpha^2 \sum_{(i',j') \neq (i,j)} \sum_{(i'',j'') \neq (i,j)} u_{i'}u_{i''}^* \otimes v_{j'} v_{j''}^* \frac{G(i,j,i',j') G(i,j,i'',j'')^*}{(\eta_{i,j} - \eta_{i',j'})(\eta_{i,j} - \eta_{i'',j''})} \\
-    & \quad + \bigo{\alpha^3}.
-\end{align}
-
-This allows us to write the output of the channel $\Phi$ as a power series in $\alpha$. The expressions can become quite cumbersome, so we introduce the following notation:
-\begin{align}
-    M_{i,j,i',j'} &:=  u_{i'} u_i^* \otimes v_{j'} v_j^* \parens{  \frac{G(i,j,i',j')}{\eta_{i,j} - \eta_{i',j'}} } +  u_i u_{i'}^* \otimes v_j v_{j'}^* \parens{  \frac{G(i,j,i',j')^*}{\eta_{i,j} - \eta_{i',j'}} } \\
-    N_{i,j,i',j'} &:= u_{i'} u_i^* \otimes v_{j'} v_j^* \parens{ \sum_{(i'',j'') \neq (i,j)} \frac{G(i,j,i'',j'') G(i'',j'',i',j')}{(\eta_{i,j} - \eta_{i'',j''})(\eta_{i,j} - \eta_{i'',j''})} -  \frac{G(i,j,i,j) G(i,j,i',j')}{(\eta_{i,j} - \eta_{i',j'})^2}} \\
-    & \quad + \sum_{(i'',j'') \neq (i,j)} u_{i'}u_{i''}^* \otimes v_{j'} v_{j''}^* \frac{G(i,j,i',j') G(i,j,i'',j'')^*}{(\eta_{i,j} - \eta_{i',j'})(\eta_{i,j} - \eta_{i'',j''})}
-\end{align}
-which captures the first and second order corrections to the eigenspace projectors. We can then simplify
-\begin{align}
-    \widetilde{\Pi}_{i,j} &= \Pi_{i,j} + \alpha \sum_{(i',j') \neq (i,j)} M_{i,j,i',j'} + \alpha^2 \sum_{(i',j') \neq (i,j)} N_{i,j,i',j'} + \bigo{\alpha^3}
-\end{align}
-The second order corrections have 10 possible sources for terms, however many are hermitian conjugates of priors, so if herm. conj. appears it refers to the hermitian conjugate of the entire previous line.
-\newpage
-\begin{equation}
-    e^{+i(H + \alpha G)t} \rho e^{-i (H + \alpha G) t}
-\end{equation}
-\begin{align}
-\alpha^0 :& e^{+i H t} \rho e^{-i H t} \\
- \alpha^1 :& \sum_{i,j} e^{i\eta_{i,j}t} \parens{i t G(i,j) \Pi_{i,j} + \sum_{(i',j') \neq (i,j)} M_{i,j,i',j'}} \rho e^{- i H t} \\
- &+ \text{herm. conj.} \\
- \alpha^2 :& \sum_{i,j} i t G(i,j) e^{i \eta_{i,j}} \Pi_{i,j} \rho \sum_{k,l} (-i t) G(k,l)^* e^{-i \eta_{k,l}t} \Pi_{k,l} \\
- &+ \sum_{i,j} e^{i \eta_{i,j} t} \sum_{(i',j') \neq (i,j)} M_{i,j,i',j'} \rho \sum_{k,l} (-i t) G(k,l) e^{-i \eta_{k,l} t} \Pi_{k,l} \\
- &+ \text{herm. conj.} \\
- &+ \sum_{i,j} e^{i \eta_{i,j} t} \sum_{(i',j') \neq (i,j)} M_{i,j,i',j'} \rho \sum_{k,l} e^{-i \eta_{k,l} t} \sum_{(k',l') \neq (k,l)} M_{k,l,k',l'}\\
- &+  \sum_{i,j} e^{i \eta_{i,j} t} \parens{- \frac{t^2 G(i,j)^2}{2} + i \frac{t}{2} \sum_{(i',j') \neq (i,j)} \frac{\abs{G(i,j,i',j')}^2}{\eta_{i,j} - \eta_{i',j'}} } \rho e^{- i H t} \\
- &+ \text{herm. conj.} \\
- &+ \sum_{i,j} e^{i \eta_{i,j} t} \sum_{(i',j') \neq (i,j)} N_{i,j,i',j'} \rho e^{-i H t} \\
- &+ \text{herm. conj.} \\
- &+ \sum_{i,j} i t G(i,j) e^{i \eta_{i,j} t} \sum_{(i',j') \neq (i,j)} M_{i,j,i',j'} \rho e^{-i H t} \\
- &+ \text{herm. conj.}.
-\end{align}
-
-Two potential issues. 1) How can we normalize the output state? This may depend on how we approach the second. 2) How do we bound the remaining terms in the perturbation series? Are there any dumb bounds I can work out? 
 
 \end{document}
