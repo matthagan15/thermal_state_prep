@@ -1,13 +1,23 @@
 use std::cmp::min;
 
-use ndarray::{Array2, ShapeBuilder, Array, linalg::kron};
-use ndarray_linalg::{Scalar, OperationNorm, Trace};
+use ndarray::{linalg::kron, Array, Array2, ShapeBuilder};
+use ndarray_linalg::{OperationNorm, Scalar, Trace};
 use num_complex::Complex64 as c64;
 
-use crate::{zero, harmonic_oscillator_hamiltonian, RandomInteractionGen, channel::Channel, thermal_state};
+use crate::{
+    channel::Channel, harmonic_oscillator_hamiltonian, thermal_state, zero, RandomInteractionGen,
+};
 
 /// Returns transition probabilities along the diagonal
-fn get_transition_probability(phi: &mut Channel, sys_start: usize, sys_end: usize, env_start: usize, env_end: usize, alpha: f64, time: f64) -> f64 {
+fn get_transition_probability(
+    phi: &mut Channel,
+    sys_start: usize,
+    sys_end: usize,
+    env_start: usize,
+    env_end: usize,
+    alpha: f64,
+    time: f64,
+) -> f64 {
     phi.set_env_state_to_energy_projector(env_start);
     phi.set_sys_to_energy_projector(sys_start);
     let output = phi.total_map(1000, 1);
@@ -21,10 +31,22 @@ fn get_transition_probability(phi: &mut Channel, sys_start: usize, sys_end: usiz
     tmp_env[[tgt_ix, tgt_ix]] = c64::from_real(1.);
 
     let tgt_out = kron(&tmp_sys, &tmp_env);
-    tgt_out.dot(&output).trace().expect("couldn't take trace?").re
+    tgt_out
+        .dot(&output)
+        .trace()
+        .expect("couldn't take trace?")
+        .re
 }
 
-fn analytic_transition_second_order(phi: &Channel, sys_start: usize, sys_end: usize, env_start: usize, env_end: usize, time: f64, alpha: f64) -> f64 {
+fn analytic_transition_second_order(
+    phi: &Channel,
+    sys_start: usize,
+    sys_end: usize,
+    env_start: usize,
+    env_end: usize,
+    time: f64,
+    alpha: f64,
+) -> f64 {
     let h = phi.get_copy_of_h_tot();
     let ix_start = phi.convert_pair_indices_to_system(sys_start, env_start);
     let ix_end = phi.convert_pair_indices_to_system(sys_end, env_end);
@@ -51,7 +73,7 @@ fn analytic_transition_second_order(phi: &Channel, sys_start: usize, sys_end: us
         tot = (alpha * time).pow(2.) / (h.nrows() as f64 + 1.);
     } else {
         let delta = lambda_end - lambda_start;
-        let num = 2.* alpha.pow(2.) * (1. - f64::cos(delta * time));
+        let num = 2. * alpha.pow(2.) * (1. - f64::cos(delta * time));
         let den = (h.nrows() as f64 + 1.) * delta.pow(2.);
         tot = num / den;
     }
@@ -63,9 +85,16 @@ fn compare_transitions(phi: &mut Channel, alpha: f64, time: f64) {
     let env_start = 0;
     for sys_end in 0..phi.dim_sys {
         for env_end in 0..phi.dim_env {
-            let analytic = analytic_transition_second_order(&phi, sys_start, sys_end, env_start, env_end, time, alpha);
-            let computed = get_transition_probability(phi, sys_start, sys_end, env_start, env_end, alpha, time);
-            println!("({:}, {:}) -> ({:}, {:})", sys_start, env_start, sys_end, env_end);
+            let analytic = analytic_transition_second_order(
+                &phi, sys_start, sys_end, env_start, env_end, time, alpha,
+            );
+            let computed = get_transition_probability(
+                phi, sys_start, sys_end, env_start, env_end, alpha, time,
+            );
+            println!(
+                "({:}, {:}) -> ({:}, {:})",
+                sys_start, env_start, sys_end, env_end
+            );
             println!("computed = {:}", computed);
             println!("analytic = {:}", analytic);
             let diff_abs = (computed - analytic).abs();
@@ -88,7 +117,7 @@ pub fn analytic_second_order(
     for i in 0..h_tot.nrows() {
         let mut acc = zero();
         for j in 0..h_tot.nrows() {
-            if h_tot[[i,i]] == h_tot[[j, j]] {
+            if h_tot[[i, i]] == h_tot[[j, j]] {
                 continue;
             }
             let diff = (h_tot[[i, i]] - h_tot[[j, j]]).re;
@@ -103,16 +132,16 @@ pub fn analytic_second_order(
     out
 }
 
-
 mod test {
-    use ndarray::{Array2, array, linalg::kron};
+    use ndarray::{array, linalg::kron, Array2};
     use ndarray_linalg::OperationNorm;
     use num_complex::Complex64 as c64;
 
-    use crate::{thermal_state, harmonic_oscillator_hamiltonian, channel::Channel, RandomInteractionGen};
+    use crate::{
+        channel::Channel, harmonic_oscillator_hamiltonian, thermal_state, RandomInteractionGen,
+    };
 
     use super::{analytic_second_order, compare_transitions};
-
 
     #[test]
     fn test_transitions() {
@@ -129,7 +158,7 @@ mod test {
         let h_env = harmonic_oscillator_hamiltonian(2);
         let h_tot = kron(&h_sys, &Array2::<c64>::eye(2)) + kron(&Array2::<c64>::eye(15), &h_env);
         let rho_sys = thermal_state(&h_sys, 0.0);
-        let rho_env = array![[1.0.into(), 0.0.into()],[0.0.into(), 0.0.into()]];
+        let rho_env = array![[1.0.into(), 0.0.into()], [0.0.into(), 0.0.into()]];
         let rho = kron(&rho_sys, &rho_env);
         let x = analytic_second_order(&h_tot, &rho, 1000., 0.001);
         println!("x norm: {:}", x.opnorm_one().unwrap());

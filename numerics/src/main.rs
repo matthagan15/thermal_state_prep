@@ -3,9 +3,11 @@ extern crate ndarray;
 extern crate num_complex;
 
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Instant;
 
+use clap::{Parser, Subcommand};
 use ndarray::linalg::kron;
 use ndarray::prelude::*;
 use ndarray_linalg::expm::expm;
@@ -14,15 +16,13 @@ use ndarray_linalg::{OperationNorm, Scalar};
 use num_complex::Complex64 as c64;
 use num_complex::ComplexFloat;
 use numerics::channel::Channel;
-use numerics::thermalization::qubit_thermalization;
+use numerics::thermalization::{TraceNormReductionConfig, TraceNormReductionOutput};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use numerics::*;
-
-const MAX_INTERACTIONS: usize = 100000;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct NodeConfig {
@@ -52,7 +52,6 @@ impl NodeConfig {
         }
     }
 }
-
 
 fn multi_interaction(
     tot_hamiltonian: &Array2<c64>,
@@ -173,12 +172,58 @@ fn run_node() {
     write_results(outputs, base_dir);
 }
 
+#[derive(Subcommand)]
+pub enum Experiments {
+    SingleShotTraceDistSweep,
+    FixedPointSweep,
+}
+
+#[derive(Parser)]
+pub struct Cli {
+    #[command(subcommand)]
+    experiment_type: Experiments,
+    config: PathBuf,
+    output: PathBuf,
+    #[arg(short = 'l', long, value_name = "LABEL")]
+    experiment_label: Option<String>,
+}
+
 fn main() {
-    let start = Instant::now();
-    let gaps = vec![0.1, 0.5, 1.0, 5., 10.,];
-    for gap in gaps {
-        qubit_thermalization(gap);
+    let cli = Cli::parse();
+    match cli.experiment_type {
+        Experiments::SingleShotTraceDistSweep => {
+            println!("single shot trace distance sweep");
+            if cli.config.is_file() == false {
+                println!("Could not find config file at: {:}", cli.config.display());
+                return;
+            }
+            let conf_path = cli
+                .config
+                .to_str()
+                .expect("Could not convert input path to string.")
+                .to_string();
+            let out_path = cli
+                .output
+                .to_str()
+                .expect("Could not convert output path to string.")
+                .to_string();
+            let conf = TraceNormReductionConfig::from_json(conf_path);
+            let results = conf.run();
+            let out = TraceNormReductionOutput {
+                label: cli.experiment_label.unwrap_or(String::new()),
+                experiment_type: String::from("SingleShotTraceDistSweep"),
+                num_samples: conf.num_samples,
+                data: results,
+                beta_env: conf.beta_env,
+                time: conf.time,
+            };
+            out.write_json_to_file(out_path);
+        }
+        Experiments::FixedPointSweep => {
+            println!("fixed point sweep!");
+        }
     }
+    let start = Instant::now();
     let duration = start.elapsed();
     println!("took this many millis: {:}", duration.as_millis());
 }

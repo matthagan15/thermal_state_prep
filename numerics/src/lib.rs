@@ -161,7 +161,7 @@ pub fn schatten_2_distance(a: &Array2<c64>, b: &Array2<c64>) -> f64 {
     let psd = diff.dot(&diff_adjoint);
     let trace = psd.trace().unwrap();
     // imaginary part should be very small
-    
+
     if trace.im() > f64::EPSILON * a.nrows() as f64 {
         println!("WARNING: you are going to have a bad time. imaginary trace");
     }
@@ -181,8 +181,8 @@ pub fn process_error_data(vals: Vec<f64>) -> (usize, f64, f64) {
     (samples, mean, std)
 }
 
-/// Computes the mean and standard deviation, returning 
-/// (mean, std). 
+/// Computes the mean and standard deviation, returning
+/// (mean, std).
 pub fn mean_and_std(vals: Vec<f64>) -> (f64, f64) {
     let samples = vals.len();
     let mean = vals.iter().sum::<f64>() / (samples as f64);

@@ -1,8 +1,9 @@
 use core::num;
 use std::{
+    cmp::min,
     env,
     ops::AddAssign,
-    sync::{Arc, Mutex}, cmp::min,
+    sync::{Arc, Mutex},
 };
 
 use ndarray::{linalg::kron, Array2, ShapeBuilder};
@@ -10,7 +11,7 @@ use ndarray_linalg::{expm, krylov::R, Scalar};
 use num_complex::Complex64 as c64;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
-use crate::{adjoint, partial_trace, thermal_state, RandomInteractionGen, mean_and_std};
+use crate::{adjoint, mean_and_std, partial_trace, thermal_state, RandomInteractionGen};
 
 #[derive(Debug)]
 pub struct Channel {
@@ -59,7 +60,7 @@ impl Channel {
     }
 
     /// Set the state of the environment to an energy eigenstate projector, aka
-    /// |i><i| . The index is 0 being the ground state and dim_env - 1. Sets 
+    /// |i><i| . The index is 0 being the ground state and dim_env - 1. Sets
     /// the state to the highest energy eigenstate if it is out of bounds.
     pub fn set_env_state_to_energy_projector(&mut self, index: usize) {
         self.rho_env.mapv_inplace(|x| x * 0.);
@@ -85,7 +86,7 @@ impl Channel {
         self.h_tot.clone()
     }
 
-    /// operates under the assumption that the kronecker product is 
+    /// operates under the assumption that the kronecker product is
     /// system \otimes environment.
     pub fn convert_pair_indices_to_system(&self, sys_ix: usize, env_ix: usize) -> usize {
         sys_ix * self.dim_env + env_ix
@@ -93,20 +94,12 @@ impl Channel {
 
     /// Map the stored system input state to the system output state using
     /// the specified number of samples and interactions.
-    pub fn map(
-        &self,
-        num_samples: usize,
-        num_interactions: usize,
-    ) -> Array2<c64> {
+    pub fn map(&self, num_samples: usize, num_interactions: usize) -> Array2<c64> {
         let tot = self.total_map(num_samples, num_interactions);
         partial_trace(&tot, self.dim_sys, self.dim_env)
     }
 
-    pub fn total_map(
-        &self,
-        num_samples: usize,
-        num_interactions: usize,
-    ) -> Array2<c64> {
+    pub fn total_map(&self, num_samples: usize, num_interactions: usize) -> Array2<c64> {
         let a =
             Array2::<c64>::zeros((self.dim_env * self.dim_sys, self.dim_env * self.dim_sys).f());
         let locker = Arc::new(Mutex::new(a));
@@ -121,14 +114,13 @@ impl Channel {
         guard.clone()
     }
     /// Perform k applications of the channel. More efficient than repeated calls.
-    fn sample_of_k_interactions_tot(
-        &self,
-        num_interactions: usize,
-    ) -> Array2<c64> {
-        let mut sampled_interactions = self.interaction_generator.sample_multiple_gue(num_interactions);
+    fn sample_of_k_interactions_tot(&self, num_interactions: usize) -> Array2<c64> {
+        let mut sampled_interactions = self
+            .interaction_generator
+            .sample_multiple_gue(num_interactions);
         let mut rho_tot = kron(&self.rho_sys, &self.rho_env);
         let mut rho_s = self.rho_sys.clone();
-        let t = c64::new(0., - self.time);
+        let t = c64::new(0., -self.time);
         let a = c64::new(self.alpha, 0.);
         for k in 0..num_interactions {
             if k > 0 {
@@ -146,10 +138,7 @@ impl Channel {
         rho_tot
     }
 
-    fn sample_of_k_interactions_system(
-        &self,
-        num_interactions: usize,
-    ) -> Array2<c64> {
+    fn sample_of_k_interactions_system(&self, num_interactions: usize) -> Array2<c64> {
         let out = self.sample_of_k_interactions_tot(num_interactions);
         partial_trace(&out, self.dim_sys, self.dim_env)
     }
@@ -160,7 +149,9 @@ impl Channel {
         num_samples: usize,
         num_interactions: usize,
     ) -> (f64, f64)
-    where F: Fn(&Array2<c64>) -> f64 + Sync + Send {
+    where
+        F: Fn(&Array2<c64>) -> f64 + Sync + Send,
+    {
         let locker = Arc::new(Mutex::new(Vec::<f64>::new()));
         (0..num_samples).into_par_iter().for_each(|_| {
             let sample = self.sample_of_k_interactions_tot(num_interactions);
@@ -177,7 +168,9 @@ impl Channel {
         num_samples: usize,
         num_interactions: usize,
     ) -> (f64, f64)
-    where F: Fn(&Array2<c64>) -> f64 + Sync + Send {
+    where
+        F: Fn(&Array2<c64>) -> f64 + Sync + Send,
+    {
         let locker = Arc::new(Mutex::new(Vec::<f64>::new()));
         (0..num_samples).into_par_iter().for_each(|_| {
             let sample = self.sample_of_k_interactions_system(num_interactions);
@@ -195,8 +188,8 @@ mod test {
     use num_complex::Complex64 as c64;
 
     use crate::{
-        harmonic_oscillator_hamiltonian, perform_fixed_interaction_channel,thermal_state,
-        HamiltonianType, RandomInteractionGen, schatten_2_distance,
+        harmonic_oscillator_hamiltonian, perform_fixed_interaction_channel, schatten_2_distance,
+        thermal_state, HamiltonianType, RandomInteractionGen,
     };
 
     use super::Channel;
@@ -209,9 +202,7 @@ mod test {
         let rng = RandomInteractionGen::new(1, 20);
         let mut phi = Channel::new(h_sys, h_env, 0.001, 100., rng);
         phi.set_env_to_thermal_state(0.75);
-        let distance_estimator = |matrix: &Array2<c64>| {
-            schatten_2_distance(matrix, &rho_sys)
-        };
+        let distance_estimator = |matrix: &Array2<c64>| schatten_2_distance(matrix, &rho_sys);
         let out = phi.estimator_sys(distance_estimator, 1000, 100);
         println!("observed metrics: {:} +- {:}", out.0, out.1);
     }
