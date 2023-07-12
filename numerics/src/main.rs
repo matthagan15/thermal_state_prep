@@ -189,6 +189,7 @@ pub struct Cli {
 }
 
 fn main() {
+    let start = Instant::now();
     let cli = Cli::parse();
     match cli.experiment_type {
         Experiments::SingleShotTraceDistSweep => {
@@ -223,7 +224,7 @@ fn main() {
             println!("fixed point sweep!");
         }
     }
-    let start = Instant::now();
+    
     let duration = start.elapsed();
     println!("took this many millis: {:}", duration.as_millis());
 }

@@ -109,9 +109,9 @@ impl TraceNormReductionConfig {
                         mean,
                         std,
                     };
-                    println!("{:}", "*".repeat(75));
-                    println!("alpha = {:}, beta = {:}, gap = {:}", alpha, beta, env_gap);
-                    println!("{:} +- {:}", mean, std);
+                    // println!("{:}", "*".repeat(75));
+                    // println!("alpha = {:}, beta = {:}, gap = {:}", alpha, beta, env_gap);
+                    // println!("{:} +- {:}", mean, std);
                     results.push(out_formatted);
                 }
             }
