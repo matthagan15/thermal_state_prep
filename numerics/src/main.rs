@@ -16,7 +16,7 @@ use ndarray_linalg::{OperationNorm, Scalar};
 use num_complex::Complex64 as c64;
 use num_complex::ComplexFloat;
 use numerics::channel::Channel;
-use numerics::thermalization::{TraceNormReductionConfig, TraceNormReductionOutput};
+use numerics::single_qubit_dist::{TraceNormReductionConfig, TraceNormReductionOutput};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;

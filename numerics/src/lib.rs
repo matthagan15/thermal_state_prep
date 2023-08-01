@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 pub mod channel;
 pub mod fixed_points;
 pub mod quantities;
-pub mod thermalization;
+pub mod single_qubit_dist;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HamiltonianType {
