@@ -116,23 +116,24 @@ Clearly then $\Phi(\rho_S) = \partrace{env}{\int \Phi_G (\rho_S \otimes \rho_E) 
 \end{restatable}
 
 \begin{lemma}{lemma}\label{lem:sinc_poly_approx}
-    Let $f(x) = \frac{\sin^2(x)}{x^2}$. The polynomial approximation $1 - \frac{x^2}{3}$ has an error bound $\abs{f(x) - 1 + \frac{x^2}{3}} \leq \epsilon_{\sinc}$ for $|x| \leq \sqrt[3]{6 \epsilon_{\sinc}}$. Further, the constant approximation $f(x) = 1$ has error $|f(x) - 1| \leq \epsilon_{\sinc}$ if $|x| \leq \sqrt{2 \epsilon_{\sinc}}$. Further, if $x = \Delta t$ with $\Delta \geq \Delta_{\min{}}$, we note that $t \geq (\Delta_{\min} \sqrt{\epsilon_{\sinc} } )^{-1}$ suffices for $f(\Delta t) \leq \epsilon_{\sinc}$.
+    Let $f(x) = \frac{\sin^2(x)}{x^2}$. The constant approximation $f(x) = 1$ has error $|f(x) - 1| \leq \epsilon_{1}$ if $|x| \leq \sqrt{2 \epsilon_{1}}$. Further, if $x = \Delta t$, with $\Delta \geq \Delta_{\min}$, we note that $t \geq (\Delta_{\min} \sqrt{\epsilon_{\sinc} } )^{-1}$ suffices for $f(\Delta t) \leq \epsilon_{\sinc}$.
 \end{lemma}
 \begin{proof}
-    We use the form $\frac{\sin(x)}{x} = \int_0^1 \cos(sx) ds$. We compute the first 3 derivatives using straightforward algebra
+    We use the form of $\sinc$ as $\frac{\sin(x)}{x} = \int_0^1 \cos(sx) ds$. The first 3 derivatives are computed using straightforward calculus
     \begin{align}
         \frac{df}{dx} &= -2 \int_0^1 \sin(sx) s ds \int_0^1 \cos(sx) ds \\
-        \frac{d^2f}{dx^2} &= -2 \int_0^1 \cos(sx)s^2 ds \int_0^1 \cos(sx) ds + \int_0^1 \sin(sx) s ds \int_0^1 \sin(sx) s ds \\
-        \frac{d^3 f}{dx^3} &= 2 \int_0^1 \sin(sx)s^3 ds \int_0^1 \cos(sx) ds + 4 \int_0^1 \cos(sx) s^2 ds \int_0^1 \sin(sx) s ds .
+        \frac{d^2f}{dx^2} &= -2 \int_0^1 \cos(sx)s^2 ds \int_0^1 \cos(sx) ds + \int_0^1 \sin(sx) s ~ds \int_0^1 \sin(sx) s ~ds.
+        % \frac{d^3 f}{dx^3} &= 2 \int_0^1 \sin(sx)s^3 ds \int_0^1 \cos(sx) ds + 4 \int_0^1 \cos(sx) s^2 ds \int_0^1 \sin(sx) s ds .
     \end{align}
     By using the fact that $\cos(sx) \to 1$ and $\sin(sx) \to 0$ as $x \to 0$ we can evaluate the Taylor's series to $f(x)$ directly. We also make use of the inequality $\abs{\int_a^b f(x) dx} \leq \int_a^b \abs{f(x)} dx$ and that sine and cosine are bounded by 1.
     \begin{align}
-        f(x) &= \frac{\sin^2(x)}{x^2} \bigg|_{x = 0} + x \frac{df}{dx}\bigg|_{x = 0} + \frac{x^2}{2!} \frac{d^2f}{dx^2}\bigg|_{x=0} + \frac{x^3}{3!} \frac{d^3f}{dx^3}\bigg|_{x = c} \\
-        f(x) &= 1 - \frac{x^2}{3} + \frac{x^3}{3!} \frac{d^3f}{dx^3}\bigg|_{x = c} \\
-        \abs{f(x) - 1 + \frac{x^2}{3}} & = \frac{|x|^3}{6} \abs{\frac{d^3f}{dx^3}\bigg|_{x=c}} \\
-        &\leq \frac{|x|^3}{6}.
+        f(x) &= \frac{\sin^2(x)}{x^2} \bigg|_{x = 0} + x \frac{df}{dx}\bigg|_{x = 0} + \frac{x^2}{2!} \frac{d^2f}{dx^2}\bigg|_{x=c} \\
+        f(x) &= 1 + \frac{x^2}{2} \frac{d^2f}{dx^2}\bigg|_{x=c}  \\
+        \abs{f(x) - 1} &= \frac{\abs{x}^2}{2} \abs{\frac{d^2f}{dx^2}(x=c)} \\
+        &\leq \frac{|x|^2}{3}
     \end{align}
-    Setting $|x|^3/6 \leq \epsilon$ yields the statement.
+    Requiring $|x|^2/3 \leq \epsilon$ yields the statement.
+    
     We will also have a need for bounding $f(x)$ when $x$ is of the form $x = \Delta t$. We would like to choose $t$ large enough so that $\Delta \geq \Delta_{\text{min}}$ implies that $f(\Delta t) \leq \epsilon_{\sinc}$. This can be given using the fact that $\sin(x) \leq 1$:
     \begin{align}
         f(\Delta t) &= \frac{\sin^2(\Delta t)}{\Delta^2 t^2} \\
@@ -419,7 +420,7 @@ $$\tau(i,j | k,l) = \begin{cases}
     This completes the transition probability computation. It is straightforward to see that $\sum_{b} \prob{a \to b} = 1$ and that $0 \leq \prob{a \to b} \leq 1$ given that $t^2 \leq \frac{\dim + 1}{\alpha^2 \sigma^2}$.
 \end{proof}
 
-\section{Single Qubit Environment}
+\section{Single Qubit System \& Environment}
 We now will analyze the effects of $\Phi$ on thermalizing a system state with only a single qubit environment. The single qubit case makes the effect of tracing out the environment tractable. For absolute simplicity, we first study the case of two qubits. After this situation is analyzed in detail we extend the results to arbitrary system Hamiltonians. For the remainder of this section we assume a a system Hamiltonian $H_S = \begin{bmatrix}
     0 & 0 \\ 0 & \Delta_S
 \end{bmatrix}$ and an environment Hamiltonian $H_E = \begin{bmatrix}
@@ -439,7 +440,19 @@ We first start with the trace distance and reduce it to a computation of transit
     &= \sum_k \abs{\sum_{i,j} e^{-\beta \lambda(i,j)} \partfun(\beta)^{-1} \sum_{l} \tau(i,j |k,l)} \\
     &= \frac{1}{|\partfun(\beta)|} \sum_k \abs{\sum_{i,j} e^{-\beta \lambda(i,j)} \sum_{l} \tau(i,j |k,l)} \label{eq:fixed_point_as_transition_coeffs}
 \end{align}
-    We drop the $\bigo{\alpha^3}$ term, we could possibly upper bound it by some additional error contribution $\epsilon_{\alpha}$ or by stating that since it is less than the $\alpha^2$ contribution we could simply add a factor of 2 in front of the norm. These details should be cleaned up. Our goal is to now compute these sums for fixed $k$ in 0,1.
+\begin{align}
+&\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_p^p \\
+&= \norm{\rho_S(\beta_E) - \rho_S(\beta) - \frac{\alpha^2}{2} \partrace{\hilb_E}{\int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho_S(\beta) \otimes \rho_E(\beta_E)) \bigg|_{\alpha=0} dG}}_p^p + \bigo{\alpha^3} \\
+&\approx \norm{\rho_S(\beta_E) - \rho_S(\beta) - \sum_{i,j} \frac{e^{-\beta \lambda_S(i) -\beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \frac{\alpha^2}{2}\partrace{\hilb_E}{\int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{i,j}{i,j}) \bigg|_{\alpha=0} dG} }_p^p \\
+&= \norm{\rho_S(\beta_E) - \rho_S(\beta) - \sum_{i,j} \frac{e^{-\beta \lambda_S(i) -\beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \partrace{\hilb_E}{\sum_{k,l} \tau(i,j|k,l) \ketbra{k,l}{k,l}} }_p^p \\
+&= \norm{\rho_S(\beta_E) - \rho_S(\beta) - \sum_{i,j} \sum_{k,l} \frac{e^{-\beta \lambda_S(i) -\beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|k,l) \ketbra{k}{k} }_p^p \\
+&= \sum_k \abs{\frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|k,l)}^p. \label{eq:trace_dist_p_norm}
+\end{align}
+We note that the last step is due to the fact that $\rho_S(x)$ is diagonal in the eigenbasis that we are working over. We drop the $\bigo{\alpha^3}$ term, we could possibly upper bound it by some additional error contribution $\epsilon_{\alpha}$ or by stating that since it is less than the $\alpha^2$ contribution we could simply add a factor of 2 in front of the norm. These details should be cleaned up. Our goal is to now compute these sums for fixed $k$ in 0,1.
+
+\subsection{Fixed Points}
+
+In the following we set $p=1$ and $\beta = \beta_E$.
     We make heavy use of Lemma \ref{thm:second_order_transition_coeffs}. 
     We now compute the term for $k=0, i=1$
     \begin{align}
@@ -515,9 +528,7 @@ We first start with the trace distance and reduce it to a computation of transit
         \int_{\Delta_{\min}}^{\Delta_{\max}} g(\Delta_S - \gamma) \prob{\gamma} d\gamma &= \int_{\Delta_{\min}}^{\Delta_{\max}} \sinc^2((\Delta_S - \gamma)t/2)  \frac{\abs{1 - e^{\beta (\Delta_S - \gamma)}}}{\Delta_{\max} - \Delta_{\min}} d\gamma \\
         &= \int_{\Delta_{\min}}^{\Delta_S} \sinc^2((\Delta_S - \gamma)t/2) \frac{e^{\beta (\Delta_S - \gamma)} - 1}{\Delta_{\max} - \Delta_{\min} } d\gamma + \int_{\Delta_S}^{\Delta_{\max}} \sinc^2((\Delta_S - \gamma)t/2) \frac{1 - e^{- \beta (\gamma - \Delta_S)}}{\Delta_{\max} - \Delta_{\min} } d\gamma
     \end{align}
-
-    The other approach one could take is imagining cycling $\gamma$ through a series of exponentially decaying strengths. In this case we would choose some upper bound on the eigenvalue gaps, say $\Delta_{\max}$, and let $\gamma(k) = \Delta_{\min} + (\Delta_{\max} - \Delta_{\min}) \frac{2^{k} - 2^{-k}}{2^{k} + 2^{-k}}$. At $k = 0$ we have $\gamma(0) = \Delta_{\min}$ and as $k \to \infty$ we have $\gamma(k) \to \Delta_{\max}$. A simpler approach might just be $\gamma(k) = \Delta_{\max} 2^{-k}$. The dumbest approach might be $\gamma(k) = \Delta_{\min} + (\Delta_{\max} - \Delta_{\min}) \frac{k}{n} \mod n$. I also think the dumbest approach might be the best bet. 
-
+ 
 \begin{align}
     \norm{A}_1 &= \trace{\sqrt{A A^\dagger}} \\
     &= \trace{\sqrt{\sum_i |a_i|^2 \ketbra{i}{i}}} \\
@@ -525,9 +536,137 @@ We first start with the trace distance and reduce it to a computation of transit
     &= \sum_i |a_i|.
 \end{align}
 
+\subsection{Distance Reduction}
+We now would like to show that some distance metric between an input state $\rho_S(\beta)$ and the desired output state $\rho_S(\beta_E)$ is decreasing upon application of $\Phi$. The most straightforward metric to use is the $\norm{\cdot}_2^2$ distance. Again, we restrict ourselves to the single qubit system as defined at the beginning of the section.
+
+\begin{align}
+    \norm{\rho_s(\beta_E) - \Phi(\rho_S(\beta))}_2^2 &= \norm{\rho_S(\beta_E) - \rho_S(\beta) - \sum_{i,j,k,l} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)} \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)} \tau(i,j|k,l) \ketbra{k}{k} + R_3(\Phi)} _2^2
+\end{align}
+To simplify notation, we note that $\norm{R_3(\Phi)}_2^2 \leq \norm{R_3(\Phi)}_1^2 \in \bigo{\alpha^6}$ and introduce $A = \rho_S(\beta_E) - \rho_S(\beta)$ and $B = \sum_{i,j,k,l} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)} \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)} \tau(i,j|k,l) \ketbra{k}{k}$. By dropping terms of order $\bigo{\alpha^6}$ for now we can compute
+\begin{align}
+    \norm{\rho_s(\beta_E) - \Phi(\rho_S(\beta))}_2^2 &\approx \norm{A - B}_2^2 \\
+    &= \trace{(A-B)^\dagger (A - B)} \\
+    &= \trace{A^2} - 2 \trace{A B} + \trace{B^2} \\
+    &= \norm{A}_2^2 + \norm{B}_2^2 - 2 \trace{A B}.
+\end{align}
+Now in order to show that $\norm{\rho_s(\beta_E) - \Phi(\rho_S(\beta))}_2^2 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_2^2$, we need to show that $2 \trace{AB} \geq \trace{B^2}$.
+
+First we note that since $A$ and $B$ are diagonal, we have $\trace{AB} = \sum_{k} A(k) B(k) = A(0)B(0) + A(1) B(1)$. We first compute the $k=0$ term and then $k=1$. For brevity, allow the following variables:
+\begin{equation}
+    a(i) = \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)}, \quad b(j) = \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)}.
+\end{equation}
+
+We first compute $B$, starting with $k=0$. We note that $\tau(i,j| k,l) = \tau(k,l |i,j)$ and that $\tau(i,j|i,j) = -\sum_{(a,b) \neq (i,j)} \tau(i,j| a,b)$.
+\begin{align}
+    B(0) &= \sum_{i,j,l} a(i) b(j) \tau(i,j|0,l) \\
+    &= a(0) b(0) (\tau(0,0|0,0) + \tau(0,0|0,1)) + a(0)b(1) (\tau(0,1| 0,0) + \tau(0,1| 0,1)) \nonumber \\
+    &\quad + a(1) b(0) (\tau(1,0|0,0) + \tau(1,0|0,1)) + a(1) b(1) (\tau(1,1|0,0) + \tau(1,1|0,1)) \\
+    &= a(0) b(0) (-\tau(0,0|1,0) - \tau(0,0|1,1)) + a(0)b(1) (- \tau(0,1|1,0) -\tau(0,1|1,1)) \nonumber \\
+    &\quad + a(1) b(0) (\tau(1,0|0,0) + \tau(1,0|0,1)) + a(1) b(1) (\tau(1,1|0,0) + \tau(1,1|0,1)) \\
+    &= \tau(0,0|1,0) (-b(0) a(0) + b(0) a(1)) + \tau(0,0|1,1)(-b(0) a(0) + b(1) a(1)) \nonumber \\
+    &\quad + \tau(0,1|1,0) (-b(1) a(0) + b(0) a(1)) + \tau(0,1|1,1)(-b(1) a(0) + b(1) a(1))
+\end{align}
+Next we compute $B(1)$ as
+\begin{align}
+    B(1) &= \sum_{i,j,l} \tau(i,j|1,l) \\
+    &= a(0) b(0) (\tau(0,0|1,0) + \tau(0,0|1,1)) + a(0)b(1) (\tau(0,1| 1,0) + \tau(0,1| 1,1)) \nonumber \\
+    &\quad + a(1) b(0) (\tau(1,0|1,0) + \tau(1,0|1,1)) + a(1) b(1) (\tau(1,1|1,0) + \tau(1,1|1,1)) \\
+    &= a(0) b(0) (\tau(0,0|1,0) + \tau(0,0|1,1)) + a(0)b(1) (\tau(0,1| 1,0) + \tau(0,1| 1,1)) \nonumber \\
+    &\quad + a(1) b(0) (- \tau(1,0|0,1) - \tau(1,0|0,0)) + a(1) b(1) (-\tau(1,1|0,0) - \tau(1,1|0,1)) \\
+    &= \tau(0,0|1,0) (b(0) a(0) - b(0) a(1)) + \tau(0,0|1,1)(b(0) a(0) - b(1) a(1)) \nonumber \\
+    &\quad + \tau(0,1|1,0) (b(1) a(0) - b(0) a(1)) + \tau(0,1|1,1)(b(1) a(0) - b(1) a(1)) \\
+    &= - B(0).
+\end{align}
+This then leads to the equality $\trace{AB} = A(0) B(0) + A(1)B(1) = B(0) (A(0) - A(1))$. We investigate when each of these can be negative. 
+
+\begin{align}
+    A(0) - A(1) &= \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} - \frac{e^{-\beta_E \lambda_S(1)}}{\partfun_S(\beta_E)} + \frac{e^{-\beta \lambda_S(1)}}{\partfun_S(\beta)} \\
+    &= \frac{e^{-\beta_E \lambda_S(0)} - e^{-\beta_E \lambda_S(1)}}{e^{-\beta_E \lambda_S(0)} + e^{-\beta_E \lambda_S(1)}} - \frac{e^{-\beta \lambda_S(0)} - e^{-\beta \lambda_S(1)}}{e^{-\beta \lambda_S(0)} + e^{-\beta \lambda_S(1)}} \\
+    &= \frac{e^{\beta_E \Delta_S} - 1}{e^{\beta_E \Delta_S} + 1} - \frac{e^{\beta \Delta_S} - 1}{e^{\beta \Delta_S} + 1} \\
+    &= \tanh(\beta_E \Delta_S / 2) - \tanh(\beta \Delta_S / 2).
+\end{align}
+Since $\tanh$ is a monotonic function, $\beta_E \geq \beta$ implies $A(0) - A(1) \geq 0$. For ease of notation, we define $T(\delta) \coloneqq \tanh(\beta_E \Delta_S /2) - \tanh((\beta_E -\delta)\Delta_S/2)$, where $\beta = \beta_E - \delta$.
+
+ In order to determine what kind of bound should be used, we first simplify the overall expression:
+\begin{align}
+    \trace{A^2} - 2 \trace{AB} + \trace{B^2} &= \trace{A^2} - 2 (A(0) B(0) + A(1)B(1)) + B(0)^2 + B(1)^2 \\
+    &= \trace{A^2} - 2 B(0)(A(0) - A(1)) + 2 B(0)^2 \\
+    &= \trace{A^2} + 2 B(0)(B(0) - A(0) + A(1)) \label{eq:dist_decrease_a_and_b}
+\end{align}
+As our goal is to show $\norm{A - B}_2^2 \leq \norm{A}_2^2 - \epsilon$, we want to show $2 B(0) (B(0) -A(0) + A(1)) \leq - \epsilon$.
+
+Now we work on bounding $B(0)$. We note that most of the non-energy preserving transitions (i.e all other than $\tau(0,1|1,0)$) can be bounded by a trivial bound of 0. Working term by term, along with the facts: $a(i) \geq 0$, $b(i) \geq 0$, and $i \leq j \implies a(i) \geq a(j) \& b(i) \geq b(j)$, $\tau(i,j|k,l) \geq 0$ if $(i,j) \neq (k,l)$ we get the following
+\begin{align}
+    \tau(0,0|1,0) b(0)(a(1) - a(0)) &\leq 0 \\
+    \tau(0,0|1,1) (-b(0) a(0) + b(1) a(1)) &\leq \tau(0,0|1,1) b(0) (-a(0) + a(1)) \leq 0 \\
+    \tau(0,1|1,1) b(1) (-a(0) + a(1)) &\leq 0.
+\end{align}
+This produces the bound $B(0) \leq \tau(0,1|1,0) (a(1)b(0) - a(0)b(1))$. Our goal is to further reduce this upper bound:
+\begin{align}
+    B(0) &\leq \tau(0,1|1,) \frac{1}{\partfun_E(\beta_E) \partfun_S(\beta)}\parens{e^{-\beta \lambda_S(1)} e^{-\beta_E \lambda_E(0)} - e^{-\beta \lambda_S(0)} e^{-\beta_E \lambda_E(1)}} \\
+    &= \tau(0,1|1,0) \frac{e^{-\beta \lambda_S(1)}}{\partfun_E(\beta_E) \partfun_S(\beta)} (1 - e^{\beta \Delta_S - \beta_E \gamma })
+\end{align}
+Now we see that if $\beta \Delta_S \geq \beta_E \gamma$ then our bound becomes negative. If we let $\beta = \beta_E - \delta$ we have $\beta \Delta_S - \beta_E \gamma = \beta_E o$.
+However, we could simply use the dumb bound:
+\begin{align}
+    B(0) &\leq \tau(0,1|1,0) (a(1) b(0) - a(0) b(1)) \\
+    &\leq \tau(0,1|1,0) a(1) b(0) \\
+    &\leq \frac{\alpha^2 t^2}{\dim + 1} \sinc^2((\Delta_S -\gamma)t/2)
+\end{align}
+We will use this for now.
+
+
+The next tast is to construct a lower bound for $B(0)$. For this we repeat a similar term-by-term process as above. For a lower bound, however, we can take advantage that the non-degenerate transitions are upper bounded by $\epsilon_{\sinc}$. We also have $a(i),b(j) \leq 1$ as they are Boltzmann factors.
+\begin{align}
+    \tau(0,0|1,0) b(0) (a(1) - a(0)) \geq - \tau(0,0|1,0) a(0) b(0) \geq - \epsilon_{\sinc} \\
+    \tau(0,0|1,1)(-b(0) a(0) + b(1)a(1)) \geq - \tau(0,0|1,1) a(0) b(0) \geq -\epsilon_{\sinc} \\
+    \tau(0,1|1,1) b(1)(-a(0) + a(1) \geq - \tau(0,1|1,1) a(0)b(1) \geq - \epsilon_{\sinc}
+\end{align}
+The one remaining term is
+\begin{align}
+    \tau(0,1|1,0) (a(1)b(0) - a(0)b(1)) &= \frac{\alpha^2 t^2 \sinc^2((\Delta_S - \gamma) t/2)}{\dim + 1} \frac{1}{\partfun_E(\beta_E) \partfun_S(\beta)}(e^{-\beta \lambda_S(1) - \beta_E \lambda_E(0)} - e^{-\beta \lambda_S(0) - \beta_E \lambda_E(1)}) \\
+    &= \frac{\alpha^2 t^2 \sinc^2((\Delta_S - \gamma) t/2)}{\dim + 1} \frac{e^{-\beta \lambda_S(1)}}{\partfun_E(\beta_E) \partfun_S(\beta)} (1 - e^{\beta \Delta_S - \beta_E \gamma})
+\end{align}
+Now we let $\beta = \beta_E - \delta$ and $\gamma = \Delta_S + \widetilde{\gamma}$. We get
+\begin{align}
+    1 - e^{(\beta_E - \delta)\Delta_S - \beta_E (\Delta_S + \widetilde{\gamma})} &= 1 - e^{-\delta \Delta_S - \beta_E \Delta_S - \beta_E \widetilde{\gamma}} \\
+    &= 1 - e^{-\beta_E \Delta_S (1 - \delta / \beta_E + \widetilde{\gamma} / \Delta_S)}
+\end{align}
+We see that this is positive so long as $\widetilde{\gamma} \geq -\Delta_S(1 - \frac{\delta}{\beta_E})$. This is a fairly significant range if $\Delta_S$ is much larger than $\Delta_{\min}$. 
+
+However, we can get a much simpler bound if we simply ignore these prefactors. We could bound it by:
+\begin{align}
+    \tau(0,1|1,0)(a(1) b(0) - a(0) b(1)) &\geq - \tau(0,1|1,0) a(0) b(1) \\
+    &\geq - \frac{\alpha^2 t^2}{\dim + 1} \sinc^2((\Delta_S - \gamma)t/2)
+\end{align}
+Which yields $B(0) \geq -\parens{3 \epsilon_{\sinc} + \frac{\alpha^2 t^2}{\dim + 1} \sinc^2((\Delta_S - \gamma)t/2)}$.
+
+Now that we have upper and lower bounds, we return to the original task of bounding the distance decrease. Our first goal is to upper bound $2 B(0)^2$. The issue we have is that $B(0)$ could be negative, in which case $\text{LB} \leq B(0) ~\&~ B(0) \leq \text{UB} \implies B(0)^2 \leq \min \set{\text{LB}^2, \text{UB}^2}$. So given the bounds we have computed and noting that $\epsilon_{\sinc} \geq 0$, we have $B(0)^2 \leq \frac{\alpha^2 t^2}{\dim  + 1} \sinc^2((\Delta_S - \gamma)t/2)$. 
+\begin{align}
+    &2 B(0)^2 - 2 B(0) (A(0) - A(1)) \\
+    &\leq \parens{\frac{2 \alpha^2 t^2}{\dim + 1} \sinc^2 ((\Delta_S -\gamma)t/2)}^2 - 2\parens{3 \epsilon_{\sinc} + \frac{\alpha^2 t^2}{\dim + 1} \sinc^2 ((\Delta_S -\gamma)t/2)} T(\delta) \\
+    &= - \epsilon
+\end{align}
+As we expect the $\alpha^4$ term to be dominated by the $\alpha^2$ term, we have that 
+$$\epsilon \leq 2 (3 \epsilon_{\sinc} + \frac{\alpha^2 t^2}{\dim + 1} \sinc^2((\Delta_S - \gamma)t/2) T(\delta) - \parens{\frac{2 \alpha^2 t^2}{\dim + 1} \sinc^2 ((\Delta_S -\gamma)t/2)}^2.$$
+Now we see the importance of knowing $\Delta_S$ to high precision, if $\Delta_S - \gamma \geq \Delta_{\min}$, then we see that $\sinc^2((\Delta_S - \gamma)t/2) \leq \epsilon_{\sinc}$ and we have that $\epsilon \in \bigo{\epsilon_{\sinc}}$. Since $\epsilon_{\sinc}$ is a user-defined paramater that we would like to take as small as possible, this would severely limit the distance that we converge to. Further, note that as $\delta \to 0$ $T(\delta) \to 0$, and we have that $\epsilon$ becomes negative, implying that our bounds break down at some point. 
+
+We can then say that $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_2^2 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_2^2 - \epsilon$. By setting $\epsilon = \epsilon' \norm{\rho_S(\beta_E) - \rho_S(\beta)}_2^2$, we have
+\begin{equation}
+    \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_2 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_2 \sqrt{1 - \epsilon'}
+\end{equation}
+It follows from standard Sch\"atten norm inequalities that $\norm{X}_2 \leq \sqrt{\dim} \norm{X}_{\infty} \leq \sqrt{\dim} \norm{X}_1$, which we can use to say:
+\begin{align}
+    \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 &\leq  \sqrt{\dim} \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_2 \\
+    &\leq \parens{\dim \sqrt{1 - \epsilon'}} \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1
+\end{align}
+
+\section{Generalizations to Many Qubits}
+
+
 \bibliographystyle{unsrt}
 \bibliography{bib}
 
 \appendix
-
+\section{Proof of Lemma \ref{lem:the_double_duhamel}}
 \end{document}
