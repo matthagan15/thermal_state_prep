@@ -13,6 +13,10 @@ use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
 use crate::{adjoint, mean_and_std, partial_trace, thermal_state, RandomInteractionGen};
 
+pub struct CoolingScheduleChannel {
+    env_betas: Vec<f64>,
+}
+// TODO: Allow for changing the environment gap. Also allow for cooling schedules.
 #[derive(Debug)]
 pub struct Channel {
     h_sys: Array2<c64>,
