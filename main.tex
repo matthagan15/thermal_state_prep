@@ -15,9 +15,12 @@
 
 
 %%%%%%%%    THEOREM DEFINITIONS AND RESTATABLE
+% \newcounter{claim}
+% \setcounter{claim}{0}
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{claim}[claim]{Claim}
 
 \usepackage{todonotes}
 
@@ -663,6 +666,63 @@ It follows from standard Sch\"atten norm inequalities that $\norm{X}_2 \leq \sqr
 
 \section{Generalizations to Many Qubits}
 
+\begin{claim}
+We now let $H_S = \sum_{i = 0}^{2^n - 1} \lambda_S(i) \ketbra{i}{i}$ be a system Hamiltonian over $n$ qubits. We utilize the same environment: a Hamiltonian $H_E = \begin{bmatrix}0 & 0 \\ 0 & \gamma\end{bmatrix}$ and state $\rho_E(\beta_E) = e^{-\beta_E H_E} / \partfun_E(\beta_E)$, along with the same interaction $G$. 
+\end{claim}
+\begin{proof}
+Our goal is to show that our channel has $\rho_S(\beta_E)$ as a fixed point and that it reduces the distance to the fixed point at different temperatures. We start from Eq. \ref{eq:trace_dist_p_norm} with the goal of showing that $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \epsilon$. This reduces to showing
+$$\sum_k \abs{\sum_{i,j,l} \frac{e^{-\beta_E \lambda(i,j)}}{\partfun(\beta_E)} \tau(i,j | k,l)}^2 \leq \epsilon.$$ 
+
+The tool we will use to bound this sum is the fact that our map preserves trace to second order, which gives us $\tau(i,j|i,j) = - \sum_{(k,l) \neq (i,j)} \tau(i,j|k,l)$. We look first at a fixed value of $k$ and further let $a(i) = \bra{i} \rho_S \ket{i}$ and $b(j) = \bra{j} \rho_E \ket{j}$, which will allow us to generalize to non-thermal input states. By definition of density matrices we have $0 \leq a(i) \leq 1$ for all $i$ and similarly $0 \leq b(j) \leq 1$ for all $j$. 
+\begin{align}
+    \sum_{i,j,l} a(i) b(j) \tau(i,j | k,l) &= \sum_{i \neq k} \sum_{j,l} \parens{a(i) b(j) \tau(i,j|k,l)} + \sum_{j,l} a(k) b(j) \tau(k,j | k,l) \label{eq:n_qubit_fixed_pt_intermediate_1}.
+\end{align}
+We expand the simpler sum on the right:
+\begin{align}
+    \sum_{j,l}a(k) b(j) \tau(k,j| k,l) &= a(k) b(0) (\tau(k,0|k,0) + \tau(k,0|k,1)) + a(k) b(1) (\tau(k,1|k,0) + \tau(k,1|k,1)) \\
+    &= - a(k) b(0) \sum_{c \neq k}\sum_{l} \tau(k,0 | c, l) - a(k) b(1) \sum_{c \neq k} \sum_{l}\tau(k,1|c,l) \\
+    &= - \sum_{c \neq k} \sum_{j,l} a(k) b(j) \tau(k,j |c,l).
+\end{align}
+Plugging this into Eq. \ref{eq:n_qubit_fixed_pt_intermediate_1} allows us to simplify as follows
+\begin{align}
+    \sum_{i,j,l} a(i) b(j) \tau(i,j|k,l) &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) \tau(i,j|k,l)) - \sum_{c \neq k} \sum_{j,l} a(k) b(j) \tau(k,j|c,l) \\
+    &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) \tau(i,j|k,l)) - \sum_{i \neq k} \sum_{j,l} a(k) b(l) \tau(i,j|k,l) \\
+    &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j | k,l).
+\end{align}
+
+We now can bound our desired quantity as follows
+\begin{align}
+    &\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \sum_{k} \abs{\sum_{i \neq k} \sum_{j,l} ((a(i) b(j) -a(k) b(l)) \tau(i,j|k,l)}^2 \\
+    &\leq \sum_{j,l,k} \sum_{i \neq k} \tau(i,j|k,l)^2 (a(i) b(j) - a(k) b(l))^2 \\
+    &\leq \sum_{j,l,k} \sum_{i \neq k} \tau(i,j|k,l)^2 \\
+    &= \sum_{j,l,k} \sum_{i \neq k} \frac{\alpha^4 t^4}{(\dim + 1)^2} \sinc(\Delta(i,j|k,l) t/ 2)^4 \\
+    &= \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 \sum_k \sum_{i \neq k} \parens{2 \sinc\parens{ \frac{\Delta_S(i,k) t}{2}}^2 + \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2 + \sinc\parens{\frac{(\Delta_S(i,k) + \gamma)t}{2}}^2} \\
+    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 \sum_k \sum_{i \neq k} \parens{3 \epsilon_{\sinc}^2 + \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2} \\
+    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 (3 \epsilon_{\sinc}^2 \dim_S (\dim_S - 1) + \sum_{k} \sum_{i \neq k} \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2.
+\end{align}
+Now given a specific value of $\gamma$ we can define a ``near-degeneracy" set of indices $S_\gamma$ that contains all indices $i,k$ such that their energy difference is close enough to $\gamma$:
+\begin{equation}
+    S_\gamma \coloneqq \set{(i,k) : i,k \in \set{1, 2, \ldots, \dim_S}, i \neq k, |\Delta_S(i,k) - \gamma| \leq \Delta_{\min}}.
+\end{equation}
+The size of this set can vary drastically depending on the eigenvalues of the system Hamiltonian. For example, take the harmonic oscillator with energy difference of 1 and set $\gamma = 1$. Then $S_{\gamma}$ in this case would be of size $|S_{1}| = \dim_S - 1$. On the other hand, take $H_S$ to be the identity, then $S_\gamma$ for any nonzero $\gamma$ is empty. 
+
+Now picking back up from where we left off:
+\begin{align}
+    &= \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 (3 \epsilon_{\sinc}^2 \dim_S (\dim_S - 1) + \sum_{(i,k) \in S_{\gamma}} \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2 + \epsilon_{\sinc}^2 (\dim_S^2 - |S_{\gamma}|)) \\
+    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 \parens{\epsilon_{\sinc}^2 (4 \dim_S^2 - 3 \dim_S - |S_{\gamma}|) + |S_{\gamma}|} \\
+    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^{2} \parens{\epsilon_{\sinc}^2 (4 \dim_S^2 - 3 \dim_S) + \dim_S(\dim_S - 1)}
+\end{align}
+We then can require that
+\begin{equation}
+    \alpha t \leq \epsilon^{1/4} \frac{\sqrt{\dim + 1}}{\dim_S (\dim_S - 1) + \epsilon_{\sinc}^2 (4 \dim_S^2 - 3 \dim_S)}
+\end{equation}
+which is enough to guarantee that $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \epsilon$. 
+\end{proof}
+
+
+I'm pretty sure this proof could be easily adapted to the trace distance.
+
+Now what about the proof of convergence?
 
 \bibliographystyle{unsrt}
 \bibliography{bib}
