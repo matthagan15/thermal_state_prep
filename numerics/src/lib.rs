@@ -13,6 +13,8 @@ pub mod channel;
 pub mod fixed_points;
 pub mod quantities;
 pub mod single_qubit_dist;
+pub mod thermometry;
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HamiltonianType {
@@ -264,6 +266,7 @@ mod test {
         let u = chacha.sample_haar_unitary();
         let u_dagger = adjoint(&u);
         let diff = u.dot(&u_dagger) - Array2::<c64>::eye(10);
+        crate::thermometry::thermometry();
         println!(
             "diff magnitude per epsilon: {:}",
             diff.opnorm_one().unwrap() / f64::EPSILON

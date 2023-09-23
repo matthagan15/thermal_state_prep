@@ -117,6 +117,17 @@ impl Channel {
             .expect("POISONED LOCK in total_map_monte_carlo_avg");
         guard.clone()
     }
+
+    /// Computes the state of the environment after a single interaction
+    pub fn env_map(&self, num_samples: usize) -> Array2<c64> {
+        let tot = self.total_map(num_samples, 1); 
+        partial_trace(&tot, self.dim_env, self.dim_sys)
+    }
+
+    pub fn print_env(&self) {
+        println!("{:?}", self.rho_env);
+    }
+
     /// Perform k applications of the channel. More efficient than repeated calls.
     fn sample_of_k_interactions_tot(&self, num_interactions: usize) -> Array2<c64> {
         let mut sampled_interactions = self
