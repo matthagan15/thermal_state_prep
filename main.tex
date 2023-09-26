@@ -20,7 +20,7 @@
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{claim}[claim]{Claim}
+\newtheorem{claim}[theorem]{Claim}
 
 \usepackage{todonotes}
 
@@ -64,6 +64,7 @@
 \newcommand{\identity}{\mathds{1}}
 \newcommand{\gue}{\rm GUE}
 \DeclareMathOperator{\sinc}{sinc}
+\DeclareMathOperator{\im}{im}
 \DeclareMathOperator{\hermMathOp}{Herm}
 \newcommand{\herm}[1]{\hermMathOp\parens{#1}}
 
@@ -102,7 +103,7 @@ For input states we will typically assume thermal states of the form $\rho_S(\be
 
 Overall one application of our channel is represented as
 \begin{equation}
-    \Phi(\rho) := \int \partrace{\hilb_E}{e^{+i(H + \alpha G)t} \rho e^{-i(H + \alpha G) t}} dG.
+    \Phi(\rho) := \int \partrace{\hilb_E}{e^{+i(H + \alpha G)t} \rho \otimes \rho_E e^{-i(H + \alpha G) t}} dG.
 \end{equation}
 It will prove convenient to study the time evolution of a fixed interaction as a map from the total system-environment space to itself. We denote this channel for a specific random interaction $G$ as
 \begin{equation}
@@ -723,6 +724,140 @@ which is enough to guarantee that $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))
 I'm pretty sure this proof could be easily adapted to the trace distance.
 
 Now what about the proof of convergence?
+
+\begin{claim}
+We want to show
+$$\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_2^2 \leq \norm{\rho_S(\beta_e) - \rho_S(\beta)}_2^2 - \epsilon$$
+\end{claim}
+
+Starting from the beginning:
+\begin{align}
+    \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_2^2 &= \norm{\rho_S(\beta_E) - \rho_S(\beta) - \sum_{i,j,k,l} \frac{e^{-\beta_E \lambda_E(j) - \beta \lambda_S(i)}}{\partfun_E(\beta_E) \partfun_S(\beta)} \tau(i,j|k,l) \ketbra{k}{k} }_2^2 + \bigo{\alpha^6} \\
+    &\approx \norm{A - B}_2^2 \\
+    &= \trace{(A - B)^\dagger (A - B)} \\
+    &= \trace{A^2} - 2 \trace{A B} + \trace{B^2},
+\end{align}
+where $A \coloneqq \rho_S(\beta_E) - \rho_S(\beta)$ and $B \coloneqq \sum_{i,j,k,l} \frac{e^{-\beta_E \lambda_E(j) - \beta \lambda_S(i)}}{\partfun_E(\beta_E) \partfun_S(\beta)} \tau(i,j|k,l) \ketbra{k}{k} $ are Hermitian and diagonal in the system's Hamiltonian basis. As $\trace{A^2}$ represents the distance we are trying to reduce, the goal is to show that $2 \trace{AB} \geq \trace{B^2} + \epsilon$. 
+
+The structure of the proof will work by noting that since $A$ is a Hermitian operator we can use the Jordan-Hahn decomposition to write $A = P - Q$, where $P$ is the part of the matrix resulting from the positive eigenvalues of $A$ and $Q$ the negative ones (which we then flip the sign). This yields the following
+\begin{align}
+    \bra{k}P\ket{k} &\coloneqq \begin{cases}
+        \bra{k} (\rho_S(\beta_E) - \rho_S(\beta)) \ket{k} & \bra{k} \rho_S(\beta_E) \ket{k} \geq \bra{k} \rho_S(\beta) \ket{k} \\
+        0 & else
+    \end{cases} \\
+    \bra{k}Q\ket{k} &\coloneqq \begin{cases}
+        (-1)\bra{k} (\rho_S(\beta_E) - \rho_S(\beta)) \ket{k} & \bra{k} \rho_S(\beta_E) \ket{k} < \bra{k} \rho_S(\beta) \ket{k} \\
+        0 & else
+    \end{cases},
+\end{align}
+which yields $A = P - Q$ for both $P$ and $Q$ being PSD. This now allows us to break up the trace of $AB$ as
+$\trace{AB} = \trace{PB} - \trace{QB}$. Since $P$ and $Q$ are both PSD we can then use upper and lower bounds on $B$ to produce a bound on $\trace{AB}$. Note if we can show that $2 A(k) \geq B(k) + \epsilon / \dim_S$ then we win.
+
+To help with our analysis we will make use of a few results. The first being that by restricting ourselves to thermal state inputs  we can argue the following about $P$ and $Q$. We first note that our indices are sorted by eigenvalue of $H_S$, so $i \leq j \implies \lambda_S(i) \leq \lambda_S(j)$. As the exponential function $x \mapsto e^x$ is monotonic we have that 
+$$k_P \in \im(P), k_Q \in \im(Q) \implies \frac{e^{-\beta \lambda_S(k_P)}}{\partfun_S(\beta)} \geq \frac{e^{-\beta \lambda_S(k_Q)}}{\partfun_S(\beta)}.$$ We use this sorting to create the (ordered) set of indices as before,
+\begin{equation}
+    S_{\gamma} \coloneqq \set{(i,j) : \lambda_S(i) \leq \lambda_S(j), |\Delta_S(i,j) - \gamma| \leq \Delta_{\min}}.
+\end{equation}
+This means that each pair of indices $(i,j)$, such that their eigenvalue difference is close to $\gamma$, is stored only once in the set. This allows us to define the function $S_\gamma(i) = j$, as we have assumed non-degeneracy of the system eigenvalues. In a similar spirit, we say $i \in S_{\gamma}$ if it is the first index of a pair $(i,j) \in S_{\gamma}$. We can further define the set of "dead" indices, those indices that do not have another eigenvalue that such that their difference is close to $\gamma$. This gives:
+$$T_{\gamma} \coloneqq \set{i : \forall j |\Delta_S(i,j) - \gamma| \geq \Delta_{\min}}.$$
+Now our goal is to compute $\trace{A B} = \sum_{k} A(k) B(k)$. We first compute $A(k) B(k)$ for $k \in T_{\gamma}$ and then for $k \in S_{\gamma}$. 
+\begin{align}
+    k \in T_{\gamma} \implies B(k) &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j|k,l) \\
+    &\leq \sum_{i \neq k} \sum_{j,l} \tau(i,j|k,l) \\
+    &\leq 4 (\dim_S - 1) \epsilon_{\sinc}.
+\end{align}
+This yields $\sum_{k \in T_{\gamma}} A(k) B(k) \leq 4 |T_\gamma| (\dim_S - 1) \epsilon_{\sinc}$.
+
+Now we move on to bounding the paired indices. Let $(k_1, k_2) \in S_{\gamma}$ be a single pair. We look at the sum of $A(k_1) B(k_1) + A(k_2) B(k_2)$. 
+\begin{align}
+    B(k_1) &\leq  \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i,j|k_1, l) + 3 \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1)} \\
+    &\leq \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} \epsilon_{\sinc} + 3 \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1)} \\
+    &= (4 \dim_S - 5) \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1) \\
+    &\leq 4 \dim_S \epsilon_{\sinc} + \tau(k_2, 0| k_1, 1)
+\end{align}
+and similarly we compute
+\begin{align}
+    B(k_2) &\leq  \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i,j|k_2, l) + 3 \epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0)} \\
+    &\leq \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} \epsilon_{\sinc} + 3 \epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0)} \\
+    &= (4 \dim_S - 5) \epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0) \\
+    &\leq 4 \dim_S \epsilon_{\sinc} + \tau(k_1, 1| k_2, 0).
+\end{align}
+Given that $\tau$ is symmetric about input and output, we have $B(k_1) - (4 \dim_S - 5) \epsilon_{\sinc} = - (B(k_2) - (4\dim_S - 5)\epsilon_{\sinc})$. This allows us to compute the sum
+\begin{align}
+    A(k_1) B(k_1) + A(k_2) B(k_2) &\leq (4 \dim_S - 5) \epsilon_{\sinc} \parens{A(k_1) + A(k_2)} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_1, 1| k_2, 0) (A(k_1) - A(k_2)) \\
+    &\leq 2 (4 \dim_S - 5) \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_1, 1| k_2, 0) (A(k_1) - A(k_2)) \\
+    &= 2 (4 \dim_S - 5) \epsilon_{\sinc} + \frac{e^{-\beta \lambda_S(k_2) - \beta_E \lambda_E(0)} - e^{-\beta \lambda_S(k_1) - \beta_E \lambda_E(1)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(k_1, 1| k_2, 0) (A(k_1) - A(k_2)).
+\end{align}
+As we want this to be negative, we require
+\begin{align}
+    e^{-\beta \lambda_S(k_2) - \beta_E \lambda_E(0)} - e^{-\beta \lambda_S(k_1) - \beta_E \lambda_E(1)} &\leq 0 \\
+    \beta \lambda_S(k_2) &\geq \beta \lambda_S(k_1) + \beta_E\gamma \\
+    \beta \Delta_S(k_2, k_1) &\geq \beta_E \gamma.
+\end{align}
+
+We will need an upper bound on $\trace{B^2}$
+\begin{align}
+    \trace{B^2} &= \sum_k B(k)^2 \\
+    &= \sum_{k \in T_{\gamma}} B(k)^2 + \sum_{(k_1, k_2) \in S_{\gamma}} B(k_1)^2 + B(k_2)^2 \\
+    &\leq 16 |T_{\gamma}| (\dim_S - 1)^2 \epsilon_{\sinc}^2 + \sum_{(k_1, k_2) \in S_{\gamma}} B(k_1)^2 + B(k_2)^2 \\
+    &\leq 16 |T_{\gamma}| (\dim_S - 1)^2 \epsilon_{\sinc}^2 \nonumber \\
+    &+ \sum_{(k_1, k_2) \in S_{\gamma}} \bigg[ \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i,j|k_1,l) + \sum_{j,l} (a(k_2) b(j) - a(k_1) b(l)) \tau(k_2, j| k_1, l)}^2 \nonumber \\
+    &+ \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_2) b(l)) \tau(i,j|k_2,l) + \sum_{j,l} (a(k_1) b(j) - a(k_2) b(l)) \tau(k_1, j| k_2, l)}^2 \bigg] 
+\end{align}
+In order to compute the above we need an upper bound on $B(k_1)^2$ and $B(k_2)^2$. For ease of notation, we define the following variables:
+\begin{align}
+    S_1 &\coloneqq \sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i, j|k_1, l) \\
+    S_2 &\coloneqq \sum_{(j,l) \neq (0, 1)} (a(k_2) b(j) - a(k_1) b(l)) \tau(k_2, j| k_1, l) \\
+    r &\coloneqq a(k_2) b(0) - a(k_1) b(1) 
+\end{align}
+We can bound the absolute value of these as:
+\begin{align}
+    \abs{S_1} &\leq \sum_{i \neq } \sum_{i \neq k_1, k_2} \sum_{j,l} |a(i) b(j) - a(k_1) b(l)| |\tau(i, j|k_1, l)| \\
+    &\leq \epsilon_{\sinc} \sum_{i \neq } \sum_{i \neq k_1, k_2} \sum_{j,l} \\
+    &\leq 4 (\dim_S - 2) \epsilon_{\sinc} \\
+    \abs{S_2} &\leq \sum_{(j,l) \neq (0,1)} |a(k_1) b(j) - a(k_2) b(j)| |\tau(k_2, j | k_1, l)| \\
+    &\leq \epsilon_{\sinc} \sum_{(j,l) \neq (0,1)} \\
+    &\leq 3 \epsilon_{sinc}
+\end{align}
+This allows us to compute bounds on $B(k_1)^2$ and $B(k_2)^2$ as:
+\begin{align}
+    B(k_1)^2 &= \bigg( S_1 + S_2 + r \tau(k_2, 0| k_1, 1) \bigg)^2 \\
+    &\leq (|S_1| + |S_2|)^2 + 2(S_1 + S_2) r \tau(k_2, 0| k_1, 1) + r^2 \tau(k_2, 0| k_1, 1)^2
+\end{align}
+
+Now our goal is to upper bound $-2\trace{AB}$. Similarly to before, we start off by assuming that $k \in T_{\gamma}$:
+\begin{align}
+    -2 B(k) &= -2 \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j| k,l) \\
+    &\leq 8 \dim_S \epsilon_{\sinc}.
+\end{align}
+This allows us to write
+\begin{align}
+    -2 \sum_{k \in T_{\gamma}} A(k) B(k) &\leq 8 \dim_S \epsilon_{\sinc} \sum_{k \in T_{\gamma}} A(k) \\
+    &\leq 8 \dim_S |T_{\gamma}| \epsilon_{\sinc}
+\end{align}
+Now let $(k_1, k_2) \in S_{\gamma}$
+\begin{align}
+    -2 B(k_1) &= -2 \sum_{i \neq k_1, k_2} \sum_{j,l}(a(i) b(j) - a(k_1) b(l)) \tau(i, j | k_1, l) - 2 \sum_{j,l} (a(k_2) b(j) - a(k_1) b(l)) \tau(k_2, j | k_1, l) \\
+    &\leq 8 (\dim_S - 2) \epsilon_{\sinc} + 6 \epsilon_{\sinc} - 2 (a(k_2) b(0) - a(k_1) b(1)) \tau(k_1, 1 | k_2, 0) \\
+    &\leq 8 \dim_S \epsilon_{\sinc}  - 2 (a(k_2) b(0) - a(k_1) b(1)) \tau(k_1, 1 | k_2, 0).
+\end{align}
+Note that the above bound can be reproduced even if multiplied by a negative number. For example, suppose $A(k) \leq 0$:
+\begin{align}
+    -2 B(k) &= -2 \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j|k,l) \\
+    &= \sum_{i \neq k} \sum_{j,l} -2 a(i) b(j)\tau(i,j|k,l) + 2 a(k) b(l) \tau(i,j|k,l) \\
+    &\geq \sum_{i \neq k} \sum_{j,l} -2 \tau(i,j|k,l) \\
+    &\geq -8 (\dim_S - 1) \epsilon_{\sinc}\\
+    &\geq -8 \dim_S \epsilon_{\sinc}.
+\end{align}
+Now we can add the terms:
+\begin{align}
+    -2 A(k_1) B(k_1) - 2 A(k_2) B(k_2) &\leq 
+\end{align}
+Now we combine these to yield: 
+\begin{align}
+    -2 \trace{AB} &= -2 \sum_{k \in T_{\gamma}} A(k) B(k) - 2 \sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) B(k_1) + A(k_2) B(k_2)
+\end{align}
+
 
 \bibliographystyle{unsrt}
 \bibliography{bib}
