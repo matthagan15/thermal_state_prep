@@ -859,12 +859,29 @@ Everything below this line has not been updated with the fix to $\tau(i,j|k,l) \
 
 \noindent\rule{\textwidth}{1pt}
 
-The first inequality is rather straightforward, using the bound that $\epsilon_{\sinc} \geq \frac{1}{\Delta_{\min}^2 t^2}$ and that $\epsilon_{\sinc} \leq \frac{1}{2\dim_S}$ implies $16 \dim_S^3 \epsilon_{\sinc}^2 \leq 8 \dim_S^2 \epsilon_{\sinc}$ to get a ``sandwich" of inequalities for $\epsilon_{\sinc}$. Then taking $t$ sufficiently large $t \geq \frac{4 \sqrt{2} \dim_S}{\Delta_{\min} \sqrt{\epsilon}}$ suffices to give an appropriate range for $\epsilon_{\sinc}$.
+The first inequality is rather straightforward. We use the intuition that the left term (ignoring constant factors) is nearly the square of the right term, and since we want to bound their sum with something small we can then deduce that the right term should be dominant. This yields the intuition that
+\begin{align}
+    16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 &\leq 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+    \epsilon_{\sinc} &\leq \frac{\dim + 1}{2 \dim_S} \frac{1}{(\alpha^2 t^2)} \\
+    &= \parens{1 + \frac{1}{\dim}} \frac{1}{\alpha^2 t^2}.
+\end{align}
+We then note that because the bound $\epsilon_{\sinc} \geq 1/(\Delta_{\min}^2 t^2)$ has to be satisfied, this yields a ``sandwich'' of acceptable ranges for $\epsilon_{\sinc}$ when combined with the upper bound above. To make this sandwich reasonable we require
+\begin{align}
+    \frac{1}{\Delta_{\min}^2 t^2} &\leq \epsilon_{\sinc} \leq \parens{1 + \frac{1}{\dim}} \frac{1}{\alpha^2 t^2} \\
+    \alpha^2 &\leq \Delta_{\min}^2 \parens{1 + \frac{1}{\dim}}.
+\end{align}
+Curiously, there are no requirements on the value of $t$. To complete this arguement, we now simplify the lower bound on $\epsilon$ by noting,
+\begin{align}
+    16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc} &\leq 16 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc},
+\end{align}
+which yields $\epsilon \geq 32 \dim_S^2 \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1}$.
+
+\textbf{Warning: The below is incorrect due to a missed factor of $t^2$}
 
 The second inequality is a lot trickier. We will work with this as a quadratic expression in $\tau$ and find values of $\tau$ such that it is satisfied. We plug in for $\tau$ and rewrite the inequality as 
 \begin{align}
-    &\alpha^4 \parens{2 t^4 r^2 \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^4}{(\dim + 1)^2}} \nonumber \\
-    &+ \alpha^2 \parens{2 t^2 r \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2}{\dim + 1} + 2r (A(k_2) - A(k_1))} \nonumber \\
+    &(\alpha t)^4 \parens{2 t^4 r^2 \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^4}{(\dim + 1)^2}} \nonumber \\
+    &+ (\alpha t)^2 \parens{2 r \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2}{\dim + 1} (A(k_2) - A(k_1))} \nonumber \\
     &+ \alpha^0 \frac{3 \epsilon}{2} \leq 0
 \end{align}
 We first simplify the coefficient for $\alpha^4$ as 
@@ -872,8 +889,8 @@ We first simplify the coefficient for $\alpha^4$ as
     2 t^4 r^2 \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^4}{(\dim + 1)^2} &\leq 2 t^4 \frac{|S_{\gamma}|}{(\dim + 1)^2}.
 \end{align}
 For simplicity we denote the coefficient for $\alpha^2$ as
-$$d \coloneqq 2 t^2 r \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2}{\dim + 1} + 2r (A(k_2) - A(k_1)).$$
-Letting $x$ play the role of $\alpha^2$ gives us a simple quadratic expression:
+$$d \coloneqq 2 r \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2}{\dim + 1} (A(k_2) - A(k_1)).$$
+Letting $x$ play the role of $(\alpha t)^2$ gives us a simple quadratic expression:
 \begin{equation}
     x^2 \frac{2 t^4 |S_{\gamma}|}{(\dim + 1)^2} + x d + \frac{3 \epsilon}{2} \leq 0.
 \end{equation}
@@ -888,8 +905,32 @@ We want to guarantee that these roots are real, so we require
 \end{equation}
 Note that inside the radical, $12 t^4 |S_{\gamma}| \epsilon / (\dim + 1)^2 d^2$ is always positive, implying that the radical is always going to be less than 1. If we would like the value of resulting value of $\alpha$ to be positive, we require that $d \leq 0$. 
 
-If these two conditions are met, then we can set $\alpha^2$ to be the average of the two roots and the distance reduction claim is satisfied. Ideally we would like the lower root to be as close to 0 as possible, so that way we can simply reduce $\alpha$ to get our desired distance reduction. Regardless, our last objective still is to produce bounds on $d$ that satisfy the given inequalities, we therefore turn our attention to the sum in question.
+If these two conditions are met, then we can set $\alpha^2$ to be the average of the two roots and the distance reduction claim is satisfied. Ideally we would like the lower root to be as close to 0 as possible, so that way we can simply reduce $\alpha$ to get our desired distance reduction. Regardless, our last objective still is to produce bounds on $d$ that satisfy the given inequalities, we therefore turn our attention to the sum in question. To simplify $d$ we first investigate the sign of $r$, assuming it to be positive we see what conditions result
+\begin{align}
+    r = a(k_2) b(0) - a(k_1) b(1) &\geq 0 \\
+    \bra{k_2} \rho_S \ket{k_2} \frac{e^{-\beta_E \lambda_E(0)}}{\partfun_E(\beta_E)} - \bra{k_1} \rho_S \ket{k_1} \frac{e^{-\beta_E \lambda_E(1)}}{\partfun_E(\beta_E)} &\geq 0 \\
+    \frac{\bra{k_2} \rho_S \ket{k_2}}{\bra{k_1} \rho_S \ket{k_1}} &\geq e^{-\beta_E \gamma}. \label{eq:bound_on_rho_s_for_r}
+\end{align}
+If we were using thermal states, $\rho_S = e^{-\beta H_S} / \partfun_S(\beta)$, the left hand side of the above would be $e^{-\beta \Delta_S(k_2, k_1)}$. Simplifying would result in $\beta \leq \frac{\gamma}{\Delta_S(k_2, k_1)} \beta_E$. Since we expect the distance moved by the thermalizing channel to be greatest as $\beta_E \to \infty$ and $\beta \to 0$, requiring this inequality to be true, and therefore $r \geq 0$, seems to be a reasonable condition to impose.
 
+With the sign of $r$ sorted out, we now have to bound the summation for $d$. Since we require $d \leq 0$ in order to get positive values for $(\alpha t)^2 $, we require
+\begin{align}
+    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_2, k_1) - \gamma)t/2)^2}{\dim + 1} (A(k_2) - A(k_1)) &\leq 0.
+\end{align}
+To prove this we bound the following, note we surpress the arguments to $\sinc$ to save space, and we make use of the bound required in Eq. \eqref{eq:bound_on_rho_s_for_r}
+\begin{align}
+    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} A(k_2) &= \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_2)}}{\partfun_S(\beta_E)}  - \bra{k_2} \rho_S \ket{k_2}} \\
+    &\leq \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_2)}}{\partfun_S(\beta_E)}  - e^{-\beta_E \gamma} \bra{k_1} \rho_S \ket{k_1}} \\
+    &= \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E (\lambda_S(k_1) - \lambda_S(k_1) + \lambda_S(k_2) )}}{\partfun_S(\beta_E)}  - e^{-\beta_E \gamma} \bra{k_1} \rho_S \ket{k_1}} \\
+    &= \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)} e^{-\beta_E \Delta_S(k_2, k_1)}  - e^{-\beta_E \gamma} \bra{k_1} \rho_S \ket{k_1}}.
+\end{align}
+Now subtracting the sum with $A(k_1)$ and simplifying yields
+\begin{align}
+    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} (A(k_2) - A(k_1)) &\leq \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)} (e^{-\beta_E \Delta_S(k_2, k_1)} - 1) - \bra{k_1} \rho_S \ket{k_1} (e^{-\beta_E \gamma} - 1) } 
+\end{align}
+
+\noindent\rule{\textwidth}{1pt}
+\newpage
 \begin{align}
     d = 2 t^2 r \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2}{\dim + 1} + 2r (A(k_2) - A(k_1)),
 \end{align}

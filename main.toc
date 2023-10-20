@@ -1,0 +1,12 @@
+\@ifundefined {etoctocstyle}{\let \etoc@startlocaltoc \@gobble \let \etoc@settocdepth \@gobble \let \etoc@depthtag \@gobble \let \etoc@setlocaltop \@gobble }{}
+\contentsline {section}{\numberline {1}Introduction}{1}{}%
+\contentsline {section}{\numberline {2}Preliminaries}{1}{}%
+\contentsline {section}{\numberline {3}Taylor's Series for $\Phi $}{3}{}%
+\contentsline {section}{\numberline {4}Single Qubit System \& Environment}{12}{}%
+\contentsline {subsection}{\numberline {4.1}Fixed Points}{14}{}%
+\contentsline {subsection}{\numberline {4.2}Distance Reduction}{16}{}%
+\contentsline {section}{\numberline {5}Generalizations to Many Qubits}{19}{}%
+\contentsline {section}{\numberline {6}Todo}{29}{}%
+\etoc@startlocaltoc {1}
+\contentsline {subsection}{\numberline {6.1}tests}{29}{}%
+\contentsline {section}{\numberline {A}Proof of Lemma 6\hbox {}}{29}{}%
