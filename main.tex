@@ -13,6 +13,8 @@
 \usepackage{tikz}
 \usepackage{thm-restate}
 
+\usepackage{etoc}
+
 
 %%%%%%%%    THEOREM DEFINITIONS AND RESTATABLE
 % \newcounter{claim}
@@ -64,13 +66,13 @@
 \newcommand{\identity}{\mathds{1}}
 \newcommand{\gue}{\rm GUE}
 \DeclareMathOperator{\sinc}{sinc}
-\DeclareMathOperator{\im}{im}
 \DeclareMathOperator{\hermMathOp}{Herm}
+\DeclareMathOperator{\im}{Im}
 \newcommand{\herm}[1]{\hermMathOp\parens{#1}}
 
 
 \title{Thermal State Prep}
-\author{Nathan Wiebe, Matthew Hagan}
+\author{Matthew Hagan, Nathan Wiebe}
 \date{May 2022}
 
 \begin{document}
@@ -103,7 +105,7 @@ For input states we will typically assume thermal states of the form $\rho_S(\be
 
 Overall one application of our channel is represented as
 \begin{equation}
-    \Phi(\rho) := \int \partrace{\hilb_E}{e^{+i(H + \alpha G)t} \rho \otimes \rho_E e^{-i(H + \alpha G) t}} dG.
+    \Phi(\rho) := \int \partrace{\hilb_E}{e^{+i(H + \alpha G)t} \rho e^{-i(H + \alpha G) t}} dG.
 \end{equation}
 It will prove convenient to study the time evolution of a fixed interaction as a map from the total system-environment space to itself. We denote this channel for a specific random interaction $G$ as
 \begin{equation}
@@ -739,50 +741,41 @@ Starting from the beginning:
 \end{align}
 where $A \coloneqq \rho_S(\beta_E) - \rho_S(\beta)$ and $B \coloneqq \sum_{i,j,k,l} \frac{e^{-\beta_E \lambda_E(j) - \beta \lambda_S(i)}}{\partfun_E(\beta_E) \partfun_S(\beta)} \tau(i,j|k,l) \ketbra{k}{k} $ are Hermitian and diagonal in the system's Hamiltonian basis. As $\trace{A^2}$ represents the distance we are trying to reduce, the goal is to show that $2 \trace{AB} \geq \trace{B^2} + \epsilon$. 
 
-The structure of the proof will work by noting that since $A$ is a Hermitian operator we can use the Jordan-Hahn decomposition to write $A = P - Q$, where $P$ is the part of the matrix resulting from the positive eigenvalues of $A$ and $Q$ the negative ones (which we then flip the sign). This yields the following
-\begin{align}
-    \bra{k}P\ket{k} &\coloneqq \begin{cases}
-        \bra{k} (\rho_S(\beta_E) - \rho_S(\beta)) \ket{k} & \bra{k} \rho_S(\beta_E) \ket{k} \geq \bra{k} \rho_S(\beta) \ket{k} \\
-        0 & else
-    \end{cases} \\
-    \bra{k}Q\ket{k} &\coloneqq \begin{cases}
-        (-1)\bra{k} (\rho_S(\beta_E) - \rho_S(\beta)) \ket{k} & \bra{k} \rho_S(\beta_E) \ket{k} < \bra{k} \rho_S(\beta) \ket{k} \\
-        0 & else
-    \end{cases},
-\end{align}
-which yields $A = P - Q$ for both $P$ and $Q$ being PSD. This now allows us to break up the trace of $AB$ as
-$\trace{AB} = \trace{PB} - \trace{QB}$. Since $P$ and $Q$ are both PSD we can then use upper and lower bounds on $B$ to produce a bound on $\trace{AB}$. Note if we can show that $2 A(k) \geq B(k) + \epsilon / \dim_S$ then we win.
-
-To help with our analysis we will make use of a few results. The first being that by restricting ourselves to thermal state inputs  we can argue the following about $P$ and $Q$. We first note that our indices are sorted by eigenvalue of $H_S$, so $i \leq j \implies \lambda_S(i) \leq \lambda_S(j)$. As the exponential function $x \mapsto e^x$ is monotonic we have that 
-$$k_P \in \im(P), k_Q \in \im(Q) \implies \frac{e^{-\beta \lambda_S(k_P)}}{\partfun_S(\beta)} \geq \frac{e^{-\beta \lambda_S(k_Q)}}{\partfun_S(\beta)}.$$ We use this sorting to create the (ordered) set of indices as before,
+We use this sorting to create the (ordered) set of indices as before,
 \begin{equation}
     S_{\gamma} \coloneqq \set{(i,j) : \lambda_S(i) \leq \lambda_S(j), |\Delta_S(i,j) - \gamma| \leq \Delta_{\min}}.
 \end{equation}
-This means that each pair of indices $(i,j)$, such that their eigenvalue difference is close to $\gamma$, is stored only once in the set. This allows us to define the function $S_\gamma(i) = j$, as we have assumed non-degeneracy of the system eigenvalues. In a similar spirit, we say $i \in S_{\gamma}$ if it is the first index of a pair $(i,j) \in S_{\gamma}$. We can further define the set of "dead" indices, those indices that do not have another eigenvalue that such that their difference is close to $\gamma$. This gives:
-$$T_{\gamma} \coloneqq \set{i : \forall j |\Delta_S(i,j) - \gamma| \geq \Delta_{\min}}.$$
+This means that each pair of indices $(i,j)$, such that their eigenvalue difference is close to $\gamma$, is stored only once in the set. This allows us to define the function $S_\gamma(i) = j$, as we have assumed non-degeneracy of the system eigenvalues. In a similar spirit, we say $i \in S_{\gamma}$ if it is the first index of a pair $(i,j) \in S_{\gamma}$. We can further define the set of ``dead" indices, those indices that do not have another eigenvalue that such that their difference is close to $\gamma$. This gives:
+$$T_{\gamma} \coloneqq \set{i : \forall j, |\Delta_S(i,j) - \gamma| \geq \Delta_{\min}}.$$
 Now our goal is to compute $\trace{A B} = \sum_{k} A(k) B(k)$. We first compute $A(k) B(k)$ for $k \in T_{\gamma}$ and then for $k \in S_{\gamma}$. 
 \begin{align}
     k \in T_{\gamma} \implies B(k) &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j|k,l) \\
     &\leq \sum_{i \neq k} \sum_{j,l} \tau(i,j|k,l) \\
-    &\leq 4 (\dim_S - 1) \epsilon_{\sinc}.
+    &\leq 4 (\dim_S - 1) \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc}.
 \end{align}
 This yields $\sum_{k \in T_{\gamma}} A(k) B(k) \leq 4 |T_\gamma| (\dim_S - 1) \epsilon_{\sinc}$.
 
+
+
 Now we move on to bounding the paired indices. Let $(k_1, k_2) \in S_{\gamma}$ be a single pair. We look at the sum of $A(k_1) B(k_1) + A(k_2) B(k_2)$. 
 \begin{align}
-    B(k_1) &\leq  \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i,j|k_1, l) + 3 \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1)} \\
-    &\leq \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} \epsilon_{\sinc} + 3 \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1)} \\
-    &= (4 \dim_S - 5) \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1) \\
-    &\leq 4 \dim_S \epsilon_{\sinc} + \tau(k_2, 0| k_1, 1)
+    B(k_1) &\leq  \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i,j|k_1, l) + 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1)} \\
+    &\leq \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc} + 3 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1)} \\
+    &= (4 \dim_S - 5) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1) \\
+    &\leq 4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + \tau(k_2, 0| k_1, 1)
 \end{align}
+
+
+
+
 and similarly we compute
 \begin{align}
-    B(k_2) &\leq  \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i,j|k_2, l) + 3 \epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0)} \\
-    &\leq \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} \epsilon_{\sinc} + 3 \epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0)} \\
-    &= (4 \dim_S - 5) \epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0) \\
-    &\leq 4 \dim_S \epsilon_{\sinc} + \tau(k_1, 1| k_2, 0).
+    B(k_2) &\leq  \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i,j|k_2, l) + 3 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0)} \\
+    &\leq \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0)} \\
+    &= (4 \dim_S - 5) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0) \\
+    &\leq 4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + \tau(k_1, 1| k_2, 0).
 \end{align}
-Given that $\tau$ is symmetric about input and output, we have $B(k_1) - (4 \dim_S - 5) \epsilon_{\sinc} = - (B(k_2) - (4\dim_S - 5)\epsilon_{\sinc})$. This allows us to compute the sum
+Given that $\tau$ is symmetric about input and output, we have $B(k_1) - (4 \dim_S - 5) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} = - (B(k_2) - (4\dim_S - 5) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc})$. This allows us to compute the sum
 \begin{align}
     A(k_1) B(k_1) + A(k_2) B(k_2) &\leq (4 \dim_S - 5) \epsilon_{\sinc} \parens{A(k_1) + A(k_2)} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_1, 1| k_2, 0) (A(k_1) - A(k_2)) \\
     &\leq 2 (4 \dim_S - 5) \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_1, 1| k_2, 0) (A(k_1) - A(k_2)) \\
@@ -799,10 +792,7 @@ We will need an upper bound on $\trace{B^2}$
 \begin{align}
     \trace{B^2} &= \sum_k B(k)^2 \\
     &= \sum_{k \in T_{\gamma}} B(k)^2 + \sum_{(k_1, k_2) \in S_{\gamma}} B(k_1)^2 + B(k_2)^2 \\
-    &\leq 16 |T_{\gamma}| (\dim_S - 1)^2 \epsilon_{\sinc}^2 + \sum_{(k_1, k_2) \in S_{\gamma}} B(k_1)^2 + B(k_2)^2 \\
-    &\leq 16 |T_{\gamma}| (\dim_S - 1)^2 \epsilon_{\sinc}^2 \nonumber \\
-    &+ \sum_{(k_1, k_2) \in S_{\gamma}} \bigg[ \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i,j|k_1,l) + \sum_{j,l} (a(k_2) b(j) - a(k_1) b(l)) \tau(k_2, j| k_1, l)}^2 \nonumber \\
-    &+ \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_2) b(l)) \tau(i,j|k_2,l) + \sum_{j,l} (a(k_1) b(j) - a(k_2) b(l)) \tau(k_1, j| k_2, l)}^2 \bigg] 
+    &\leq 16 |T_{\gamma}| (\dim_S - 1)^2 \frac{\alpha^4 t^4}{(\dim + 1)^2}\epsilon_{\sinc}^2 + \sum_{(k_1, k_2) \in S_{\gamma}} B(k_1)^2 + B(k_2)^2
 \end{align}
 In order to compute the above we need an upper bound on $B(k_1)^2$ and $B(k_2)^2$. For ease of notation, we define the following variables:
 \begin{align}
@@ -812,52 +802,155 @@ In order to compute the above we need an upper bound on $B(k_1)^2$ and $B(k_2)^2
 \end{align}
 We can bound the absolute value of these as:
 \begin{align}
-    \abs{S_1} &\leq \sum_{i \neq } \sum_{i \neq k_1, k_2} \sum_{j,l} |a(i) b(j) - a(k_1) b(l)| |\tau(i, j|k_1, l)| \\
-    &\leq \epsilon_{\sinc} \sum_{i \neq } \sum_{i \neq k_1, k_2} \sum_{j,l} \\
-    &\leq 4 (\dim_S - 2) \epsilon_{\sinc} \\
+    \abs{S_1} &\leq \sum_{i \neq k_1, k_2} \sum_{j,l} |a(i) b(j) - a(k_1) b(l)| |\tau(i, j|k_1, l)| \\
+    &\leq \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \sum_{i \neq k_1, k_2} \sum_{j,l} 1\\
+    &\leq 4 (\dim_S - 2) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
     \abs{S_2} &\leq \sum_{(j,l) \neq (0,1)} |a(k_1) b(j) - a(k_2) b(j)| |\tau(k_2, j | k_1, l)| \\
-    &\leq \epsilon_{\sinc} \sum_{(j,l) \neq (0,1)} \\
-    &\leq 3 \epsilon_{sinc}
+    &\leq \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \sum_{(j,l) \neq (0,1)} 1 \\
+    &\leq 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{sinc}
 \end{align}
 This allows us to compute bounds on $B(k_1)^2$ and $B(k_2)^2$ as:
 \begin{align}
     B(k_1)^2 &= \bigg( S_1 + S_2 + r \tau(k_2, 0| k_1, 1) \bigg)^2 \\
-    &\leq (|S_1| + |S_2|)^2 + 2(S_1 + S_2) r \tau(k_2, 0| k_1, 1) + r^2 \tau(k_2, 0| k_1, 1)^2
+    &\leq (|S_1| + |S_2|)^2 + 2(S_1 + S_2) r \tau(k_2, 0| k_1, 1) + r^2 \tau(k_2, 0| k_1, 1)^2 \\
+    B(k_2)^2 &= \bigg( S_1 + S_2 - r \tau(k_2, 0 | k_1, 1) \bigg)^2 \\
+    &\leq (|S_1| + |S_2|)^2 - 2 (S_1 + S_2) r \tau(k_2, 0 | k_1, 1) + r^2 \tau(k_2, 0 | k_1, 1)^2 \\
+    B(k_1)^2 + B(k_2)^2 &\leq 2 (|S_1| + |S_2|)^2 + 2 r^2 \tau(k_2, 0 | k_1, 1)^2 \\
+    &\leq 32 \dim_S^2 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 2 r^2 \tau(k_2, 0 | k_1, 1)^2.
+\end{align}
+We can now bound $\trace{B^2}$ as
+\begin{align}
+    \trace{B^2} &= \sum_{k \in T_{\gamma}} B(k)^2 + \sum_{(k_1, k_2) \in S_{\gamma}} B(k_1)^2 + B(k_2)^2 \\
+    &\leq 16 |T_{\gamma}| (\dim_S - 1)^2 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 16 \dim_S^2 (2 |S_{\gamma}|) \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 2 \sum_{(k_1, k_2) \in S_{\gamma}} r^2 \tau(k_1, 1 | k_2, 0)^2 \\
+    &\leq 16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 2 \sum_{(k_1, k_2) \in S_{\gamma}} r^2 \tau(k_1, 1 | k_2, 0)^2
 \end{align}
 
-Now our goal is to upper bound $-2\trace{AB}$. Similarly to before, we start off by assuming that $k \in T_{\gamma}$:
+Now our goal is to upper bound $-2\trace{AB}$. We make use of the fact that $|A(k)| \leq 1$ for all $k$ and that $k \in T_{\gamma}$ implies that $|B(k)| \leq 4 (\dim_S - 1) \epsilon_{\sinc}$.
 \begin{align}
-    -2 B(k) &= -2 \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j| k,l) \\
-    &\leq 8 \dim_S \epsilon_{\sinc}.
+    -2 \trace{AB} &= -2 \sum_{k \in T_{\gamma}} A(k) B(k) - 2 \sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) B(k_1) + A(k_2) B(k_2) \\
+    &\leq + 2 \sum_{k \in T_{\gamma}} |A(k)| |B(k)| - 2 \sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) B(k_1) + A(k_2) B(k_2) \\
+    &\leq 8 \dim_S |T_{\gamma}| \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} - 2 \sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) B(k_1) + A(k_2) B(k_2).
 \end{align}
-This allows us to write
+We now investigate the right term in the above. Using the notation from before
 \begin{align}
-    -2 \sum_{k \in T_{\gamma}} A(k) B(k) &\leq 8 \dim_S \epsilon_{\sinc} \sum_{k \in T_{\gamma}} A(k) \\
-    &\leq 8 \dim_S |T_{\gamma}| \epsilon_{\sinc}
+    A(k_1) B(k_1) &= A(k_1) (S_1(k_1) + S_2(k_1) + r \tau(k_1, 1 | k_2, 0)) \\
+    A(k_2) B(k_2) &= A(k_2) (S_1(k_2) + S_2(k_2) - r \tau(k_1, 1 | k_2, 0)) \\
+    -2A(k_1) B(k_1) -2 A(k_2) B(k_2) & = -2 A(k_1)(S_1(k_1) + S_2(k_1))  - 2A(k_2)( S_1(k_2) + S_2(k_2)) + 2 r \tau(k_1, 1 | k_2, 0)( A(k_2) - A(k_1)) \\
+    &\leq 2 |A(k_1)|(|S_1(k_1)| + |S_2(k_1)|) + 2 |A(k_2)|( |S_1(k_2)| + |S_2(k_2)|) \nonumber \\
+    &+ 2 r \tau(k_1, 1 | k_2, 0)(A(k_2) - A(k_1)) \\
+    &\leq 16 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 2 r \tau(k_1, 1 | k_2, 0)( A(k_2) - A(k_1)).
 \end{align}
-Now let $(k_1, k_2) \in S_{\gamma}$
+This allows us to plug in to our sum:
 \begin{align}
-    -2 B(k_1) &= -2 \sum_{i \neq k_1, k_2} \sum_{j,l}(a(i) b(j) - a(k_1) b(l)) \tau(i, j | k_1, l) - 2 \sum_{j,l} (a(k_2) b(j) - a(k_1) b(l)) \tau(k_2, j | k_1, l) \\
-    &\leq 8 (\dim_S - 2) \epsilon_{\sinc} + 6 \epsilon_{\sinc} - 2 (a(k_2) b(0) - a(k_1) b(1)) \tau(k_1, 1 | k_2, 0) \\
-    &\leq 8 \dim_S \epsilon_{\sinc}  - 2 (a(k_2) b(0) - a(k_1) b(1)) \tau(k_1, 1 | k_2, 0).
+    -2 \trace{AB} &\leq 8 \dim_S(|T_{\gamma}| + 2 |S_{\gamma}|) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 2 \sum_{(k_1, k_2) \in S_{\gamma}} r \tau(k_1, 1 | k_2, 0) ( A(k_2) - A(k_1)) \\
+    &= 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 2 \sum_{(k_1, k_2) \in S_{\gamma}} r \tau(k_1, 1 | k_2, 0) ( A(k_2) - A(k_1)).
 \end{align}
-Note that the above bound can be reproduced even if multiplied by a negative number. For example, suppose $A(k) \leq 0$:
+Combining with the bound for $\trace{B^2}$ we get the following
 \begin{align}
-    -2 B(k) &= -2 \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j|k,l) \\
-    &= \sum_{i \neq k} \sum_{j,l} -2 a(i) b(j)\tau(i,j|k,l) + 2 a(k) b(l) \tau(i,j|k,l) \\
-    &\geq \sum_{i \neq k} \sum_{j,l} -2 \tau(i,j|k,l) \\
-    &\geq -8 (\dim_S - 1) \epsilon_{\sinc}\\
-    &\geq -8 \dim_S \epsilon_{\sinc}.
+    \trace{B^2} - 2 \trace{AB} &\leq 16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 2 \sum_{(k_1, k_2) \in S_{\gamma}} \parens{r^2 \tau(k_1, 1 |k_2, 0)^2 + r \tau(k_1, 1| k_2, 0) (A(k_2) - A(k_1))}.
 \end{align}
-Now we can add the terms:
+To prove the required bound, we will require the following two inequalities:
 \begin{align}
-    -2 A(k_1) B(k_1) - 2 A(k_2) B(k_2) &\leq 
-\end{align}
-Now we combine these to yield: 
-\begin{align}
-    -2 \trace{AB} &= -2 \sum_{k \in T_{\gamma}} A(k) B(k) - 2 \sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) B(k_1) + A(k_2) B(k_2)
+    16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2}\epsilon_{\sinc}^2 + 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} &\leq \frac{\epsilon}{2} \\
+    2 \sum_{(k_1, k_2) \in S_{\gamma}} r \tau(k_1, 1 | k_2, 0) (r \tau(k_1, 1 | k_2, 0)  + A(k_2) - A(k_1)) &\leq - \frac{3\epsilon}{2}.
 \end{align}
 
+Everything below this line has not been updated with the fix to $\tau(i,j|k,l) \leq \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}$. 
+
+\noindent\rule{\textwidth}{1pt}
+
+The first inequality is rather straightforward, using the bound that $\epsilon_{\sinc} \geq \frac{1}{\Delta_{\min}^2 t^2}$ and that $\epsilon_{\sinc} \leq \frac{1}{2\dim_S}$ implies $16 \dim_S^3 \epsilon_{\sinc}^2 \leq 8 \dim_S^2 \epsilon_{\sinc}$ to get a ``sandwich" of inequalities for $\epsilon_{\sinc}$. Then taking $t$ sufficiently large $t \geq \frac{4 \sqrt{2} \dim_S}{\Delta_{\min} \sqrt{\epsilon}}$ suffices to give an appropriate range for $\epsilon_{\sinc}$.
+
+The second inequality is a lot trickier. We will work with this as a quadratic expression in $\tau$ and find values of $\tau$ such that it is satisfied. We plug in for $\tau$ and rewrite the inequality as 
+\begin{align}
+    &\alpha^4 \parens{2 t^4 r^2 \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^4}{(\dim + 1)^2}} \nonumber \\
+    &+ \alpha^2 \parens{2 t^2 r \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2}{\dim + 1} + 2r (A(k_2) - A(k_1))} \nonumber \\
+    &+ \alpha^0 \frac{3 \epsilon}{2} \leq 0
+\end{align}
+We first simplify the coefficient for $\alpha^4$ as 
+\begin{align}
+    2 t^4 r^2 \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^4}{(\dim + 1)^2} &\leq 2 t^4 \frac{|S_{\gamma}|}{(\dim + 1)^2}.
+\end{align}
+For simplicity we denote the coefficient for $\alpha^2$ as
+$$d \coloneqq 2 t^2 r \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2}{\dim + 1} + 2r (A(k_2) - A(k_1)).$$
+Letting $x$ play the role of $\alpha^2$ gives us a simple quadratic expression:
+\begin{equation}
+    x^2 \frac{2 t^4 |S_{\gamma}|}{(\dim + 1)^2} + x d + \frac{3 \epsilon}{2} \leq 0.
+\end{equation}
+As $\alpha \geq 0$ we have $x \geq 0$ as well. This requires the roots of the quadratic to be both real and at least one of them must be positive. Denote the roots $x_{\pm}$, which can be seen as:
+\begin{align}
+    x_{\pm} &= \frac{-d(\dim + 1)^2}{4t^4 |S_{\gamma}|} \pm \frac{(\dim + 1)^2}{4t^4 |S_{\gamma}|} \sqrt{d^2 - \frac{12 t^4 |S_{\gamma}| \epsilon}{(\dim + 1)^2}} \\
+    &= \frac{-d(\dim + 1)^2}{4t^4 |S_{\gamma}|} \parens{1 \mp \sqrt{1 - \frac{12 t^4 |S_{\gamma}| \epsilon}{(\dim + 1)^2 d^2}}}.
+\end{align}
+We want to guarantee that these roots are real, so we require 
+\begin{equation}
+    d^2 \geq \frac{12 t^4 |S_{\gamma}| \epsilon}{(\dim + 1)^2}.
+\end{equation}
+Note that inside the radical, $12 t^4 |S_{\gamma}| \epsilon / (\dim + 1)^2 d^2$ is always positive, implying that the radical is always going to be less than 1. If we would like the value of resulting value of $\alpha$ to be positive, we require that $d \leq 0$. 
+
+If these two conditions are met, then we can set $\alpha^2$ to be the average of the two roots and the distance reduction claim is satisfied. Ideally we would like the lower root to be as close to 0 as possible, so that way we can simply reduce $\alpha$ to get our desired distance reduction. Regardless, our last objective still is to produce bounds on $d$ that satisfy the given inequalities, we therefore turn our attention to the sum in question.
+
+\begin{align}
+    d = 2 t^2 r \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2}{\dim + 1} + 2r (A(k_2) - A(k_1)),
+\end{align}
+where we remind the reader that $r = \bra{k_2} \rho_S \ket{k_2} \frac{e^{-\beta_E \lambda_E(0)}}{\partfun_E(\beta_E)} - \bra{k_1} \rho_s \ket{k_1} \frac{e^{-\beta_E \lambda_E(1)}}{\partfun_E(\beta_E)}$ and $A(k) = \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \bra{k} \rho_S \ket{k}$.
+Given that we would like to bound these sums, we need to know when $r$ is positive or negative.
+\begin{equation}
+    r \geq 0 \implies \frac{\bra{k_2} \rho_S \ket{k_2}}{\bra{k_1} \rho_S \ket{k_1}} \geq e^{-\beta_E \gamma}.
+\end{equation}
+Given that we would like this process to replicate a thermalization/cooling procedure, where our system is in a thermal state and we are slowly reducing the temperature, we should require that the higher energy states $\bra{k_2} \rho_S \ket{k_2}$ have smaller probability than lower energy states $\bra{k_1} \rho_S \ket{k_1}$
+
+Either way, we know that $-1 \leq r \leq 1$, so $r$ should not affect the asymptotics. Let us use the upper bound of 1 for now
+$$d \leq 2t^2 \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2}{\dim + 1} + 2(A(k_2) - A(k_1)).$$
+Similarly, we know that the $\sinc$ is upper bounded by 1, yielding
+\begin{align}
+     d &\leq \frac{2t^2 |S_{\gamma}|}{\dim + 1}  +2 \sum_{(k_1, k_2) \in S_{\gamma}} A(k_2) - A(k_1) \\
+     &= \frac{2t^2 |S_{\gamma}|}{\dim + 1}  +2 \sum_{(k_1, k_2) \in S_{\gamma}} \frac{e^{-\beta_E \lambda_S(k_2)}}{\partfun_S(\beta_E)} - \bra{k_2} \rho_S \ket{k_2} - \frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)} + \bra{k_1} \rho_S \ket{k_1}.
+\end{align}
+Without further knowledge of the structure of $\rho_S$ we cannot produce any more simplifying bounds. This leads to the $d \leq 0$ bound yielding 
+\begin{align}
+    \sum_{(k_1, k_2) \in S_{\gamma}} \bra{k_1} \rho_S \ket{k_1} - \bra{k_2} \rho_S \ket{k_2} \leq \sum_{(k_1, k_2) \in S_{\gamma}}\frac{e^{-\beta_E \lambda_S(k_1)} - e^{-\beta_E \lambda_S (k_2)}}{\partfun_S(\beta_E)} - \frac{2 t^2 |S_{\gamma}|}{\dim + 1}.
+\end{align}
+This unfortunately does not seem possible, as $t \in \Omega(\dim_S) = \Omega(\dim)$. 
+
+Given that the dominant term in $d$ is the $\bigo{t^2}$ term, in order for this sum to be negative we will have to require that $r \leq 0$. This boils down to the following
+\begin{align}
+    r &\leq 0 \\
+    \bra{k_2} \rho_S \ket{k_2} \frac{1}{\partfun_E(\beta_E)} - \bra{k_1} \rho_S \ket{k_1} \frac{e^{-\beta_E \gamma}}{\partfun_E(\beta_E)} &\leq 0 \\
+    \frac{\bra{k_2} \rho_S \ket{k_2}}{\bra{k_1} \rho_S \ket{k_1}} &\leq e^{-\beta_E \gamma}.
+\end{align}
+This bound is rather abstract, but boils down to requiring the high energy terms to having lower probability than the low energy terms. If we assume $\rho_S = \frac{e^{-\beta H_S}}{\partfun_S(\beta)}$, then this inequality can be expressed as $\beta_E \leq \beta \frac{\Delta_S}{\gamma}$. Since we are hoping to cool, this would imply $\beta \leq \beta_E$. The inequality we require indicates a lower bound on how much larger this temperature (or smaller $\beta$) can be. Expressed in terms of $\gamma$ we have $\gamma \leq \Delta_S \frac{\beta}{\beta_E}$.
+So we assume that this holds for the provided $\rho_S, \beta_E,$ and $\gamma$.
+
+Now in order to show negativity of $d$ we just have to find when the $t^2$ term dominates the $A$ contributions. We need to find the value of $t^2$ such that 
+\begin{equation}
+    t^2 \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_2, k_1) - \gamma)t/2)^2}{\dim + 1} \geq \sum_{(k_1, k_2) \in S_{\gamma}} (A(k_1) - A(k_2)). \label{eq:dominant_inequality_in_dist_reduction}
+\end{equation}
+Note that since we are summing over $S_{\gamma}$ we can assume that $\sinc^2 \geq \epsilon_{\sinc}$. We also can make the dumb bound that $\sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) - A(k_2) \leq \sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) \leq |S_{\gamma}|$. This gives us the implication that if $\frac{t^2 \epsilon_{\sinc}|S_{\gamma}|}{\dim + 1} \geq |S_{\gamma}|$ holds then the bound in \eqref{eq:dominant_inequality_in_dist_reduction} holds as well. This inequality is then sufficient to claim that $d \leq 0$.
+
+We now need to verify the other claim, that $d^2 \geq \frac{12 t^4 |S_{\gamma}| \epsilon}{(\dim + 1)^2}$. As we know $d$ negative, we should aim to produce lower bounds on $d$. Since the sign of $d$ is carried by $r$ we only need to upper bound the summation.
+\begin{align}
+    L \coloneqq 2 \sum_{(k_1, k_2) \in S_{\gamma}} t^2 \frac{\sinc((\Delta_S(k_2, k_1) - \gamma)t/2)^2}{\dim + 1} + A(k_2) - A(k_1) & \geq 2 |S_{\gamma}| \parens{\frac{t^2 \epsilon_{\sinc}}{\dim + 1}  -2}.
+\end{align}
+Since $d = r * L$, we have $d^2 = r^2 L^2 \geq (-1)^2 L^2$. We now plug in the lower bound for $L^2$ to our desired inequality to get a bound on the allowed values of $\epsilon$
+\begin{align}
+    4 |S_{\gamma}|^2 \parens{\frac{t^2 \epsilon_{\sinc}}{\dim + 1} - 2}^2 &\geq 12\frac{t^4 |S_{\gamma}| \epsilon}{(\dim + 1)^2}
+     \\
+    \epsilon &\leq \frac{1}{3} |S_{\gamma}| \parens{\epsilon_{\sinc} - \frac{2(\dim + 1)}{t^2}}^2.
+\end{align}
+As we have $t^2 \in \Omega(\dim)$, we expect this to scale like $\bigo{|S_{\gamma}| \epsilon_{\sinc}^2}$. 
+
+\section{Todo}
+\localtableofcontents
+\subsection{tests}
+\begin{itemize}
+    \item How would you write out a two hop cooling chain? $\beta_0 \to \beta_1 \to \beta_2$. 
+    Want to bound $\norm{\Phi_{\beta_2} \circ \Phi_{\beta_1} \circ \Phi_{\beta_0} - \rho_S(\beta_2)}_1$.
+    
+    \item Find value of $\beta$ such that $\norm{\rho_S(\beta) - \Phi(\rho_S(\beta))}_1 \geq \epsilon$
+
+    ok.
+\end{itemize}
 
 \bibliographystyle{unsrt}
 \bibliography{bib}
