@@ -14,6 +14,7 @@ pub mod fixed_points;
 pub mod quantities;
 pub mod single_qubit_dist;
 pub mod thermometry;
+pub mod cooling_schedule;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

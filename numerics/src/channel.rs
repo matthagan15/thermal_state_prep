@@ -9,13 +9,57 @@ use std::{
 use ndarray::{linalg::kron, Array2, ShapeBuilder};
 use ndarray_linalg::{expm, krylov::R, Scalar};
 use num_complex::Complex64 as c64;
+use rand::{Rng, thread_rng};
+use rand_distr::{uniform::UniformFloat, Uniform};
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
+use serde::{Serialize, Deserialize};
 
 use crate::{adjoint, mean_and_std, partial_trace, thermal_state, RandomInteractionGen};
 
-pub struct CoolingScheduleChannel {
-    env_betas: Vec<f64>,
+#[derive(Debug, Serialize, Deserialize)]
+pub enum GammaSampler {
+    Gaps {
+        // Vec containing the eigenvalue differences
+        // of the hamiltonian.
+        spectrum_gaps: Vec<f64>, 
+        // Parameter controlling the tradeoff between uniform sampling vs. 
+        // sampling the known distribution. noise of 0 implies 
+        // that the distribution is known, anything else controls the width
+        // of a uniformly sampled float that is added on to the sampled
+        // known spectrum difference.
+        noise_added: f64,
+    },
+    Grid {
+        max: f64,
+        num_pts: usize,
+    }
 }
+
+impl GammaSampler {
+    pub fn gen_samples(&self, num_samples: usize) -> Vec<f64> {
+        let mut rng = thread_rng();
+        let mut ret = Vec::with_capacity(num_samples);
+        match self {
+            GammaSampler::Gaps{spectrum_gaps, noise_added} => { 
+                for _ in 0..num_samples {
+                    let ix = rng.sample(Uniform::from(0..spectrum_gaps.len()));
+                    let sampled_gap = spectrum_gaps[ix];
+                    let noise = noise_added * (rng.gen::<f64>() - f64::min(0.5, sampled_gap));
+                    ret.push(sampled_gap + noise);
+                }
+            },
+            GammaSampler::Grid{max, num_pts}=> {
+                let delta = max / ((num_pts - 1) as f64);
+                for _ in 0..num_samples {
+                    let ix = rng.sample(Uniform::from(0..*num_pts));
+                    ret.push((ix as f64) * delta);
+                }
+            },
+        }
+        ret
+    }
+}
+
 // TODO: Allow for changing the environment gap. Also allow for cooling schedules.
 #[derive(Debug)]
 pub struct Channel {
@@ -207,7 +251,7 @@ mod test {
         thermal_state, HamiltonianType, RandomInteractionGen,
     };
 
-    use super::Channel;
+    use super::{Channel, GammaSampler};
 
     #[test]
     fn test_estimators() {
@@ -220,5 +264,24 @@ mod test {
         let distance_estimator = |matrix: &Array2<c64>| schatten_2_distance(matrix, &rho_sys);
         let out = phi.estimator_sys(distance_estimator, 1000, 100);
         println!("observed metrics: {:} +- {:}", out.0, out.1);
+    }
+
+    #[test]
+    fn test_gamma_sampler() {
+        let gs = GammaSampler::Gaps {
+            spectrum_gaps: vec![
+                0.1,
+                0.1,
+                0.2,
+                0.2,
+                0.2,
+                0.2,
+                0.4,
+            ],
+            noise_added: 0.025,
+        };
+        dbg!(gs.gen_samples(100));
+        let gs2 = GammaSampler::Grid { max: 1., num_pts: 10 };
+        dbg!(gs2.gen_samples(100));
     }
 }
