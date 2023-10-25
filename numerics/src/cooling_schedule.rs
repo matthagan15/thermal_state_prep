@@ -1,6 +1,6 @@
 use crate::channel;
 
-/// The goal for this test is to study the effects of the cooling schedule 
+/// The goal for this test is to study the effects of the cooling schedule
 /// on distance convergence.
 struct CoolingScheduleConf {
     beta_start: f64,

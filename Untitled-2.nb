@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     30148,        697]
-NotebookOptionsPosition[     28186,        656]
-NotebookOutlinePosition[     28580,        672]
-CellTagsIndexPosition[     28537,        669]
+NotebookDataLength[     32525,        767]
+NotebookOptionsPosition[     30338,        722]
+NotebookOutlinePosition[     30732,        738]
+CellTagsIndexPosition[     30689,        735]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -652,6 +652,72 @@ Cell[BoxData[
   Editable->False]], "Output",
  CellChangeTimes->{3.8994777909324923`*^9, 3.899477884897138*^9},
  CellLabel->"Out[4]=",ExpressionUUID->"06ee9885-3d72-4179-85ed-de8f104b3f39"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"rat", "[", "x_", "]"}], ":=", 
+    FractionBox[
+     RowBox[{"1", " ", "-", " ", 
+      RowBox[{"Exp", "[", 
+       RowBox[{
+        RowBox[{"-", "betaE"}], " ", "ds"}], "]"}]}], 
+     RowBox[{"1", " ", "-", " ", 
+      RowBox[{"Exp", "[", 
+       RowBox[{
+        RowBox[{"-", "betaE"}], " ", 
+        RowBox[{"(", 
+         RowBox[{"ds", " ", "+", " ", "x"}], ")"}]}], "]"}]}]]}], 
+   "\[IndentingNewLine]", 
+   RowBox[{"Series", "[", 
+    RowBox[{
+     RowBox[{"rat", "[", "x", "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"x", ",", "0", ",", "2"}], "}"}]}], "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.907151492132237*^9, 3.9071515327299356`*^9}},
+ CellLabel->"In[3]:=",ExpressionUUID->"8912667f-9e49-4190-886d-bf010a6d485c"],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"1", "-", 
+   FractionBox[
+    RowBox[{"betaE", " ", "x"}], 
+    RowBox[{
+     RowBox[{"-", "1"}], "+", 
+     SuperscriptBox["\[ExponentialE]", 
+      RowBox[{"betaE", " ", "ds"}]]}]], "+", 
+   FractionBox[
+    RowBox[{
+     SuperscriptBox["betaE", "2"], " ", 
+     RowBox[{"(", 
+      RowBox[{"1", "+", 
+       SuperscriptBox["\[ExponentialE]", 
+        RowBox[{"betaE", " ", "ds"}]]}], ")"}], " ", 
+     SuperscriptBox["x", "2"]}], 
+    RowBox[{"2", " ", 
+     SuperscriptBox[
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{"-", "1"}], "+", 
+        SuperscriptBox["\[ExponentialE]", 
+         RowBox[{"betaE", " ", "ds"}]]}], ")"}], "2"]}]], "+", 
+   InterpretationBox[
+    SuperscriptBox[
+     RowBox[{"O", "[", "x", "]"}], "3"],
+    SeriesData[$CellContext`x, 0, {}, 0, 3, 1],
+    Editable->False]}],
+  SeriesData[$CellContext`x, 0, {
+   1, -$CellContext`betaE/(-1 + E^($CellContext`betaE $CellContext`ds)), 
+    Rational[1, 2] $CellContext`betaE^2 (-1 + 
+      E^($CellContext`betaE $CellContext`ds))^(-2) (1 + 
+     E^($CellContext`betaE $CellContext`ds))}, 0, 3, 1],
+  Editable->False]], "Output",
+ CellChangeTimes->{{3.9071515303317337`*^9, 3.907151533274036*^9}},
+ CellLabel->"Out[4]=",ExpressionUUID->"88de244f-e553-4ca1-b34f-628167780b4c"]
 }, Open  ]]
 },
 WindowSize->{960, 916},
@@ -697,7 +763,11 @@ Cell[8187, 258, 16698, 292, 236, "Output",ExpressionUUID->"2edc8137-2b5a-4aaf-a0
 Cell[24900, 553, 1630, 53, 117, "Input",ExpressionUUID->"bf1a6105-c140-4725-a53b-4e45251cd395"],
 Cell[CellGroupData[{
 Cell[26555, 610, 409, 10, 30, "Input",ExpressionUUID->"0e7ba1da-49fe-4104-a4dc-fe673f974465"],
-Cell[26967, 622, 1203, 31, 85, "Output",ExpressionUUID->"06ee9885-3d72-4179-85ed-de8f104b3f39"]
+Cell[26967, 622, 1203, 31, 62, "Output",ExpressionUUID->"06ee9885-3d72-4179-85ed-de8f104b3f39"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[28207, 658, 812, 23, 98, "Input",ExpressionUUID->"8912667f-9e49-4190-886d-bf010a6d485c"],
+Cell[29022, 683, 1300, 36, 64, "Output",ExpressionUUID->"88de244f-e553-4ca1-b34f-628167780b4c"]
 }, Open  ]]
 }
 ]

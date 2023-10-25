@@ -157,7 +157,7 @@ pub fn trace_norm_reduction(
     let rho_ideal = thermal_state(h_sys, beta_env);
     let rho_input = thermal_state(h_sys, beta_sys);
 
-    let mut phi = Channel::new(h_sys.clone(), h_env, alpha, time, rng);
+    let mut phi = Channel::new(h_sys.clone(), crate::channel::GammaSampler::Fixed(env_gap), alpha, time, rng);
     phi.set_env_to_thermal_state(beta_env);
     phi.set_sys_to_thermal_state(beta_sys);
     let input_distance = schatten_2_distance(&rho_ideal, &rho_input);

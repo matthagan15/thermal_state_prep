@@ -10,12 +10,11 @@ use rand_distr::{Distribution, Normal, StandardNormal};
 use serde::{Deserialize, Serialize};
 
 pub mod channel;
+pub mod cooling_schedule;
 pub mod fixed_points;
 pub mod quantities;
 pub mod single_qubit_dist;
 pub mod thermometry;
-pub mod cooling_schedule;
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HamiltonianType {
@@ -26,14 +25,14 @@ pub enum HamiltonianType {
 #[derive(Debug)]
 pub struct RandomInteractionGen {
     rng: Arc<Mutex<ChaCha8Rng>>,
-    dim: usize,
+    pub dim: usize,
 }
 
 impl RandomInteractionGen {
     pub fn new(seed: u64, dim: usize) -> Self {
         RandomInteractionGen {
             rng: Arc::new(Mutex::new(ChaCha8Rng::seed_from_u64(seed))),
-            dim: dim,
+            dim,
         }
     }
 

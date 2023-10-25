@@ -224,7 +224,7 @@ fn main() {
             println!("fixed point sweep!");
         }
     }
-    
+
     let duration = start.elapsed();
     println!("took this many millis: {:}", duration.as_millis());
 }
