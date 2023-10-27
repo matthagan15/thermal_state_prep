@@ -18,7 +18,13 @@ pub fn thermometry() {
     let t = 100.0_f64;
     let alpha = 1e-3_f64;
     let rand = RandomInteractionGen::new(1, h_sys.nrows() * h_env.nrows());
-    let mut phi = Channel::new(h_sys, crate::channel::GammaSampler::Fixed(1.0), alpha, t, rand);
+    let mut phi = Channel::new(
+        h_sys,
+        crate::channel::GammaSampler::Fixed(1.0),
+        alpha,
+        t,
+        rand,
+    );
 
     let beta_sys = 1.0_f64;
     phi.set_sys_to_thermal_state(beta_sys);

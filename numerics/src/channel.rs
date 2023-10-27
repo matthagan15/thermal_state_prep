@@ -3,18 +3,20 @@ use std::{
     cmp::min,
     env,
     ops::AddAssign,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, RwLock}, collections::HashMap,
 };
 
-use ndarray::{linalg::kron, Array2, ShapeBuilder, array};
+use ndarray::{array, linalg::kron, Array2, ShapeBuilder};
 use ndarray_linalg::{expm, krylov::R, Scalar, Trace};
 use num_complex::Complex64 as c64;
 use rand::{thread_rng, Rng};
-use rand_distr::{uniform::UniformFloat, Uniform, Gamma};
+use rand_distr::{uniform::UniformFloat, Gamma, Uniform};
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 
-use crate::{adjoint, mean_and_std, partial_trace, thermal_state, RandomInteractionGen, schatten_2_distance};
+use crate::{
+    adjoint, mean_and_std, partial_trace, schatten_2_distance, thermal_state, RandomInteractionGen,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ParameterHandler {
@@ -74,7 +76,7 @@ pub enum GammaSampler {
         max: f64,
         num_pts: usize,
     },
-    Fixed (f64),
+    Fixed(f64),
 }
 
 impl GammaSampler {
@@ -99,7 +101,7 @@ impl GammaSampler {
                     let ix = rng.sample(Uniform::from(0..*num_pts));
                     ret.push((ix as f64) * delta);
                 }
-            },
+            }
             GammaSampler::Fixed(g) => {
                 for _ in 0..num_samples {
                     ret.push(*g);
@@ -125,6 +127,7 @@ fn simulate_paramaters(phi: &mut Channel, param_handler: ParameterHandler) {
         phi.set_env_to_gap(g);
         phi.set_env_to_thermal_state(b);
         phi.alpha = a;
+        let statistic = |state: &Array2<c64>| schatten_2_distance(&target_sys, state);
         let out = phi.map(100, 1);
         let dist = schatten_2_distance(&out, &target_sys);
         beta_dist_pairs.push((b, dist));
@@ -132,7 +135,10 @@ fn simulate_paramaters(phi: &mut Channel, param_handler: ParameterHandler) {
     }
     println!("beta/dist pairs:");
     for ix in 0..beta_dist_pairs.len() {
-        println!("beta: {:}, dist: {:}", beta_dist_pairs[ix].0, beta_dist_pairs[ix].1);
+        println!(
+            "beta: {:}, dist: {:}",
+            beta_dist_pairs[ix].0, beta_dist_pairs[ix].1
+        );
     }
 }
 
@@ -166,7 +172,10 @@ impl Channel {
         let ds = system_hamiltonian.nrows();
         let de = 2;
         let gamma = gamma_strategy.gen_samples(1);
-        let h_env = array![[0.0.into(), 0.0.into()], [0.0.into(), c64::from_real(*gamma.first().unwrap())]];
+        let h_env = array![
+            [0.0.into(), 0.0.into()],
+            [0.0.into(), c64::from_real(*gamma.first().unwrap())]
+        ];
         let h_tot = kron(&system_hamiltonian, &Array2::<c64>::eye(de))
             + kron(&Array2::<c64>::eye(ds), &h_env);
         let rho_sys = Array2::<c64>::eye(ds) / (c64::from_real(ds as f64));
@@ -189,7 +198,7 @@ impl Channel {
 
     pub fn set_env_to_gap(&mut self, gap: f64) {
         let mut h_gap = Array2::<c64>::zeros((2, 2));
-        h_gap[[1,1]] = c64::from_real(gap);
+        h_gap[[1, 1]] = c64::from_real(gap);
         let h_tot = kron(&self.h_sys, &Array2::<c64>::eye(2))
             + kron(&Array2::<c64>::eye(self.dim_sys), &h_gap);
         self.dim_env = 2;
@@ -235,6 +244,45 @@ impl Channel {
     }
     pub fn get_copy_of_h_sys(&self) -> Array2<c64> {
         self.h_sys.clone()
+    }
+
+    /// Returns a Vec with the average statistic, the standard deviation of the statistic, and then the statistic of the average state.
+    pub fn parameter_schedule_with_statistic<F>(
+        &mut self,
+        params: ParameterHandler,
+        num_samples: usize,
+        statistic: F,
+    ) -> Vec<(f64, f64, f64)>
+    where
+        F: Fn(&Array2<c64>) -> f64 + Sync + Send,
+    {
+        let schedule = params.sample_schedule();
+        let avg_states: HashMap<usize, Array2<c64>> = HashMap::with_capacity(schedule.len());
+        let avg_states_locker = Arc::new(Mutex::new(avg_states));
+        (0..num_samples).into_par_iter().for_each(|_| {
+            let mut rho_sys = thermal_state(&self.h_sys, 0.0);
+            for ix in 0..schedule.len() {
+                let (a, b, g) = schedule[ix];
+                let env_partition_function = 1. + (-1. * b * g).exp();
+                let rho_env = array![
+                    [c64::from_real(1. / env_partition_function), 0.0.into()],
+                    [0.0.into(), c64::from_real((-1. * b * g).exp() / env_partition_function)]
+                ];
+                let rho_tot = kron(&rho_sys, &rho_env);
+                let h_tot = kron(&self.h_sys, &Array2::<c64>::eye(2)) + kron(&Array2::<c64>::eye(self.dim_sys), &array![
+                    [0.0.into(), 0.0.into()], [0.0.into(), c64::from_real(g)]
+                ]);
+                let interaction = self.interaction_generator.sample_gue() * a;
+                let tot = (h_tot + interaction) * (-1. * self.time);
+                let u = expm(&tot).expect("Could not compute time propagator.");
+                let total_out = u.dot(&rho_tot.dot(&adjoint(&u)));
+                rho_sys = partial_trace(&total_out, self.dim_sys, 2);
+                let mut avgs = avg_states_locker.lock().expect("Could not get average states");
+                let state = avgs.get_mut(&ix).expect("could not get average state");
+                *state += &rho_sys;
+            }
+        });
+        Vec::new()
     }
 
     /// operates under the assumption that the kronecker product is
@@ -345,7 +393,7 @@ impl Channel {
 }
 
 mod test {
-    use ndarray::{array, linalg::kron, Array2, arr1};
+    use ndarray::{arr1, array, linalg::kron, Array2};
     use ndarray_linalg::{OperationNorm, Scalar};
     use num_complex::Complex64 as c64;
 
@@ -354,7 +402,7 @@ mod test {
         thermal_state, HamiltonianType, RandomInteractionGen,
     };
 
-    use super::{Channel, GammaSampler, ParameterHandler, simulate_paramaters};
+    use super::{simulate_paramaters, Channel, GammaSampler, ParameterHandler};
 
     #[test]
     fn test_cooling_schedule() {
@@ -366,7 +414,10 @@ mod test {
             alpha_diff: 0.9,
             alpha_linear_scale: false,
             alpha_steps: 10,
-            gammas: GammaSampler::Grid { max: 3.0, num_pts: 20 },
+            gammas: GammaSampler::Grid {
+                max: 3.0,
+                num_pts: 20,
+            },
             num_gamma_samples: 10,
         };
         let h_sys = Array2::<c64>::from_diag(&arr1(&[
@@ -381,7 +432,16 @@ mod test {
             c64::from_real(2.7),
             c64::from_real(3.0),
         ]));
-        let mut channel = Channel::new(h_sys, GammaSampler::Grid { max: 3.0, num_pts: 20 }, 0.01, 100., RandomInteractionGen::new(1, 20));
+        let mut channel = Channel::new(
+            h_sys,
+            GammaSampler::Grid {
+                max: 3.0,
+                num_pts: 20,
+            },
+            0.01,
+            100.,
+            RandomInteractionGen::new(1, 20),
+        );
         simulate_paramaters(&mut channel, ph);
     }
     #[test]

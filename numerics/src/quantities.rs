@@ -148,7 +148,13 @@ mod test {
         let h_sys = harmonic_oscillator_hamiltonian(35);
         let h_env = harmonic_oscillator_hamiltonian(2);
         let rng = RandomInteractionGen::new(1, h_sys.nrows() * h_env.nrows());
-        let mut phi = Channel::new(h_sys, crate::channel::GammaSampler::Fixed(1.0), 0.01, 100., rng);
+        let mut phi = Channel::new(
+            h_sys,
+            crate::channel::GammaSampler::Fixed(1.0),
+            0.01,
+            100.,
+            rng,
+        );
         compare_transitions(&mut phi, 0.01, 100.);
     }
 
