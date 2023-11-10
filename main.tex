@@ -870,40 +870,40 @@ We then note that because the bound $\epsilon_{\sinc} \geq 1/(\Delta_{\min}^2 t^
     \frac{1}{\Delta_{\min}^2 t^2} &\leq \epsilon_{\sinc} \leq \parens{1 + \frac{1}{\dim}} \frac{1}{\alpha^2 t^2} \\
     \alpha^2 &\leq \Delta_{\min}^2 \parens{1 + \frac{1}{\dim}}.
 \end{align}
-Curiously, there are no requirements on the value of $t$. To complete this arguement, we now simplify the lower bound on $\epsilon$ by noting,
+Curiously, there are no requirements on the value of $t$. To complete this argument, we now simplify the lower bound on $\epsilon$ by noting,
 \begin{align}
     16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc} &\leq 16 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc},
 \end{align}
 which yields $\epsilon \geq 32 \dim_S^2 \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1}$.
 
-\textbf{Warning: The below is incorrect due to a missed factor of $t^2$}
-
 The second inequality is a lot trickier. We will work with this as a quadratic expression in $\tau$ and find values of $\tau$ such that it is satisfied. We plug in for $\tau$ and rewrite the inequality as 
 \begin{align}
-    &(\alpha t)^4 \parens{2 t^4 r^2 \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^4}{(\dim + 1)^2}} \nonumber \\
-    &+ (\alpha t)^2 \parens{2 r \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2}{\dim + 1} (A(k_2) - A(k_1))} \nonumber \\
-    &+ \alpha^0 \frac{3 \epsilon}{2} \leq 0
+    &\frac{(\alpha t)^4}{(\dim + 1)^2} \parens{2  \sum_{(k_1, k_2) \in S_{\gamma}} r^2 \sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^4} \nonumber \\
+    &+ \frac{(\alpha t)^2}{\dim + 1} \parens{2  \sum_{(k_1, k_2) \in S_{\gamma}}r \sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2 (A(k_2) - A(k_1))} \nonumber \\
+    &+ \parens{\frac{\alpha t}{\dim + 1}}^0 \frac{3 \epsilon}{2} \leq 0
 \end{align}
 We first simplify the coefficient for $\alpha^4$ as 
 \begin{align}
-    2 t^4 r^2 \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^4}{(\dim + 1)^2} &\leq 2 t^4 \frac{|S_{\gamma}|}{(\dim + 1)^2}.
+    2 \sum_{(k_1, k_2) \in S_{\gamma}} r^2 \sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^4 &\leq 2 |S_{\gamma}|.
 \end{align}
-For simplicity we denote the coefficient for $\alpha^2$ as
-$$d \coloneqq 2 r \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2}{\dim + 1} (A(k_2) - A(k_1)).$$
-Letting $x$ play the role of $(\alpha t)^2$ gives us a simple quadratic expression:
+Since everything is positive, if this simplified inequality holds then so does the original. 
+
+For simplicity we denote the summation in the coefficient for $\alpha^2$ as
+$$d \coloneqq 2 \sum_{(k_1, k_2) \in S_{\gamma}} r \sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2 (A(k_2) - A(k_1)).$$
+Letting $x$ play the role of $(\alpha t)^2 / (\dim + 1)$ gives us a simple quadratic expression:
 \begin{equation}
-    x^2 \frac{2 t^4 |S_{\gamma}|}{(\dim + 1)^2} + x d + \frac{3 \epsilon}{2} \leq 0.
+    2 x^2 |S_{\gamma}| + x d + \frac{3 \epsilon}{2} \leq 0.
 \end{equation}
-As $\alpha \geq 0$ we have $x \geq 0$ as well. This requires the roots of the quadratic to be both real and at least one of them must be positive. Denote the roots $x_{\pm}$, which can be seen as:
+As $(\alpha t)^2 / (\dim + 1) \geq 0$ we have $x$ must be positive as well. This requires for not only $d$ to be negative, but that the roots of the quadratic must both be real and at least one of them must be positive. Denote the roots $x_{\pm}$, which can be seen as:
 \begin{align}
-    x_{\pm} &= \frac{-d(\dim + 1)^2}{4t^4 |S_{\gamma}|} \pm \frac{(\dim + 1)^2}{4t^4 |S_{\gamma}|} \sqrt{d^2 - \frac{12 t^4 |S_{\gamma}| \epsilon}{(\dim + 1)^2}} \\
-    &= \frac{-d(\dim + 1)^2}{4t^4 |S_{\gamma}|} \parens{1 \mp \sqrt{1 - \frac{12 t^4 |S_{\gamma}| \epsilon}{(\dim + 1)^2 d^2}}}.
+    x_{\pm} &= \frac{-d}{4 |S_{\gamma}|} \pm \frac{1}{4 |S_{\gamma}|} \sqrt{d^2 - 12 |S_{\gamma}| \epsilon} \\
+    &= \frac{-d}{4 |S_{\gamma}|} \parens{1 \mp \sqrt{1 - \frac{12 |S_{\gamma}| \epsilon}{d^2}}}.
 \end{align}
 We want to guarantee that these roots are real, so we require 
 \begin{equation}
-    d^2 \geq \frac{12 t^4 |S_{\gamma}| \epsilon}{(\dim + 1)^2}.
+    d^2 \geq 12 |S_{\gamma}| \epsilon. \label{eq:d_squared_epsilon_bound}
 \end{equation}
-Note that inside the radical, $12 t^4 |S_{\gamma}| \epsilon / (\dim + 1)^2 d^2$ is always positive, implying that the radical is always going to be less than 1. If we would like the value of resulting value of $\alpha$ to be positive, we require that $d \leq 0$. 
+Note that inside the radical, $12  |S_{\gamma}| \epsilon / d^2$ is always positive, implying that the radical is always going to be less than 1. This leads to both roots being positive so long as $d \leq 0$ and $d^2$ is lower bounded as mentioned.
 
 If these two conditions are met, then we can set $\alpha^2$ to be the average of the two roots and the distance reduction claim is satisfied. Ideally we would like the lower root to be as close to 0 as possible, so that way we can simply reduce $\alpha$ to get our desired distance reduction. Regardless, our last objective still is to produce bounds on $d$ that satisfy the given inequalities, we therefore turn our attention to the sum in question. To simplify $d$ we first investigate the sign of $r$, assuming it to be positive we see what conditions result
 \begin{align}
@@ -924,74 +924,48 @@ To prove this we bound the following, note we surpress the arguments to $\sinc$ 
     &= \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E (\lambda_S(k_1) - \lambda_S(k_1) + \lambda_S(k_2) )}}{\partfun_S(\beta_E)}  - e^{-\beta_E \gamma} \bra{k_1} \rho_S \ket{k_1}} \\
     &= \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)} e^{-\beta_E \Delta_S(k_2, k_1)}  - e^{-\beta_E \gamma} \bra{k_1} \rho_S \ket{k_1}}.
 \end{align}
+We note right away that as $\beta_E \to 0$ this yields $\sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} (A(k_2) - A(k_1)) \leq 0$. 
+
 Now subtracting the sum with $A(k_1)$ and simplifying yields
 \begin{align}
-    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} (A(k_2) - A(k_1)) &\leq \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)} (e^{-\beta_E \Delta_S(k_2, k_1)} - 1) - \bra{k_1} \rho_S \ket{k_1} (e^{-\beta_E \gamma} - 1) } 
+    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} (A(k_2) - A(k_1)) &\leq \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)} (e^{-\beta_E \Delta_S(k_2, k_1)} - 1) - \bra{k_1} \rho_S \ket{k_1} (e^{-\beta_E \gamma} - 1) } .
 \end{align}
-
-\noindent\rule{\textwidth}{1pt}
-\newpage
+Since we have to upper bound this summation by 0, a good first step would be to understand when a given term is positive or negative. Taking a generic term, disregarding the prefactor of $\frac{\sinc^2}{\dim + 1}$ and simplifying leads to
 \begin{align}
-    d = 2 t^2 r \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2}{\dim + 1} + 2r (A(k_2) - A(k_1)),
+    \bra{k_1} \rho_S \ket{k_1}& \parens{1 - e^{-\beta_E \gamma}} -\frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)}\parens{1 - e^{-\beta_E \Delta_S}} \leq 0 \\
+    \bra{k_1} \rho_S \ket{k_1}&  \leq \frac{e^{-\beta_E \lambda_S(k_1)}}{ \partfun_S(\beta_E)}\frac{1 - e^{-\beta_E \Delta_S}}{1 - e^{-\beta_E \gamma}}.
 \end{align}
-where we remind the reader that $r = \bra{k_2} \rho_S \ket{k_2} \frac{e^{-\beta_E \lambda_E(0)}}{\partfun_E(\beta_E)} - \bra{k_1} \rho_s \ket{k_1} \frac{e^{-\beta_E \lambda_E(1)}}{\partfun_E(\beta_E)}$ and $A(k) = \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \bra{k} \rho_S \ket{k}$.
-Given that we would like to bound these sums, we need to know when $r$ is positive or negative.
+In order to proceed with the analysis we must impose some kind of structure onto $\rho_S$. We will investigate a few limits, one in which $\rho_S$ is a thermal state with $\beta$ close enough to $\beta_E$, one in which $\beta_E \to \infty$, and another in which we bound the operator distance of $\rho_S$ from $\rho_S(\beta_E)$. 
+
+The condition in which we expect the most rapid thermalization is one in which the environment is in it's ground state (temperature of 0 or $\beta_E \to \infty$) and the system is in the maximally mixed state (temperature to infinity or $\beta \to 0$). In this situation, the factors $e^{-\beta_E \Delta_S} \to 0$ and $e^{-\beta_E \gamma} \to 0$. Further, the Boltzmann factors approach 0 if the eigenvalue is not a minimal eigenvalue or 1 if it is a minimal eigenvalue (ground state energy). In this situation, if $(0, i) \notin S_{\gamma}$, for all $i$, then we have that the Boltzmann factors $e^{-\beta_E \lambda_S(k_1)} = 0$. In this case we can also directly evaluate the summation $A(k_2) - A(k_1)$, as this is 
 \begin{equation}
-    r \geq 0 \implies \frac{\bra{k_2} \rho_S \ket{k_2}}{\bra{k_1} \rho_S \ket{k_1}} \geq e^{-\beta_E \gamma}.
+    A(k_2) - A(k_1) = \frac{e^{-\beta_E \lambda_S(k_2)}}{\partfun_S(\beta_E)} - \frac{1}{\dim_S} - \frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)} + \frac{1}{\dim_S} = 0.
 \end{equation}
-Given that we would like this process to replicate a thermalization/cooling procedure, where our system is in a thermal state and we are slowly reducing the temperature, we should require that the higher energy states $\bra{k_2} \rho_S \ket{k_2}$ have smaller probability than lower energy states $\bra{k_1} \rho_S \ket{k_1}$
-
-Either way, we know that $-1 \leq r \leq 1$, so $r$ should not affect the asymptotics. Let us use the upper bound of 1 for now
-$$d \leq 2t^2 \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2}{\dim + 1} + 2(A(k_2) - A(k_1)).$$
-Similarly, we know that the $\sinc$ is upper bounded by 1, yielding
+From Eq. \eqref{eq:d_squared_epsilon_bound} we see that this implies that $\epsilon = 0$ and we do not have any distance reduction to the ground state possible. This makes intuitive sense, as any probability mass that gets shuffled from high energy states to lower energy states does not get us any closer to the ground state. 
+However, whenever the 0 temperature environment and infinite temperature system are coupled when $\gamma$ is close enough to a transition between a system ground state and an excited state we can get distance reduction. We will analyze this situation now. In the case in which there exists a pair $(0, i) \in S_{\gamma}$, meaning $e^{-\beta_E \lambda_S(k)} / \partfun_S(\beta_E) = \delta_{k,0}$ and $|\Delta_S(i, 0) - \gamma| \leq \Delta_{\min}$. In this case, if $(k_1, k_2) \in S_{\gamma}$ and $k_1 \neq 0$, then $A(k_2) - A(k_1) = 0$. However, for $(0, k)$ $A(k) - A(0) = 0 - 1/\dim_S - 1 + 1/\dim_S = -1$. Therefore, the total sum is then 
 \begin{align}
-     d &\leq \frac{2t^2 |S_{\gamma}|}{\dim + 1}  +2 \sum_{(k_1, k_2) \in S_{\gamma}} A(k_2) - A(k_1) \\
-     &= \frac{2t^2 |S_{\gamma}|}{\dim + 1}  +2 \sum_{(k_1, k_2) \in S_{\gamma}} \frac{e^{-\beta_E \lambda_S(k_2)}}{\partfun_S(\beta_E)} - \bra{k_2} \rho_S \ket{k_2} - \frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)} + \bra{k_1} \rho_S \ket{k_1}.
+    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} (A(k_2) - A(k_1)) &= - \sum_{(0, k) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \\
+    &\leq \frac{- \epsilon_{\sinc}}{\dim + 1}.
 \end{align}
-Without further knowledge of the structure of $\rho_S$ we cannot produce any more simplifying bounds. This leads to the $d \leq 0$ bound yielding 
-\begin{align}
-    \sum_{(k_1, k_2) \in S_{\gamma}} \bra{k_1} \rho_S \ket{k_1} - \bra{k_2} \rho_S \ket{k_2} \leq \sum_{(k_1, k_2) \in S_{\gamma}}\frac{e^{-\beta_E \lambda_S(k_1)} - e^{-\beta_E \lambda_S (k_2)}}{\partfun_S(\beta_E)} - \frac{2 t^2 |S_{\gamma}|}{\dim + 1}.
-\end{align}
-This unfortunately does not seem possible, as $t \in \Omega(\dim_S) = \Omega(\dim)$. 
-
-Given that the dominant term in $d$ is the $\bigo{t^2}$ term, in order for this sum to be negative we will have to require that $r \leq 0$. This boils down to the following
-\begin{align}
-    r &\leq 0 \\
-    \bra{k_2} \rho_S \ket{k_2} \frac{1}{\partfun_E(\beta_E)} - \bra{k_1} \rho_S \ket{k_1} \frac{e^{-\beta_E \gamma}}{\partfun_E(\beta_E)} &\leq 0 \\
-    \frac{\bra{k_2} \rho_S \ket{k_2}}{\bra{k_1} \rho_S \ket{k_1}} &\leq e^{-\beta_E \gamma}.
-\end{align}
-This bound is rather abstract, but boils down to requiring the high energy terms to having lower probability than the low energy terms. If we assume $\rho_S = \frac{e^{-\beta H_S}}{\partfun_S(\beta)}$, then this inequality can be expressed as $\beta_E \leq \beta \frac{\Delta_S}{\gamma}$. Since we are hoping to cool, this would imply $\beta \leq \beta_E$. The inequality we require indicates a lower bound on how much larger this temperature (or smaller $\beta$) can be. Expressed in terms of $\gamma$ we have $\gamma \leq \Delta_S \frac{\beta}{\beta_E}$.
-So we assume that this holds for the provided $\rho_S, \beta_E,$ and $\gamma$.
-
-Now in order to show negativity of $d$ we just have to find when the $t^2$ term dominates the $A$ contributions. We need to find the value of $t^2$ such that 
+In addition, we can provide the simplistic bound 
 \begin{equation}
-    t^2 \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_2, k_1) - \gamma)t/2)^2}{\dim + 1} \geq \sum_{(k_1, k_2) \in S_{\gamma}} (A(k_1) - A(k_2)). \label{eq:dominant_inequality_in_dist_reduction}
+    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1}(A(k_2) - A(k_1)) \geq \frac{-1}{\dim + 1}.
 \end{equation}
-Note that since we are summing over $S_{\gamma}$ we can assume that $\sinc^2 \geq \epsilon_{\sinc}$. We also can make the dumb bound that $\sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) - A(k_2) \leq \sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) \leq |S_{\gamma}|$. This gives us the implication that if $\frac{t^2 \epsilon_{\sinc}|S_{\gamma}|}{\dim + 1} \geq |S_{\gamma}|$ holds then the bound in \eqref{eq:dominant_inequality_in_dist_reduction} holds as well. This inequality is then sufficient to claim that $d \leq 0$.
-
-We now need to verify the other claim, that $d^2 \geq \frac{12 t^4 |S_{\gamma}| \epsilon}{(\dim + 1)^2}$. As we know $d$ negative, we should aim to produce lower bounds on $d$. Since the sign of $d$ is carried by $r$ we only need to upper bound the summation.
+This allows us to argue that $\frac{\epsilon_{\sinc}^2}{(\dim + 1)^2} \leq d^2 \leq \frac{1}{(\dim + 1)^2}$. Propagating this through to $\epsilon$ via Eq. \eqref{eq:d_squared_epsilon_bound} yields 
 \begin{align}
-    L \coloneqq 2 \sum_{(k_1, k_2) \in S_{\gamma}} t^2 \frac{\sinc((\Delta_S(k_2, k_1) - \gamma)t/2)^2}{\dim + 1} + A(k_2) - A(k_1) & \geq 2 |S_{\gamma}| \parens{\frac{t^2 \epsilon_{\sinc}}{\dim + 1}  -2}.
+    d^2 &\geq \frac{12 t^4 |S_{\gamma}| \epsilon}{(\dim + 1)^2} \\
+    \epsilon &\leq \frac{1}{12 t^4 |S_{\gamma}|}.
 \end{align}
-Since $d = r * L$, we have $d^2 = r^2 L^2 \geq (-1)^2 L^2$. We now plug in the lower bound for $L^2$ to our desired inequality to get a bound on the allowed values of $\epsilon$
+Now we look at the lower bound for $\epsilon$, which is given by 
 \begin{align}
-    4 |S_{\gamma}|^2 \parens{\frac{t^2 \epsilon_{\sinc}}{\dim + 1} - 2}^2 &\geq 12\frac{t^4 |S_{\gamma}| \epsilon}{(\dim + 1)^2}
-     \\
-    \epsilon &\leq \frac{1}{3} |S_{\gamma}| \parens{\epsilon_{\sinc} - \frac{2(\dim + 1)}{t^2}}^2.
+    \epsilon \geq 32 \epsilon_{\sinc} \alpha^2 t^2 \frac{\dim_S^2}{\dim + 1}
 \end{align}
-As we have $t^2 \in \Omega(\dim)$, we expect this to scale like $\bigo{|S_{\gamma}| \epsilon_{\sinc}^2}$. 
 
-\section{Todo}
-\localtableofcontents
-\subsection{tests}
-\begin{itemize}
-    \item How would you write out a two hop cooling chain? $\beta_0 \to \beta_1 \to \beta_2$. 
-    Want to bound $\norm{\Phi_{\beta_2} \circ \Phi_{\beta_1} \circ \Phi_{\beta_0} - \rho_S(\beta_2)}_1$.
-    
-    \item Find value of $\beta$ such that $\norm{\rho_S(\beta) - \Phi(\rho_S(\beta))}_1 \geq \epsilon$
 
-    ok.
-\end{itemize}
+Without adding any structure to $\rho_S$ this is essentially a requirement we must impose on the state. We will go on to investigate for what ranges of $\beta$ this holds in the case that $\rho_S$ is a thermal state. We see as $\beta_E \to \infty$ that this inequality is trivially satisfied for $k_1$ being the ground state, the RHS approaches 1. 
+
+As we can see that this bound is pretty much dependent on the structure of the state, we now move on to bounding the value of $\epsilon$ that can be achieved. This comes from the bound in Eq. \eqref{eq:d_squared_epsilon_bound}, where we note that since $d$ is negative (from $r$ being positive) this amounts to an upper bound on $d$ (or a lower bound on $\epsilon$). 
+
 
 \bibliographystyle{unsrt}
 \bibliography{bib}
