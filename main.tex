@@ -369,7 +369,7 @@ Computing $(F)$ yields
 
 The goal for the remainder of this section is to simplify the expression for the channel output given by the above lemma. The first thing to note is that our channel does not appear to have large off-diagonal contributions to second order in $\alpha$. 
 \begin{corollary}
-    Given the inputs to Lemma \ref{lem:the_double_duhamel} and a diagonal input state $\rho = \sum_{i,j} \rho_{i,j} \ketbra{i,j}{i,j}$, then we have $$\bra{k,l}  \int \Phi_G(\rho) ~dG~ \ket{m,n} \in \bigo{\alpha^3},$$ for $(k,l) \neq (m,n)$.
+    Given the inputs to Lemma \ref{lem:the_double_duhamel} and a diagonal input state $\rho = \sum_{i,j} \rho_{i,j} \ketbra{i,j}{i,j}$, then we have $$\int \bra{k,l} \Phi_G(\rho)  \ket{m,n} ~dG~ \in \bigo{\alpha^3},$$ for $(k,l) \neq (m,n)$.
 \end{corollary}
 \begin{proof}
     We start from the Taylor's series of $\Phi_G$ with respect to $\alpha$:
@@ -425,6 +425,11 @@ $$\tau(i,j | k,l) = \begin{cases}
     \end{align}
     This completes the transition probability computation. It is straightforward to see that $\sum_{b} \prob{a \to b} = 1$ and that $0 \leq \prob{a \to b} \leq 1$ given that $t^2 \leq \frac{\dim + 1}{\alpha^2 \sigma^2}$.
 \end{proof}
+
+Our next goal is to bound the remainder term of our Taylor's Series for the channel in terms of $\alpha$.
+\begin{claim}
+    Provided that $\alpha \in (0, \alpha_{UB})$ and $\Phi(\rho_S) = \rho_S +  \sum_{i,j,k,l} \bra{i} \rho_S \ket{i} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)} \tau(i,j |k,l) + R(\rho_S)$, then $\norm{R(\rho_S)}_1 \leq \epsilon_R$.
+\end{claim}
 
 \section{Single Qubit System \& Environment}
 We now will analyze the effects of $\Phi$ on thermalizing a system state with only a single qubit environment. The single qubit case makes the effect of tracing out the environment tractable. For absolute simplicity, we first study the case of two qubits. After this situation is analyzed in detail we extend the results to arbitrary system Hamiltonians. For the remainder of this section we assume a a system Hamiltonian $H_S = \begin{bmatrix}
@@ -722,10 +727,30 @@ We then can require that
 which is enough to guarantee that $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \epsilon$. 
 \end{proof}
 
+The next step we need to prove is to find the range of temperatures for which the system is \emph{ not} in an approximate fixed state. This means
+\begin{claim}
+    
+\enxd{claim}
 
-I'm pretty sure this proof could be easily adapted to the trace distance.
+Our next goal is to study the distance reduction achieved by an application of our repeated interactions channel. The most convenient distance to study is the square of the Sch\"{a}tten 2-norm, $\norm{\cdot}_2^2$. Although this does not have a nice operational interpretation, as the trace distance does in regards to state distinguishability, it can be used to give a loose upper bound on the trace distance. We break down our distance into two terms based on the second order decomposition of the channel
+\begin{align}
+    \norm{\rho_S(\beta_E) - \Phi_{\gamma}(\rho_S)}_2^2 &= \norm{\rho_S(\beta_E) - \rho_S - \sum_{i, j, k, l} \bra{i} \rho_S \ket{i} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)}   \tau(i, j| k,l) \ketbra{k}{k} + R(\rho_S)}_2^2.
+\end{align}
+For simplicity, denote the operator $\rho_S(\beta_E) - \rho_S \eqqcolon A$ and $\sum_{i, j, k, l} \bra{i} \rho_S \ket{i} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)} \tau(i, j| k,l) \ketbra{k}{k} \eqqcolon B$. This allows us to isolate the remainder part as follows
+\begin{align}
+    \norm{\rho_S(\beta_E) - \Phi_\gamma(\rho_S)}_2^2 &= \norm{A - B + R(\rho_S)}_2^2 \\
+    &\leq \parens{\norm{A - B}_2 + \norm{R(\rho_S)}}^2 \\
+    &\leq \norm{A - B}_2^2 + 2 \norm{A - B}_2 \norm{R(\rho_S(\beta))}_2 + \norm{R(\rho_S)}_2^2
+\end{align}
+We see that since we have a term linear in $\norm{R}_2$ we should only analyze $\norm{A - B}_2^2$ to order $\bigo{\alpha^2}$. 
 
-Now what about the proof of convergence?
+\begin{claim}
+    Given inputs $H_S$, $\rho_S$, $\beta_E$, and $\gamma$, we compute an upper bound on the distance of the thermalizing channel as
+    \begin{align}
+        \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_2^2 \leq \norm{\rho_S(\beta_E) - \rho_S}_2^2 - \epsilon
+    \end{align}
+    
+\end{claim}
 
 \begin{claim}
 We want to show
@@ -807,7 +832,7 @@ We can bound the absolute value of these as:
     &\leq 4 (\dim_S - 2) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
     \abs{S_2} &\leq \sum_{(j,l) \neq (0,1)} |a(k_1) b(j) - a(k_2) b(j)| |\tau(k_2, j | k_1, l)| \\
     &\leq \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \sum_{(j,l) \neq (0,1)} 1 \\
-    &\leq 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{sinc}
+    &\leq 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}
 \end{align}
 This allows us to compute bounds on $B(k_1)^2$ and $B(k_2)^2$ as:
 \begin{align}
