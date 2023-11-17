@@ -185,7 +185,7 @@ pub fn process_error_data(vals: Vec<f64>) -> (usize, f64, f64) {
 
 /// Computes the mean and standard deviation, returning
 /// (mean, std).
-pub fn mean_and_std(vals: Vec<f64>) -> (f64, f64) {
+pub fn mean_and_std(vals: &Vec<f64>) -> (f64, f64) {
     let samples = vals.len();
     let mean = vals.iter().sum::<f64>() / (samples as f64);
     let std =
@@ -195,6 +195,7 @@ pub fn mean_and_std(vals: Vec<f64>) -> (f64, f64) {
 
 pub fn thermal_state(hamiltonian: &Array2<c64>, beta: f64) -> Array2<c64> {
     let scaled_h = hamiltonian * (c64::from_real(-1. * beta));
+    let x = scaled_h.dot(&scaled_h);
     let mut out = expm(&scaled_h).expect("we ballin");
     let partition_function = out.trace().unwrap();
     // if ComplexFloat::abs(partition_function) < 1e-12 {

@@ -1,9 +1,10 @@
 use core::num;
 use std::{
     cmp::min,
+    collections::HashMap,
     env,
     ops::AddAssign,
-    sync::{Arc, Mutex, RwLock}, collections::HashMap,
+    sync::{Arc, Mutex, RwLock},
 };
 
 use ndarray::{array, linalg::kron, Array2, ShapeBuilder};
@@ -37,11 +38,11 @@ impl ParameterHandler {
     /// Returns a sampled schedule for simulation of a channel. "Sampled" is
     /// used because gamma could be drawn randomly if it is not fixed.
     /// Returned values are (alpha, beta, gamma).
-    pub fn sample_schedule(&self) -> Vec<(f64, f64, f64)> {
+    pub fn generate_schedule(&self) -> Vec<(f64, f64, f64)> {
         let mut ret = Vec::new();
         let delta_beta = (self.beta_stop - self.beta_start).abs() / (self.beta_steps as f64);
 
-        for ix in 0..self.beta_steps {
+        for ix in 0..=self.beta_steps {
             let beta = self.beta_start + delta_beta * (ix as f64);
             for jx in 0..self.alpha_steps {
                 let gammas = self.gammas.gen_samples(self.num_gamma_samples);
@@ -113,7 +114,7 @@ impl GammaSampler {
 }
 
 fn simulate_paramaters(phi: &mut Channel, param_handler: ParameterHandler) {
-    let params = param_handler.sample_schedule();
+    let params = param_handler.generate_schedule();
     let mut beta_dist_pairs = Vec::with_capacity(params.len());
     phi.set_sys_to_thermal_state(0.0);
     let h_sys = phi.get_copy_of_h_sys();
@@ -256,9 +257,17 @@ impl Channel {
     where
         F: Fn(&Array2<c64>) -> f64 + Sync + Send,
     {
-        let schedule = params.sample_schedule();
-        let avg_states: HashMap<usize, Array2<c64>> = HashMap::with_capacity(schedule.len());
+        let schedule = params.generate_schedule();
+        let mut avg_states = HashMap::with_capacity(schedule.len());
+        let mut stat_map: HashMap<usize, Vec<f64>> = HashMap::with_capacity(schedule.len());
+        for ix in 0..schedule.len() {
+            avg_states.insert(ix, Array2::<c64>::zeros((self.dim_sys, self.dim_sys).f()));
+            stat_map.insert(ix, Vec::new());
+        }
         let avg_states_locker = Arc::new(Mutex::new(avg_states));
+        // Store each statistic sample here. Then do post-processing to get mean and std.
+        let statistics_locker: Arc<Mutex<HashMap<usize, Vec<f64>>>> =
+            Arc::new(Mutex::new(stat_map));
         (0..num_samples).into_par_iter().for_each(|_| {
             let mut rho_sys = thermal_state(&self.h_sys, 0.0);
             for ix in 0..schedule.len() {
@@ -266,23 +275,69 @@ impl Channel {
                 let env_partition_function = 1. + (-1. * b * g).exp();
                 let rho_env = array![
                     [c64::from_real(1. / env_partition_function), 0.0.into()],
-                    [0.0.into(), c64::from_real((-1. * b * g).exp() / env_partition_function)]
+                    [
+                        0.0.into(),
+                        c64::from_real((-1. * b * g).exp() / env_partition_function)
+                    ]
                 ];
+                // println!("trace of rho_env: {:?}", rho_env.trace());
                 let rho_tot = kron(&rho_sys, &rho_env);
-                let h_tot = kron(&self.h_sys, &Array2::<c64>::eye(2)) + kron(&Array2::<c64>::eye(self.dim_sys), &array![
-                    [0.0.into(), 0.0.into()], [0.0.into(), c64::from_real(g)]
-                ]);
+                let h_env = kron(
+                    &Array2::<c64>::eye(self.dim_sys),
+                    &array![[0.0.into(), 0.0.into()], [0.0.into(), c64::from_real(g)]],
+                );
+                let h_tot = kron(&self.h_sys, &Array2::<c64>::eye(2)) + &h_env;
                 let interaction = self.interaction_generator.sample_gue() * a;
-                let tot = (h_tot + interaction) * (-1. * self.time);
+                let tot = (h_tot + interaction) * c64::new(0.0, -1. * self.time);
                 let u = expm(&tot).expect("Could not compute time propagator.");
                 let total_out = u.dot(&rho_tot.dot(&adjoint(&u)));
                 rho_sys = partial_trace(&total_out, self.dim_sys, 2);
-                let mut avgs = avg_states_locker.lock().expect("Could not get average states");
+                let mut avgs = avg_states_locker
+                    .lock()
+                    .expect("Could not get average states");
                 let state = avgs.get_mut(&ix).expect("could not get average state");
                 *state += &rho_sys;
+                drop(avgs);
+                let sample_stat = statistic(&rho_sys);
+                let mut stat_lock = statistics_locker.lock().expect("could not lock");
+                let v = stat_lock.get_mut(&ix).expect("could not get hashmap entry");
+                v.push(sample_stat);
+                let ideal_sys = thermal_state(&self.h_sys, b);
+                let ideal_env = thermal_state(
+                    &array![[0.0.into(), 0.0.into()], [0.0.into(), c64::from_real(g)]],
+                    b,
+                );
+                // println!("did we make it?");
+                // println!("rho_env: {:?}", &rho_env);
+                // let tr = rho_sys.trace();
+                // println!("trace: {:?}", tr);
+                // for ix in 0..rho_sys.nrows() {
+                //     println!("{:} = {:}", &ix, rho_sys[[ix, ix]]);
+                // }
+                // println!("rho_sys: {:}", &rho_sys);
+                // println!("ideal_sys: {:?}", &ideal_sys);
+                // println!("ideal env: {:}", schatten_2_distance(&ideal_env, &rho_env));
+                // println!("ideal sys: {:}", schatten_2_distance(&ideal_sys, &rho_sys));
+                // println!("did we make it pt. 2?");
             }
         });
-        Vec::new()
+        // Once all the samples are collected now we can process into (mean, std, stat(mean))
+        let mut ret = Vec::new();
+        let mut avg_states_lock = avg_states_locker
+            .lock()
+            .expect("could not get avg_states lock");
+        let statistics_lock = statistics_locker
+            .lock()
+            .expect("coud not lock statistics_locker");
+        for ix in 0..schedule.len() {
+            let avg_state = avg_states_lock.get_mut(&ix).expect("no index");
+            *avg_state /= c64::from_real(num_samples as f64);
+            let statistic_of_avg = statistic(avg_state);
+            let stats = statistics_lock.get(&ix).unwrap();
+            let (mean, std) = mean_and_std(stats);
+            ret.push((mean, std, statistic_of_avg));
+        }
+        ret
     }
 
     /// operates under the assumption that the kronecker product is
@@ -369,7 +424,7 @@ impl Channel {
             results.push(metric(&sample));
         });
         let lock = Arc::try_unwrap(locker).expect("Poisoned lock in total_estimate_mean_and_var");
-        mean_and_std(lock.into_inner().expect("mutex machine broke."))
+        mean_and_std(&lock.into_inner().expect("mutex machine broke."))
     }
 
     pub fn estimator_sys<F>(
@@ -388,7 +443,23 @@ impl Channel {
             results.push(metric(&sample));
         });
         let lock = Arc::try_unwrap(locker).expect("Poisoned lock in total_estimate_mean_and_var");
-        mean_and_std(lock.into_inner().expect("mutex machine broke."))
+        mean_and_std(&lock.into_inner().expect("mutex machine broke."))
+    }
+
+    fn parameter_sched_stat_optimal(&self, ph: ParameterHandler, arg: i32, stat: impl Fn(&ndarray::ArrayBase<ndarray::OwnedRepr<num_complex::Complex<f64>>, ndarray::Dim<[usize; 2]>>) -> f64, eps: f64) -> f64 {
+        let x = &self.rho_sys;
+        let sched = ph.generate_schedule();
+        let mut beta_ancilla = sched[0].1;
+        let rho_ideal_sys = thermal_state(&self.h_sys, beta_ancilla);
+        let mut rho_sys = thermal_state(&self.h_sys, 0.0);
+        let mut distances = vec![stat(x)];
+        let dist_to_beta_e = &mut distances[0];
+        let mut schatten_2_change_from_prev: Vec<f64> = Vec::new();
+        while *dist_to_beta_e >= eps {
+
+            *dist_to_beta_e = f64::MIN;
+        }
+        1.0
     }
 }
 
@@ -406,55 +477,59 @@ mod test {
 
     #[test]
     fn test_cooling_schedule() {
+        let eigs = arr1(&[
+            c64::from_real(0.0),
+            c64::from_real(1.0),
+            c64::from_real(2.0),
+            c64::from_real(3.0),
+        ]);
+        let mut gaps = Vec::new();
+        for ix in 0..eigs.len() - 1 {
+            for jx in ix + 1..eigs.len() {
+                gaps.push((eigs[jx] - eigs[ix]).abs());
+            }
+        }
         let ph = ParameterHandler {
-            beta_start: 0.0,
+            beta_start: 1.0,
             beta_stop: 1.0,
-            beta_steps: 10,
-            alpha_start: 0.01,
+            beta_steps: 1,
+            alpha_start: 1e-2,
             alpha_diff: 0.9,
             alpha_linear_scale: false,
             alpha_steps: 10,
-            gammas: GammaSampler::Grid {
-                max: 3.0,
-                num_pts: 20,
-            },
+            gammas: GammaSampler::Fixed(1.0),
             num_gamma_samples: 10,
         };
-        let h_sys = Array2::<c64>::from_diag(&arr1(&[
-            c64::from_real(0.0),
-            c64::from_real(0.5),
-            c64::from_real(0.75),
-            c64::from_real(1.1),
-            c64::from_real(1.5),
-            c64::from_real(1.8),
-            c64::from_real(2.0),
-            c64::from_real(2.2),
-            c64::from_real(2.7),
-            c64::from_real(3.0),
-        ]));
+        let h_sys = Array2::<c64>::from_diag(&eigs);
+        let rho_ideal = thermal_state(&h_sys, 1.0);
         let mut channel = Channel::new(
             h_sys,
-            GammaSampler::Grid {
-                max: 3.0,
-                num_pts: 20,
-            },
-            0.01,
-            100.,
-            RandomInteractionGen::new(1, 20),
+            ph.gammas.clone(),
+            1. / 100.,
+            200.,
+            RandomInteractionGen::new(1, eigs.len() * 2),
         );
-        simulate_paramaters(&mut channel, ph);
+        channel.set_env_to_thermal_state(1.0);
+        let stat = |state: &Array2<c64>| schatten_2_distance(state, &rho_ideal);
+        let id = Array2::<c64>::eye(rho_ideal.nrows());
+        println!("distance from ideal to maximally mixed: {:}", stat(&id));
+        println!("distance to itself: {:}", stat(&rho_ideal));
+        let out = channel.parameter_schedule_with_statistic(ph, 100, stat);
+        let cool_until_beta: f64 = channel.parameter_sched_stat_optimal(ph, 100, stat, eps);
+        dbg!(out);
     }
     #[test]
     fn test_estimators() {
-        let h_sys = harmonic_oscillator_hamiltonian(10);
+        let h_sys = harmonic_oscillator_hamiltonian(2);
         let h_env = harmonic_oscillator_hamiltonian(2);
-        let rho_sys = thermal_state(&h_sys, 0.75);
-        let rng = RandomInteractionGen::new(1, 20);
-        let gs = GammaSampler::Fixed(1.2);
-        let mut phi = Channel::new(h_sys, gs, 0.001, 100., rng);
-        phi.set_env_to_thermal_state(0.75);
+        let rho_sys = thermal_state(&h_sys, 1.);
+        let rng = RandomInteractionGen::new(1, h_sys.nrows() * h_env.nrows());
+        let gs = GammaSampler::Fixed(1.0);
+        let mut phi = Channel::new(h_sys, gs, 0.01, 200., rng);
+        phi.set_env_to_thermal_state(1.0);
+        phi.set_sys_to_thermal_state(0.0);
         let distance_estimator = |matrix: &Array2<c64>| schatten_2_distance(matrix, &rho_sys);
-        let out = phi.estimator_sys(distance_estimator, 1000, 100);
+        let out = phi.estimator_sys(distance_estimator, 1000, 10);
         println!("observed metrics: {:} +- {:}", out.0, out.1);
     }
 
