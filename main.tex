@@ -742,7 +742,11 @@ For simplicity, denote the operator $\rho_S(\beta_E) - \rho_S \eqqcolon A$ and $
     &\leq \parens{\norm{A - B}_2 + \norm{R(\rho_S)}}^2 \\
     &\leq \norm{A - B}_2^2 + 2 \norm{A - B}_2 \norm{R(\rho_S(\beta))}_2 + \norm{R(\rho_S)}_2^2
 \end{align}
-We see that since we have a term linear in $\norm{R}_2$ we should only analyze $\norm{A - B}_2^2$ to order $\bigo{\alpha^2}$. 
+We see that since we have a term linear in $\norm{R}_2$ we should only analyze $\norm{A - B}_2^2$ to order $\bigo{\alpha^2}$. Aka our goal is an expression
+\begin{align}
+    \norm{A-B}_2^2 + 2 \norm{A - B}_2 \norm{R(\rho_S)}_2 + \norm{R(\rho_S)}_2^2 &\leq \norm{A}_2^2 - \delta(\alpha, t)
+\end{align}
+Now we need to bound $\delta \leq \alpha^0 \delta_0 + \alpha^2 \delta_2 + \epsilon_{\delta}$
 
 \begin{claim}
     Given inputs $H_S$, $\rho_S$, $\beta_E$, and $\gamma$, we compute an upper bound on the distance of the thermalizing channel as
