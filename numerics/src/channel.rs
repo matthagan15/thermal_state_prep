@@ -143,7 +143,10 @@ fn simulate_paramaters(phi: &mut Channel, param_handler: ParameterHandler) {
     }
 }
 
-// TODO: Allow for changing the environment gap. Also allow for cooling schedules.
+// TODO: Change this to solely be a single-shot channel.
+/// Single-Shot channel designed to be used as a resource for studying
+/// applications of this channel in a flexible, ad-hoc manner. Not
+/// suitable for longer/more performance oriented use cases.
 #[derive(Debug)]
 pub struct Channel {
     h_sys: Array2<c64>,
@@ -307,18 +310,6 @@ impl Channel {
                     &array![[0.0.into(), 0.0.into()], [0.0.into(), c64::from_real(g)]],
                     b,
                 );
-                // println!("did we make it?");
-                // println!("rho_env: {:?}", &rho_env);
-                // let tr = rho_sys.trace();
-                // println!("trace: {:?}", tr);
-                // for ix in 0..rho_sys.nrows() {
-                //     println!("{:} = {:}", &ix, rho_sys[[ix, ix]]);
-                // }
-                // println!("rho_sys: {:}", &rho_sys);
-                // println!("ideal_sys: {:?}", &ideal_sys);
-                // println!("ideal env: {:}", schatten_2_distance(&ideal_env, &rho_env));
-                // println!("ideal sys: {:}", schatten_2_distance(&ideal_sys, &rho_sys));
-                // println!("did we make it pt. 2?");
             }
         });
         // Once all the samples are collected now we can process into (mean, std, stat(mean))
@@ -445,22 +436,6 @@ impl Channel {
         let lock = Arc::try_unwrap(locker).expect("Poisoned lock in total_estimate_mean_and_var");
         mean_and_std(&lock.into_inner().expect("mutex machine broke."))
     }
-
-    fn parameter_sched_stat_optimal(&self, ph: ParameterHandler, arg: i32, stat: impl Fn(&ndarray::ArrayBase<ndarray::OwnedRepr<num_complex::Complex<f64>>, ndarray::Dim<[usize; 2]>>) -> f64, eps: f64) -> f64 {
-        let x = &self.rho_sys;
-        let sched = ph.generate_schedule();
-        let mut beta_ancilla = sched[0].1;
-        let rho_ideal_sys = thermal_state(&self.h_sys, beta_ancilla);
-        let mut rho_sys = thermal_state(&self.h_sys, 0.0);
-        let mut distances = vec![stat(x)];
-        let dist_to_beta_e = &mut distances[0];
-        let mut schatten_2_change_from_prev: Vec<f64> = Vec::new();
-        while *dist_to_beta_e >= eps {
-
-            *dist_to_beta_e = f64::MIN;
-        }
-        1.0
-    }
 }
 
 mod test {
@@ -480,8 +455,8 @@ mod test {
         let eigs = arr1(&[
             c64::from_real(0.0),
             c64::from_real(1.0),
-            c64::from_real(2.0),
             c64::from_real(3.0),
+            c64::from_real(4.0),
         ]);
         let mut gaps = Vec::new();
         for ix in 0..eigs.len() - 1 {
@@ -496,8 +471,11 @@ mod test {
             alpha_start: 1e-2,
             alpha_diff: 0.9,
             alpha_linear_scale: false,
-            alpha_steps: 10,
-            gammas: GammaSampler::Fixed(1.0),
+            alpha_steps: 100,
+            gammas: GammaSampler::Gaps {
+                spectrum_gaps: vec![1., 2.],
+                noise_added: 0.0,
+            },
             num_gamma_samples: 10,
         };
         let h_sys = Array2::<c64>::from_diag(&eigs);
@@ -515,7 +493,6 @@ mod test {
         println!("distance from ideal to maximally mixed: {:}", stat(&id));
         println!("distance to itself: {:}", stat(&rho_ideal));
         let out = channel.parameter_schedule_with_statistic(ph, 100, stat);
-        let cool_until_beta: f64 = channel.parameter_sched_stat_optimal(ph, 100, stat, eps);
         dbg!(out);
     }
     #[test]

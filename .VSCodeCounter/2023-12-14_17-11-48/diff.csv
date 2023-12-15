@@ -1,0 +1,6 @@
+"filename", "language", "Rust", "LaTeX", "comment", "blank", "total"
+"/Users/matt/repos/thermal_state_prep/main.tex", "LaTeX", 0, 2, 0, 0, 2
+"/Users/matt/repos/thermal_state_prep/numerics/src/channel.rs", "Rust", 76, 0, 3, 1, 80
+"/Users/matt/repos/thermal_state_prep/numerics/src/lib.rs", "Rust", 2, 0, 0, 0, 2
+"/Users/matt/repos/thermal_state_prep/numerics/src/new_channel.rs", "Rust", 52, 0, 1, 9, 62
+"Total", "-", 130, 2, 4, 10, 146

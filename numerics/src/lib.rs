@@ -15,6 +15,7 @@ pub mod fixed_points;
 pub mod quantities;
 pub mod single_qubit_dist;
 pub mod thermometry;
+pub mod new_channel;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HamiltonianType {
