@@ -26,14 +26,24 @@ struct SingleShotParameters {
     time: f64,
 }
 
+struct IterationOutput {
+    alpha: f64,
+    beta: f64,
+    gamma: f64,
+    time: f64,
+    distance_mean: f64,
+    distance_std: f64,
+    distance_of_avg_state: f64,
+}
+
 #[derive(Debug, Default)]
-struct IteratedChannelOutputSample {
+struct IteratedChannelOutput {
     distance_means: Vec<f64>,
     distance_stds: Vec<f64>,
     distance_of_avg_state: Vec<f64>,
 }
 
-impl IteratedChannelOutputSample {
+impl IteratedChannelOutput {
     pub fn add(&mut self, mean: f64, std: f64, distance_of_avg_state: f64) {
         self.distance_means.push(mean);
         self.distance_stds.push(std);
@@ -50,8 +60,8 @@ pub struct IteratedChannel {
     rng_seed: Option<u64>,
 }
 
-fn simulate_iterated_channel(phi: IteratedChannel) -> IteratedChannelOutputSample {
-    let mut ret = IteratedChannelOutputSample::default();
+fn simulate_iterated_channel(phi: IteratedChannel) -> IteratedChannelOutput {
+    let mut ret = IteratedChannelOutput::default();
     
     ret
 }
