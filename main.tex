@@ -15,20 +15,19 @@
 
 \usepackage{etoc}
 
-
 %%%%%%%%    THEOREM DEFINITIONS AND RESTATABLE
 % \newcounter{claim}
 % \setcounter{claim}{0}
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{claim}[theorem]{Claim}
+\newtheorem{claim}{Claim}
+\newtheorem{dependency}{Dependency}
 
 \usepackage{todonotes}
 
 \newcommand{\matt}[1]{\todo[color=red!50, prepend, caption={Matt}, tickmarkheight=0.25cm]{#1}}
 \newcommand{\note}[1]{\emph{Note: #1}}
-\newcommand{\conjecture}[1]{ \noindent\emph{\textbf{Conjecture:}} \emph{ #1 }}
 
 
 
@@ -276,7 +275,7 @@ To start we would like to note that we will use a single index notation to refer
 Our goal is to get each of these terms in a form in which we can use either Lemma \ref{lem:two_heisenberg_interactions} or \ref{lem:sandwiched_interaction}. 
 \begin{align}
     (A) &=i t\int_0^1 \parens{\frac{\partial}{\partial \alpha} e^{i s_1 (H+ \alpha G)t}} G e^{i(1-s_1)(H+\alpha G)t} ds_1 \rho e^{-i (H+\alpha G)t} \bigg|_{\alpha=0} \\
-    &= (it)^2 \int_0^1 \parens{\int_0^1 e^{i s_1 s_2 (H+\alpha G)t} s_1 G e^{i s_1 (1-s_2) (H+\alpha G)t} ds_2} G e^{i(1-s_1) (H+\alpha G)t} ds_1 \rho e^{-i(H+\alpha G) t} \bigg|_{\alpha=0} \\
+    &= (it)^2 \int_0^1 \parens{\int_0^1 e^{i s_1 s_2 (H+\alpha G)t} s_1 G e^{i s_1 (1-s_2) (H+\alpha G)t} ds_2} G e^{i(1-s_1) (H+\alpha G)t} ds_1 \rho e^{-i(H+\alpha G) t} \bigg|_{\alpha=0} \label{eq:second_order_deriv_intermediate_a}\\
     &= -t^2 \int_0^1 \int_0^1 e^{i s_1 s_2 H t} G e^{-i s_1 s_2 H t} e^{i s_1 H t} G e^{-i s_1 H t} s_1 ds_1 ds_2 e^{i H t} \rho e^{-i H t} \\
     &= -t^2 \int_0^1 \int_0^1 G(s_1 s_2 t) G(s_1 t) s_1 ds_1 ds_2 \rho(t). \label{eq:second_deriv_alpha_first_term}
 \end{align}
@@ -392,9 +391,9 @@ Our last objective in this section is to yield a (relatively) concise statement 
 Given the inputs to Lemma \ref{lem:the_double_duhamel}, let 
 $$\tau(i,j | k,l) \coloneqq \frac{\alpha^2 }{2} \bra{k,l} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{i,j}{i,j})\bigg|_{\alpha = 0} dG \ket{k,l},$$ denote the second order transition coefficients in $\alpha$. These are expressed in terms of the eigenvalue differences $\Delta(i',j'|k',l')$ and other constants as 
 $$\tau(i,j | k,l) = \begin{cases}
-    - \frac{\alpha^2}{\dim + 1} \parens{\sum_{(a,b) : \Delta(i,j | a,b) \neq 0} \frac{2(1- \cos(\Delta(a,b | i,j)t)}{\Delta(a,b |i,j)^2} + t^2 (\eta(i,j) - 1)} & (i,j) = (k,l) \\
+    - \frac{\alpha^2 t^2 }{\dim + 1} \parens{\sum_{(a,b) : \Delta(i,j | a,b) \neq 0} \frac{\sinc^2(\Delta(a,b|i,j) t}{2} + (\eta(i,j) - 1)} & (i,j) = (k,l) \\
     \frac{\alpha^2 t^2}{\dim + 1} & (i,j) \neq (k,l), \Delta(i,j | k,l) = 0 \\
-    \frac{2 \alpha^2}{\dim + 1} \frac{1 - \cos(\Delta(i,j | k,l) t)}{\Delta(i,j | k,l)^2} & \Delta(i,j| k,l) \neq 0.
+    \frac{\alpha^2 t^2 }{\dim + 1} \sinc^2(\Delta t /2) & \Delta(i,j| k,l) \neq 0.
 \end{cases}$$
 . A summation shows that $\tau(i,j|i,j) = -\sum_{(k,l) \neq (i,j)} \tau(i,j|k,l)$, which as a byproduct shows that the mapping $\Phi$ is trace preserving to order $\bigo{\alpha^2}$. Further we note that 
 \begin{align}
@@ -426,10 +425,537 @@ $$\tau(i,j | k,l) = \begin{cases}
     This completes the transition probability computation. It is straightforward to see that $\sum_{b} \prob{a \to b} = 1$ and that $0 \leq \prob{a \to b} \leq 1$ given that $t^2 \leq \frac{\dim + 1}{\alpha^2 \sigma^2}$.
 \end{proof}
 
-Our next goal is to bound the remainder term of our Taylor's Series for the channel in terms of $\alpha$.
+\subsection{Remainder Bound}
+We now aim to bound the spectral norm of the remainder term $R_{\Phi}$. This is rather tedious, as even to third order in $\alpha$ we have 24 terms to bound. For example, looking first at the $(A)$ term resulting from the second order derivative in Eq. \eqref{eq:second_order_deriv_intermediate_a} we have 4 multiplicative factors involving $\alpha$, leading to 4 terms from this single term of the second order derivative. As there are six terms in total, this yeilds 24 terms. We can profit from the fact though that the expressions for the second order derivatives do simplify and the final expression only has 3 terms, as two of the derivatives act similarly. We first will analyze the single term from Eq. \eqref{eq:second_order_deriv_intermediate_a} in detail. 
+
+First I need to write down what exactly we are trying to bound. What we are essentially trying to do is bound the matrix entries:
+\begin{equation}
+    \Phi(\rho) = \rho + \frac{\alpha}{1} \frac{\partial}{\partial \alpha} \Phi(\rho) \bigg|_{\alpha = 0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho) \bigg|_{\alpha = 0} + \frac{\alpha^3}{3!} \frac{\partial^3}{\partial \alpha^3} \Phi(\rho) \bigg|_{\alpha = \alpha^\star},
+\end{equation}
+where $\alpha^\star \in [0, \alpha]$. Our goal is then to bound the spectral norm of the remainder term for all such $\alpha^\star$.
+
+\begin{align}
+    &\norm{\frac{\partial}{\partial \alpha} (it)^2 \int_0^1 \parens{\int_0^1 e^{i s_1 s_2 (H+\alpha G)t} s_1 G e^{i s_1 (1-s_2) (H+\alpha G)t} ds_2} G e^{i(1-s_1) (H+\alpha G)t} ds_1 \rho e^{-i(H+\alpha G) t}} \\
+    &=t^3 \norm{\int_0^1 \int_0^1 \int_0^1 e^{i s_1 s_2 s_3(H + \alpha G)t} G e^{i s_1 s_2 (1 - s_3)} ds_3 G e^{i s_1 (1-s_2)(H + \alpha G)t} ds_2 G e^{i(1-s_1)(H + \alpha G)t} ds_1 \rho e^{-i(H + \alpha G)t} }  + t^3 \norm{\ldots}\\
+    &\leq t^3 \norm{G}^3 + t^3 \norm{\ldots} \\
+    &\leq 4 t^3 \norm{G}^3,
+\end{align}
+where we used smoothness of the integrand to bring the norm inside the integral via the triangle inequality and submultiplicativity of the operator norm to simply break the norm of the product into the product of each of the norms. The operator norm of the unitary operators and the density matrix are each 1, and the resulting integrals yield only fractional values, which are upper bounded by 1. Now here we see the final simplification that can be made, each term $(B), (C)$, etc., will yield at most a cubic power of $\norm{G}$, so we can upper bound each term in the final sum as $t^3 \norm{G}^3$. In reality we would have terms such as $\norm{G} \norm{G^3}$ and all other polynomials, but we don't care.
+
+Now as $G$ is a random matrix, we can only bound it's operator norm with a probabilistic guarantee. 
+
+This gives
+\begin{equation}
+    \norm{\Phi(\rho) - \rho - \sum_{i,j,k,l} \ketbra{j}{j} \bra{i} \rho \ket{i} \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} \tau(i,k | j, l) } \leq 4 \alpha^3 t^3 \int \norm{G}^3 dG
+\end{equation}
+
+We now need to bound $\int \norm{G}^3 dG$. This is a fun probability question. First we get rid of the Haar integrals
+\begin{align}
+    \int \norm{G}^3 dG &= \int \int \norm{U_G D U_G^\dagger}^3  dU dD \\
+    &= \int \norm{D}^3 dD \\
+    &= \expect{\max_i |d_i|^3}
+\end{align}
+
+It is pretty straightforward to upper bound this integral by $\int \norm{D}^3 dD \leq 2 \dim$. This then gives
+\begin{equation}
+    \norm{R_{\Phi}} \leq 8 \alpha^3 t^3 \dim.
+\end{equation}
+So this says we need $\alpha t \leq \frac{\epsilon_{R}^{1/3}}{2 \dim^{1/3}}$ in order for $\norm{R_{\Phi}} \leq \epsilon_R$.
+
+Could I get a better norm result with the same scaling? Aka can I bound the one or two norm of $R_{\Phi}$ with the same scaling?
+
+\section{Generalizations to Many Qubits}
+
 \begin{claim}
-    Provided that $\alpha \in (0, \alpha_{UB})$ and $\Phi(\rho_S) = \rho_S +  \sum_{i,j,k,l} \bra{i} \rho_S \ket{i} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)} \tau(i,j |k,l) + R(\rho_S)$, then $\norm{R(\rho_S)}_1 \leq \epsilon_R$.
+We now let $H_S = \sum_{i = 0}^{2^n - 1} \lambda_S(i) \ketbra{i}{i}$ be a system Hamiltonian over $n$ qubits. We utilize the same environment: a Hamiltonian $H_E = \begin{bmatrix}0 & 0 \\ 0 & \gamma\end{bmatrix}$ and state $\rho_E(\beta_E) = e^{-\beta_E H_E} / \partfun_E(\beta_E)$, along with the same interaction $G$. 
 \end{claim}
+\begin{proof}
+Our goal is to show that our channel has $\rho_S(\beta_E)$ as a fixed point and that it reduces the distance to the fixed point at different temperatures. We start from Eq. \ref{eq:trace_dist_p_norm} with the goal of showing that $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \epsilon$. This reduces to showing
+$$\sum_k \abs{\sum_{i,j,l} \frac{e^{-\beta_E \lambda(i,j)}}{\partfun(\beta_E)} \tau(i,j | k,l)}^2 \leq \epsilon.$$ 
+
+The tool we will use to bound this sum is the fact that our map preserves trace to second order, which gives us $\tau(i,j|i,j) = - \sum_{(k,l) \neq (i,j)} \tau(i,j|k,l)$. We look first at a fixed value of $k$ and further let $a(i) = \bra{i} \rho_S \ket{i}$ and $b(j) = \bra{j} \rho_E \ket{j}$, which will allow us to generalize to non-thermal input states. By definition of density matrices we have $0 \leq a(i) \leq 1$ for all $i$ and similarly $0 \leq b(j) \leq 1$ for all $j$. 
+\begin{align}
+    \sum_{i,j,l} a(i) b(j) \tau(i,j | k,l) &= \sum_{i \neq k} \sum_{j,l} \parens{a(i) b(j) \tau(i,j|k,l)} + \sum_{j,l} a(k) b(j) \tau(k,j | k,l) \label{eq:n_qubit_fixed_pt_intermediate_1}.
+\end{align}
+We expand the simpler sum on the right:
+\begin{align}
+    \sum_{j,l}a(k) b(j) \tau(k,j| k,l) &= a(k) b(0) (\tau(k,0|k,0) + \tau(k,0|k,1)) + a(k) b(1) (\tau(k,1|k,0) + \tau(k,1|k,1)) \\
+    &= - a(k) b(0) \sum_{c \neq k}\sum_{l} \tau(k,0 | c, l) - a(k) b(1) \sum_{c \neq k} \sum_{l}\tau(k,1|c,l) \\
+    &= - \sum_{c \neq k} \sum_{j,l} a(k) b(j) \tau(k,j |c,l).
+\end{align}
+Plugging this into Eq. \ref{eq:n_qubit_fixed_pt_intermediate_1} allows us to simplify as follows
+\begin{align}
+    \sum_{i,j,l} a(i) b(j) \tau(i,j|k,l) &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) \tau(i,j|k,l)) - \sum_{c \neq k} \sum_{j,l} a(k) b(j) \tau(k,j|c,l) \\
+    &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) \tau(i,j|k,l)) - \sum_{i \neq k} \sum_{j,l} a(k) b(l) \tau(i,j|k,l) \\
+    &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j | k,l).
+\end{align}
+
+We now can bound our desired quantity as follows
+\begin{align}
+    &\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \sum_{k} \abs{\sum_{i \neq k} \sum_{j,l} ((a(i) b(j) -a(k) b(l)) \tau(i,j|k,l)}^2 \\
+    &\leq \sum_{j,l,k} \sum_{i \neq k} \tau(i,j|k,l)^2 (a(i) b(j) - a(k) b(l))^2 \\
+    &\leq \sum_{j,l,k} \sum_{i \neq k} \tau(i,j|k,l)^2 \\
+    &= \sum_{j,l,k} \sum_{i \neq k} \frac{\alpha^4 t^4}{(\dim + 1)^2} \sinc(\Delta(i,j|k,l) t/ 2)^4 \\
+    &= \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 \sum_k \sum_{i \neq k} \parens{2 \sinc\parens{ \frac{\Delta_S(i,k) t}{2}}^2 + \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2 + \sinc\parens{\frac{(\Delta_S(i,k) + \gamma)t}{2}}^2} \\
+    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 \sum_k \sum_{i \neq k} \parens{3 \epsilon_{\sinc}^2 + \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2} \\
+    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 (3 \epsilon_{\sinc}^2 \dim_S (\dim_S - 1) + \sum_{k} \sum_{i \neq k} \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2.
+\end{align}
+Now given a specific value of $\gamma$ we can define a ``near-degeneracy" set of indices $S_\gamma$ that contains all indices $i,k$ such that their energy difference is close enough to $\gamma$:
+\begin{equation}
+    S_\gamma \coloneqq \set{(i,k) : i,k \in \set{1, 2, \ldots, \dim_S}, i \neq k, |\Delta_S(i,k) - \gamma| \leq \Delta_{\min}}.
+\end{equation}
+The size of this set can vary drastically depending on the eigenvalues of the system Hamiltonian. For example, take the harmonic oscillator with energy difference of 1 and set $\gamma = 1$. Then $S_{\gamma}$ in this case would be of size $|S_{1}| = \dim_S - 1$. On the other hand, take $H_S$ to be the identity, then $S_\gamma$ for any nonzero $\gamma$ is empty. 
+
+Now picking back up from where we left off:
+\begin{align}
+    &= \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 (3 \epsilon_{\sinc}^2 \dim_S (\dim_S - 1) + \sum_{(i,k) \in S_{\gamma}} \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2 + \epsilon_{\sinc}^2 (\dim_S^2 - |S_{\gamma}|)) \\
+    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 \parens{\epsilon_{\sinc}^2 (4 \dim_S^2 - 3 \dim_S - |S_{\gamma}|) + |S_{\gamma}|} \\
+    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^{2} \parens{\epsilon_{\sinc}^2 (4 \dim_S^2 - 3 \dim_S) + \dim_S(\dim_S - 1)} \\
+    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 \dim_S^2 (4 \epsilon_{\sinc} + 1). \label{eq:fixed_pt_bound_1}
+\end{align}
+Now we simply enforce that 
+\begin{equation}
+    \epsilon_{\sinc} \leq \frac{1}{4}
+\end{equation}
+so that we can say 
+\begin{equation}
+    \alpha t \leq \epsilon_{fix}^{1/4} \sqrt{\frac{\dim + 1}{\dim_S}} \implies \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \epsilon_{fix}.
+\end{equation}
+
+The next step we need to prove is to find the range of temperatures for which the system is \emph{ not} in an approximate fixed state. This means
+\begin{claim}
+   test claim 
+\end{claim}
+
+Our next goal is to study the distance reduction achieved by an application of our repeated interactions channel. The most convenient distance to study is the square of the Sch\"{a}tten 2-norm, $\norm{\cdot}_2^2$. Although this does not have a nice operational interpretation, as the trace distance does in regards to state distinguishability, it can be used to give a loose upper bound on the trace distance. We break down our distance into two terms based on the second order decomposition of the channel
+\begin{align}
+    \norm{\rho_S(\beta_E) - \Phi_{\gamma}(\rho_S)}_2^2 &= \norm{\rho_S(\beta_E) - \rho_S - \sum_{i, j, k, l} \bra{i} \rho_S \ket{i} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)}   \tau(i, j| k,l) \ketbra{k}{k} + R(\rho_S)}_2^2.
+\end{align}
+For simplicity, denote the operator $\rho_S(\beta_E) - \rho_S \eqqcolon A$ and $\sum_{i, j, k, l} \bra{i} \rho_S \ket{i} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)} \tau(i, j| k,l) \ketbra{k}{k} \eqqcolon B$. This allows us to isolate the remainder part as follows
+\begin{align}
+    \norm{\rho_S(\beta_E) - \Phi_\gamma(\rho_S)}_2^2 &= \norm{A - B + R(\rho_S)}_2^2 \\
+    &\leq \parens{\norm{A - B}_2 + \norm{R(\rho_S)}}^2 \\
+    &\leq \norm{A - B}_2^2 + 2 \norm{A - B}_2 \norm{R(\rho_S(\beta))}_2 + \norm{R(\rho_S)}_2^2
+\end{align}
+We see that since we have a term linear in $\norm{R}_2$ we should only analyze $\norm{A - B}_2^2$ to order $\bigo{\alpha^2}$. We will now simplify this to a linear expression in $\norm{R}_2$ by using simple upper bounds on norms of $A$ and $B$. \textcolor{red}{NOTE: Need to bound the norm of the Taylor remainder of the channel for all states by some epsilon.} 
+\begin{align}
+    \norm{A - B}_2 &\leq \norm{A - B}_1 \\
+    &\leq \norm{A}_1 + \norm{B}_1 \\
+    &= \sum_{i} \abs{\bra{i}\rho_S(\beta_E) \ket{i} - \bra{i} \rho_S \ket{i}} + \sum_k \abs{\sum_{i,j,l} \bra{i} \rho_S \ket{i} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)} \tau(i,j | k,l)} \\
+    &\leq \sum_i 2 + \sum_k \sum_{i,j,l} 1 \\
+    &\leq \dim^2 + 2 \dim \\
+    &\leq 2 \dim^2.
+\end{align}
+This then gives our remainder term as
+\begin{equation}
+    \norm{\rho_S(\beta_E) - \Phi_{\gamma}(\rho_S)}_2^2 \leq \norm{A - B}_2^2 + (4 \dim^2 + 1) \norm{R}_2.
+\end{equation}
+Now we can bound $\norm{R_{\Phi}}_2 \leq \sqrt{\dim} \norm{R_{\Phi}} \leq \epsilon_{R} \sqrt{\dim}$. Note we can improve this bound with improvements to the $\norm{B}_2$ bound. This is computed below.
+
+Shifting our attention to $\norm{A-B}_2^2$, we decompose this into trace calculations straightforwardly
+\begin{align}
+    \norm{A-B}_2^2 &= \trace{(A-B)^\dagger (A-B)} \\
+    &= \trace{A^2} - 2 \trace{AB} + \trace{B^2}
+\end{align}
+In order to bound each of these traces it will be helpful to organize the indices of our system into two sets, one of indices which are ``active" in the transition and those that are ``dead". The active set is denoted as $S_{\gamma}$ and is defined as
+\begin{equation}
+    S_{\gamma} \coloneqq \set{(i,j) : \lambda_S(i) \leq \lambda_S(j), |\Delta_S(i,j) - \gamma| \leq \Delta_{\min}},
+\end{equation}
+whereas the ``dead" set is denoted and defined as
+\begin{equation}
+T_{\gamma} \coloneqq \set{i : \forall j, |\Delta_S(i,j) - \gamma| \geq \Delta_{\min}}. 
+\end{equation}
+
+We first bound $\norm{B}_2^2 = \trace{B^2}$. We split this trace into sums over $S_{\gamma}$ and $T_{\gamma}$. 
+\begin{align}
+    k \in T_{\gamma} \implies B(k) &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j|k,l) \\
+    &\leq \sum_{i \neq k} \sum_{j,l} \tau(i,j|k,l) \\
+    &\leq 4 (\dim_S - 1) \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc}.
+\end{align}
+This yields $\sum_{k \in T_{\gamma}} A(k) B(k) \leq 4 |T_\gamma| (\dim_S - 1) \epsilon_{\sinc}$.
+The sum over the remaining indices can be done over pairs $(k_1, k_2) \in S_{\gamma}$, where we order the set such that the energy $\lambda_S(k_1)$ is smaller than $\lambda_S(k_2)$. We first compute the value of $B$ for an index $k_1$ and then $k_2$
+\begin{align}
+    B(k_1) &= \sum_{i,j,l} \bra{i} \rho_S \ket{i} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)} \tau(i,j| k_1, l) \\
+    &= \sum_{i \neq k_1} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i,j|k_1, l) \\
+    &= \sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i,j|k_1,l) + \sum_{j,l} (a(k_2) b(j) - a(k_1) b(l)) \tau(k_1, j | k_2, l).
+\end{align}
+Now we use the assumption that if $(k_1, k_2) \in S_{\gamma}$ then for all indices $k \neq k_2$ that $(k, k_1) \notin S_{\gamma}$ and $(k_1, k) \notin S_{\gamma}$.
+
+\newpage
+\noindent\rule{\textwidth}{1pt}
+\noindent\rule{\textwidth}{1pt}
+
+\begin{claim}
+    Given inputs $H_S$, $\rho_S$, $\beta_E$, and $\gamma$, we compute an upper bound on the distance of the thermalizing channel as
+    \begin{align}
+        \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_2^2 \leq \norm{\rho_S(\beta_E) - \rho_S}_2^2 - \epsilon
+    \end{align}
+    
+\end{claim}
+
+
+Starting from the beginning:
+\begin{align}
+    \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_2^2 &= \norm{\rho_S(\beta_E) - \rho_S(\beta) - \sum_{i,j,k,l} \frac{e^{-\beta_E \lambda_E(j) - \beta \lambda_S(i)}}{\partfun_E(\beta_E) \partfun_S(\beta)} \tau(i,j|k,l) \ketbra{k}{k} }_2^2 + \bigo{\alpha^6} \\
+    &\approx \norm{A - B}_2^2 \\
+    &= \trace{(A - B)^\dagger (A - B)} \\
+    &= \trace{A^2} - 2 \trace{A B} + \trace{B^2},
+\end{align}
+where $A \coloneqq \rho_S(\beta_E) - \rho_S(\beta)$ and $B \coloneqq \sum_{i,j,k,l} \frac{e^{-\beta_E \lambda_E(j) - \beta \lambda_S(i)}}{\partfun_E(\beta_E) \partfun_S(\beta)} \tau(i,j|k,l) \ketbra{k}{k} $ are Hermitian and diagonal in the system's Hamiltonian basis. As $\trace{A^2}$ represents the distance we are trying to reduce, the goal is to show that $2 \trace{AB} \geq \trace{B^2} + \epsilon$. 
+
+We use this sorting to create the (ordered) set of indices as before,
+
+This means that each pair of indices $(i,j)$, such that their eigenvalue difference is close to $\gamma$, is stored only once in the set. This allows us to define the function $S_\gamma(i) = j$, as we have assumed non-degeneracy of the system eigenvalues. In a similar spirit, we say $i \in S_{\gamma}$ if it is the first index of a pair $(i,j) \in S_{\gamma}$. We can further define the set of ``dead" indices, those indices that do not have another eigenvalue that such that their difference is close to $\gamma$. This gives:
+
+Now our goal is to compute $\trace{A B} = \sum_{k} A(k) B(k)$. We first compute $A(k) B(k)$ for $k \in T_{\gamma}$ and then for $k \in S_{\gamma}$. 
+
+
+
+Now we move on to bounding the paired indices. Let $(k_1, k_2) \in S_{\gamma}$ be a single pair. We look at the sum of $A(k_1) B(k_1) + A(k_2) B(k_2)$. 
+\begin{align}
+    B(k_1) &\leq  \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i,j|k_1, l) + 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1)} \\
+    &\leq \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc} + 3 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1)} \\
+    &= (4 \dim_S - 5) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1) \\
+    &\leq 4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + \tau(k_2, 0| k_1, 1)
+\end{align}
+
+
+
+and similarly we compute
+\begin{align}
+    B(k_2) &\leq  \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i,j|k_2, l) + 3 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0)} \\
+    &\leq \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0)} \\
+    &= (4 \dim_S - 5) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0) \\
+    &\leq 4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + \tau(k_1, 1| k_2, 0).
+\end{align}
+Given that $\tau$ is symmetric about input and output, we have $B(k_1) - (4 \dim_S - 5) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} = - (B(k_2) - (4\dim_S - 5) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc})$. This allows us to compute the sum
+\begin{align}
+    A(k_1) B(k_1) + A(k_2) B(k_2) &\leq (4 \dim_S - 5) \epsilon_{\sinc} \parens{A(k_1) + A(k_2)} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_1, 1| k_2, 0) (A(k_1) - A(k_2)) \\
+    &\leq 2 (4 \dim_S - 5) \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_1, 1| k_2, 0) (A(k_1) - A(k_2)) \\
+    &= 2 (4 \dim_S - 5) \epsilon_{\sinc} + \frac{e^{-\beta \lambda_S(k_2) - \beta_E \lambda_E(0)} - e^{-\beta \lambda_S(k_1) - \beta_E \lambda_E(1)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(k_1, 1| k_2, 0) (A(k_1) - A(k_2)).
+\end{align}
+As we want this to be negative, we require
+\begin{align}
+    e^{-\beta \lambda_S(k_2) - \beta_E \lambda_E(0)} - e^{-\beta \lambda_S(k_1) - \beta_E \lambda_E(1)} &\leq 0 \\
+    \beta \lambda_S(k_2) &\geq \beta \lambda_S(k_1) + \beta_E\gamma \\
+    \beta \Delta_S(k_2, k_1) &\geq \beta_E \gamma.
+\end{align}
+
+We will need an upper bound on $\trace{B^2}$
+\begin{align}
+    \trace{B^2} &= \sum_k B(k)^2 \\
+    &= \sum_{k \in T_{\gamma}} B(k)^2 + \sum_{(k_1, k_2) \in S_{\gamma}} B(k_1)^2 + B(k_2)^2 \\
+    &\leq 16 |T_{\gamma}| (\dim_S - 1)^2 \frac{\alpha^4 t^4}{(\dim + 1)^2}\epsilon_{\sinc}^2 + \sum_{(k_1, k_2) \in S_{\gamma}} B(k_1)^2 + B(k_2)^2
+\end{align}
+In order to compute the above we need an upper bound on $B(k_1)^2$ and $B(k_2)^2$. For ease of notation, we define the following variables:
+\begin{align}
+    S_1 &\coloneqq \sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i, j|k_1, l) \\
+    S_2 &\coloneqq \sum_{(j,l) \neq (0, 1)} (a(k_2) b(j) - a(k_1) b(l)) \tau(k_2, j| k_1, l) \\
+    r &\coloneqq a(k_2) b(0) - a(k_1) b(1) 
+\end{align}
+We can bound the absolute value of these as:
+\begin{align}
+    \abs{S_1} &\leq \sum_{i \neq k_1, k_2} \sum_{j,l} |a(i) b(j) - a(k_1) b(l)| |\tau(i, j|k_1, l)| \\
+    &\leq \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \sum_{i \neq k_1, k_2} \sum_{j,l} 1\\
+    &\leq 4 (\dim_S - 2) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+    \abs{S_2} &\leq \sum_{(j,l) \neq (0,1)} |a(k_1) b(j) - a(k_2) b(j)| |\tau(k_2, j | k_1, l)| \\
+    &\leq \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \sum_{(j,l) \neq (0,1)} 1 \\
+    &\leq 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}
+\end{align}
+This allows us to compute bounds on $B(k_1)^2$ and $B(k_2)^2$ as:
+\begin{align}
+    B(k_1)^2 &= \bigg( S_1 + S_2 + r \tau(k_2, 0| k_1, 1) \bigg)^2 \\
+    &\leq (|S_1| + |S_2|)^2 + 2(S_1 + S_2) r \tau(k_2, 0| k_1, 1) + r^2 \tau(k_2, 0| k_1, 1)^2 \\
+    B(k_2)^2 &= \bigg( S_1 + S_2 - r \tau(k_2, 0 | k_1, 1) \bigg)^2 \\
+    &\leq (|S_1| + |S_2|)^2 - 2 (S_1 + S_2) r \tau(k_2, 0 | k_1, 1) + r^2 \tau(k_2, 0 | k_1, 1)^2 \\
+    B(k_1)^2 + B(k_2)^2 &\leq 2 (|S_1| + |S_2|)^2 + 2 r^2 \tau(k_2, 0 | k_1, 1)^2 \\
+    &\leq 32 \dim_S^2 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 2 r^2 \tau(k_2, 0 | k_1, 1)^2.
+\end{align}
+We can now bound $\trace{B^2}$ as
+\begin{align}
+    \trace{B^2} &= \sum_{k \in T_{\gamma}} B(k)^2 + \sum_{(k_1, k_2) \in S_{\gamma}} B(k_1)^2 + B(k_2)^2 \\
+    &\leq 16 |T_{\gamma}| (\dim_S - 1)^2 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 16 \dim_S^2 (2 |S_{\gamma}|) \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 2 \sum_{(k_1, k_2) \in S_{\gamma}} r^2 \tau(k_1, 1 | k_2, 0)^2 \\
+    &\leq 16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 2 \sum_{(k_1, k_2) \in S_{\gamma}} r^2 \tau(k_1, 1 | k_2, 0)^2
+\end{align}
+
+Now our goal is to upper bound $-2\trace{AB}$. We make use of the fact that $|A(k)| \leq 1$ for all $k$ and that $k \in T_{\gamma}$ implies that $|B(k)| \leq 4 (\dim_S - 1) \epsilon_{\sinc}$.
+\begin{align}
+    -2 \trace{AB} &= -2 \sum_{k \in T_{\gamma}} A(k) B(k) - 2 \sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) B(k_1) + A(k_2) B(k_2) \\
+    &\leq + 2 \sum_{k \in T_{\gamma}} |A(k)| |B(k)| - 2 \sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) B(k_1) + A(k_2) B(k_2) \\
+    &\leq 8 \dim_S |T_{\gamma}| \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} - 2 \sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) B(k_1) + A(k_2) B(k_2).
+\end{align}
+We now investigate the right term in the above. Using the notation from before
+\begin{align}
+    A(k_1) B(k_1) &= A(k_1) (S_1(k_1) + S_2(k_1) + r \tau(k_1, 1 | k_2, 0)) \\
+    A(k_2) B(k_2) &= A(k_2) (S_1(k_2) + S_2(k_2) - r \tau(k_1, 1 | k_2, 0)) \\
+    -2A(k_1) B(k_1) -2 A(k_2) B(k_2) & = -2 A(k_1)(S_1(k_1) + S_2(k_1))  - 2A(k_2)( S_1(k_2) + S_2(k_2)) + 2 r \tau(k_1, 1 | k_2, 0)( A(k_2) - A(k_1)) \\
+    &\leq 2 |A(k_1)|(|S_1(k_1)| + |S_2(k_1)|) + 2 |A(k_2)|( |S_1(k_2)| + |S_2(k_2)|) \nonumber \\
+    &+ 2 r \tau(k_1, 1 | k_2, 0)(A(k_2) - A(k_1)) \\
+    &\leq 16 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 2 r \tau(k_1, 1 | k_2, 0)( A(k_2) - A(k_1)).
+\end{align}
+This allows us to plug in to our sum:
+\begin{align}
+    -2 \trace{AB} &\leq 8 \dim_S(|T_{\gamma}| + 2 |S_{\gamma}|) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 2 \sum_{(k_1, k_2) \in S_{\gamma}} r \tau(k_1, 1 | k_2, 0) ( A(k_2) - A(k_1)) \\
+    &= 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 2 \sum_{(k_1, k_2) \in S_{\gamma}} r \tau(k_1, 1 | k_2, 0) ( A(k_2) - A(k_1)).
+\end{align}
+Combining with the bound for $\trace{B^2}$ we get the following
+\begin{align}
+    \trace{B^2} - 2 \trace{AB} &\leq 16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 2 \sum_{(k_1, k_2) \in S_{\gamma}} \parens{r^2 \tau(k_1, 1 |k_2, 0)^2 + r \tau(k_1, 1| k_2, 0) (A(k_2) - A(k_1))}.
+\end{align}
+To prove the required bound, we will require the following two inequalities:
+\begin{align}
+    16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2}\epsilon_{\sinc}^2 + 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} &\leq \frac{\epsilon}{2} \\
+    2 \sum_{(k_1, k_2) \in S_{\gamma}} r \tau(k_1, 1 | k_2, 0) (r \tau(k_1, 1 | k_2, 0)  + A(k_2) - A(k_1)) &\leq - \frac{3\epsilon}{2}.
+\end{align}
+
+Everything below this line has not been updated with the fix to $\tau(i,j|k,l) \leq \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}$. 
+
+\noindent\rule{\textwidth}{1pt}
+
+The first inequality is rather straightforward. We use the intuition that the left term (ignoring constant factors) is nearly the square of the right term, and since we want to bound their sum with something small we can then deduce that the right term should be dominant. This yields the intuition that
+\begin{align}
+    16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 &\leq 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+    \epsilon_{\sinc} &\leq \frac{\dim + 1}{2 \dim_S} \frac{1}{(\alpha^2 t^2)} \\
+    &= \parens{1 + \frac{1}{\dim}} \frac{1}{\alpha^2 t^2}.
+\end{align}
+We then note that because the bound $\epsilon_{\sinc} \geq 1/(\Delta_{\min}^2 t^2)$ has to be satisfied, this yields a ``sandwich'' of acceptable ranges for $\epsilon_{\sinc}$ when combined with the upper bound above. To make this sandwich reasonable we require
+\begin{align}
+    \frac{1}{\Delta_{\min}^2 t^2} &\leq \epsilon_{\sinc} \leq \parens{1 + \frac{1}{\dim}} \frac{1}{\alpha^2 t^2} \\
+    \alpha^2 &\leq \Delta_{\min}^2 \parens{1 + \frac{1}{\dim}}.
+\end{align}
+Curiously, there are no requirements on the value of $t$. To complete this argument, we now simplify the lower bound on $\epsilon$ by noting,
+\begin{align}
+    16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc} &\leq 16 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc},
+\end{align}
+which yields $\epsilon \geq 32 \dim_S^2 \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1}$.
+
+The second inequality is a lot trickier. We will work with this as a quadratic expression in $\tau$ and find values of $\tau$ such that it is satisfied. We plug in for $\tau$ and rewrite the inequality as 
+\begin{align}
+    &\frac{(\alpha t)^4}{(\dim + 1)^2} \parens{2  \sum_{(k_1, k_2) \in S_{\gamma}} r^2 \sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^4} \nonumber \\
+    &+ \frac{(\alpha t)^2}{\dim + 1} \parens{2  \sum_{(k_1, k_2) \in S_{\gamma}}r \sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2 (A(k_2) - A(k_1))} \nonumber \\
+    &+ \parens{\frac{\alpha t}{\dim + 1}}^0 \frac{3 \epsilon}{2} \leq 0
+\end{align}
+We first simplify the coefficient for $\alpha^4$ as 
+\begin{align}
+    2 \sum_{(k_1, k_2) \in S_{\gamma}} r^2 \sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^4 &\leq 2 |S_{\gamma}|.
+\end{align}
+Since everything is positive, if this simplified inequality holds then so does the original. 
+
+For simplicity we denote the summation in the coefficient for $\alpha^2$ as
+$$d \coloneqq 2 \sum_{(k_1, k_2) \in S_{\gamma}} r \sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2 (A(k_2) - A(k_1)).$$
+Letting $x$ play the role of $(\alpha t)^2 / (\dim + 1)$ gives us a simple quadratic expression:
+\begin{equation}
+    2 x^2 |S_{\gamma}| + x d + \frac{3 \epsilon}{2} \leq 0.
+\end{equation}
+As $(\alpha t)^2 / (\dim + 1) \geq 0$ we have $x$ must be positive as well. This requires for not only $d$ to be negative, but that the roots of the quadratic must both be real and at least one of them must be positive. Denote the roots $x_{\pm}$, which can be seen as:
+\begin{align}
+    x_{\pm} &= \frac{-d}{4 |S_{\gamma}|} \pm \frac{1}{4 |S_{\gamma}|} \sqrt{d^2 - 12 |S_{\gamma}| \epsilon} \\
+    &= \frac{-d}{4 |S_{\gamma}|} \parens{1 \mp \sqrt{1 - \frac{12 |S_{\gamma}| \epsilon}{d^2}}}.
+\end{align}
+We want to guarantee that these roots are real, so we require 
+\begin{equation}
+    d^2 \geq 12 |S_{\gamma}| \epsilon. \label{eq:d_squared_epsilon_bound}
+\end{equation}
+Note that inside the radical, $12  |S_{\gamma}| \epsilon / d^2$ is always positive, implying that the radical is always going to be less than 1. This leads to both roots being positive so long as $d \leq 0$ and $d^2$ is lower bounded as mentioned.
+
+If these two conditions are met, then we can set $\alpha^2$ to be the average of the two roots and the distance reduction claim is satisfied. Ideally we would like the lower root to be as close to 0 as possible, so that way we can simply reduce $\alpha$ to get our desired distance reduction. Regardless, our last objective still is to produce bounds on $d$ that satisfy the given inequalities, we therefore turn our attention to the sum in question. To simplify $d$ we first investigate the sign of $r$, assuming it to be positive we see what conditions result
+\begin{align}
+    r = a(k_2) b(0) - a(k_1) b(1) &\geq 0 \\
+    \bra{k_2} \rho_S \ket{k_2} \frac{e^{-\beta_E \lambda_E(0)}}{\partfun_E(\beta_E)} - \bra{k_1} \rho_S \ket{k_1} \frac{e^{-\beta_E \lambda_E(1)}}{\partfun_E(\beta_E)} &\geq 0 \\
+    \frac{\bra{k_2} \rho_S \ket{k_2}}{\bra{k_1} \rho_S \ket{k_1}} &\geq e^{-\beta_E \gamma}. \label{eq:bound_on_rho_s_for_r}
+\end{align}
+If we were using thermal states, $\rho_S = e^{-\beta H_S} / \partfun_S(\beta)$, the left hand side of the above would be $e^{-\beta \Delta_S(k_2, k_1)}$. Simplifying would result in $\beta \leq \frac{\gamma}{\Delta_S(k_2, k_1)} \beta_E$. Since we expect the distance moved by the thermalizing channel to be greatest as $\beta_E \to \infty$ and $\beta \to 0$, requiring this inequality to be true, and therefore $r \geq 0$, seems to be a reasonable condition to impose.
+
+With the sign of $r$ sorted out, we now have to bound the summation for $d$. Since we require $d \leq 0$ in order to get positive values for $(\alpha t)^2 $, we require
+\begin{align}
+    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_2, k_1) - \gamma)t/2)^2}{\dim + 1} (A(k_2) - A(k_1)) &\leq 0.
+\end{align}
+To prove this we bound the following, note we surpress the arguments to $\sinc$ to save space, and we make use of the bound required in Eq. \eqref{eq:bound_on_rho_s_for_r}
+\begin{align}
+    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} A(k_2) &= \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_2)}}{\partfun_S(\beta_E)}  - \bra{k_2} \rho_S \ket{k_2}} \\
+    &\leq \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_2)}}{\partfun_S(\beta_E)}  - e^{-\beta_E \gamma} \bra{k_1} \rho_S \ket{k_1}} \\
+    &= \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E (\lambda_S(k_1) - \lambda_S(k_1) + \lambda_S(k_2) )}}{\partfun_S(\beta_E)}  - e^{-\beta_E \gamma} \bra{k_1} \rho_S \ket{k_1}} \\
+    &= \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)} e^{-\beta_E \Delta_S(k_2, k_1)}  - e^{-\beta_E \gamma} \bra{k_1} \rho_S \ket{k_1}}.
+\end{align}
+We note right away that as $\beta_E \to 0$ this yields $\sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} (A(k_2) - A(k_1)) \leq 0$. 
+
+Now subtracting the sum with $A(k_1)$ and simplifying yields
+\begin{align}
+    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} (A(k_2) - A(k_1)) &\leq \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)} (e^{-\beta_E \Delta_S(k_2, k_1)} - 1) - \bra{k_1} \rho_S \ket{k_1} (e^{-\beta_E \gamma} - 1) } .
+\end{align}
+Since we have to upper bound this summation by 0, a good first step would be to understand when a given term is positive or negative. Taking a generic term, disregarding the prefactor of $\frac{\sinc^2}{\dim + 1}$ and simplifying leads to
+\begin{align}
+    \bra{k_1} \rho_S \ket{k_1}& \parens{1 - e^{-\beta_E \gamma}} -\frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)}\parens{1 - e^{-\beta_E \Delta_S}} \leq 0 \\
+    \bra{k_1} \rho_S \ket{k_1}&  \leq \frac{e^{-\beta_E \lambda_S(k_1)}}{ \partfun_S(\beta_E)}\frac{1 - e^{-\beta_E \Delta_S}}{1 - e^{-\beta_E \gamma}}.
+\end{align}
+In order to proceed with the analysis we must impose some kind of structure onto $\rho_S$. We will investigate a few limits, one in which $\rho_S$ is a thermal state with $\beta$ close enough to $\beta_E$, one in which $\beta_E \to \infty$, and another in which we bound the operator distance of $\rho_S$ from $\rho_S(\beta_E)$. 
+
+The condition in which we expect the most rapid thermalization is one in which the environment is in it's ground state (temperature of 0 or $\beta_E \to \infty$) and the system is in the maximally mixed state (temperature to infinity or $\beta \to 0$). In this situation, the factors $e^{-\beta_E \Delta_S} \to 0$ and $e^{-\beta_E \gamma} \to 0$. Further, the Boltzmann factors approach 0 if the eigenvalue is not a minimal eigenvalue or 1 if it is a minimal eigenvalue (ground state energy). In this situation, if $(0, i) \notin S_{\gamma}$, for all $i$, then we have that the Boltzmann factors $e^{-\beta_E \lambda_S(k_1)} = 0$. In this case we can also directly evaluate the summation $A(k_2) - A(k_1)$, as this is 
+\begin{equation}
+    A(k_2) - A(k_1) = \frac{e^{-\beta_E \lambda_S(k_2)}}{\partfun_S(\beta_E)} - \frac{1}{\dim_S} - \frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)} + \frac{1}{\dim_S} = 0.
+\end{equation}
+From Eq. \eqref{eq:d_squared_epsilon_bound} we see that this implies that $\epsilon = 0$ and we do not have any distance reduction to the ground state possible. This makes intuitive sense, as any probability mass that gets shuffled from high energy states to lower energy states does not get us any closer to the ground state. 
+However, whenever the 0 temperature environment and infinite temperature system are coupled when $\gamma$ is close enough to a transition between a system ground state and an excited state we can get distance reduction. We will analyze this situation now. In the case in which there exists a pair $(0, i) \in S_{\gamma}$, meaning $e^{-\beta_E \lambda_S(k)} / \partfun_S(\beta_E) = \delta_{k,0}$ and $|\Delta_S(i, 0) - \gamma| \leq \Delta_{\min}$. In this case, if $(k_1, k_2) \in S_{\gamma}$ and $k_1 \neq 0$, then $A(k_2) - A(k_1) = 0$. However, for $(0, k)$ $A(k) - A(0) = 0 - 1/\dim_S - 1 + 1/\dim_S = -1$. Therefore, the total sum is then 
+\begin{align}
+    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} (A(k_2) - A(k_1)) &= - \sum_{(0, k) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \\
+    &\leq \frac{- \epsilon_{\sinc}}{\dim + 1}.
+\end{align}
+In addition, we can provide the simplistic bound 
+\begin{equation}
+    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1}(A(k_2) - A(k_1)) \geq \frac{-1}{\dim + 1}.
+\end{equation}
+This allows us to argue that $\frac{\epsilon_{\sinc}^2}{(\dim + 1)^2} \leq d^2 \leq \frac{1}{(\dim + 1)^2}$. Propagating this through to $\epsilon$ via Eq. \eqref{eq:d_squared_epsilon_bound} yields 
+\begin{align}
+    d^2 &\geq \frac{12 t^4 |S_{\gamma}| \epsilon}{(\dim + 1)^2} \\
+    \epsilon &\leq \frac{1}{12 t^4 |S_{\gamma}|}.
+\end{align}
+Now we look at the lower bound for $\epsilon$, which is given by 
+\begin{align}
+    \epsilon \geq 32 \epsilon_{\sinc} \alpha^2 t^2 \frac{\dim_S^2}{\dim + 1}
+\end{align}
+
+
+Without adding any structure to $\rho_S$ this is essentially a requirement we must impose on the state. We will go on to investigate for what ranges of $\beta$ this holds in the case that $\rho_S$ is a thermal state. We see as $\beta_E \to \infty$ that this inequality is trivially satisfied for $k_1$ being the ground state, the RHS approaches 1.
+
+As we can see that this bound is pretty much dependent on the structure of the state, we now move on to bounding the value of $\epsilon$ that can be achieved. This comes from the bound in Eq. \eqref{eq:d_squared_epsilon_bound}, where we note that since $d$ is negative (from $r$ being positive) this amounts to an upper bound on $d$ (or a lower bound on $\epsilon$).
+
+\bibliographystyle{unsrt}
+\bibliography{bib}
+
+\appendix
+
+\section{Detailed Balance}
+Given that we are able to rotate the basis we work with into the System Hamiltonian's eigenbasis, and moreover we previously showed that off-diagonal coherences in this basis are negligible, we can treat this process as a stochastic one. Explicitly, if we give a diagonal state as input to the channel $\Phi$, to order $\bigo{\alpha^2}$ we get a diagonal state back. Since diagonal states can be thought of as probability distributions, the map $\Phi$ can roughly be thought of as a Markov process on the eigenstates of the Hamiltonian $H_S$. Since our goal is to show that this map produces a thermal state,
+we would need to show that this probability distribution converges to the Boltzmann distribution $e^{-\beta_E \lambda_S(i)} / \partfun_S(\beta_E)$, for state $i$. In classical probability sampling literature this is done through a Detailed Balance calculation, which shows that the desired distribution is a fixed point. Ergodicity arguments of the desired Markov chain are then used to claim that the fixed point is unique and that therefore the process produces samples of the desired distribution.
+
+Given that our map is only approximate, we cannot make rigorous claims regarding detailed balance at fixed $\alpha, t,$ or $\gamma$. However, in this section we show that in the appropriate limits that our mapping satisfies Detailed Balance exactly. This is enough to give solid evidence that for appropriate regimes our channel should converge approximately to this goal distribution.
+
+
+
+\begin{align}
+    &\prob{\text{System transition } i \to j | \text{ env at } \beta_E} \nonumber \\
+    &\approx \frac{\alpha^2 t^2}{\dim + 1} \parens {\frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}}  \sinc^2((\Delta(i,j) + \gamma)t) + \frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2 ((\Delta(i,j) - \gamma)t) + 2 \sinc^2(\Delta(i,j) t)} \nonumber
+\end{align}
+
+\begin{align}
+    &\prob{\text{System transition } i \to j | \text{ env at } \beta_E} \nonumber \\
+    &= \bra{j} \Phi_{\gamma}(\ketbra{i}{i}) \ket{j} \\
+    &= \braket{j}{i}\braket{i}{j} + \sum_{k,l} \tau(i, k | j, l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} + \bra{j} R_{\Phi}(\ketbra{i}{i})\ket{j}
+\end{align}
+Now as we are studying Detailed Balance, we assume that $i \neq j$. For our purposes, without loss of generality we let $\lambda_S(i) \geq \lambda_S(j)$, so by transitioning from $i \to j$ we are losing energy to the environment. We simplify the non-trivial term from above as
+\begin{align}
+    &\sum_{k,l} \tau(i,k| j,l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} = \frac{e^{-\beta_E \lambda_E(0)}}{\partfun_E(\beta_E)}(\tau(i,0|j,0) + \tau(i,0|j,1)) + \frac{e^{-\beta_E \lambda_E(1)}}{\partfun_E(\beta_E)} (\tau(i,1|j,0) + \tau(i,1|j,1) \\
+    &= \frac{\alpha^2 t^2}{\dim + 1} \bigg(\frac{1}{1 + e^{-\beta_E \gamma}} (\sinc^2(\Delta_S(i,j)t/2) + \sinc^2((\Delta_S(i,j) - \gamma)t/2)) \nonumber \\
+    &\quad \quad \quad \quad \quad \quad  +\frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} (\sinc^2((\Delta_S(i,j) + \gamma)t/2) + \sinc^2(\Delta_S(i,j) t/2)) \bigg) \\
+    &\frac{\alpha^2 t^2}{\dim + 1} \bigg(\frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) + \gamma)t/2) + \sinc^2(\Delta_S(i,j)t/2)
+\end{align}
+As $\Delta_S(i,j) \geq 0 $ we expect that only the $\sinc^2((\Delta_S(i,j) - \gamma) t/2)$ term will contribute significantly to this sum. We can similarly write down the probability of the state to transition from $j \to i$ as
+\begin{align}
+    \prob{\text{System transition } j \to i | \text{ env at } \beta_E} = \sum_{k,l} \tau(j,k|i,l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} + \bra{i} R_{\Phi}(\ketbra{j}{j})\ket{i},
+\end{align}
+where we write the non-trivial term as
+\begin{align}
+    \sum_{k,l} \tau(j,k|i,l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} = \frac{\alpha^2 t^2}{\dim + 1} \bigg(&\frac{1}{1 + e^{-\beta_E \gamma}} (\sinc^2(\Delta_S(j,i)t/2) + \sinc^2((\Delta_S(j,i) - \gamma)t/2)) \nonumber \\
+    &+\frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} (\sinc^2((\Delta_S(j,i) + \gamma)t/2) + \sinc^2(\Delta_S(j,i) t/2)) \bigg).
+\end{align}
+We simplify this by noting $\Delta_S(i,j) = - \Delta_S(j,i)$ and that $\sinc^2(x) = \sinc^2(-x)$ to get
+\begin{align}
+&\sum_{k,l} \tau(j,k|i,l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} \\
+&= \frac{\alpha^2 t^2}{\dim + 1} \bigg(\frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) + \gamma)t/2) + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) + \sinc^2(\Delta_S(i,j)t/2)
+\end{align}
+
+Now we would like to show some form of Detailed Balance, in appropriate limits, for the thermal state of the system. We will show that Detailed Balance holds in expectation, or with some non-zero probability. The thermal state give $\prob{\text{state in } i} = \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)}$. We then need to expand differences
+\begin{align}
+    \chi(i,j) \coloneqq &\prob{\text{System transition } i \to j | \text{ env at } \beta_E} \prob{\text{state in } i} \nonumber \\
+    &- \prob{\text{System transition } j \to i | \text{ env at } \beta_E} \prob{\text{state in } j}.
+\end{align}
+This expression is written in full glory as
+\begin{align}
+    \chi(i,j) &= \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \bra{j} R_{\Phi}(\ketbra{i}{i})\ket{j} \nonumber \\
+    &+ \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) - \gamma) t/2) \nonumber \\
+    &+\frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) + \gamma) t/2) \nonumber \\
+    &+ \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \sinc^2(\Delta_S(i,j)t/2) \nonumber \\
+    &-\frac{e^{-\beta_E \lambda_S(j)}}{\partfun_S(\beta_E)} \bra{i} R_{\Phi}(\ketbra{j}{j})\ket{i} \nonumber \\
+    &- \frac{e^{-\beta_E \lambda_S(j)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) + \gamma) t/2) \nonumber \\
+    &-\frac{e^{-\beta_E \lambda_S(j)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) - \gamma) t/2) \nonumber \\
+    &- \frac{e^{-\beta_E \lambda_S(j)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \sinc^2(\Delta_S(i,j)t/2).
+\end{align}
+In order to simplify this, we will group these expressions with an end goal in mind. As we would like this to hold for all $i \neq j$ but we have a fixed $\gamma$, we need to randomly choose a $\gamma$ and show that this holds in expectation. Further, we would like to bound the absolute value of these differences. So we want $\mathbb{E}_{\gamma}\abs{\chi(i,j)}$. We can then use the triangle inequality, the fact that $\abs{\bra{j}R_{\Phi}(\ketbra{i}{i})\ket{j}} \leq \norm{R_{\Phi}}$, $\abs{\frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)}} \leq 1$, 
+
+along with the fact that transitions such as $\sinc^2(\Delta_S(i,j)t/2)$ are suppressed by $\epsilon_{\sinc}$ to get a simplified upper bound:
+\begin{align}
+    \mathbb{E}_{\gamma} \abs{\chi(i,j)} &\leq \mathbb{E}_{\gamma} 2 \norm{R_{\Phi}} \nonumber \\
+    &+ \mathbb{E}_{\gamma} \frac{\alpha^2 t^2}{\dim + 1} 4 \epsilon_{\sinc}  \nonumber \\
+    &+ \mathbb{E}_{\gamma} \frac{\alpha^2 t^2}{\dim + 1} \frac{1}{1 + e^{-\beta_E \gamma}} \frac{1}{\partfun_S(\beta_E)} \abs{\parens{e^{-\beta_E \lambda_S(i)} - e^{-\beta_E \gamma} e^{-\beta_E \lambda_S(j)}} \sinc^2((\Delta_S(i,j) - \gamma) t/2)} \\
+    &\leq 2 \norm{R_{\Phi}} + 4 \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1} \nonumber \\
+    &+ \frac{\alpha^2 t^2}{\dim + 1} \mathbb{E}_{\gamma} \sinc^2((\Delta_S(i,j) - \gamma) t/2) \abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}}. \label{eq:detailed_balance_upper_bound}
+\end{align}
+This is where we have to introduce our distribution over $\gamma$. We note that if $\gamma$ is far away from $\Delta_S(i,j)$, then as $t \to \infty$ we have that this product is trivially 0. We want to show that Detailed Balance is satisfied even when $\gamma \to \Delta_S(i,j)$. To do so we upper bound $\sinc^2 \leq 1$ whenever $\abs{\Delta_S(i,j) - \gamma} \leq \Delta_{\min}$ and $\sinc^2 \leq \epsilon_{\sinc}$ whenever $\abs{\Delta_S(i,j) - \gamma} \geq \Delta_{\min}$. 
+
+We now are at an impasse. Our goal for this argument is to show that if our channel does anything non-trivial, then in the appropriate limits ($t \to \infty, \alpha \to 0, \alpha t \to c_{small}$) it should satisfy detailed balance conditions, or at least get arbitrarily close to it. We see that when our channel has a $\gamma$ that is not close to any $\Delta_S(i,j)$ we do not induce any transitions among states (in the $t \to \infty$ limit). This then trivially satisfies Detailed balance, as $\prob{i \to j} = \prob{j \to i} = 0$ gives $0 = 0$ for Detailed Balance. We would like to show that all $i \neq j$ can get arbitrarily close to satisfying Detailed Balance by choosing a $\gamma$ randomly. To do so there are three obvious candidates for distributions of $\gamma$ that we could analyze theoretically:
+\begin{enumerate}
+    \item A maximum entropy prior, or choosing $\gamma$ uniformly from 0 to $\norm{H}$,
+    \item A minimal entropy prior, or exact knowledge of $\Delta_S(i,j)$ for all $i,j$, where we choose indices or differences uniformly,
+    \item Choose a difference $\Delta_S(i,j)$ uniformly and then add in noise, either in the form of a Gaussian or a simple uniform box centered about the gap $\Delta_S(i,j)$.
+\end{enumerate}
+
+The simplest for us to look at first is the maximum entropy prior, or the uniform distribution of $\gamma$ from 0 to $\norm{H}$. This then gives us two regimes, $|\Delta_S(i,j) - \gamma| \leq \Delta_{\min}$ and $|\Delta_S(i,j) - \gamma| > \Delta_{\min}$. The $\sinc^2$ term is upper bounded by 1 in the former and $\epsilon_{\sinc}$ in the latter. 
+\begin{align}
+    &\mathbb{E}_{\gamma} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} \nonumber \\
+    &= \frac{1}{\norm{H}} \int_0^{\norm{H}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma \\
+    &= \frac{1}{\norm{H}} \int_0^{\Delta_S(i,j) - \Delta_{\min}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma \nonumber \\
+    &\quad + \frac{1}{\norm{H}} \int_{\Delta_S(i,j) - \Delta_{\min}}^{\Delta_S(i,j) + \Delta_{\min}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma \nonumber \\
+    &\quad + \int_{\Delta_S(i,j) + \Delta_{\min}}^{\norm{H}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma.
+\end{align}
+We will simplify these integrals separately. Starting with the first
+\begin{align}
+    &\frac{1}{\norm{H}} \int_0^{\Delta_S(i,j) - \Delta_{\min}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma \nonumber \\
+    &\leq \frac{\epsilon_{\sinc}}{\norm{H}} \int_0^{\Delta_S(i,j) - \Delta_{\min}} \left(e^{\beta_E(\Delta_S(i,j) - \gamma)} - 1\right) d\gamma \\
+    &= \frac{\epsilon_{\sinc}}{\norm{H}}\parens{\Delta_{\min} - \Delta_S(i,j) + \frac{e^{\beta_E \Delta_S(i,j)}}{\beta_E}\left( 1 - e^{-\beta_E(\Delta_S(i,j) - \Delta_{\min})} \right)}.
+\end{align}
+We then compute the third, as it is more similar to the first as
+\begin{align}
+    &\frac{1}{\norm{H}} \int_{\Delta_S(i,j) + \Delta_{\min}}^{\norm{H}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} d\gamma \nonumber \\
+    &\leq \frac{\epsilon_{\sinc}}{\norm{H}} \int_{\Delta_S(i,j) + \Delta_{\min}}^{\norm{H}} \left(1 - e^{\beta_E (\Delta_S(i,j) - \gamma)} \right) d\gamma \\
+    &=\frac{\epsilon_{\sinc}}{\norm{H}}\parens{\norm{H} - (\Delta_S(i,j) + \Delta_{\min}) + \frac{1}{\beta_E} \left(e^{-\beta_E(\norm{H} - \Delta_S(i,j))} - e^{-\beta_E \Delta_{\min}} \right) }.
+\end{align}
+Adding the results of these two integrals yields
+\begin{align}
+    \frac{\epsilon_{\sinc}}{\norm{H}}\parens{\norm{H} - 2 \Delta_S(i,j) +  \frac{1}{\beta_E} e^{\beta_E \Delta_S(i,j)}(2 + e^{-\beta_E \norm{H}}) + \frac{e^{\beta_E \Delta_{\min}} - e^{-\beta_E \Delta_{\min}}}{\beta_E}}.
+\end{align}
+We make two observations. First that this is positive given that $\norm{H} \geq 2 \Delta_S(i,j)$ and tends towards infinity as $\beta_E \to \infty$. The second is that there is no time dependence on the factor within the parenthesis, meaning that for fixed $\beta_E$ we can make this quantity arbitrarily small by reducing $\epsilon_{\sinc} \propto 1/t^2$. 
+
+The more reasonable distribution to analyze is the minimal entropy, or perfect knowledge distribution. In this distribution we pick an eigenvalue difference uniformly at random. We denote the set of eigenvalue gaps as $G_{\gamma}$. Then the expectation can be split into two: $S_{\gamma}$ being the set of gaps that are close to $\gamma$ and $T_{\gamma}$ as those that are far apart. Let $N_{diff}$ denote the number of differences. Specifically, let $S_{\gamma} = \set{\lambda_S(k) - \lambda_S(l) = \Delta_S(k,l) : \sinc^2((\Delta_S(i,j) - \Delta_S(k,l))t/2) \geq \epsilon_{\sinc}}$, and $T_{\gamma} = \set{\Delta_S(k,l) : \sinc^2((\Delta_S(i,j) - \Delta_S(k,l))t/2) < \epsilon_{\sinc}}$. Then the expected value over $\gamma$ becomes
+\begin{align}
+    &\mathbb{E}_{\gamma} \sinc^2((\Delta_S(i,j) - \gamma) t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} \nonumber \\
+    &=\frac{1}{N_{diff}}\sum_{\gamma \in S_{\gamma}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} + \frac{1}{N_{diff}} \sum_{\gamma \in T_{\gamma}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} \\
+    &\leq \frac{1}{N_{diff}} \sum_{\gamma \in S_{\gamma}} \abs{1 - e^{\beta_E(\Delta_S(i,j) -\gamma)}} + \frac{1}{N_{diff}} \epsilon_{\sinc} \sum_{\gamma \in T_{\gamma}}\abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}}.
+\end{align}
+We see that for the right hand sum the factor of $\epsilon_{\sinc}$, which vanishes as $t \to \infty$, causes the total sum to vanish as there are no explicit $t$ dependent terms. The set $T_{\gamma}$ does change with $t$, but it is upper bounded by a finite value and so is each possible summand. Now the real kicker is what happens to the leftmost summation. We investigate when an eigenvalue gap $\Delta_S(k,l)$ can be included in $S_{\gamma}$ as $t \to \infty$. 
+\begin{align}
+    \lim_{t \to \infty} \sinc^2((\Delta_S(i,j) - \Delta_S(k,l)) t/2) = \begin{cases}
+        0 & \Delta_S(i,j) \neq \Delta_S(k,l) \\
+        1 & \Delta_S(i,j) = \Delta_S(k,l).
+    \end{cases}
+\end{align}
+Because of this $S_{\gamma} = \set{\Delta_S(i,j)}$ becomes a multiset consisting solely of $\Delta_S(i,j)$ with the number of degeneracies of the eigenvalue $S_{\gamma}$. This means that any term in the summation then becomes $\abs{1 - e^{\beta_E(\Delta_S(i,j) - \Delta_S(i,j)}} = 0$. Then given that $\epsilon_{\sinc} = 1/(\Delta_(\min)^2 t^2) \to 0$, we have that $\lim_{t \to \infty} \mathbb{E}_{\gamma} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} = 0$. Looking at Eq. \eqref{eq:detailed_balance_upper_bound}, along with $\epsilon_{\sinc} = 1/(\Delta_{\min}^2 t^2)$ and $\alpha = \epsilon_{\alpha} / t$, we see that 
+\begin{align}
+    &\lim_{t \to \infty} \mathbb{E}_{\gamma} \abs{\chi(i,j)} \leq 2 \lim_{t \to \infty} \norm{R_{\Phi}} + 4 \lim_{t \to \infty} \frac{\epsilon_{\alpha}^2}{t^2 \Delta_{\min}^2 (\dim + 1)} \nonumber \\
+    &+ \frac{\epsilon_{\alpha}^2}{\dim + 1} \lim_{t \to \infty} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} \\
+    &= 2 \lim_{t \to \infty} \norm{R_{\Phi}}.
+\end{align}
+As 
+
+
+
+\begin{align}
+    \frac{\prob{i \to j}}{\prob{j \to i}} &\approx \frac{\frac{1}{1 + e^{-\beta_E \gamma}}\sinc^2 ((\Delta(i,j) - \gamma)t)+ 3 \epsilon_{\sinc}}{\frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((-\Delta(i,j) + \gamma)t) + 3 \epsilon_{\sinc}}  \nonumber \\
+    \lim_{t \to \infty} &\implies e^{\beta_E \gamma} = e^{-\beta_E \Delta(i,j)} \nonumber \\
+    &= \frac{\prob{\text{System in } j}}{ \prob{\text{System in } i}} \nonumber
+\end{align}
+
+\section{Proof of Lemma \ref{lem:the_double_duhamel}}
+
 
 \section{Single Qubit System \& Environment}
 We now will analyze the effects of $\Phi$ on thermalizing a system state with only a single qubit environment. The single qubit case makes the effect of tracing out the environment tractable. For absolute simplicity, we first study the case of two qubits. After this situation is analyzed in detail we extend the results to arbitrary system Hamiltonians. For the remainder of this section we assume a a system Hamiltonian $H_S = \begin{bmatrix}
@@ -672,332 +1198,4 @@ It follows from standard Sch\"atten norm inequalities that $\norm{X}_2 \leq \sqr
     &\leq \parens{\dim \sqrt{1 - \epsilon'}} \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1
 \end{align}
 
-\section{Generalizations to Many Qubits}
-
-\begin{claim}
-We now let $H_S = \sum_{i = 0}^{2^n - 1} \lambda_S(i) \ketbra{i}{i}$ be a system Hamiltonian over $n$ qubits. We utilize the same environment: a Hamiltonian $H_E = \begin{bmatrix}0 & 0 \\ 0 & \gamma\end{bmatrix}$ and state $\rho_E(\beta_E) = e^{-\beta_E H_E} / \partfun_E(\beta_E)$, along with the same interaction $G$. 
-\end{claim}
-\begin{proof}
-Our goal is to show that our channel has $\rho_S(\beta_E)$ as a fixed point and that it reduces the distance to the fixed point at different temperatures. We start from Eq. \ref{eq:trace_dist_p_norm} with the goal of showing that $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \epsilon$. This reduces to showing
-$$\sum_k \abs{\sum_{i,j,l} \frac{e^{-\beta_E \lambda(i,j)}}{\partfun(\beta_E)} \tau(i,j | k,l)}^2 \leq \epsilon.$$ 
-
-The tool we will use to bound this sum is the fact that our map preserves trace to second order, which gives us $\tau(i,j|i,j) = - \sum_{(k,l) \neq (i,j)} \tau(i,j|k,l)$. We look first at a fixed value of $k$ and further let $a(i) = \bra{i} \rho_S \ket{i}$ and $b(j) = \bra{j} \rho_E \ket{j}$, which will allow us to generalize to non-thermal input states. By definition of density matrices we have $0 \leq a(i) \leq 1$ for all $i$ and similarly $0 \leq b(j) \leq 1$ for all $j$. 
-\begin{align}
-    \sum_{i,j,l} a(i) b(j) \tau(i,j | k,l) &= \sum_{i \neq k} \sum_{j,l} \parens{a(i) b(j) \tau(i,j|k,l)} + \sum_{j,l} a(k) b(j) \tau(k,j | k,l) \label{eq:n_qubit_fixed_pt_intermediate_1}.
-\end{align}
-We expand the simpler sum on the right:
-\begin{align}
-    \sum_{j,l}a(k) b(j) \tau(k,j| k,l) &= a(k) b(0) (\tau(k,0|k,0) + \tau(k,0|k,1)) + a(k) b(1) (\tau(k,1|k,0) + \tau(k,1|k,1)) \\
-    &= - a(k) b(0) \sum_{c \neq k}\sum_{l} \tau(k,0 | c, l) - a(k) b(1) \sum_{c \neq k} \sum_{l}\tau(k,1|c,l) \\
-    &= - \sum_{c \neq k} \sum_{j,l} a(k) b(j) \tau(k,j |c,l).
-\end{align}
-Plugging this into Eq. \ref{eq:n_qubit_fixed_pt_intermediate_1} allows us to simplify as follows
-\begin{align}
-    \sum_{i,j,l} a(i) b(j) \tau(i,j|k,l) &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) \tau(i,j|k,l)) - \sum_{c \neq k} \sum_{j,l} a(k) b(j) \tau(k,j|c,l) \\
-    &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) \tau(i,j|k,l)) - \sum_{i \neq k} \sum_{j,l} a(k) b(l) \tau(i,j|k,l) \\
-    &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j | k,l).
-\end{align}
-
-We now can bound our desired quantity as follows
-\begin{align}
-    &\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \sum_{k} \abs{\sum_{i \neq k} \sum_{j,l} ((a(i) b(j) -a(k) b(l)) \tau(i,j|k,l)}^2 \\
-    &\leq \sum_{j,l,k} \sum_{i \neq k} \tau(i,j|k,l)^2 (a(i) b(j) - a(k) b(l))^2 \\
-    &\leq \sum_{j,l,k} \sum_{i \neq k} \tau(i,j|k,l)^2 \\
-    &= \sum_{j,l,k} \sum_{i \neq k} \frac{\alpha^4 t^4}{(\dim + 1)^2} \sinc(\Delta(i,j|k,l) t/ 2)^4 \\
-    &= \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 \sum_k \sum_{i \neq k} \parens{2 \sinc\parens{ \frac{\Delta_S(i,k) t}{2}}^2 + \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2 + \sinc\parens{\frac{(\Delta_S(i,k) + \gamma)t}{2}}^2} \\
-    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 \sum_k \sum_{i \neq k} \parens{3 \epsilon_{\sinc}^2 + \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2} \\
-    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 (3 \epsilon_{\sinc}^2 \dim_S (\dim_S - 1) + \sum_{k} \sum_{i \neq k} \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2.
-\end{align}
-Now given a specific value of $\gamma$ we can define a ``near-degeneracy" set of indices $S_\gamma$ that contains all indices $i,k$ such that their energy difference is close enough to $\gamma$:
-\begin{equation}
-    S_\gamma \coloneqq \set{(i,k) : i,k \in \set{1, 2, \ldots, \dim_S}, i \neq k, |\Delta_S(i,k) - \gamma| \leq \Delta_{\min}}.
-\end{equation}
-The size of this set can vary drastically depending on the eigenvalues of the system Hamiltonian. For example, take the harmonic oscillator with energy difference of 1 and set $\gamma = 1$. Then $S_{\gamma}$ in this case would be of size $|S_{1}| = \dim_S - 1$. On the other hand, take $H_S$ to be the identity, then $S_\gamma$ for any nonzero $\gamma$ is empty. 
-
-Now picking back up from where we left off:
-\begin{align}
-    &= \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 (3 \epsilon_{\sinc}^2 \dim_S (\dim_S - 1) + \sum_{(i,k) \in S_{\gamma}} \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2 + \epsilon_{\sinc}^2 (\dim_S^2 - |S_{\gamma}|)) \\
-    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 \parens{\epsilon_{\sinc}^2 (4 \dim_S^2 - 3 \dim_S - |S_{\gamma}|) + |S_{\gamma}|} \\
-    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^{2} \parens{\epsilon_{\sinc}^2 (4 \dim_S^2 - 3 \dim_S) + \dim_S(\dim_S - 1)}
-\end{align}
-We then can require that
-\begin{equation}
-    \alpha t \leq \epsilon^{1/4} \frac{\sqrt{\dim + 1}}{\dim_S (\dim_S - 1) + \epsilon_{\sinc}^2 (4 \dim_S^2 - 3 \dim_S)}
-\end{equation}
-which is enough to guarantee that $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \epsilon$. 
-\end{proof}
-
-The next step we need to prove is to find the range of temperatures for which the system is \emph{ not} in an approximate fixed state. This means
-\begin{claim}
-    
-\end{claim}
-
-Our next goal is to study the distance reduction achieved by an application of our repeated interactions channel. The most convenient distance to study is the square of the Sch\"{a}tten 2-norm, $\norm{\cdot}_2^2$. Although this does not have a nice operational interpretation, as the trace distance does in regards to state distinguishability, it can be used to give a loose upper bound on the trace distance. We break down our distance into two terms based on the second order decomposition of the channel
-\begin{align}
-    \norm{\rho_S(\beta_E) - \Phi_{\gamma}(\rho_S)}_2^2 &= \norm{\rho_S(\beta_E) - \rho_S - \sum_{i, j, k, l} \bra{i} \rho_S \ket{i} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)}   \tau(i, j| k,l) \ketbra{k}{k} + R(\rho_S)}_2^2.
-\end{align}
-For simplicity, denote the operator $\rho_S(\beta_E) - \rho_S \eqqcolon A$ and $\sum_{i, j, k, l} \bra{i} \rho_S \ket{i} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)} \tau(i, j| k,l) \ketbra{k}{k} \eqqcolon B$. This allows us to isolate the remainder part as follows
-\begin{align}
-    \norm{\rho_S(\beta_E) - \Phi_\gamma(\rho_S)}_2^2 &= \norm{A - B + R(\rho_S)}_2^2 \\
-    &\leq \parens{\norm{A - B}_2 + \norm{R(\rho_S)}}^2 \\
-    &\leq \norm{A - B}_2^2 + 2 \norm{A - B}_2 \norm{R(\rho_S(\beta))}_2 + \norm{R(\rho_S)}_2^2
-\end{align}
-We see that since we have a term linear in $\norm{R}_2$ we should only analyze $\norm{A - B}_2^2$ to order $\bigo{\alpha^2}$. Aka our goal is an expression
-\begin{align}
-    \norm{A-B}_2^2 + 2 \norm{A - B}_2 \norm{R(\rho_S)}_2 + \norm{R(\rho_S)}_2^2 &\leq \norm{A}_2^2 - \delta(\alpha, t)
-\end{align}
-Now we need to bound $\delta \leq \alpha^0 \delta_0 + \alpha^2 \delta_2 + \epsilon_{\delta}$
-
-\begin{claim}
-    Given inputs $H_S$, $\rho_S$, $\beta_E$, and $\gamma$, we compute an upper bound on the distance of the thermalizing channel as
-    \begin{align}
-        \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_2^2 \leq \norm{\rho_S(\beta_E) - \rho_S}_2^2 - \epsilon
-    \end{align}
-    
-\end{claim}
-
-\begin{claim}
-We want to show
-$$\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_2^2 \leq \norm{\rho_S(\beta_e) - \rho_S(\beta)}_2^2 - \epsilon$$
-\end{claim}
-
-Starting from the beginning:
-\begin{align}
-    \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_2^2 &= \norm{\rho_S(\beta_E) - \rho_S(\beta) - \sum_{i,j,k,l} \frac{e^{-\beta_E \lambda_E(j) - \beta \lambda_S(i)}}{\partfun_E(\beta_E) \partfun_S(\beta)} \tau(i,j|k,l) \ketbra{k}{k} }_2^2 + \bigo{\alpha^6} \\
-    &\approx \norm{A - B}_2^2 \\
-    &= \trace{(A - B)^\dagger (A - B)} \\
-    &= \trace{A^2} - 2 \trace{A B} + \trace{B^2},
-\end{align}
-where $A \coloneqq \rho_S(\beta_E) - \rho_S(\beta)$ and $B \coloneqq \sum_{i,j,k,l} \frac{e^{-\beta_E \lambda_E(j) - \beta \lambda_S(i)}}{\partfun_E(\beta_E) \partfun_S(\beta)} \tau(i,j|k,l) \ketbra{k}{k} $ are Hermitian and diagonal in the system's Hamiltonian basis. As $\trace{A^2}$ represents the distance we are trying to reduce, the goal is to show that $2 \trace{AB} \geq \trace{B^2} + \epsilon$. 
-
-We use this sorting to create the (ordered) set of indices as before,
-\begin{equation}
-    S_{\gamma} \coloneqq \set{(i,j) : \lambda_S(i) \leq \lambda_S(j), |\Delta_S(i,j) - \gamma| \leq \Delta_{\min}}.
-\end{equation}
-This means that each pair of indices $(i,j)$, such that their eigenvalue difference is close to $\gamma$, is stored only once in the set. This allows us to define the function $S_\gamma(i) = j$, as we have assumed non-degeneracy of the system eigenvalues. In a similar spirit, we say $i \in S_{\gamma}$ if it is the first index of a pair $(i,j) \in S_{\gamma}$. We can further define the set of ``dead" indices, those indices that do not have another eigenvalue that such that their difference is close to $\gamma$. This gives:
-$$T_{\gamma} \coloneqq \set{i : \forall j, |\Delta_S(i,j) - \gamma| \geq \Delta_{\min}}.$$
-Now our goal is to compute $\trace{A B} = \sum_{k} A(k) B(k)$. We first compute $A(k) B(k)$ for $k \in T_{\gamma}$ and then for $k \in S_{\gamma}$. 
-\begin{align}
-    k \in T_{\gamma} \implies B(k) &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j|k,l) \\
-    &\leq \sum_{i \neq k} \sum_{j,l} \tau(i,j|k,l) \\
-    &\leq 4 (\dim_S - 1) \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc}.
-\end{align}
-This yields $\sum_{k \in T_{\gamma}} A(k) B(k) \leq 4 |T_\gamma| (\dim_S - 1) \epsilon_{\sinc}$.
-
-
-
-Now we move on to bounding the paired indices. Let $(k_1, k_2) \in S_{\gamma}$ be a single pair. We look at the sum of $A(k_1) B(k_1) + A(k_2) B(k_2)$. 
-\begin{align}
-    B(k_1) &\leq  \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i,j|k_1, l) + 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1)} \\
-    &\leq \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc} + 3 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1)} \\
-    &= (4 \dim_S - 5) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_2, 0 | k_1, 1) \\
-    &\leq 4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + \tau(k_2, 0| k_1, 1)
-\end{align}
-
-
-
-
-and similarly we compute
-\begin{align}
-    B(k_2) &\leq  \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i,j|k_2, l) + 3 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0)} \\
-    &\leq \parens{\sum_{i \neq k_1, k_2} \sum_{j,l} \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0)} \\
-    &= (4 \dim_S - 5) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + (a(k_1) b(1) - a(k_2) b(0)) \tau(k_1, 1 | k_2, 0) \\
-    &\leq 4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + \tau(k_1, 1| k_2, 0).
-\end{align}
-Given that $\tau$ is symmetric about input and output, we have $B(k_1) - (4 \dim_S - 5) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} = - (B(k_2) - (4\dim_S - 5) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc})$. This allows us to compute the sum
-\begin{align}
-    A(k_1) B(k_1) + A(k_2) B(k_2) &\leq (4 \dim_S - 5) \epsilon_{\sinc} \parens{A(k_1) + A(k_2)} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_1, 1| k_2, 0) (A(k_1) - A(k_2)) \\
-    &\leq 2 (4 \dim_S - 5) \epsilon_{\sinc} + (a(k_2) b(0) - a(k_1) b(1)) \tau(k_1, 1| k_2, 0) (A(k_1) - A(k_2)) \\
-    &= 2 (4 \dim_S - 5) \epsilon_{\sinc} + \frac{e^{-\beta \lambda_S(k_2) - \beta_E \lambda_E(0)} - e^{-\beta \lambda_S(k_1) - \beta_E \lambda_E(1)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(k_1, 1| k_2, 0) (A(k_1) - A(k_2)).
-\end{align}
-As we want this to be negative, we require
-\begin{align}
-    e^{-\beta \lambda_S(k_2) - \beta_E \lambda_E(0)} - e^{-\beta \lambda_S(k_1) - \beta_E \lambda_E(1)} &\leq 0 \\
-    \beta \lambda_S(k_2) &\geq \beta \lambda_S(k_1) + \beta_E\gamma \\
-    \beta \Delta_S(k_2, k_1) &\geq \beta_E \gamma.
-\end{align}
-
-We will need an upper bound on $\trace{B^2}$
-\begin{align}
-    \trace{B^2} &= \sum_k B(k)^2 \\
-    &= \sum_{k \in T_{\gamma}} B(k)^2 + \sum_{(k_1, k_2) \in S_{\gamma}} B(k_1)^2 + B(k_2)^2 \\
-    &\leq 16 |T_{\gamma}| (\dim_S - 1)^2 \frac{\alpha^4 t^4}{(\dim + 1)^2}\epsilon_{\sinc}^2 + \sum_{(k_1, k_2) \in S_{\gamma}} B(k_1)^2 + B(k_2)^2
-\end{align}
-In order to compute the above we need an upper bound on $B(k_1)^2$ and $B(k_2)^2$. For ease of notation, we define the following variables:
-\begin{align}
-    S_1 &\coloneqq \sum_{i \neq k_1, k_2} \sum_{j,l} (a(i) b(j) - a(k_1) b(l)) \tau(i, j|k_1, l) \\
-    S_2 &\coloneqq \sum_{(j,l) \neq (0, 1)} (a(k_2) b(j) - a(k_1) b(l)) \tau(k_2, j| k_1, l) \\
-    r &\coloneqq a(k_2) b(0) - a(k_1) b(1) 
-\end{align}
-We can bound the absolute value of these as:
-\begin{align}
-    \abs{S_1} &\leq \sum_{i \neq k_1, k_2} \sum_{j,l} |a(i) b(j) - a(k_1) b(l)| |\tau(i, j|k_1, l)| \\
-    &\leq \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \sum_{i \neq k_1, k_2} \sum_{j,l} 1\\
-    &\leq 4 (\dim_S - 2) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
-    \abs{S_2} &\leq \sum_{(j,l) \neq (0,1)} |a(k_1) b(j) - a(k_2) b(j)| |\tau(k_2, j | k_1, l)| \\
-    &\leq \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \sum_{(j,l) \neq (0,1)} 1 \\
-    &\leq 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}
-\end{align}
-This allows us to compute bounds on $B(k_1)^2$ and $B(k_2)^2$ as:
-\begin{align}
-    B(k_1)^2 &= \bigg( S_1 + S_2 + r \tau(k_2, 0| k_1, 1) \bigg)^2 \\
-    &\leq (|S_1| + |S_2|)^2 + 2(S_1 + S_2) r \tau(k_2, 0| k_1, 1) + r^2 \tau(k_2, 0| k_1, 1)^2 \\
-    B(k_2)^2 &= \bigg( S_1 + S_2 - r \tau(k_2, 0 | k_1, 1) \bigg)^2 \\
-    &\leq (|S_1| + |S_2|)^2 - 2 (S_1 + S_2) r \tau(k_2, 0 | k_1, 1) + r^2 \tau(k_2, 0 | k_1, 1)^2 \\
-    B(k_1)^2 + B(k_2)^2 &\leq 2 (|S_1| + |S_2|)^2 + 2 r^2 \tau(k_2, 0 | k_1, 1)^2 \\
-    &\leq 32 \dim_S^2 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 2 r^2 \tau(k_2, 0 | k_1, 1)^2.
-\end{align}
-We can now bound $\trace{B^2}$ as
-\begin{align}
-    \trace{B^2} &= \sum_{k \in T_{\gamma}} B(k)^2 + \sum_{(k_1, k_2) \in S_{\gamma}} B(k_1)^2 + B(k_2)^2 \\
-    &\leq 16 |T_{\gamma}| (\dim_S - 1)^2 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 16 \dim_S^2 (2 |S_{\gamma}|) \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 2 \sum_{(k_1, k_2) \in S_{\gamma}} r^2 \tau(k_1, 1 | k_2, 0)^2 \\
-    &\leq 16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 2 \sum_{(k_1, k_2) \in S_{\gamma}} r^2 \tau(k_1, 1 | k_2, 0)^2
-\end{align}
-
-Now our goal is to upper bound $-2\trace{AB}$. We make use of the fact that $|A(k)| \leq 1$ for all $k$ and that $k \in T_{\gamma}$ implies that $|B(k)| \leq 4 (\dim_S - 1) \epsilon_{\sinc}$.
-\begin{align}
-    -2 \trace{AB} &= -2 \sum_{k \in T_{\gamma}} A(k) B(k) - 2 \sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) B(k_1) + A(k_2) B(k_2) \\
-    &\leq + 2 \sum_{k \in T_{\gamma}} |A(k)| |B(k)| - 2 \sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) B(k_1) + A(k_2) B(k_2) \\
-    &\leq 8 \dim_S |T_{\gamma}| \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} - 2 \sum_{(k_1, k_2) \in S_{\gamma}} A(k_1) B(k_1) + A(k_2) B(k_2).
-\end{align}
-We now investigate the right term in the above. Using the notation from before
-\begin{align}
-    A(k_1) B(k_1) &= A(k_1) (S_1(k_1) + S_2(k_1) + r \tau(k_1, 1 | k_2, 0)) \\
-    A(k_2) B(k_2) &= A(k_2) (S_1(k_2) + S_2(k_2) - r \tau(k_1, 1 | k_2, 0)) \\
-    -2A(k_1) B(k_1) -2 A(k_2) B(k_2) & = -2 A(k_1)(S_1(k_1) + S_2(k_1))  - 2A(k_2)( S_1(k_2) + S_2(k_2)) + 2 r \tau(k_1, 1 | k_2, 0)( A(k_2) - A(k_1)) \\
-    &\leq 2 |A(k_1)|(|S_1(k_1)| + |S_2(k_1)|) + 2 |A(k_2)|( |S_1(k_2)| + |S_2(k_2)|) \nonumber \\
-    &+ 2 r \tau(k_1, 1 | k_2, 0)(A(k_2) - A(k_1)) \\
-    &\leq 16 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 2 r \tau(k_1, 1 | k_2, 0)( A(k_2) - A(k_1)).
-\end{align}
-This allows us to plug in to our sum:
-\begin{align}
-    -2 \trace{AB} &\leq 8 \dim_S(|T_{\gamma}| + 2 |S_{\gamma}|) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 2 \sum_{(k_1, k_2) \in S_{\gamma}} r \tau(k_1, 1 | k_2, 0) ( A(k_2) - A(k_1)) \\
-    &= 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 2 \sum_{(k_1, k_2) \in S_{\gamma}} r \tau(k_1, 1 | k_2, 0) ( A(k_2) - A(k_1)).
-\end{align}
-Combining with the bound for $\trace{B^2}$ we get the following
-\begin{align}
-    \trace{B^2} - 2 \trace{AB} &\leq 16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 2 \sum_{(k_1, k_2) \in S_{\gamma}} \parens{r^2 \tau(k_1, 1 |k_2, 0)^2 + r \tau(k_1, 1| k_2, 0) (A(k_2) - A(k_1))}.
-\end{align}
-To prove the required bound, we will require the following two inequalities:
-\begin{align}
-    16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2}\epsilon_{\sinc}^2 + 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} &\leq \frac{\epsilon}{2} \\
-    2 \sum_{(k_1, k_2) \in S_{\gamma}} r \tau(k_1, 1 | k_2, 0) (r \tau(k_1, 1 | k_2, 0)  + A(k_2) - A(k_1)) &\leq - \frac{3\epsilon}{2}.
-\end{align}
-
-Everything below this line has not been updated with the fix to $\tau(i,j|k,l) \leq \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}$. 
-
-\noindent\rule{\textwidth}{1pt}
-
-The first inequality is rather straightforward. We use the intuition that the left term (ignoring constant factors) is nearly the square of the right term, and since we want to bound their sum with something small we can then deduce that the right term should be dominant. This yields the intuition that
-\begin{align}
-    16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 &\leq 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
-    \epsilon_{\sinc} &\leq \frac{\dim + 1}{2 \dim_S} \frac{1}{(\alpha^2 t^2)} \\
-    &= \parens{1 + \frac{1}{\dim}} \frac{1}{\alpha^2 t^2}.
-\end{align}
-We then note that because the bound $\epsilon_{\sinc} \geq 1/(\Delta_{\min}^2 t^2)$ has to be satisfied, this yields a ``sandwich'' of acceptable ranges for $\epsilon_{\sinc}$ when combined with the upper bound above. To make this sandwich reasonable we require
-\begin{align}
-    \frac{1}{\Delta_{\min}^2 t^2} &\leq \epsilon_{\sinc} \leq \parens{1 + \frac{1}{\dim}} \frac{1}{\alpha^2 t^2} \\
-    \alpha^2 &\leq \Delta_{\min}^2 \parens{1 + \frac{1}{\dim}}.
-\end{align}
-Curiously, there are no requirements on the value of $t$. To complete this argument, we now simplify the lower bound on $\epsilon$ by noting,
-\begin{align}
-    16 \dim_S^3 \frac{\alpha^4 t^4}{(\dim + 1)^2} \epsilon_{\sinc}^2 + 8 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc} &\leq 16 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc},
-\end{align}
-which yields $\epsilon \geq 32 \dim_S^2 \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1}$.
-
-The second inequality is a lot trickier. We will work with this as a quadratic expression in $\tau$ and find values of $\tau$ such that it is satisfied. We plug in for $\tau$ and rewrite the inequality as 
-\begin{align}
-    &\frac{(\alpha t)^4}{(\dim + 1)^2} \parens{2  \sum_{(k_1, k_2) \in S_{\gamma}} r^2 \sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^4} \nonumber \\
-    &+ \frac{(\alpha t)^2}{\dim + 1} \parens{2  \sum_{(k_1, k_2) \in S_{\gamma}}r \sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2 (A(k_2) - A(k_1))} \nonumber \\
-    &+ \parens{\frac{\alpha t}{\dim + 1}}^0 \frac{3 \epsilon}{2} \leq 0
-\end{align}
-We first simplify the coefficient for $\alpha^4$ as 
-\begin{align}
-    2 \sum_{(k_1, k_2) \in S_{\gamma}} r^2 \sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^4 &\leq 2 |S_{\gamma}|.
-\end{align}
-Since everything is positive, if this simplified inequality holds then so does the original. 
-
-For simplicity we denote the summation in the coefficient for $\alpha^2$ as
-$$d \coloneqq 2 \sum_{(k_1, k_2) \in S_{\gamma}} r \sinc((\Delta_S(k_1, k_2) - \gamma) t/2)^2 (A(k_2) - A(k_1)).$$
-Letting $x$ play the role of $(\alpha t)^2 / (\dim + 1)$ gives us a simple quadratic expression:
-\begin{equation}
-    2 x^2 |S_{\gamma}| + x d + \frac{3 \epsilon}{2} \leq 0.
-\end{equation}
-As $(\alpha t)^2 / (\dim + 1) \geq 0$ we have $x$ must be positive as well. This requires for not only $d$ to be negative, but that the roots of the quadratic must both be real and at least one of them must be positive. Denote the roots $x_{\pm}$, which can be seen as:
-\begin{align}
-    x_{\pm} &= \frac{-d}{4 |S_{\gamma}|} \pm \frac{1}{4 |S_{\gamma}|} \sqrt{d^2 - 12 |S_{\gamma}| \epsilon} \\
-    &= \frac{-d}{4 |S_{\gamma}|} \parens{1 \mp \sqrt{1 - \frac{12 |S_{\gamma}| \epsilon}{d^2}}}.
-\end{align}
-We want to guarantee that these roots are real, so we require 
-\begin{equation}
-    d^2 \geq 12 |S_{\gamma}| \epsilon. \label{eq:d_squared_epsilon_bound}
-\end{equation}
-Note that inside the radical, $12  |S_{\gamma}| \epsilon / d^2$ is always positive, implying that the radical is always going to be less than 1. This leads to both roots being positive so long as $d \leq 0$ and $d^2$ is lower bounded as mentioned.
-
-If these two conditions are met, then we can set $\alpha^2$ to be the average of the two roots and the distance reduction claim is satisfied. Ideally we would like the lower root to be as close to 0 as possible, so that way we can simply reduce $\alpha$ to get our desired distance reduction. Regardless, our last objective still is to produce bounds on $d$ that satisfy the given inequalities, we therefore turn our attention to the sum in question. To simplify $d$ we first investigate the sign of $r$, assuming it to be positive we see what conditions result
-\begin{align}
-    r = a(k_2) b(0) - a(k_1) b(1) &\geq 0 \\
-    \bra{k_2} \rho_S \ket{k_2} \frac{e^{-\beta_E \lambda_E(0)}}{\partfun_E(\beta_E)} - \bra{k_1} \rho_S \ket{k_1} \frac{e^{-\beta_E \lambda_E(1)}}{\partfun_E(\beta_E)} &\geq 0 \\
-    \frac{\bra{k_2} \rho_S \ket{k_2}}{\bra{k_1} \rho_S \ket{k_1}} &\geq e^{-\beta_E \gamma}. \label{eq:bound_on_rho_s_for_r}
-\end{align}
-If we were using thermal states, $\rho_S = e^{-\beta H_S} / \partfun_S(\beta)$, the left hand side of the above would be $e^{-\beta \Delta_S(k_2, k_1)}$. Simplifying would result in $\beta \leq \frac{\gamma}{\Delta_S(k_2, k_1)} \beta_E$. Since we expect the distance moved by the thermalizing channel to be greatest as $\beta_E \to \infty$ and $\beta \to 0$, requiring this inequality to be true, and therefore $r \geq 0$, seems to be a reasonable condition to impose.
-
-With the sign of $r$ sorted out, we now have to bound the summation for $d$. Since we require $d \leq 0$ in order to get positive values for $(\alpha t)^2 $, we require
-\begin{align}
-    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc((\Delta_S(k_2, k_1) - \gamma)t/2)^2}{\dim + 1} (A(k_2) - A(k_1)) &\leq 0.
-\end{align}
-To prove this we bound the following, note we surpress the arguments to $\sinc$ to save space, and we make use of the bound required in Eq. \eqref{eq:bound_on_rho_s_for_r}
-\begin{align}
-    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} A(k_2) &= \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_2)}}{\partfun_S(\beta_E)}  - \bra{k_2} \rho_S \ket{k_2}} \\
-    &\leq \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_2)}}{\partfun_S(\beta_E)}  - e^{-\beta_E \gamma} \bra{k_1} \rho_S \ket{k_1}} \\
-    &= \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E (\lambda_S(k_1) - \lambda_S(k_1) + \lambda_S(k_2) )}}{\partfun_S(\beta_E)}  - e^{-\beta_E \gamma} \bra{k_1} \rho_S \ket{k_1}} \\
-    &= \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)} e^{-\beta_E \Delta_S(k_2, k_1)}  - e^{-\beta_E \gamma} \bra{k_1} \rho_S \ket{k_1}}.
-\end{align}
-We note right away that as $\beta_E \to 0$ this yields $\sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} (A(k_2) - A(k_1)) \leq 0$. 
-
-Now subtracting the sum with $A(k_1)$ and simplifying yields
-\begin{align}
-    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} (A(k_2) - A(k_1)) &\leq \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \parens{\frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)} (e^{-\beta_E \Delta_S(k_2, k_1)} - 1) - \bra{k_1} \rho_S \ket{k_1} (e^{-\beta_E \gamma} - 1) } .
-\end{align}
-Since we have to upper bound this summation by 0, a good first step would be to understand when a given term is positive or negative. Taking a generic term, disregarding the prefactor of $\frac{\sinc^2}{\dim + 1}$ and simplifying leads to
-\begin{align}
-    \bra{k_1} \rho_S \ket{k_1}& \parens{1 - e^{-\beta_E \gamma}} -\frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)}\parens{1 - e^{-\beta_E \Delta_S}} \leq 0 \\
-    \bra{k_1} \rho_S \ket{k_1}&  \leq \frac{e^{-\beta_E \lambda_S(k_1)}}{ \partfun_S(\beta_E)}\frac{1 - e^{-\beta_E \Delta_S}}{1 - e^{-\beta_E \gamma}}.
-\end{align}
-In order to proceed with the analysis we must impose some kind of structure onto $\rho_S$. We will investigate a few limits, one in which $\rho_S$ is a thermal state with $\beta$ close enough to $\beta_E$, one in which $\beta_E \to \infty$, and another in which we bound the operator distance of $\rho_S$ from $\rho_S(\beta_E)$. 
-
-The condition in which we expect the most rapid thermalization is one in which the environment is in it's ground state (temperature of 0 or $\beta_E \to \infty$) and the system is in the maximally mixed state (temperature to infinity or $\beta \to 0$). In this situation, the factors $e^{-\beta_E \Delta_S} \to 0$ and $e^{-\beta_E \gamma} \to 0$. Further, the Boltzmann factors approach 0 if the eigenvalue is not a minimal eigenvalue or 1 if it is a minimal eigenvalue (ground state energy). In this situation, if $(0, i) \notin S_{\gamma}$, for all $i$, then we have that the Boltzmann factors $e^{-\beta_E \lambda_S(k_1)} = 0$. In this case we can also directly evaluate the summation $A(k_2) - A(k_1)$, as this is 
-\begin{equation}
-    A(k_2) - A(k_1) = \frac{e^{-\beta_E \lambda_S(k_2)}}{\partfun_S(\beta_E)} - \frac{1}{\dim_S} - \frac{e^{-\beta_E \lambda_S(k_1)}}{\partfun_S(\beta_E)} + \frac{1}{\dim_S} = 0.
-\end{equation}
-From Eq. \eqref{eq:d_squared_epsilon_bound} we see that this implies that $\epsilon = 0$ and we do not have any distance reduction to the ground state possible. This makes intuitive sense, as any probability mass that gets shuffled from high energy states to lower energy states does not get us any closer to the ground state. 
-However, whenever the 0 temperature environment and infinite temperature system are coupled when $\gamma$ is close enough to a transition between a system ground state and an excited state we can get distance reduction. We will analyze this situation now. In the case in which there exists a pair $(0, i) \in S_{\gamma}$, meaning $e^{-\beta_E \lambda_S(k)} / \partfun_S(\beta_E) = \delta_{k,0}$ and $|\Delta_S(i, 0) - \gamma| \leq \Delta_{\min}$. In this case, if $(k_1, k_2) \in S_{\gamma}$ and $k_1 \neq 0$, then $A(k_2) - A(k_1) = 0$. However, for $(0, k)$ $A(k) - A(0) = 0 - 1/\dim_S - 1 + 1/\dim_S = -1$. Therefore, the total sum is then 
-\begin{align}
-    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} (A(k_2) - A(k_1)) &= - \sum_{(0, k) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1} \\
-    &\leq \frac{- \epsilon_{\sinc}}{\dim + 1}.
-\end{align}
-In addition, we can provide the simplistic bound 
-\begin{equation}
-    \sum_{(k_1, k_2) \in S_{\gamma}} \frac{\sinc^2}{\dim + 1}(A(k_2) - A(k_1)) \geq \frac{-1}{\dim + 1}.
-\end{equation}
-This allows us to argue that $\frac{\epsilon_{\sinc}^2}{(\dim + 1)^2} \leq d^2 \leq \frac{1}{(\dim + 1)^2}$. Propagating this through to $\epsilon$ via Eq. \eqref{eq:d_squared_epsilon_bound} yields 
-\begin{align}
-    d^2 &\geq \frac{12 t^4 |S_{\gamma}| \epsilon}{(\dim + 1)^2} \\
-    \epsilon &\leq \frac{1}{12 t^4 |S_{\gamma}|}.
-\end{align}
-Now we look at the lower bound for $\epsilon$, which is given by 
-\begin{align}
-    \epsilon \geq 32 \epsilon_{\sinc} \alpha^2 t^2 \frac{\dim_S^2}{\dim + 1}
-\end{align}
-
-
-Without adding any structure to $\rho_S$ this is essentially a requirement we must impose on the state. We will go on to investigate for what ranges of $\beta$ this holds in the case that $\rho_S$ is a thermal state. We see as $\beta_E \to \infty$ that this inequality is trivially satisfied for $k_1$ being the ground state, the RHS approaches 1.
-
-As we can see that this bound is pretty much dependent on the structure of the state, we now move on to bounding the value of $\epsilon$ that can be achieved. This comes from the bound in Eq. \eqref{eq:d_squared_epsilon_bound}, where we note that since $d$ is negative (from $r$ being positive) this amounts to an upper bound on $d$ (or a lower bound on $\epsilon$).
-
-\bibliographystyle{unsrt}
-\bibliography{bib}
-
-\appendix
-\section{Proof of Lemma \ref{lem:the_double_duhamel}}
 \end{document}
