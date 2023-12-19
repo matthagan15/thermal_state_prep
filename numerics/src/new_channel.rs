@@ -19,17 +19,28 @@ use crate::{
     adjoint, mean_and_std, partial_trace, schatten_2_distance, thermal_state, RandomInteractionGen,
 };
 
+enum GammaStrategy {
+    Fixed (f64),
+    Probabilistic {
+        distribution: HashMap<f64, f64>,
+        num_samples: usize,
+    },
+    Grid {
+        min: f64,
+        max: f64,
+        num_points: usize,
+    }
+}
+
 struct SingleShotParameters {
     alpha: f64,
     beta: f64,
-    gamma: f64,
     time: f64,
 }
 
 struct IterationOutput {
     alpha: f64,
     beta: f64,
-    gamma: f64,
     time: f64,
     distance_mean: f64,
     distance_std: f64,
@@ -51,22 +62,36 @@ impl IteratedChannelOutput {
     }
 }
 
+/// Assumes properly normalized, panics if it isn't and cannot generate a sample. assumes HashMap< value, probability > 
+fn sample_from_distribution(prob_dist: &HashMap<f64, f64>) -> f64 {
+    let mut acc = 0.0;
+    let mut rng = thread_rng();
+    let sampled_float: f64 = rng.gen();
+    for (k, v) in prob_dist.into_iter() {
+        if acc <= sampled_float && acc + v >= sampled_float {
+            return *k;
+        } else {
+            acc += v;
+        }
+    }
+    acc
+}
+
 pub struct IteratedChannel {
     h_sys: Array2<c64>,
     parameter_schedule: Vec<SingleShotParameters>,
-    log_state: bool,
-    output_file_path: PathBuf,
     target_beta: f64,
+    gamma_strategy: GammaStrategy,
     rng_seed: Option<u64>,
 }
 
-fn simulate_iterated_channel(phi: IteratedChannel) -> IteratedChannelOutput {
-    let mut ret = IteratedChannelOutput::default();
-    
-    ret
+impl IteratedChannel {
+    pub fn simulate(&self) {
+        match &self.gamma_strategy {
+            GammaStrategy::Fixed(_) => todo!(),
+            GammaStrategy::Probabilistic { distribution, num_samples } => todo!(),
+            GammaStrategy::Grid { min, max, num_points } => todo!(),
+        }
+    }
 }
 
-/// Designed to answer questions "how many iterations until..."
-pub struct StoppedProcessChannel {
-    h_sys: Array2<c64>,
-}
