@@ -24,10 +24,8 @@
 \newtheorem{claim}{Claim}
 \newtheorem{dependency}{Dependency}
 
-\usepackage{todonotes}
-
 \newcommand{\matt}[1]{\todo[color=red!50, prepend, caption={Matt}, tickmarkheight=0.25cm]{#1}}
-\newcommand{\note}[1]{\emph{Note: #1}}
+\newcommand{\inlinetodo}[1]{\textcolor{red}{{\Large TODO:} #1}}
 
 
 
@@ -395,12 +393,7 @@ $$\tau(i,j | k,l) = \begin{cases}
     \frac{\alpha^2 t^2}{\dim + 1} & (i,j) \neq (k,l), \Delta(i,j | k,l) = 0 \\
     \frac{\alpha^2 t^2 }{\dim + 1} \sinc^2(\Delta t /2) & \Delta(i,j| k,l) \neq 0.
 \end{cases}$$
-. A summation shows that $\tau(i,j|i,j) = -\sum_{(k,l) \neq (i,j)} \tau(i,j|k,l)$, which as a byproduct shows that the mapping $\Phi$ is trace preserving to order $\bigo{\alpha^2}$. Further we note that 
-\begin{align}
-    \frac{2(1 - \cos(\Delta t)}{\Delta^2} &= \frac{2(1 - \cos^2(\Delta t / 2) + \sin^2(\Delta t /2)}{\Delta^2} \\
-    &= \frac{t^2}{2} \frac{\sin^2 (\Delta t / 2)}{ (\Delta t/ 2)^2} \\
-    &= \frac{t^2}{2} \sinc^2(\Delta t /2).
-\end{align}
+. A summation shows that $\tau(i,j|i,j) = -\sum_{(k,l) \neq (i,j)} \tau(i,j|k,l)$, which as a byproduct shows that the mapping $\Phi$ is trace preserving to order $\bigo{\alpha^2}$.
 \end{theorem}
 \begin{proof}
     We focus exclusively on diagonal inputs and outputs for density matrices, $\ketbra{a}{a}$ and $\ketbra{b}{b}$. We use Eq. \eqref{eq:second_order_output}, starting with transitions within the degenerate subspace of $a$. For the following we assume $a \neq b$ and $\Delta_{ab} = 0$: 
@@ -422,13 +415,31 @@ $$\tau(i,j | k,l) = \begin{cases}
     &~ +\frac{\sigma^2 \alpha^2 }{\dim+1} \parens{ \sum_{i: \Delta_{ai} \neq 0 } \frac{2(1- \cos (\Delta_{ai}t))}{\Delta_{ai}^2} \braket{a}{i} \braket{i}{a} + t^2  \sum_{i : \Delta_{ai} = 0} \braket{a}{i} \braket{i}{a}} \\
     &= 1 - \frac{\sigma^2 \alpha^2}{\dim + 1} \parens{\sum_{i: \Delta_{ai} \neq 0} \frac{2(1 - \cos(\Delta_{ai}t))}{\Delta_{ai}^2} + t^2 (\eta(a) - 1)}.
     \end{align}
-    This completes the transition probability computation. It is straightforward to see that $\sum_{b} \prob{a \to b} = 1$ and that $0 \leq \prob{a \to b} \leq 1$ given that $t^2 \leq \frac{\dim + 1}{\alpha^2 \sigma^2}$.
+    To simplify further we reduce the cosine terms to a sinc function as follows
+    \begin{align}
+        \frac{2(1 - \cos(\Delta t)}{\Delta^2} &= \frac{2(1 - \cos^2(\Delta t / 2) + \sin^2(\Delta t /2)}{\Delta^2} \\
+        &= \frac{t^2}{2} \frac{\sin^2 (\Delta t / 2)}{ (\Delta t/ 2)^2} \\
+        &= \frac{t^2}{2} \sinc^2(\Delta t /2).
+    \end{align}
+    This completes the transition probability computation. It is straightforward to see that $\sum_{b} \prob{a \to b} = 1$ and that $0 \leq \prob{a \to b} \leq 1$ given that $\alpha t \leq \sqrt{\dim + 1}$.
 \end{proof}
 
 \subsection{Remainder Bound}
 We now aim to bound the spectral norm of the remainder term $R_{\Phi}$. This is rather tedious, as even to third order in $\alpha$ we have 24 terms to bound. For example, looking first at the $(A)$ term resulting from the second order derivative in Eq. \eqref{eq:second_order_deriv_intermediate_a} we have 4 multiplicative factors involving $\alpha$, leading to 4 terms from this single term of the second order derivative. As there are six terms in total, this yeilds 24 terms. We can profit from the fact though that the expressions for the second order derivatives do simplify and the final expression only has 3 terms, as two of the derivatives act similarly. We first will analyze the single term from Eq. \eqref{eq:second_order_deriv_intermediate_a} in detail. 
 
-First I need to write down what exactly we are trying to bound. What we are essentially trying to do is bound the matrix entries:
+
+\begin{theorem}
+    Let $\Phi(\rho)$ be the thermalizing channel as defined in Def. \eqref{eq:phi_g_definition} and $R_{\Phi}$ the remainder term 
+    \begin{equation}
+        R_{\Phi}(\rho, \alpha) = \Phi(\rho, \alpha) - \rho - \frac{\alpha}{1!} \frac{\partial}{\partial \alpha} \Phi(\rho)\bigg|_{\alpha = 0} - \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho) \bigg|_{\alpha = 0}.
+    \end{equation}
+    Then we have that
+    \begin{equation}
+        \alpha t \leq \parens{\frac{\epsilon_R}{2 \dim}}^{1/3} \implies \norm{R_{\Phi}} \leq \epsilon_R.
+    \end{equation}
+\end{theorem}
+\begin{proof}
+    First I need to write down what exactly we are trying to bound. What we are essentially trying to do is bound the matrix entries:
 \begin{equation}
     \Phi(\rho) = \rho + \frac{\alpha}{1} \frac{\partial}{\partial \alpha} \Phi(\rho) \bigg|_{\alpha = 0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho) \bigg|_{\alpha = 0} + \frac{\alpha^3}{3!} \frac{\partial^3}{\partial \alpha^3} \Phi(\rho) \bigg|_{\alpha = \alpha^\star},
 \end{equation}
@@ -461,17 +472,49 @@ It is pretty straightforward to upper bound this integral by $\int \norm{D}^3 dD
     \norm{R_{\Phi}} \leq 8 \alpha^3 t^3 \dim.
 \end{equation}
 So this says we need $\alpha t \leq \frac{\epsilon_{R}^{1/3}}{2 \dim^{1/3}}$ in order for $\norm{R_{\Phi}} \leq \epsilon_R$.
+\end{proof}
 
-Could I get a better norm result with the same scaling? Aka can I bound the one or two norm of $R_{\Phi}$ with the same scaling?
+\textcolor{red}{TODO: Change this to be the norm of the average instead of the average of the norm. The norm of the average should be reducible to the third moment of the distribution of eigenvalues. Even then though we might pick up dimensionful factors because we have to do a spectral decomposition of each random matrix $D$. This then introduces a sum over all 3 diagonals. We can use independence to get rid of two of them, but the last remaining one I'm not sure how to, as we have projectors interspersed throughout the factors. Using triangle inequality and submultiplicativity gives you a factor of dimension, in which case we are just as good with our dumb bound of the average of the norm cubed.}
+\todo{Fix the definitions used here.}
 
 \section{Generalizations to Many Qubits}
 
-\begin{claim}
-We now let $H_S = \sum_{i = 0}^{2^n - 1} \lambda_S(i) \ketbra{i}{i}$ be a system Hamiltonian over $n$ qubits. We utilize the same environment: a Hamiltonian $H_E = \begin{bmatrix}0 & 0 \\ 0 & \gamma\end{bmatrix}$ and state $\rho_E(\beta_E) = e^{-\beta_E H_E} / \partfun_E(\beta_E)$, along with the same interaction $G$. 
-\end{claim}
+This introduction part needs to introduce the setup that will be used for these two proofs.
+
+\begin{lemma}
+    \begin{equation}
+        \sum_{i,j,l} a(i) b(j) \tau(i,j | k,l) = \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j |k,l)
+    \end{equation}
+\end{lemma}
+\begin{proof}
+    \begin{align}
+        \sum_{i,j,l} a(i) b(j) \tau(i,j | k,l) &= \sum_{i \neq k} \sum_{j,l} \parens{a(i) b(j) \tau(i,j|k,l)} + \sum_{j,l} a(k) b(j) \tau(k,j | k,l) \label{eq:n_qubit_fixed_pt_intermediate_1}.
+    \end{align}
+    We expand the simpler sum on the right:
+    \begin{align}
+        \sum_{j,l}a(k) b(j) \tau(k,j| k,l) &= a(k) b(0) (\tau(k,0|k,0) + \tau(k,0|k,1)) + a(k) b(1) (\tau(k,1|k,0) + \tau(k,1|k,1)) \\
+        &= - a(k) b(0) \sum_{c \neq k}\sum_{l} \tau(k,0 | c, l) - a(k) b(1) \sum_{c \neq k} \sum_{l}\tau(k,1|c,l) \\
+        &= - \sum_{c \neq k} \sum_{j,l} a(k) b(j) \tau(k,j |c,l).
+    \end{align}
+    Plugging this into Eq. \ref{eq:n_qubit_fixed_pt_intermediate_1} allows us to simplify as follows
+    \begin{align}
+        \sum_{i,j,l} a(i) b(j) \tau(i,j|k,l) &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) \tau(i,j|k,l)) - \sum_{c \neq k} \sum_{j,l} a(k) b(j) \tau(k,j|c,l) \\
+        &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) \tau(i,j|k,l)) - \sum_{i \neq k} \sum_{j,l} a(k) b(l) \tau(i,j|k,l) \\
+        &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j | k,l).
+    \end{align}
+\end{proof}
+
+\begin{theorem}
+    Using $H_S, H_E, \gamma, G, \epsilon_{\sinc}$ and $\rho_E$ as defined above. If $\epsilon_{\sinc} \leq \frac{1}{4}$ (or alternatively $t \geq \frac{2}{\Delta_{\min}}$), then following statement holds
+    \begin{equation}
+        \alpha t \leq \sqrt{2} \epsilon_{fix}^{1/4} \sqrt{1 + \frac{1}{\dim}} \implies \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \epsilon_{fix}
+    \end{equation}
+\end{theorem}
 \begin{proof}
 Our goal is to show that our channel has $\rho_S(\beta_E)$ as a fixed point and that it reduces the distance to the fixed point at different temperatures. We start from Eq. \ref{eq:trace_dist_p_norm} with the goal of showing that $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \epsilon$. This reduces to showing
 $$\sum_k \abs{\sum_{i,j,l} \frac{e^{-\beta_E \lambda(i,j)}}{\partfun(\beta_E)} \tau(i,j | k,l)}^2 \leq \epsilon.$$ 
+\inlinetodo{Need to include bounds on the remainder term now that we have it. It shouldn't be too hard, just set the remainder term error to one half of the error we are trying to bound and then bound the other contribution as one half and then they sum to the error we want.}
+
 
 The tool we will use to bound this sum is the fact that our map preserves trace to second order, which gives us $\tau(i,j|i,j) = - \sum_{(k,l) \neq (i,j)} \tau(i,j|k,l)$. We look first at a fixed value of $k$ and further let $a(i) = \bra{i} \rho_S \ket{i}$ and $b(j) = \bra{j} \rho_E \ket{j}$, which will allow us to generalize to non-thermal input states. By definition of density matrices we have $0 \leq a(i) \leq 1$ for all $i$ and similarly $0 \leq b(j) \leq 1$ for all $j$. 
 \begin{align}
@@ -525,10 +568,46 @@ so that we can say
 
 The next step we need to prove is to find the range of temperatures for which the system is \emph{ not} in an approximate fixed state. This means
 \begin{claim}
-   test claim 
+   If $\beta \geq \beta_{idk}$, then it is not an approximate fixed point. 
 \end{claim}
+\begin{proof}
+    We need to show that there is no way to lower bound the distance of the actual channel, instead we have to lower bound the distance of $\rho_S(\beta_E)$ and the second order approximation to the channel. 
+    The following is what we want to show. 
+    \begin{align}
+        \norm{\rho_S(\beta_E) - \Phi^{(2)}(\rho_S(\beta))}_2^2 \geq \epsilon_{fix}.
+    \end{align}
+    We use Lemma (insert schatten deconstruction lemma here) to get
+    \begin{align}
+        \norm{\rho_S(\beta_E) - \Phi^{(2)}(\rho_S(\beta))}_2^2 &= \sum_k \abs{\frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|k ,l)}^2 \\
+        &\geq \abs{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} - \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)}\tau(i,j|0,l)}^2 \\
+        &= \parens{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}}^2 - 2 \parens{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)}} \nonumber \\
+        &\quad - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) \nonumber \\
+        &\quad + \parens{\sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l)}^2.
+    \end{align}
+    We now need to simplify
+    \begin{align}
+        \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) &= \sum_{i \neq 0} (a(i) b(j) - a(k) b(l)) \tau(i,j|0,l) \\
+        &\geq \sum_{i \neq 0} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}}
+    \end{align}
+    Now we assume that there exists one and only one index $\kappa$ such that $\abs{\Delta_S(\kappa, 0) - \gamma} \leq \Delta_{\min}$. This ensures that if $i \neq \kappa$ then $\tau(i,j | 0, l) \leq \epsilon_{\sinc}$ and that $\epsilon_{\sinc} \leq \tau(\kappa, 0 | 0, 1) \leq 1$. This allows us to simplify the sum as
+    \begin{align}
+        \sum_{i \neq 0} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}} &= \parens{(a(\kappa) b(0) - a(0) b(1)) \tau(\kappa, 0 | 0, 1) - 3 \epsilon_{\sinc}} \nonumber \\
+        &\quad + \sum_{i \neq 0, \kappa} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}} \\
+        &\geq (a(\kappa) b(0) - a(0) b(1)) \tau(\kappa, 0 | 0, 1) - \epsilon_{\sinc}(3 + 4 (\dim - 2))
+    \end{align}
+\end{proof}
 
-Our next goal is to study the distance reduction achieved by an application of our repeated interactions channel. The most convenient distance to study is the square of the Sch\"{a}tten 2-norm, $\norm{\cdot}_2^2$. Although this does not have a nice operational interpretation, as the trace distance does in regards to state distinguishability, it can be used to give a loose upper bound on the trace distance. We break down our distance into two terms based on the second order decomposition of the channel
+\begin{theorem}
+    This is the actual legit one, so work here. 
+\end{theorem}
+\begin{proof}
+    First we want to define the (multi)set
+    \begin{equation}
+        S = \set{\Delta_S(i,j) : 0 \leq i < j \leq \dim_S}.
+    \end{equation}
+    We assume that if $(i,j) \neq (i', j')$ then $\Delta_S(i,j) \neq \Delta_S(i', j')$. This is a significant restriction, but it greatly simplifies the following proofs. 
+    
+    Our next goal is to study the distance reduction achieved by an application of our repeated interactions channel. The most convenient distance to study is the square of the Sch\"{a}tten 2-norm, $\norm{\cdot}_2^2$. Although this does not have a nice operational interpretation, as the trace distance does in regards to state distinguishability, it can be used to give a loose upper bound on the trace distance. We break down our distance into two terms based on the second order decomposition of the channel
 \begin{align}
     \norm{\rho_S(\beta_E) - \Phi_{\gamma}(\rho_S)}_2^2 &= \norm{\rho_S(\beta_E) - \rho_S - \sum_{i, j, k, l} \bra{i} \rho_S \ket{i} \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)}   \tau(i, j| k,l) \ketbra{k}{k} + R(\rho_S)}_2^2.
 \end{align}
@@ -549,9 +628,16 @@ We see that since we have a term linear in $\norm{R}_2$ we should only analyze $
 \end{align}
 This then gives our remainder term as
 \begin{equation}
-    \norm{\rho_S(\beta_E) - \Phi_{\gamma}(\rho_S)}_2^2 \leq \norm{A - B}_2^2 + (4 \dim^2 + 1) \norm{R}_2.
+    \norm{\rho_S(\beta_E) - \Phi_{\gamma}(\rho_S)}_2^2 \leq \norm{A - B}_2^2 + (4 \dim^2 + 1) \norm{R_{\Phi}}_2.
 \end{equation}
-Now we can bound $\norm{R_{\Phi}}_2 \leq \sqrt{\dim} \norm{R_{\Phi}} \leq \epsilon_{R} \sqrt{\dim}$. Note we can improve this bound with improvements to the $\norm{B}_2$ bound. This is computed below.
+Now we can bound $\norm{R_{\Phi}}_2 \leq \sqrt{\dim} \norm{R_{\Phi}} \leq \epsilon_{R} \sqrt{\dim}$. This gives the final inequality as
+\begin{equation}
+    \norm{\rho_S(\beta_E) - \Phi_{\gamma}(\rho_S)}_2^2 \leq \norm{A - B}_2^2 + 5 \dim^{5/2} \epsilon_{R}
+\end{equation}
+
+Note we can improve this bound with improvements to the $\norm{B}_2$ bound. 
+\end{proof}
+
 
 Shifting our attention to $\norm{A-B}_2^2$, we decompose this into trace calculations straightforwardly
 \begin{align}
