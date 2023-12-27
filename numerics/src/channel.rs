@@ -269,20 +269,20 @@ impl Channel {
         }
         let avg_states_locker = Arc::new(Mutex::new(avg_states));
         // Store each statistic sample here. Then do post-processing to get mean and std.
-        let statistics_locker: Arc<Mutex<HashMap<usize, Vec<f64>>>> =
+        let statistics_locker =
             Arc::new(Mutex::new(stat_map));
         (0..num_samples).into_par_iter().for_each(|_| {
             let mut rho_sys = thermal_state(&self.h_sys, 0.0);
             for ix in 0..schedule.len() {
                 let (a, b, g) = schedule[ix];
                 let env_partition_function = 1. + (-1. * b * g).exp();
-                let rho_env = array![
-                    [c64::from_real(1. / env_partition_function), 0.0.into()],
-                    [
-                        0.0.into(),
-                        c64::from_real((-1. * b * g).exp() / env_partition_function)
-                    ]
-                ];
+                        let rho_env = array![
+                            [c64::from_real(1. / env_partition_function), 0.0.into()],
+                            [
+                                0.0.into(),
+                                c64::from_real((-1. * b * g).exp() / env_partition_function)
+                            ]
+                        ];
                 // println!("trace of rho_env: {:?}", rho_env.trace());
                 let rho_tot = kron(&rho_sys, &rho_env);
                 let h_env = kron(
