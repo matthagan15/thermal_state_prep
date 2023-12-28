@@ -105,6 +105,7 @@ impl IteratedChannel {
         let mut stat_map: HashMap<usize, Vec<f64>> = HashMap::with_capacity(self.parameter_schedule.len());
         for ix in 0..self.parameter_schedule.len() {
             avg_states.insert(ix, Array2::<c64>::zeros((self.h_sys.nrows(), self.h_sys.ncols()).f()));
+            stat_map.insert(ix, Vec::new());
         }
         let avg_states_locker = Arc::new(Mutex::new(avg_states));
         let statistics_locker = Arc::new(Mutex::new(stat_map));
@@ -163,7 +164,59 @@ impl IteratedChannel {
                 GammaStrategy::KnownWithNoise { differences, gaussian_noise_std } => todo!(),
             }
         });
+        let mut ret = Vec::new();
+        let mut avg_states_lock = avg_states_locker
+            .lock()
+            .expect("could not get avg_states lock");
+        let statistics_lock = statistics_locker
+            .lock()
+            .expect("coud not lock statistics_locker");
+        for ix in 0..self.parameter_schedule.len() {
+            let avg_state = avg_states_lock.get_mut(&ix).expect("no index");
+            *avg_state /= c64::from_real(num_samples as f64);
+            let statistic_of_avg = schatten_2_distance(avg_state, &rho_ideal);
+            let stats = statistics_lock.get(&ix).unwrap();
+            let (mean, std) = mean_and_std(stats);
+            ret.push((mean, std, statistic_of_avg));
+        }
+        dbg!(ret);
         
     }
 }
 
+mod tests {
+    use crate::{harmonic_oscillator_hamiltonian, RandomInteractionGen};
+
+    use super::{SingleShotParameters, IteratedChannel, GammaStrategy};
+
+    #[test]
+    fn test_new_channel_simulate() {
+        let h_sys = harmonic_oscillator_hamiltonian(5);
+        let num_interactions = 150;
+        let beta_e = 1.;
+        let mut params = Vec::with_capacity(num_interactions);
+        let mut alpha_t_reduction = 0.75_f64;
+        let mut running_alpha = 0.01;
+        let mut running_t = 100.0;
+        for ix in 0..num_interactions {
+            params.push(SingleShotParameters {
+                alpha: running_alpha,
+                beta: beta_e,
+                time: running_t
+            });
+            running_alpha *= alpha_t_reduction.sqrt();
+            running_t /= alpha_t_reduction.sqrt();
+        }
+        let gamma_strategy = GammaStrategy::Fixed(1.0);
+        let int_gen = RandomInteractionGen::new(1, h_sys.nrows() * 2);
+        let phi = IteratedChannel {
+            h_sys,
+            parameter_schedule: params,
+            target_beta: beta_e,
+            gamma_strategy,
+            rng_seed: None,
+            interaction_gen: int_gen,
+        };
+        phi.simulate(100);
+    }
+}
