@@ -113,13 +113,14 @@ Clearly then $\Phi(\rho_S) = \partrace{env}{\int \Phi_G (\rho_S \otimes \rho_E) 
 \begin{restatable}{lemma}{haar_two_moment} \label{lem:haar_two_moment}
     Let $U$ be a unitary matrix over $\dim$ dimensions that is distributed according to the Haar measure. Then the following average is
     \begin{align}
-        \int \bra{i_1} U \ket{j_1} \bra{i_2} U \ket{j_2} \bra{k_1} U^\dagger \ket{l_1} ~ \bra{k_2} U^\dagger \ket{l_2} dU =& ~\frac{1}{\dim^2 - 1} \parens{\delta_{i_1, l_1} \delta_{j_1, k_1} \delta_{i_2, l_2} \delta_{j_2, k_2} + \delta_{i_1, l_2} \delta_{j_1, k_2} \delta_{i_2, l_1} \delta_{j_2, k_1}} \nonumber \\
-        &- \frac{1}{\dim(\dim^2 - 1)} \parens{\delta_{i_1, l_2} \delta_{j_1, k_1} \delta_{i_2, l_1} \delta_{j_2, k_2} + \delta_{i_1, l_1} \delta_{j_1, k_2} \delta_{i_2, l_2} \delta_{j_2, k_1}}. \label{eq:haar_two_moment_integral}
+        &\int \bra{i_1} U \ket{j_1} \bra{i_2} U \ket{j_2} \bra{k_1} U^\dagger \ket{l_1} ~ \bra{k_2} U^\dagger \ket{l_2} dU \nonumber \\
+        &= ~\frac{1}{\dim^2 - 1} \parens{\delta_{i_1, l_1} \delta_{j_1, k_1} \delta_{i_2, l_2} \delta_{j_2, k_2} + \delta_{i_1, l_2} \delta_{j_1, k_2} \delta_{i_2, l_1} \delta_{j_2, k_1}} \nonumber \\
+        &\quad - \frac{1}{\dim(\dim^2 - 1)} \parens{\delta_{i_1, l_2} \delta_{j_1, k_1} \delta_{i_2, l_1} \delta_{j_2, k_2} + \delta_{i_1, l_1} \delta_{j_1, k_2} \delta_{i_2, l_2} \delta_{j_2, k_1}}. \label{eq:haar_two_moment_integral}
     \end{align}
 \end{restatable}
 
-\begin{lemma}{lemma}\label{lem:sinc_poly_approx}
-    Let $f(x) = \frac{\sin^2(x)}{x^2}$. The constant approximation $f(x) = 1$ has error $|f(x) - 1| \leq \epsilon_{1}$ if $|x| \leq \sqrt{2 \epsilon_{1}}$. Further, if $x = \Delta t$, with $\Delta \geq \Delta_{\min}$, we note that $t \geq (\Delta_{\min} \sqrt{\epsilon_{\sinc} } )^{-1}$ suffices for $f(\Delta t) \leq \epsilon_{\sinc}$.
+\begin{lemma}[Sinc function parameters]\label{lem:sinc_poly_approx}
+    Let $f(x) = \frac{\sin^2(x)}{x^2}$. The constant approximation $f(x) = 1$ has error $|f(x) - 1| \leq \epsilon_{1}$ if $|x| \leq \sqrt{2 \epsilon_{1}}$. We denote $\epsilon_{\sinc} \coloneqq \frac{1}{\Delta_{\min}^2 t^2}$, which leads to the claim that if $\Delta \geq \Delta_{\min}$, then $f(\Delta) \leq \epsilon_{\sinc}$. Further, if $x = \Delta t$, with $\Delta \geq \Delta_{\min}$, we note that $t \geq (\Delta_{\min} \sqrt{\epsilon_{\sinc} } )^{-1}$ suffices for $f(\Delta t) \leq \epsilon_{\sinc}$.
 \end{lemma}
 \begin{proof}
     We use the form of $\sinc$ as $\frac{\sin(x)}{x} = \int_0^1 \cos(sx) ds$. The first 3 derivatives are computed using straightforward calculus
@@ -580,8 +581,8 @@ The next step we need to prove is to find the range of temperatures for which th
     \begin{align}
         \norm{\rho_S(\beta_E) - \Phi^{(2)}(\rho_S(\beta))}_2^2 &= \sum_k \abs{\frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|k ,l)}^2 \\
         &\geq \abs{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} - \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)}\tau(i,j|0,l)}^2 \\
-        &= \parens{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}}^2 - 2 \parens{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)}} \nonumber \\
-        &\quad - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) \nonumber \\
+        &= \parens{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}}^2 \nonumber \\
+        &\quad - 2 \parens{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}} \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) \nonumber \\
         &\quad + \parens{\sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l)}^2.
     \end{align}
     We now need to simplify
@@ -594,6 +595,23 @@ The next step we need to prove is to find the range of temperatures for which th
         \sum_{i \neq 0} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}} &= \parens{(a(\kappa) b(0) - a(0) b(1)) \tau(\kappa, 0 | 0, 1) - 3 \epsilon_{\sinc}} \nonumber \\
         &\quad + \sum_{i \neq 0, \kappa} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}} \\
         &\geq (a(\kappa) b(0) - a(0) b(1)) \tau(\kappa, 0 | 0, 1) - \epsilon_{\sinc}(3 + 4 (\dim - 2))
+    \end{align}
+
+    We now explore the prefactor in front of the transition factor,
+    \begin{align}
+        a(i)b(0) - a(0) b(1) &= \frac{1}{\partfun_S(\beta) \partfun_E(\beta_E)} \parens{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(0)} - e^{-\beta \lambda_S(0) - \beta_E \lambda_E(1)}} \\
+        &= \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \parens{1 - e^{\beta \Delta_S(i,0) - \beta_E \gamma}}.
+    \end{align}
+    As we would like the theorem statement to hold in the limit as $\beta_E \to \infty$, we expect that this factor should be positive for finite $\beta$ and $\Delta_S(i,0)$. We utilize the assumptions $\beta_E - \beta > \delta$ and $|\Delta_S(i,0) - \gamma| \leq \Delta_{\min}$ to show that this factor is positive for certain values of $\delta$.
+    \begin{align}
+        1 - e^{\beta \Delta_S(i,0) - \beta_E \gamma} \geq 0 \iff \beta_E \gamma &\geq \beta \Delta_S(i,0) \\
+        &\iff 0 \leq \beta_E \gamma - \beta \Delta_S(i,0)  \\
+        &\iff 0 \geq \beta_E \parens{\gamma - \Delta_S(i,0)} + (\beta_E - \beta) \Delta_S(i,0).
+    \end{align}
+    Now we know that $|\Delta_S(i,0) - \gamma| \leq \Delta_{\min}$ implies that $\gamma - \Delta_S(i,0) \geq - \Delta_{\min}$. This shows that $\beta_E(\gamma - \Delta_S(i,0)) \geq - \beta_E \Delta_{\min}$. For the other term we know that $\beta_E - \beta > \delta$. Combining these shows that 
+    \begin{align}
+        &\beta_E(\gamma - \Delta_S(i,0)) + (\beta_E - \beta) \Delta_S(i,0) > - \beta_E \Delta_{\min} + \delta \Delta_S(i,0) \\
+        &\delta \geq \frac{\beta_E \Delta_{\min}}{\Delta_S(i,0)} \implies 1 - e^{\beta \Delta_S(i,0) - \beta_E \gamma} \geq 0
     \end{align}
 \end{proof}
 
