@@ -4,7 +4,8 @@ use std::{
     collections::HashMap,
     env,
     ops::AddAssign,
-    sync::{Arc, Mutex, RwLock}, path::{Path, PathBuf},
+    path::{Path, PathBuf},
+    sync::{Arc, Mutex, RwLock},
 };
 
 use ndarray::{array, linalg::kron, Array2, ShapeBuilder};
@@ -20,8 +21,9 @@ use crate::{
 };
 
 enum GammaStrategy {
-    Fixed (f64),
+    Fixed(f64),
     Probabilistic {
+        /// Maps a gamma value to its probability
         distribution: HashMap<f64, f64>,
         num_samples: usize,
     },
@@ -38,7 +40,7 @@ enum GammaStrategy {
     KnownWithNoise {
         differences: Vec<f64>,
         gaussian_noise_std: f64,
-    }
+    },
 }
 
 struct SingleShotParameters {
@@ -55,7 +57,7 @@ struct IterationOutput {
     distance_std: f64,
     distance_of_avg_state: f64,
     /// Average over samples of the variance
-    /// due to sampling gammas as opposed to 
+    /// due to sampling gammas as opposed to
     /// deterministic gammas.
     gamma_variance: Option<f64>,
 }
@@ -75,7 +77,7 @@ impl IteratedChannelOutput {
     }
 }
 
-/// Assumes properly normalized, panics if it isn't and cannot generate a sample. assumes HashMap< value, probability > 
+/// Assumes properly normalized, panics if it isn't and cannot generate a sample. assumes HashMap< value, probability >
 fn sample_from_distribution(prob_dist: &HashMap<f64, f64>) -> f64 {
     let mut acc = 0.0;
     let mut rng = thread_rng();
@@ -90,6 +92,17 @@ fn sample_from_distribution(prob_dist: &HashMap<f64, f64>) -> f64 {
     acc
 }
 
+pub fn build_rho_env(beta: f64, gamma: f64) -> Array2<c64> {
+    let env_partition_function = 1. + (-1. * beta * gamma).exp();
+    array![
+        [c64::from_real(1. / env_partition_function), 0.0.into()],
+        [
+            0.0.into(),
+            c64::from_real((-1. * beta * gamma).exp() / env_partition_function)
+        ]
+    ]
+}
+
 pub struct IteratedChannel {
     h_sys: Array2<c64>,
     parameter_schedule: Vec<SingleShotParameters>,
@@ -100,68 +113,94 @@ pub struct IteratedChannel {
 }
 
 impl IteratedChannel {
+    pub fn simulate_sample_with_params(&self, alpha: f64, beta: f64, gamma: f64, time: f64, rho_sys: &mut Array2<c64>) {
+        let rho_env = build_rho_env(beta, gamma);
+        let rho_tot = kron(&rho_sys, &rho_env);
+        let h_env = kron(
+            &Array2::<c64>::eye(self.h_sys.nrows()),
+            &array![[0.0.into(), 0.0.into()], [0.0.into(), c64::from_real(gamma)]],
+        );
+        let h_tot = kron(&self.h_sys, &Array2::<c64>::eye(2)) + &h_env;
+
+        let interaction = self.interaction_gen.sample_gue() * alpha;
+        let tot = (h_tot + interaction) * c64::new(0.0, -1. * time);
+        let u = expm(&tot).expect("Could not compute time propagator");
+        let total_out = u.dot(&rho_tot.dot(&adjoint(&u)));
+        *rho_sys = partial_trace(&total_out, self.h_sys.nrows(), 2);
+    }
+
     pub fn simulate(&self, num_samples: usize) {
-        let mut avg_states: HashMap<usize, Array2<c64>> = HashMap::with_capacity(self.parameter_schedule.len());
-        let mut stat_map: HashMap<usize, Vec<f64>> = HashMap::with_capacity(self.parameter_schedule.len());
+        let mut avg_states: HashMap<usize, Array2<c64>> =
+            HashMap::with_capacity(self.parameter_schedule.len());
+        let mut stat_map: HashMap<usize, Vec<f64>> =
+            HashMap::with_capacity(self.parameter_schedule.len());
+        let mut gamma_std_map: HashMap<usize, Vec<f64>> =
+            HashMap::with_capacity(self.parameter_schedule.len());
         for ix in 0..self.parameter_schedule.len() {
-            avg_states.insert(ix, Array2::<c64>::zeros((self.h_sys.nrows(), self.h_sys.ncols()).f()));
+            let h_sys_shape = (self.h_sys.nrows(), self.h_sys.ncols()).f();
+            avg_states.insert(
+                ix,
+                Array2::<c64>::zeros(h_sys_shape),
+            );
             stat_map.insert(ix, Vec::new());
+            gamma_std_map.insert(ix, Vec::new());
         }
         let avg_states_locker = Arc::new(Mutex::new(avg_states));
         let statistics_locker = Arc::new(Mutex::new(stat_map));
-
-        let rho_ideal = thermal_state(&self.h_sys, self.target_beta);
-
-        let gamma_std_map: HashMap<usize, f64> = HashMap::with_capacity(self.parameter_schedule.len());
         let gamma_std_locker = Arc::new(Mutex::new(gamma_std_map));
 
+        let rho_ideal = thermal_state(&self.h_sys, self.target_beta);
+        
         (0..num_samples).into_par_iter().for_each(|_| {
-            let mut rho_sys = Array2::<c64>::eye(self.h_sys.nrows()) / c64::from_real(self.h_sys.nrows() as f64);
+            let mut rho_sys =
+                Array2::<c64>::eye(self.h_sys.nrows()) / c64::from_real(self.h_sys.nrows() as f64);
 
-            match &self.gamma_strategy {
-                GammaStrategy::Fixed(g) => {
-                    for ix in 0..self.parameter_schedule.len() {
-                        let param = &self.parameter_schedule[ix];
-                        let a = param.alpha;
-                        let b = param.beta;
-                        let t = param.time;
-
-                        let env_partition_function = 1. + (-1. * b * g).exp();
-                        let rho_env = array![
-                            [c64::from_real(1. / env_partition_function), 0.0.into()],
-                            [
-                                0.0.into(),
-                                c64::from_real((-1. * b * g).exp() / env_partition_function)
-                            ]
-                        ];
-                        let rho_tot = kron(&rho_sys, &rho_env);
-                        let h_env = kron(
-                            &Array2::<c64>::eye(self.h_sys.nrows()),
-                            &array![[0.0.into(), 0.0.into()], [0.0.into(), c64::from_real(*g)]],
-                        );
-                        let h_tot = kron(&self.h_sys, &Array2::<c64>::eye(2)) + &h_env;
-
-                        let interaction = self.interaction_gen.sample_gue() * a;
-                        let tot = (h_tot + interaction) * c64::new(0.0, -1. * t);
-                        let u = expm(&tot).expect("Could not compute time propagator");
-                        let total_out = u.dot(&rho_tot.dot(&adjoint(&u)));
-                        rho_sys = partial_trace(&total_out, self.h_sys.nrows(), 2);
-
-                        let mut avgs = avg_states_locker.lock().expect("Could not get average state map");
-                        let state = avgs.get_mut(&ix).expect("could not get avg state");
-                        *state += &rho_sys;
-                        drop(avgs);
-
-                        let sample_dist = schatten_2_distance(&rho_sys, &rho_ideal);
-                        let mut stat_lock = statistics_locker.lock().expect("could not get stat lock");
-                        let v = stat_lock.get_mut(&ix).expect("could not get stats records");
-                        v.push(sample_dist);
+            for ix in 0..self.parameter_schedule.len() {
+                let param = &self.parameter_schedule[ix];
+                let a = param.alpha;
+                let b = param.beta;
+                let t = param.time;
+                match &self.gamma_strategy {
+                    GammaStrategy::Fixed(g) => {
+                        self.simulate_sample_with_params(a, b, *g, t, &mut rho_sys);
                     }
-                },
-                GammaStrategy::Probabilistic { distribution, num_samples } => todo!(),
-                GammaStrategy::Grid { min, max, num_points } => todo!(),
-                GammaStrategy::Known { differences } => todo!(),
-                GammaStrategy::KnownWithNoise { differences, gaussian_noise_std } => todo!(),
+                    GammaStrategy::Probabilistic {
+                        distribution,
+                        num_samples,
+                    } => todo!(),
+                    GammaStrategy::Grid {
+                        min,
+                        max,
+                        num_points,
+                    } => {
+                        // TODO: should I refresh the bath with each gamma update?
+                        let dx = (*max - *min) / (*num_points as f64);
+                        for ix in 0..=*num_points {
+                            let g = min + dx * (ix as f64);
+                            self.simulate_sample_with_params(a, b, g, t, &mut rho_sys);
+                        }
+                    },
+                    GammaStrategy::Known { differences } => {
+                        for g in differences {
+                            self.simulate_sample_with_params(a, b, *g, t, &mut rho_sys);
+                        }
+                    },
+                    GammaStrategy::KnownWithNoise {
+                        differences,
+                        gaussian_noise_std,
+                    } => todo!(),
+                }
+                let mut avgs = avg_states_locker
+                    .lock()
+                    .expect("Could not get average state map");
+                let state = avgs.get_mut(&ix).expect("could not get avg state");
+                *state += &rho_sys;
+                drop(avgs);
+
+                let sample_dist = schatten_2_distance(&rho_sys, &rho_ideal);
+                let mut stat_lock = statistics_locker.lock().expect("could not get stat lock");
+                let v = stat_lock.get_mut(&ix).expect("could not get stats records");
+                v.push(sample_dist);
             }
         });
         let mut ret = Vec::new();
@@ -180,14 +219,25 @@ impl IteratedChannel {
             ret.push((mean, std, statistic_of_avg));
         }
         dbg!(ret);
-        
     }
+}
+
+fn paramater_schedule_builder(
+    beta_e: f64,
+    decrease_beta_e: bool,
+    exp_alpha_t_decay: bool,
+    alpha_t_decay_factor: f64,
+    num_iterations: usize,
+) -> Vec<SingleShotParameters> {
+    let mut ret = Vec::with_capacity(num_iterations);
+
+    ret
 }
 
 mod tests {
     use crate::{harmonic_oscillator_hamiltonian, RandomInteractionGen};
 
-    use super::{SingleShotParameters, IteratedChannel, GammaStrategy};
+    use super::{GammaStrategy, IteratedChannel, SingleShotParameters};
 
     #[test]
     fn test_new_channel_simulate() {
@@ -195,14 +245,14 @@ mod tests {
         let num_interactions = 150;
         let beta_e = 1.;
         let mut params = Vec::with_capacity(num_interactions);
-        let mut alpha_t_reduction = 0.75_f64;
+        let alpha_t_reduction = 0.75_f64;
         let mut running_alpha = 0.01;
         let mut running_t = 100.0;
-        for ix in 0..num_interactions {
+        for _ in 0..num_interactions {
             params.push(SingleShotParameters {
                 alpha: running_alpha,
                 beta: beta_e,
-                time: running_t
+                time: running_t,
             });
             running_alpha *= alpha_t_reduction.sqrt();
             running_t /= alpha_t_reduction.sqrt();
