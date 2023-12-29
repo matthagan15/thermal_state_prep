@@ -590,6 +590,7 @@ The next step we need to prove is to find the range of temperatures for which th
         \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) &= \sum_{i \neq 0} (a(i) b(j) - a(k) b(l)) \tau(i,j|0,l) \\
         &\geq \sum_{i \neq 0} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}}
     \end{align}
+    \todo{propagate missing factors of $\alpha^2 t^2$ on the $\epsilon_{\sinc}$}
     Now we assume that there exists one and only one index $\kappa$ such that $\abs{\Delta_S(\kappa, 0) - \gamma} \leq \Delta_{\min}$. This ensures that if $i \neq \kappa$ then $\tau(i,j | 0, l) \leq \epsilon_{\sinc}$ and that $\epsilon_{\sinc} \leq \tau(\kappa, 0 | 0, 1) \leq 1$. This allows us to simplify the sum as
     \begin{align}
         \sum_{i \neq 0} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}} &= \parens{(a(\kappa) b(0) - a(0) b(1)) \tau(\kappa, 0 | 0, 1) - 3 \epsilon_{\sinc}} \nonumber \\
@@ -606,13 +607,38 @@ The next step we need to prove is to find the range of temperatures for which th
     \begin{align}
         1 - e^{\beta \Delta_S(i,0) - \beta_E \gamma} \geq 0 \iff \beta_E \gamma &\geq \beta \Delta_S(i,0) \\
         &\iff 0 \leq \beta_E \gamma - \beta \Delta_S(i,0)  \\
-        &\iff 0 \geq \beta_E \parens{\gamma - \Delta_S(i,0)} + (\beta_E - \beta) \Delta_S(i,0).
+        &\iff 0 \leq \beta_E \parens{\gamma - \Delta_S(i,0)} + (\beta_E - \beta) \Delta_S(i,0).
     \end{align}
     Now we know that $|\Delta_S(i,0) - \gamma| \leq \Delta_{\min}$ implies that $\gamma - \Delta_S(i,0) \geq - \Delta_{\min}$. This shows that $\beta_E(\gamma - \Delta_S(i,0)) \geq - \beta_E \Delta_{\min}$. For the other term we know that $\beta_E - \beta > \delta$. Combining these shows that 
     \begin{align}
         &\beta_E(\gamma - \Delta_S(i,0)) + (\beta_E - \beta) \Delta_S(i,0) > - \beta_E \Delta_{\min} + \delta \Delta_S(i,0) \\
         &\delta \geq \frac{\beta_E \Delta_{\min}}{\Delta_S(i,0)} \implies 1 - e^{\beta \Delta_S(i,0) - \beta_E \gamma} \geq 0
     \end{align}
+
+    For now we will use $\Delta_S$ as shorthand for $\Delta_S(i,0)$. Here we want to show that if $1 - e^{-(\beta_E \gamma - \beta \Delta_S)}$ is greater than some value, say $\epsilon_{exp}$. To do this, all we have to show is that $x \geq \ln\parens{\frac{1}{\epsilon_{exp}}} \implies 1 - e^{-x} \geq 1 - \epsilon_{exp}$. As we know that $\beta_E \gamma - \beta \Delta_S > -\beta_E \Delta_{\min} + \delta \Delta_S$, this reduces to requiring that $\delta \geq \frac{\beta_E \Delta_{\min} + \ln{1/\epsilon_{exp}}}{\Delta_S(i,0)}$. So now we have that 
+    \begin{equation}
+        \delta \geq \frac{\beta_E \Delta_{\min} + \ln 1/\epsilon_{exp}}{\Delta_S(i,0)} \implies 1 - e^{-\beta_E \gamma + \beta \Delta_S(i,0)} \geq 1 - \epsilon_{exp}.
+    \end{equation}
+    This reduces our inequality to
+    \begin{equation}
+        \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) \geq \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)} (1 - \epsilon_{exp}) \tau(\kappa, 0 |0, 1) - \epsilon_{\sinc} (4 \dim - 5).
+    \end{equation}
+    Now we utilize our knowledge of $\Delta_S(\kappa, 0 )$ to create another inequality about $\tau$. If $\abs{\gamma - \Delta_S(\kappa, 0)} \leq \frac{2 \sqrt{\widetilde{\epsilon_{\sinc}}}}{t}$ then $\tau(\kappa, 0| 0, 1) \geq \frac{\alpha^2 t^2}{\dim + 1} (1 - \widetilde{\epsilon_{\sinc}})$. Our final lower bound for this summation is then
+    \begin{equation}
+        \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) \geq \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} (1 - \epsilon_{exp}) (1 - \widetilde{\epsilon}_{\sinc}) - \epsilon_{\sinc} (4 \dim - 5).
+    \end{equation}
+
+    Our next objective is to create an upper bound for this summation. We can again upper bound the trivial transitions with $\epsilon_{\sinc}$
+    \begin{align}
+        \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) &= \sum_{j,l} (a(\kappa) b(j) - a(0) b(l)) \tau(\kappa,j|0,l) \nonumber \\
+        &\quad + \sum_{i \neq 0, \kappa} \sum_{j,l} (a(i) b(j) - a(0) b(l)) \tau(i,j|0,l) \\
+        &\leq (a(\kappa) b(0) -a(0) b(1)) \tau(\kappa, 0 | 0, 1) + \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}\parens{3 + 4(\dim - 2)}.
+    \end{align}
+    Now we repeat a similar process to before and upper bound $a(\kappa) b(0) - a(0) b(1) = \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)}(1 - e^{-\beta_E \gamma + \beta \Delta_S(\kappa, 0)})$. This time we will only require the simple bound $1 - e^{-\beta_E \gamma + \beta \Delta_S(\kappa, 0)} \leq 1$, which is true as $e^x \geq 0$ for all finite $x$. We then use the fact that $\tau(\kappa, 0| 0,1) \leq \frac{\alpha^2 t^2}{\dim + 1}$ to produce our final upper bound
+    \begin{align}
+        \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) &\leq \frac{\alpha^2 t^2}{\dim + 1}\parens{ \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)} + 4 \dim \epsilon_{\sinc}}.
+    \end{align}
+    As we should think of $\epsilon_{\sinc}$ as approaching 0 as $t \to \infty$, we see that the sum should end up very close to $\frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)}$. 
 \end{proof}
 
 \begin{theorem}
