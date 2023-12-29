@@ -8,7 +8,7 @@ use std::{
     sync::{Arc, Mutex, RwLock},
 };
 
-use ndarray::{array, linalg::kron, Array2, ShapeBuilder};
+use ndarray::{array, linalg::kron, Array, Array2, ShapeBuilder};
 use ndarray_linalg::{expm, krylov::R, Scalar, Trace};
 use num_complex::Complex64 as c64;
 use rand::{thread_rng, Rng};
@@ -20,29 +20,47 @@ use crate::{
     adjoint, mean_and_std, partial_trace, schatten_2_distance, thermal_state, RandomInteractionGen,
 };
 
+#[derive(Debug, Clone)]
 enum GammaStrategy {
     Fixed(f64),
+    Iterative(Vec<f64>),
     Probabilistic {
-        /// Maps a gamma value to its probability
-        distribution: HashMap<f64, f64>,
+        gamma_prob_pairs: Vec<(f64, f64)>,
         num_samples: usize,
-    },
-    Grid {
-        min: f64,
-        max: f64,
-        num_points: usize,
-    },
-    Known {
-        differences: Vec<f64>,
-    },
-    /// Samples from a known difference with Gaussian noise
-    /// with provided standard deviation.
-    KnownWithNoise {
-        differences: Vec<f64>,
-        gaussian_noise_std: f64,
     },
 }
 
+impl GammaStrategy {
+    /// Samples from a known difference with a uniform noise over the specified
+    /// width. Also the number of grid points to sample from the noise is needed.
+    /// Samples from the differences uniformly.
+    pub fn known_with_noise(differences: Vec<f64>, noise_width: f64, num_points_noise: usize) -> Self {
+        let mut pairs = Vec::new();
+        let prob = 1. / ((differences.len() * num_points_noise) as f64);
+        for diff in differences {
+            let points = Array::linspace(diff - (noise_width / 2.0), diff + (noise_width / 2.0), num_points_noise).to_vec();
+            for point in points {
+                pairs.push((point, prob));
+            }
+        }
+        GammaStrategy::Probabilistic { gamma_prob_pairs: pairs, num_samples: 100}
+    }
+
+    /// Constructs an iterative gamma strategy that loops over the specified
+    /// grid.
+    pub fn grid_iterative(min: f64, max: f64, num_points: usize) -> Self {
+        let points = Array::linspace(min, max, num_points).to_vec();
+        GammaStrategy::Iterative(points)
+    }
+
+    /// Constructs a probabilistic gamma strategy that samples from the
+    /// specified grid. Essentially a uniform distribution.
+    pub fn grid_probabilistic(min: f64, max: f64, num_points: usize) -> Self {
+        let prob = 1. / (num_points as f64);
+        let points = Array::linspace(min, max, num_points).to_vec();
+        GammaStrategy::Probabilistic { gamma_prob_pairs: points.into_iter().map(|x| (x, prob)).collect(), num_samples: 100 }
+    }
+}
 struct SingleShotParameters {
     alpha: f64,
     beta: f64,
@@ -102,6 +120,38 @@ pub fn build_rho_env(beta: f64, gamma: f64) -> Array2<c64> {
         ]
     ]
 }
+struct TimeVsEpsilonOut {
+    sim_parameters: SingleShotParameters,
+    schatten_2_norm_to_ideal: f64,
+    total_sim_time: f64,
+}
+
+fn epsilon_vs_time_scaling(
+    h_sys: &Array2<c64>,
+    gamma_strategy: GammaStrategy,
+) -> Vec<TimeVsEpsilonOut> {
+    let mut ret = Vec::new();
+    let mut beta_e = 1.0_f64;
+    let mut alpha_t_reduction_factor = f64::square(0.75);
+    let min_ep: f64 = -2.0;
+    let num_points = 100;
+    let eps = Array::logspace(10.0, 0.0, min_ep, num_points).to_vec();
+    for ep in eps {
+        let mut phi = IteratedChannel {
+            h_sys: h_sys.clone(),
+            parameter_schedule: vec![SingleShotParameters {
+                alpha: 0.1,
+                beta: 0.0,
+                time: 10.,
+            }],
+            target_beta: 1.0,
+            gamma_strategy: gamma_strategy.clone(),
+            rng_seed: None,
+            interaction_gen: RandomInteractionGen::new(1, h_sys.nrows() * 2),
+        };
+    }
+    ret
+}
 
 pub struct IteratedChannel {
     h_sys: Array2<c64>,
@@ -113,12 +163,22 @@ pub struct IteratedChannel {
 }
 
 impl IteratedChannel {
-    pub fn simulate_sample_with_params(&self, alpha: f64, beta: f64, gamma: f64, time: f64, rho_sys: &mut Array2<c64>) {
+    pub fn simulate_sample_with_params(
+        &self,
+        alpha: f64,
+        beta: f64,
+        gamma: f64,
+        time: f64,
+        rho_sys: &mut Array2<c64>,
+    ) {
         let rho_env = build_rho_env(beta, gamma);
         let rho_tot = kron(&rho_sys, &rho_env);
         let h_env = kron(
             &Array2::<c64>::eye(self.h_sys.nrows()),
-            &array![[0.0.into(), 0.0.into()], [0.0.into(), c64::from_real(gamma)]],
+            &array![
+                [0.0.into(), 0.0.into()],
+                [0.0.into(), c64::from_real(gamma)]
+            ],
         );
         let h_tot = kron(&self.h_sys, &Array2::<c64>::eye(2)) + &h_env;
 
@@ -138,10 +198,7 @@ impl IteratedChannel {
             HashMap::with_capacity(self.parameter_schedule.len());
         for ix in 0..self.parameter_schedule.len() {
             let h_sys_shape = (self.h_sys.nrows(), self.h_sys.ncols()).f();
-            avg_states.insert(
-                ix,
-                Array2::<c64>::zeros(h_sys_shape),
-            );
+            avg_states.insert(ix, Array2::<c64>::zeros(h_sys_shape));
             stat_map.insert(ix, Vec::new());
             gamma_std_map.insert(ix, Vec::new());
         }
@@ -150,7 +207,7 @@ impl IteratedChannel {
         let gamma_std_locker = Arc::new(Mutex::new(gamma_std_map));
 
         let rho_ideal = thermal_state(&self.h_sys, self.target_beta);
-        
+
         (0..num_samples).into_par_iter().for_each(|_| {
             let mut rho_sys =
                 Array2::<c64>::eye(self.h_sys.nrows()) / c64::from_real(self.h_sys.nrows() as f64);
@@ -163,31 +220,13 @@ impl IteratedChannel {
                 match &self.gamma_strategy {
                     GammaStrategy::Fixed(g) => {
                         self.simulate_sample_with_params(a, b, *g, t, &mut rho_sys);
-                    }
+                    },
+                    GammaStrategy::Iterative(diffs) => {
+                        todo!()
+                    },
                     GammaStrategy::Probabilistic {
-                        distribution,
+                        gamma_prob_pairs,
                         num_samples,
-                    } => todo!(),
-                    GammaStrategy::Grid {
-                        min,
-                        max,
-                        num_points,
-                    } => {
-                        // TODO: should I refresh the bath with each gamma update?
-                        let dx = (*max - *min) / (*num_points as f64);
-                        for ix in 0..=*num_points {
-                            let g = min + dx * (ix as f64);
-                            self.simulate_sample_with_params(a, b, g, t, &mut rho_sys);
-                        }
-                    },
-                    GammaStrategy::Known { differences } => {
-                        for g in differences {
-                            self.simulate_sample_with_params(a, b, *g, t, &mut rho_sys);
-                        }
-                    },
-                    GammaStrategy::KnownWithNoise {
-                        differences,
-                        gaussian_noise_std,
                     } => todo!(),
                 }
                 let mut avgs = avg_states_locker
