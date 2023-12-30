@@ -67,36 +67,9 @@ struct SingleShotParameters {
     time: f64,
 }
 
-struct IterationOutput {
-    alpha: f64,
-    beta: f64,
-    time: f64,
-    distance_mean: f64,
-    distance_std: f64,
-    distance_of_avg_state: f64,
-    /// Average over samples of the variance
-    /// due to sampling gammas as opposed to
-    /// deterministic gammas.
-    gamma_variance: Option<f64>,
-}
 
-#[derive(Debug, Default)]
-struct IteratedChannelOutput {
-    distance_means: Vec<f64>,
-    distance_stds: Vec<f64>,
-    distance_of_avg_state: Vec<f64>,
-}
-
-impl IteratedChannelOutput {
-    pub fn add(&mut self, mean: f64, std: f64, distance_of_avg_state: f64) {
-        self.distance_means.push(mean);
-        self.distance_stds.push(std);
-        self.distance_of_avg_state.push(distance_of_avg_state);
-    }
-}
-
-/// Assumes properly normalized, panics if it isn't and cannot generate a sample. assumes HashMap< value, probability >
-fn sample_from_distribution(prob_dist: &HashMap<f64, f64>) -> f64 {
+/// Assumes properly normalized, panics if it isn't and cannot generate a sample. assumes `prob_dist` is formatted as `Vec<(value, prob)>`
+fn sample_from_distribution(prob_dist: &Vec<(f64, f64)>) -> f64 {
     let mut acc = 0.0;
     let mut rng = thread_rng();
     let sampled_float: f64 = rng.gen();
@@ -153,6 +126,20 @@ fn epsilon_vs_time_scaling(
     ret
 }
 
+pub struct ExperimentConstants {
+    target_beta: f64,
+    alpha_t_reduction: f64,
+}
+
+/// This is supposed to capture the variables we change
+pub enum ExperimentType {
+    EpsilonVsTime {
+        eps: Vec<f64>,
+        times: Vec<f64>,
+    },
+    BetaVsTime,
+}
+
 pub struct IteratedChannel {
     h_sys: Array2<c64>,
     parameter_schedule: Vec<SingleShotParameters>,
@@ -163,6 +150,8 @@ pub struct IteratedChannel {
 }
 
 impl IteratedChannel {
+    /// Creates a fresh bath and evolves the provided rho_sys
+    /// through a single application of the channel.
     pub fn simulate_sample_with_params(
         &self,
         alpha: f64,
@@ -221,8 +210,10 @@ impl IteratedChannel {
                     GammaStrategy::Fixed(g) => {
                         self.simulate_sample_with_params(a, b, *g, t, &mut rho_sys);
                     },
-                    GammaStrategy::Iterative(diffs) => {
-                        todo!()
+                    GammaStrategy::Iterative(gammas) => {
+                        for g in gammas {
+                            self.simulate_sample_with_params(a, b, *g, t, &mut rho_sys);
+                        }
                     },
                     GammaStrategy::Probabilistic {
                         gamma_prob_pairs,
@@ -261,22 +252,23 @@ impl IteratedChannel {
     }
 }
 
-fn paramater_schedule_builder(
-    beta_e: f64,
-    decrease_beta_e: bool,
-    exp_alpha_t_decay: bool,
-    alpha_t_decay_factor: f64,
-    num_iterations: usize,
-) -> Vec<SingleShotParameters> {
-    let mut ret = Vec::with_capacity(num_iterations);
-
-    ret
-}
-
 mod tests {
-    use crate::{harmonic_oscillator_hamiltonian, RandomInteractionGen};
+    use ndarray::Array;
 
-    use super::{GammaStrategy, IteratedChannel, SingleShotParameters};
+    use crate::{harmonic_oscillator_hamiltonian, RandomInteractionGen, mean_and_std};
+
+    use super::{GammaStrategy, IteratedChannel, SingleShotParameters, sample_from_distribution};
+
+
+    #[test]
+    fn test_distribution_sampler() {
+        let num_points = 10;
+        let num_samples = 1000;
+        let grid = Array::linspace(0., 1.0_f64, num_points).to_vec();
+        let easy_dist = grid.clone().into_iter().map(|x| (x, 1.0_f64 / num_points as f64)).collect();
+        let samps = (0..num_samples).map(|_| sample_from_distribution(&easy_dist)).collect();
+        println!("mean + std: {:?}", mean_and_std(&samps));
+    }
 
     #[test]
     fn test_new_channel_simulate() {
