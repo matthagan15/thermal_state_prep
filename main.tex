@@ -119,7 +119,100 @@ Clearly then $\Phi(\rho_S) = \partrace{env}{\int \Phi_G (\rho_S \otimes \rho_E) 
     \end{align}
 \end{restatable}
 
-\begin{lemma}[Sinc function parameters]\label{lem:sinc_poly_approx}
+\begin{lemma}[Sinc Function Bounds] \label{lem:sinc_poly_approx}
+    The following implications hold for $f(x) = \sinc^2(x)$
+    \begin{align}
+        |x| \leq \sqrt{2 \epsilon_{\sinc}} &\implies f(x) \geq 1 - \epsilon_{\sinc} \label{eq:sinc_lower_bound}\\
+        |x| \geq 1 / \sqrt{\epsilon_{\sinc}} &\implies f(x) \leq \epsilon_{\sinc}. \label{eq:sinc_upper_bound}
+    \end{align}
+    % The constant approximation $f(x) = 1$ has error $|f(x) - 1| \leq \widetilde{\epsilon}_{\sinc}$ if $|x| \leq \sqrt{2 \widetilde{\epsilon}_{\sinc}}$. This leads to the observation that $\widetilde{\epsilon}_{\sinc}$ acts as a lower bound for $f(x)$, as $|x| \leq \sqrt{2 \widetilde{\epsilon}_{\sinc}}$ implies $f(x) \geq 1 - \widetilde{\epsilon}_{\sinc}$. We denote this upper bound with $\Delta_{\sinc} \coloneqq \sqrt{2 \widetilde{\epsilon}_{\sinc}}$. 
+    % We also require a lower bound $\epsilon_{\sinc}$, such that $|x| \geq \Delta_{\min} \implies f(x) \leq \epsilon_{\sinc}$. Setting $\Delta_{\min} = 1 / \sqrt{\epsilon_{\sinc}}$ guarantees this to hold. 
+\end{lemma}
+\begin{proof}
+    We start with a Taylor's Series for $f(x)$, which we compute using the expression of $\sinc$ as $\sinc(x) = \frac{\sin x}{x} = \int_0^1 \cos(sx) ds$. We compute the first two derivatives as
+    \begin{align}
+        \frac{df}{dx} &= -2 \int_0^1 \sin(sx) s ds \int_0^1 \cos(sx) ds \\
+        \frac{d^2f}{dx^2} &= -2 \int_0^1 \cos(sx)s^2 ds \int_0^1 \cos(sx) ds + \int_0^1 \sin(sx) s ~ds \int_0^1 \sin(sx) s ~ds.
+    \end{align}
+    We can evaluate each of these derivatives about the origin using continuity of the derivatives along with the limits $\lim_{x \to 0} \cos(sx) = 1$ and $\lim_{x \to 0} \sin(sx) = 0$. We can now compute the Maclaurin Series as
+    \begin{align}
+        f(x) &= f(0) + x \frac{df}{dx}\bigg|_{x = 0} + \frac{x^2}{2!} \frac{d^2f}{dx^2}\bigg|_{x = x_{\star}}.
+    \end{align}
+    Plugging in $f(0) = 1$ and $\frac{df}{dx}\big|_{x = 0} = 0$ then yields $|f(x) - 1| = \frac{|x|^2}{2} \abs{\frac{d^2f}{dx^2}(x_{\star})}$. We make use of the rather simplistic bound
+    \begin{align}
+        \abs{\frac{d^2f}{dx^2}(x_{\star})} &\leq 2 \abs{\int_0^1 \cos(sx) s^2 ds \int_0^1 \cos(sx) ds} + \abs{\int_0^1 \sin(sx) s ds \int_0^1 \sin(sx) s ds} \\
+        &\leq 2 \int_0^1 \abs{\cos(sx)} s^2 ds \int_0^1 \abs{cos(sx)} ds + \parens{\int_0^1 \abs{sin(sx)} |s| ds}^2 \\
+        &\leq 2 \int_0^1 s^2 ds + \parens{\int_0^1 s ds}^2 \\
+        &\leq 1.
+    \end{align}
+    This yields the final inequality $|f(x) - 1| \leq \frac{|x|^2}{2}$. We then see that $|x| \leq \sqrt{2 \widetilde{\epsilon}_{\sinc}}$ implies $|f(x) - 1| \leq \widetilde{\epsilon}_{\sinc}$. 
+
+    The upper bound of $\epsilon_{\sinc}$ for large $|x|$ is relatively straightforward:
+    \begin{align}
+        f(x) &= \frac{\sin^2(x)}{x^2} \\
+            &\leq \frac{1}{|x|^2},
+    \end{align}
+    where we see that $|x| \geq 1 / \sqrt{\epsilon_{\sinc}}$ implies $f(x) \leq \epsilon_{\sinc}$.
+\end{proof}
+
+We will often rely on a particularly parametrized form of $f(x)$ which is worth investigating on it's own right. Note we can get a square root improvement of the dependence of $|\Delta_S(i,j) - \gamma|$ on $\epsilon_{\sinc}$ in the below Corallary if we only require $f(x) \geq 1 - \widetilde{\epsilon}_{\sinc}$. This then requires $|\Delta_S(i,j) - \gamma| \in \bigo{\sqrt{\epsilon_{\sinc} \widetilde{\epsilon}_{\sinc}}}$, however this will not prove significantly useful for us so we use the looser bound.
+\begin{corollary}
+    The statements 
+    $$|x| \geq \Delta_{\min} \implies f\parens{xt / 2} \leq \epsilon_{\sinc}$$
+    and
+    $$|x| = |\Delta_S(i,j) - \gamma| \leq \sqrt{2} \Delta_{\min} \epsilon_{\sinc} \implies f(xt/2) \geq 1 - \epsilon_{\sinc}$$
+    hold for $t = \frac{2}{\Delta_{\min} \sqrt{\epsilon_{\sinc}}}$. We denote the barrier $\Delta_{\sinc} = \sqrt{2} \Delta_{\min} \epsilon_{\sinc}$. 
+\end{corollary}
+\begin{proof}
+    Throughout this proof we can think of $0 \leq \Delta_{\min} \leq \Delta_S(i,j)$ as a constant, so we avoid writing it as function arguments.
+    We first want to provide a bound on $t$ such that $|x| \geq \Delta_{\min}$ implies $f(xt/2) \leq \epsilon_{\sinc}$. This is provided through Eq. \eqref{eq:sinc_upper_bound}
+    \begin{align}
+        \left| \frac{x t }{ 2} \right| = \frac{|x| t}{2} \geq \frac{\Delta_{\min}t}{2}.
+    \end{align}
+    We see that setting $t$ such that $\Delta_{\min} t / 2 = 1 /\sqrt{\epsilon_{\sinc}}$, which can be rewritten as $t = \frac{2}{\Delta_{min} \sqrt{\epsilon_{\sinc}}}$, yields the implication $|x| \geq \Delta_{\min} \implies f(xt/2) \leq \epsilon_{\sinc}$. 
+
+    We now want to investigate what values of $x = \Delta_S(i,j) - \gamma$, for the given $t$ as above, yields $f(xt/2) \geq 1 - \epsilon_{\sinc}$. We see that the inequality required for this is
+    \begin{align}
+        \frac{|x| t}{2} &\leq \sqrt{2 \epsilon_{\sinc}} \\
+        \iff  |\Delta_S(i,j) - \gamma| \frac{2}{2 \Delta_{\min} \sqrt{\epsilon_{\sinc}}} &\leq \sqrt{2 \epsilon_{\sinc}} \\
+        \iff \abs{\Delta_S(i,j) - \gamma} &\leq \sqrt{2} \Delta_{\min} \epsilon_{\sinc}
+    \end{align}
+\end{proof}
+
+
+We now see that if we want there to be unique $(i,j)$ such that $|\Delta_S(i,j) - \gamma| \leq \Delta_{\sinc}$ and for $(i',j') \neq (i,j) \implies |\Delta_S(i',j') - \gamma| \geq \Delta_{\min}$, then we require $|\Delta_S(i,j) - \Delta_S(k,l)| \geq \Delta_{\min} + \Delta_{\sinc}$. 
+
+Suppose $|\Delta_S(i,j) - \gamma| \leq \Delta_{\sinc}$ and $|\Delta_S(i,j) - \Delta_S(k,l)| \geq \Delta_{\sinc} + \Delta_{\min}$ for $(k,l) \neq (i,j)$. We would like to show then that $|\Delta_S(k,l) - \gamma| \geq \Delta_{\min}$. We see that given three real numbers $\gamma, \Delta_S(i,j), \Delta_S(k,l)$ we have four relevant orderings:
+\begin{align}
+    \gamma \leq \Delta_S(i,j) \leq \Delta_S(k,l) \\
+    \Delta_S(k,l) \leq \Delta_S(i,j) \leq \gamma \\
+    \Delta_S(i,j) \leq \gamma \leq \Delta_S(k,l) \\
+    \Delta_S(k,l) \leq \gamma \leq \Delta_S(i,j).
+\end{align}
+The scenario $\gamma \leq \Delta_S(i,j) \leq \Delta_S(k,l)$ yields
+\begin{align}
+    |\Delta_S(k,l) - \gamma| &= \Delta_S(k,l) - \gamma \\
+    &= \Delta_S(k,l) - \Delta_S(i,j) + \Delta_S(i,j) - \gamma \\
+    &\geq \Delta_S(k,l) - \Delta_S(i,j) \\
+    &= |\Delta_S(k,l) - \Delta_S(i,j)| \\
+    &\geq \Delta_{\min} + \Delta_{\sinc} \\
+    &\geq \Delta_{\min}.
+\end{align}
+The other direction ($\Delta_S(k,l) \leq \Delta_S(i,j) \leq \gamma$) holds similarly. 
+
+The scenario $\Delta_S(k,l) \leq \gamma \leq \Delta_S(i,j)$ holds through the following computation
+\begin{align}
+    |\Delta_S(k,l) - \gamma| &= \gamma - \Delta_S(k,l) \\
+    &= \gamma + \Delta_S(i,j) - \Delta_S(i,j) - \Delta_S(k,l) \\
+    &= \gamma - \Delta_S(i,j) + |\Delta_S(i,j) - \Delta_S(k,l)| \\
+    &= -|\gamma - \Delta_S(i,j)| + |\Delta_S(i,j) - \Delta_S(k,l)| \\
+    &\geq -\Delta_{\sinc} + \Delta_{\min} + \Delta_{\sinc} \\
+    &= \Delta_{\min}.
+\end{align}
+The other direction ($\Delta_S(i,j) \leq \gamma \leq \Delta_S(k,l)$ ) holds similarly.
+
+
+\begin{lemma}[Sinc function parameters]
     Let $f(x) = \frac{\sin^2(x)}{x^2}$. The constant approximation $f(x) = 1$ has error $|f(x) - 1| \leq \epsilon_{1}$ if $|x| \leq \sqrt{2 \epsilon_{1}}$. We denote $\epsilon_{\sinc} \coloneqq \frac{1}{\Delta_{\min}^2 t^2}$, which leads to the claim that if $\Delta \geq \Delta_{\min}$, then $f(\Delta) \leq \epsilon_{\sinc}$. Further, if $x = \Delta t$, with $\Delta \geq \Delta_{\min}$, we note that $t \geq (\Delta_{\min} \sqrt{\epsilon_{\sinc} } )^{-1}$ suffices for $f(\Delta t) \leq \epsilon_{\sinc}$.
 \end{lemma}
 \begin{proof}
@@ -482,7 +575,7 @@ So this says we need $\alpha t \leq \frac{\epsilon_{R}^{1/3}}{2 \dim^{1/3}}$ in 
 
 This introduction part needs to introduce the setup that will be used for these two proofs.
 
-\begin{lemma}
+\begin{lemma} \label{lem:transition_idx_sub}
     \begin{equation}
         \sum_{i,j,l} a(i) b(j) \tau(i,j | k,l) = \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j |k,l)
     \end{equation}
@@ -567,13 +660,79 @@ so that we can say
 \end{equation}
 \end{proof}
 
+\begin{lemma}
+    Assume that $H_S$ has no ``eigenvalue-gap" degeneracies. AKA, for a given $\gamma$ we have $|\Delta_S(u,l) - \gamma| \leq \Delta_{\sinc}$, then for all $i \neq l,u$ and $k' \neq l,u$ we require $|\Delta_S(i',l) - \gamma| \geq \Delta_{\min}$ and $|\Delta_S(u,k') - \gamma| \geq \Delta_{\min}$. In other words, there exists only one pair $(u,l)$ such that $|\Delta_S(u,l) - \gamma| \leq \Delta_{\sinc}$. We let $u$ denote the higher energy state, i.e $\lambda_S(l) < \lambda_S(u)$. In this situation, we show the following bounds on
+    \begin{align}
+        \abs{\sum_{i, j, k} \frac{e^{-\beta \lambda_S(i)} e^{-\beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|l,k) - \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta \lambda_S(u)}}{\partfun_S(\beta) \partfun_E(\beta_E)}}
+    \end{align}
+\end{lemma}
+\begin{proof}
+    For simplicity, we let $a(i') = \frac{e^{-\beta \lambda_S(i')}}{\partfun_S(\beta)}$ and $b(j') = \frac{e^{-\beta_E \lambda_E(j')}}{\partfun_E(\beta_E)}$. Using Lemma \ref{lem:transition_idx_sub} we write the summation as
+    \begin{align}
+        &\sum_{i,j,k} \sum_{i, j, k} \frac{e^{-\beta \lambda_S(i)} e^{-\beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|l,k) = \sum_{i \neq l} \sum_{j,k} (a(i) b(j) - a(l) b(k)) \tau(i,j|l,k) \\
+        &= \sum_{j,k} (a(u) b(j) - a(l) b(k)) \tau(u,j | l,k) + \sum_{i \neq l,u} \sum_{j,k} (a(i) b(j) - a(l) b(k)) \tau(i,j| l,k).
+    \end{align}
+    Now we utilize the fact that $i \neq u,l$ implies that $\tau(i,j|l,k) \leq \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}$, and further that $\tau(u,j|l,k) \geq \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc}$ if and only if $k = 1$ and $j = 0$. We also have that $-1 \leq a(i') b(j') - a(k') b(l') \leq 1$ for all $i', j', k', l'$ as $a,b$ are probabilities. These observations yield the upper bound
+    \begin{align}
+        &\sum_{i, j, k} \frac{e^{-\beta \lambda_S(i)} e^{-\beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|l,k) \nonumber \\
+        &\leq (a(u) b(0) - a(l) b(1)) \tau(u,0|l,1) + 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 4 (\dim_S - 2) \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+        &\leq (a(u) b(0) - a(l) b(1)) \tau(u,0|l,1) + 2 \dim \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1} \\
+        &\leq (a(u) b(0) - a(l) b(1)) \tau(u,0|l,1) + 2 \epsilon_{\sinc} \alpha^2 t^2.
+    \end{align}
+    For the purposes of the upper bound, all we require is that $e^{-\beta_E \gamma + \beta \Delta_S(u,l)} \geq 0$, which implies $a(u) b(0) - a(l) b(1) \leq \frac{e^{-\beta \lambda_S(u)}}{\partfun_S(\beta) \partfun_E(\beta_E)}$. This, combined with the fact that $\tau(u,0|l,1) \leq \frac{\alpha^2 t^2}{\dim + 1}$, yields our final upper bound as
+    \begin{equation}
+        \sum_{i,j,k} \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)} \frac{e^{-\beta_E \lambda_S(j)}}{\partfun_E(\beta_E)} \tau(i,j|l,k) \leq \frac{e^{-\beta \lambda_S(u)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} + 2 \epsilon_{\sinc} \alpha^2 t^2. \label{eq:transition_prob_upper_bound_final}
+    \end{equation}
+
+    We turn our attention now to the lower bound. This proceeds in a similar manner, of isolating the indices in the sum that are active in the transitions and those that aren't.
+    \begin{align}
+        &\sum_{i, j, k} \frac{e^{-\beta \lambda_S(i)} e^{-\beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|l,k) \nonumber \\
+        &= \sum_{j,k} (a(u) b(j) - a(l) b(k)) \tau(u,j | l,k) + \sum_{i \neq l,u} \sum_{j,k} (a(i) b(j) - a(l) b(k)) \tau(i,j| l,k) \\
+        &\geq (a(u) b(0) - a(l) b(1)) \tau(u,0 | l,1) -(\tau(u,0|l,0) + \tau(u,1|l,0) + \tau(u,1|l,1)) - \sum_{i \neq l,u} \sum_{j,k} \tau(i,j| l,k) \\
+        &\geq (a(u) b(0) - a(l) b(1))\tau(u,0|l,1) - \frac{\alpha^2 t^2}{\dim + 1} \parens{ 3 \epsilon_{\sinc}  + 4 (\dim_S - 2) \epsilon_{\sinc} } \\
+        &\geq (a(u) b(0) - a(l) b(1))\tau(u,0|l,1) - 2 \epsilon_{\sinc} \alpha^2 t^2. \label{eq:transition_prob_lower_bound}
+    \end{align}
+    We now return to the prefactor $a(u) b(0) - a(l) b(1)$ in a bit more detail. We write this as follows
+    \begin{align}
+        a(u) b(0) - a(l) b(1) &= \frac{e^{-\beta \lambda_S(u)}}{\partfun_S(\beta)} \frac{e^{-\beta_E \lambda_E(0)}}{\partfun_E(\beta_E)} - \frac{e^{-\beta \lambda_S(l)}}{\partfun_S(\beta)} \frac{e^{-\beta_E \lambda_E(1)}}{\partfun_E(\beta_E)} \\
+        &= \frac{e^{-\beta \lambda_S(u)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \parens{1 - e^{-\beta_E \gamma - \beta \lambda_S(l) + \beta \lambda_S(u)}}.
+    \end{align}
+    
+
+    We need to understand the function $f(\beta) = 1 - e^{-\beta_E \gamma + \beta \Delta_S(u,l)}$ a bit better. We see that in the limit as $\gamma \to \Delta_S(u,l)$ and $\beta \to \beta_E$, $f(\beta) \to 0$. In the other regime we see as $\beta_E \to \infty$ then $f(\beta) \to 1$. This suggests that we need to look at the regime where $\delta \coloneqq \beta_E - \beta$ is sufficiently large. We first investigate when this function is positive
+    \begin{align}
+        1 - e^{-\beta_E \gamma + \beta \Delta_S(u,l)} \geq 0 &\iff \beta_E \gamma \geq \beta \Delta_S(u,l) \\
+        &\iff 0 \leq \beta_E (\gamma - \Delta_S(u.l)) + (\beta_E - \beta) \Delta_S(u,l).
+    \end{align}
+    Now using $\delta = \beta_E - \beta$ and $|\Delta_S(u,l) - \gamma| \leq \Delta_{\sinc} \leq \Delta_{\min}$, which implies $\gamma - \Delta_S(u,l) \geq - \Delta_{\min}$, we get that 
+    \begin{equation}
+        -\beta_E \Delta_{\min} + \delta \Delta_S(u,l) \leq \beta_E (\gamma - \Delta_S(u,l)) + (\beta_E - \beta) \Delta_S(u,l).
+    \end{equation}
+    We then conclude that $0 \leq -\beta_E \Delta_{\min} + \delta \Delta_S(u,l)$, or $\delta \geq \beta_E \frac{\Delta_{\min}}{\Delta_S(u,l)}$, implies that $1 - e^{-\beta_E \gamma + \beta \Delta_S(u,l)} \geq 0$. Using this, we show that $\delta \geq \frac{\beta_E \Delta_{\min} + \ln(1/\epsilon_{exp})}{\Delta_S(u,l)}$ yields the following
+    \begin{align}
+        \delta \geq \frac{\beta_E \Delta_{\min} + \ln(1/\epsilon_{exp})}{\Delta_S(u,l)} &\implies \beta_E \gamma - \beta \Delta_S(u,l) \geq \ln 1/ \epsilon_{exp} \\
+        &\implies e^{-\beta_E \gamma + \beta \Delta_S(u,l)} \leq \epsilon_{exp} \\
+        &\implies 1 - e^{-\beta_E \gamma + \beta \Delta_S(u,l)} \geq 1 - \epsilon_{exp}.
+    \end{align}
+
+    We can profit off of the above upper bound, as well as the fact that $|\Delta_S(u,l) - \gamma| \leq \Delta_{\sinc}$ which implies $\tau(u,0|l,1) \geq \frac{\alpha^2 t^2}{\dim + 1} (1 - \widetilde{\epsilon}_{\sinc})$, by simply plugging it into Eq. \eqref{eq:transition_prob_lower_bound} and simplifying
+    \begin{equation}
+        \sum_{i, j, k} \frac{e^{-\beta \lambda_S(i)} e^{-\beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|l,k) \geq \frac{e^{-\beta \lambda_S(u)}}{\partfun_S(\beta) \partfun_E(\beta_E)}\frac{\alpha^2 t^2}{\dim + 1} (1 - \epsilon_{exp})(1 - \widetilde{\epsilon}_{\sinc}) - 2 \epsilon_{\sinc} \alpha^2 t^2.
+    \end{equation}
+    Using simple bounds allows us to rewrite this as
+    \begin{equation}
+        \sum_{i, j, k} \frac{e^{-\beta \lambda_S(i)} e^{-\beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|l,k) - \frac{e^{-\beta \lambda_S(u)}}{\partfun_S(\beta) \partfun_E(\beta_E)}\frac{\alpha^2 t^2}{\dim + 1} \geq - \alpha^2 t^2 \parens{\frac{\epsilon_{exp} + \widetilde{\epsilon}_{\sinc}}{\dim + 1} + 2 \epsilon_{\sinc}}. \label{eq:transition_prob_lower_bound_final}
+    \end{equation}
+    Equations \eqref{eq:transition_prob_upper_bound_final} and \eqref{eq:transition_prob_lower_bound_final} yield the Lemma statement.
+\end{proof}
+
 The next step we need to prove is to find the range of temperatures for which the system is \emph{ not} in an approximate fixed state. This means
 \begin{claim}
    If $\beta \geq \beta_{idk}$, then it is not an approximate fixed point. 
 \end{claim}
 \begin{proof}
     We need to show that there is no way to lower bound the distance of the actual channel, instead we have to lower bound the distance of $\rho_S(\beta_E)$ and the second order approximation to the channel. 
-    The following is what we want to show. 
+    The following is what we want to show. \todo{this should be $\beta$ not $\beta_E$ ...}
     \begin{align}
         \norm{\rho_S(\beta_E) - \Phi^{(2)}(\rho_S(\beta))}_2^2 \geq \epsilon_{fix}.
     \end{align}
