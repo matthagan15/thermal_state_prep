@@ -478,7 +478,7 @@ The goal for the remainder of this section is to simplify the expression for the
     We see that the factors $\bra{k,l}\rho \ket{m,n}$ and $\braket{k,l}{i,j} \braket{i,j}{m,n}$ can never be non-zero due to the assumption $(k,l) \neq (m,n)$. The only remaining term in Eq. \ref{eq:off_diagonal_taylors} is of $\bigo{\alpha^3}$, yielding the stated result.
 \end{proof}
 
-Our last objective in this section is to yield a (relatively) concise statement for transition probabilities among diagonal matrix elements for density matrices. As we will be interested in computing trace distances we will be interested in 
+Our last objective in this section is to yield a (relatively) concise statement for transition probabilities among diagonal matrix elements for density matrices. As we will be interested in computing trace distances 
 \begin{theorem} \label{thm:second_order_transition_coeffs}
 Given the inputs to Lemma \ref{lem:the_double_duhamel}, let 
 $$\tau(i,j | k,l) \coloneqq \frac{\alpha^2 }{2} \bra{k,l} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{i,j}{i,j})\bigg|_{\alpha = 0} dG \ket{k,l},$$ denote the second order transition coefficients in $\alpha$. These are expressed in terms of the eigenvalue differences $\Delta(i',j'|k',l')$ and other constants as 
@@ -578,6 +578,11 @@ So this says we need $\alpha t \leq \frac{\epsilon_{R}^{1/3}}{2 \dim^{1/3}}$ in 
 \todo{Fix the definitions used here.}
 
 \section{Generalizations to Many Qubits}
+
+In this first section we introduce the conditions required for more detailed analysis. The first is 
+\begin{claim}
+    We require that for all ${$
+\end{claim}
 
 This introduction part needs to introduce the setup that will be used for these two proofs.
 
