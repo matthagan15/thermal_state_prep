@@ -488,6 +488,12 @@ $$\tau(i,j | k,l) = \begin{cases}
     \frac{\alpha^2 t^2 }{\dim + 1} \sinc^2(\Delta t /2) & \Delta(i,j| k,l) \neq 0.
 \end{cases}$$
 . A summation shows that $\tau(i,j|i,j) = -\sum_{(k,l) \neq (i,j)} \tau(i,j|k,l)$, which as a byproduct shows that the mapping $\Phi$ is trace preserving to order $\bigo{\alpha^2}$.
+
+We can write out the system and environment transition probabilities as follows 
+\begin{align}
+    \prob{\text{System } i \to j} &= \bra{j} \Phi(\ketbra{i}{i}) \ket{j} \\
+    &= 
+\end{align}
 \end{theorem}
 \begin{proof}
     We focus exclusively on diagonal inputs and outputs for density matrices, $\ketbra{a}{a}$ and $\ketbra{b}{b}$. We use Eq. \eqref{eq:second_order_output}, starting with transitions within the degenerate subspace of $a$. For the following we assume $a \neq b$ and $\Delta_{ab} = 0$: 
