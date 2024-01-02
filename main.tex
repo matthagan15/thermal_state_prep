@@ -77,6 +77,8 @@
 
 \maketitle
 
+\tableofcontents
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -157,7 +159,7 @@ Clearly then $\Phi(\rho_S) = \partrace{env}{\int \Phi_G (\rho_S \otimes \rho_E) 
 \end{proof}
 
 We will often rely on a particularly parametrized form of $f(x)$ which is worth investigating on it's own right. Note we can get a square root improvement of the dependence of $|\Delta_S(i,j) - \gamma|$ on $\epsilon_{\sinc}$ in the below Corallary if we only require $f(x) \geq 1 - \widetilde{\epsilon}_{\sinc}$. This then requires $|\Delta_S(i,j) - \gamma| \in \bigo{\sqrt{\epsilon_{\sinc} \widetilde{\epsilon}_{\sinc}}}$, however this will not prove significantly useful for us so we use the looser bound.
-\begin{corollary}
+\begin{corollary} \label{cor:gamma_difference_reqs}
     The statements 
     $$|x| \geq \Delta_{\min} \implies f\parens{xt / 2} \leq \epsilon_{\sinc}$$
     and
@@ -256,6 +258,20 @@ The other direction ($\Delta_S(i,j) \leq \gamma \leq \Delta_S(k,l)$ ) holds simi
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Taylor's Series for $\Phi$}
+
+We will work extensively with a polynomial approximation, with respect to $\alpha t$, of the overall channel $\Phi$. This section provides results about the structure of the first and second order terms in the Taylor's Series and provides a bound on the remainder term $R_{\Phi}$. As we will exclusively work with a second order approximation we leave the order of the remainder term implicit.
+
+\begin{equation}
+    \Phi(X, \alpha) = \Phi(X, 0) + \alpha \frac{\partial}{\partial \alpha} \Phi(X, \alpha) \bigg|_{\alpha = 0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(X, \alpha) \bigg|_{\alpha = 0} + R_{\Phi}(X, \alpha_{\star}).
+\end{equation}
+We will denote the second order approximation as
+\begin{equation}
+    \Phi^{(2)}(X, \alpha) \coloneqq \Phi(X, 0) + \frac{\partial}{\partial \alpha} \Phi(X, \alpha) \bigg|_{\alpha = 0} + \frac{1}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(X, \alpha) \bigg|_{\alpha = 0}. \label{def:second_order_approx}
+\end{equation}
+We will also find it helpful to denote each of the terms as
+\begin{equation}
+    T^{(k)}(X, \alpha) \coloneqq \frac{\alpha^k}{k!} \frac{\partial^k}{\partial \alpha^k} \Phi(X, \alpha)\bigg|_{\alpha = 0} \label{def:taylor_series_terms}
+\end{equation}
 
 \begin{lemma}[First Order $\alpha$ Correction to $\Phi$]
    Given a randomized environment interaction channel $\Phi$ with coupling coefficient $\alpha$, the first order correction is
@@ -480,6 +496,7 @@ The goal for the remainder of this section is to simplify the expression for the
 \end{proof}
 
 Our last objective in this section is to yield a (relatively) concise statement for transition probabilities among diagonal matrix elements for density matrices. As we will be interested in computing trace distances 
+\todo{Update the proof to include the expression for $T^{(2)}$}
 \begin{theorem} \label{thm:second_order_transition_coeffs}
 Given the inputs to Lemma \ref{lem:the_double_duhamel}, let 
 $$\tau(i,j | k,l) \coloneqq \frac{\alpha^2 }{2} \bra{k,l} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{i,j}{i,j})\bigg|_{\alpha = 0} dG \ket{k,l},$$ denote the second order transition coefficients in $\alpha$. These are expressed in terms of the eigenvalue differences $\Delta(i',j'|k',l')$ and other constants as 
@@ -490,11 +507,10 @@ $$\tau(i,j | k,l) = \begin{cases}
 \end{cases}$$
 . A summation shows that $\tau(i,j|i,j) = -\sum_{(k,l) \neq (i,j)} \tau(i,j|k,l)$, which as a byproduct shows that the mapping $\Phi$ is trace preserving to order $\bigo{\alpha^2}$.
 
-We can write out the system and environment transition probabilities as follows 
-\begin{align}
-    \prob{\text{System } i \to j} &= \bra{j} \Phi(\ketbra{i}{i}) \ket{j} \\
-    &= 
-\end{align}
+We can write out the second order channel term for a thermal state density input with environment at $\beta_E$ as
+\begin{equation}
+    T^{(2)}(\rho_S(\beta), \alpha) = \sum_{i,j,k,l} \ketbra{k}{k} \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)} \frac{e^{-\beta_E(j)}}{\partfun_E(\beta_E)} \tau(i,j | k,l) \label{eq:second_order_channel_with_tau}
+\end{equation}
 \end{theorem}
 \begin{proof}
     We focus exclusively on diagonal inputs and outputs for density matrices, $\ketbra{a}{a}$ and $\ketbra{b}{b}$. We use Eq. \eqref{eq:second_order_output}, starting with transitions within the degenerate subspace of $a$. For the following we assume $a \neq b$ and $\Delta_{ab} = 0$: 
@@ -529,7 +545,7 @@ We can write out the system and environment transition probabilities as follows
 We now aim to bound the spectral norm of the remainder term $R_{\Phi}$. This is rather tedious, as even to third order in $\alpha$ we have 24 terms to bound. For example, looking first at the $(A)$ term resulting from the second order derivative in Eq. \eqref{eq:second_order_deriv_intermediate_a} we have 4 multiplicative factors involving $\alpha$, leading to 4 terms from this single term of the second order derivative. As there are six terms in total, this yeilds 24 terms. We can profit from the fact though that the expressions for the second order derivatives do simplify and the final expression only has 3 terms, as two of the derivatives act similarly. We first will analyze the single term from Eq. \eqref{eq:second_order_deriv_intermediate_a} in detail. 
 
 
-\begin{theorem}
+\begin{lemma} \label{lem:remainder_bound}
     Let $\Phi(\rho)$ be the thermalizing channel as defined in Def. \eqref{eq:phi_g_definition} and $R_{\Phi}$ the remainder term 
     \begin{equation}
         R_{\Phi}(\rho, \alpha) = \Phi(\rho, \alpha) - \rho - \frac{\alpha}{1!} \frac{\partial}{\partial \alpha} \Phi(\rho)\bigg|_{\alpha = 0} - \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho) \bigg|_{\alpha = 0}.
@@ -538,7 +554,7 @@ We now aim to bound the spectral norm of the remainder term $R_{\Phi}$. This is 
     \begin{equation}
         \alpha t \leq \parens{\frac{\epsilon_R}{2 \dim}}^{1/3} \implies \norm{R_{\Phi}} \leq \epsilon_R.
     \end{equation}
-\end{theorem}
+\end{lemma}
 \begin{proof}
     First I need to write down what exactly we are trying to bound. What we are essentially trying to do is bound the matrix entries:
 \begin{equation}
@@ -590,134 +606,130 @@ In this first section we introduce the conditions required for more detailed ana
     \end{align}
     This rather strong condition on the spectrum is needed as we would like to make the guarantee that for a provided $\gamma$ there is at most 1 pair of indices $(i,j)$ such that $\sinc^2((\Delta_S(i,j) - \gamma)t/2) \geq 1 - \epsilon_{\sinc}$.
     \begin{equation}
-        \abs{\set{(i,j): \abs{\Delta_S(i,j) - \gamma} \leq \Delta_{\sinc}}} \in \set{0, 1}
+        \abs{\set{(i,j): \abs{\Delta_S(i,j) - \gamma} \leq \Delta_{\sinc}}} \in \set{0, 1}.
     \end{equation}
+    It will be useful when working from this to sample from these differences uniformly. Given a Hamiltonian with eigenvalues that are well separated there are $\frac{\dim_S (\dim_S - 1)}{2}$ positive differences. We create the following distribution which is a mixture of uniform distributions over the the eigenvalue differences, where each uniform distribution is of width $2 \Delta_{\sinc}$, so we can guarantee that any sampled value of $\gamma$ is close enough to an eigenvalue difference to satisfy the requirements of Corollary \ref{cor:gamma_difference_reqs}.
+
+    \begin{equation}
+        \prob{\gamma = x} = \begin{cases}
+            \frac{2}{\dim_S (\dim_S - 1)} \frac{1}{2 \Delta_{\sinc}} & \exists (i,j) \text{ such that } \abs{x - \Delta_S(i,j)} \leq \Delta_{\sinc} \\
+            0 & \forall (i,j), \abs{x - \Delta_S(i,j)} \geq \Delta_{\sinc}.
+        \end{cases}
+    \end{equation}
+    We will refer to this distribution as the \emph{perfect knowledge} distribution.
 \end{definition}
 
 This introduction part needs to introduce the setup that will be used for these two proofs.
 
 \begin{lemma} \label{lem:transition_idx_sub}
+    Let $p, q$ denote probability distributions on the system and environment indices respectively. Then we have
     \begin{equation}
-        \sum_{i,j,l} a(i) b(j) \tau(i,j | k,l) = \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j |k,l)
+        \sum_{i,j,l} p(i) q(j) \tau(i,j | k,l) = \sum_{i \neq k} \sum_{j,l} (p(i) q(j) - p(k) q(l)) \tau(i,j |k,l)
     \end{equation}
 \end{lemma}
 \begin{proof}
     \begin{align}
-        \sum_{i,j,l} a(i) b(j) \tau(i,j | k,l) &= \sum_{i \neq k} \sum_{j,l} \parens{a(i) b(j) \tau(i,j|k,l)} + \sum_{j,l} a(k) b(j) \tau(k,j | k,l) \label{eq:n_qubit_fixed_pt_intermediate_1}.
+        \sum_{i,j,l} p(i) q(j) \tau(i,j | k,l) &= \sum_{i \neq k} \sum_{j,l} \parens{p(i) q(j) \tau(i,j|k,l)} + \sum_{j,l} p(k) q(j) \tau(k,j | k,l) \label{eq:n_qubit_fixed_pt_intermediate_1}.
     \end{align}
     We expand the simpler sum on the right:
     \begin{align}
-        \sum_{j,l}a(k) b(j) \tau(k,j| k,l) &= a(k) b(0) (\tau(k,0|k,0) + \tau(k,0|k,1)) + a(k) b(1) (\tau(k,1|k,0) + \tau(k,1|k,1)) \\
-        &= - a(k) b(0) \sum_{c \neq k}\sum_{l} \tau(k,0 | c, l) - a(k) b(1) \sum_{c \neq k} \sum_{l}\tau(k,1|c,l) \\
-        &= - \sum_{c \neq k} \sum_{j,l} a(k) b(j) \tau(k,j |c,l).
+        \sum_{j,l}p(k) q(j) \tau(k,j| k,l) &= p(k) q(0) (\tau(k,0|k,0) + \tau(k,0|k,1)) + p(k) b(1) (\tau(k,1|k,0) + \tau(k,1|k,1)) \\
+        &= - p(k) q(0) \sum_{c \neq k}\sum_{l} \tau(k,0 | c, l) - p(k) b(1) \sum_{c \neq k} \sum_{l}\tau(k,1|c,l) \\
+        &= - \sum_{c \neq k} \sum_{j,l} p(k) q(j) \tau(k,j |c,l).
     \end{align}
     Plugging this into Eq. \ref{eq:n_qubit_fixed_pt_intermediate_1} allows us to simplify as follows
     \begin{align}
-        \sum_{i,j,l} a(i) b(j) \tau(i,j|k,l) &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) \tau(i,j|k,l)) - \sum_{c \neq k} \sum_{j,l} a(k) b(j) \tau(k,j|c,l) \\
-        &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) \tau(i,j|k,l)) - \sum_{i \neq k} \sum_{j,l} a(k) b(l) \tau(i,j|k,l) \\
-        &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j | k,l).
+        \sum_{i,j,l} p(i) q(j) \tau(i,j|k,l) &= \sum_{i \neq k} \sum_{j,l} (p(i) q(j) \tau(i,j|k,l)) - \sum_{c \neq k} \sum_{j,l} p(k) q(j) \tau(k,j|c,l) \\
+        &= \sum_{i \neq k} \sum_{j,l} (p(i) q(j) \tau(i,j|k,l)) - \sum_{i \neq k} \sum_{j,l} p(k) q(l) \tau(i,j|k,l) \\
+        &= \sum_{i \neq k} \sum_{j,l} (p(i) q(j) - p(k) q(l)) \tau(i,j | k,l).
     \end{align}
 \end{proof}
 
 \begin{theorem}[Approximate Fixed Points]
     Let $H_S$ be a well-separated Hamiltonian, per Def. \ref{def:separated_hamiltonians}. For all values of $\gamma \geq \Delta_{\min}$ and $t$ such that $\epsilon_{\sinc} \leq \frac{1}{4}$ we have that 
-    \begin{equation}
-        \alpha t \leq \sqrt{2} \epsilon_{fix}^{1/4} \sqrt{1 + \frac{1}{\dim}} \implies \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_1 \leq \epsilon_{fix}.
-    \end{equation}
-    Further, if $\gamma$ is an energy that causes transitions (todo: make more precise) then we have that the following temperatures are not fixed
     \begin{align}
-        \beta_E - \beta \geq \delta_{LB} \implies \norm{\rho_S(\beta) - \Phi^{(2)}(\rho_S(\beta))} \geq \epsilon_{fix}.
+        2 \sqrt{2} \Delta_{\min} \dim \leq t& \text{ \emph{and} } \alpha \leq \min \set{\frac{\sqrt{\epsilon_{fix}}}{4 \sqrt{2} \Delta_{\min} \dim}, \parens{\frac{\epsilon_{fix}}{4 \dim^5}}^{1/3} \frac{1}{2 \sqrt{2} \Delta_{\min} }} \nonumber \\
+        &\implies \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_1 \leq \epsilon_{fix}. \label{eq:beta_e_fixed_point_reqs}
     \end{align}
 \end{theorem}
 \begin{proof}
     We start out with the expansion of the channel
     \begin{align}
-        \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_1 &= \norm{\Phi^{(2)}(\rho_S(\beta_E)) + R_{\Phi}(\rho_S(\beta_E))}_1 \\
-        &\leq \norm{\Phi^{(2)}(\rho_S(\beta_E))}_1 + \norm{R_{\Phi}(\rho_S(\beta_E))}_1 \\
-        &\leq \norm{\Phi^{(2)}(\rho_S(\beta_E))}_1 + \dim \norm{R_{\Phi}} \\
-        &\leq \norm{\Phi^{(2)}(\rho_S(\beta_E))}_1 + \dim \epsilon_R.
+        \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_1 &= \norm{T^{(2)}(\rho_S(\beta_E), \alpha) + R_{\Phi}(\rho_S(\beta_E))}_1 \\
+        &\leq \norm{T^{(2)}(\rho_S(\beta_E))}_1 + \norm{R_{\Phi}(\rho_S(\beta_E))}_1 \\
+        &\leq \norm{T^{(2)}(\rho_S(\beta_E))}_1 + \dim \norm{R_{\Phi}} \\
+        &\leq \norm{T^{(2)}(\rho_S(\beta_E))}_1 + \dim \norm{R_{\Phi}}.
     \end{align}
-    We will use up half of our error budget for this, $\epsilon_R = \epsilon_{fix} / (2 \dim)$, leading us to require that $\norm{\Phi^{(2)}(\rho_S(\beta_E))}_1 \leq \epsilon_{fix} / 2$. 
-
-    Plugging in the second order correction for the channel gives us
+    Taking the straightforward approach of dividing our error budget equally among these two terms will be sufficient. Starting with the $\norm{R_{\Phi}}_1$ bound we have from Lemma \ref{lem:remainder_bound} that
     \begin{align}
-        \norm{\Phi^{(2)}(\rho_S(\beta_E)}_1 &= \sum_k \abs{\frac{\alpha^2 t^2}{2}}
+        \alpha t \leq \parens{\frac{\epsilon_{fix}}{4 \dim^2}}^{1/3} \implies \dim \norm{R_{\Phi}} \leq \frac{\epsilon_{fix}}{2}. \label{tmp:first_alpha_t_req_fixed_pt}
     \end{align}
+
+    We now bound the other half of our error budget, the term resulting from $\norm{T^{(2)}(\rho_S(\beta_E))}_1$. Plugging in the second order correction for the channel from Eq. \eqref{eq:second_order_channel_with_tau} gives us
+    \begin{align}
+        \norm{T^{(2)}(\rho_S(\beta_E))}_1 &= \sum_k \abs{\sum_{i,j,l} \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \frac{e^{-\beta_E \lambda_S(j)}}{\partfun_E(\beta_E)} \tau(i,j|k,l)}.
+    \end{align}
+    For compactness, let $p(i) = \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)}$ and $q(j) =\frac{e^{-\beta_E \lambda_S(j)}}{\partfun_E(\beta_E)}$. Using Lemma \ref{lem:big_tau_sum_simplifier} we can substitute this 
+    \begin{align}
+        &\sum_{k \neq \gamma_L, \gamma_U} \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j|k,l) } + \abs{\sum_{i,j,l} p(i)q(j) \tau(i,j | \gamma_L, l)} + \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j| \gamma_U, l)} \\
+        &\leq (\dim_S - 2) 4 \alpha^2 t^2 \epsilon_{\sinc} + \abs{\sum_{i,j,l} p(i)q(j) \tau(i,j | \gamma_L, l)} + \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j| \gamma_U, l)}. \label{int:fixed_pt_1}
+    \end{align}
+    Now we use the following upper bound
+    \begin{align}
+        \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j|\gamma_L ,l)} &= \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j|\gamma_L ,l) - \frac{\alpha^2 t^2}{\dim + 1} p(\gamma_U) q(0) + \frac{\alpha^2 t^2}{\dim + 1} p(\gamma_U) q(0)} \\
+        &= \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j|\gamma_L ,l) - \frac{\alpha^2 t^2}{\dim + 1} p(\gamma_U) q(0)} + \abs{\frac{\alpha^2 t^2}{\dim + 1} p(\gamma_U) q(0)} \\
+        &\leq 4 \alpha^2 t^2 \epsilon_{\sinc} + \frac{\alpha^2 t^2}{\dim + 1} p(\gamma_U) q(0).
+    \end{align}
+    Plugging this into Eq. \eqref{int:fixed_pt_1} yields
+    \begin{align}
+        \norm{T^{(2)} (\rho_S(\beta_E))}_1 &\leq 2 \dim \alpha^2 t^2 \epsilon_{\sinc} + \frac{\alpha^2 t^2}{\dim + 1}(p(\gamma_U) q(0) + p(\gamma_L) q(1)) \\
+        &\leq 2 \dim \alpha^2 t^2 \epsilon_{\sinc} + \frac{\alpha^2 t^2}{\dim + 1} \\
+        &= \alpha^2 t^2 \parens{2 \dim \epsilon_{\sinc} + \frac{1}{\dim + 1}}.
+    \end{align}
+    Now here we use the requirement that $\epsilon_{\sinc} \leq \frac{1}{\dim + 1} \frac{1}{2 \dim}$ to yield the inequality
+    \begin{equation}
+        \norm{T^{(2)}(\rho_S(\beta_E))}_1 \leq 2 \alpha^2 t^2.
+    \end{equation}
+    We note that $\epsilon_{\sinc} \leq \frac{1}{2 \dim (\dim + 1)}$ is equivalent to the lower bound on $t$ of $2 \sqrt{2} \Delta_{\min} \dim \leq t$. Scaling of $t$ with dimension is expected in the worst case. 
+
+    It is then straightforward to see that $\alpha^2 t^2 \leq \frac{\epsilon_{fix}}{4}$ implies $\norm{T^{(2)}(\rho_S(\beta_E))} \leq \epsilon_{fix} / 2$, which along with Eq. \eqref{tmp:first_alpha_t_req_fixed_pt} implies Eq. \eqref{eq:beta_e_fixed_point_reqs}. 
 \end{proof}
 
-Need to update this theorem: Given a well separated Hamiltonian, for all values of $\gamma$ then the thermal state is an approximate fixed point.
-\begin{theorem} \label{thm:approximate_fixed_point}
-    Using $H_S, H_E, \gamma, G, \epsilon_{\sinc}$ and $\rho_E$ as defined above. If $\epsilon_{\sinc} \leq \frac{1}{4}$ (or alternatively $t \geq \frac{2}{\Delta_{\min}}$), then following statement holds
+Note that we only lower bound the second order approximation to the channel as opposed to the exact channel.
+\begin{theorem}[Not Fixed Points] \label{thm:which_beta_not_fixed}
+    Let $H_S$ be a well-separated Hamiltonian, $\gamma$ be $\Delta_{\sinc}$ close to $\Delta_S(\gamma_U, \gamma_L)$, and $\delta = \beta_E - \beta$. We show that
     \begin{equation}
-        \alpha t \leq \sqrt{2} \epsilon_{fix}^{1/4} \sqrt{1 + \frac{1}{\dim}} \implies \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \epsilon_{fix}
+        \delta \geq \delta_{LB} \implies \norm{\rho_S(\beta) - \Phi^{(2)}(\rho_S(\beta))}_1 \geq \epsilon_{fix}.
     \end{equation}
 \end{theorem}
 \begin{proof}
-Our goal is to show that our channel has $\rho_S(\beta_E)$ as a fixed point and that it reduces the distance to the fixed point at different temperatures. We start from Eq. \ref{eq:trace_dist_p_norm} with the goal of showing that $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \epsilon$. This reduces to showing
-$$\sum_k \abs{\sum_{i,j,l} \frac{e^{-\beta_E \lambda(i,j)}}{\partfun(\beta_E)} \tau(i,j | k,l)}^2 \leq \epsilon.$$ 
-\inlinetodo{Need to include bounds on the remainder term now that we have it. It shouldn't be too hard, just set the remainder term error to one half of the error we are trying to bound and then bound the other contribution as one half and then they sum to the error we want.}
-
-
-The tool we will use to bound this sum is the fact that our map preserves trace to second order, which gives us $\tau(i,j|i,j) = - \sum_{(k,l) \neq (i,j)} \tau(i,j|k,l)$. We look first at a fixed value of $k$ and further let $a(i) = \bra{i} \rho_S \ket{i}$ and $b(j) = \bra{j} \rho_E \ket{j}$, which will allow us to generalize to non-thermal input states. By definition of density matrices we have $0 \leq a(i) \leq 1$ for all $i$ and similarly $0 \leq b(j) \leq 1$ for all $j$. 
-\begin{align}
-    \sum_{i,j,l} a(i) b(j) \tau(i,j | k,l) &= \sum_{i \neq k} \sum_{j,l} \parens{a(i) b(j) \tau(i,j|k,l)} + \sum_{j,l} a(k) b(j) \tau(k,j | k,l) \label{eq:n_qubit_fixed_pt_intermediate_1}.
-\end{align}
-We expand the simpler sum on the right:
-\begin{align}
-    \sum_{j,l}a(k) b(j) \tau(k,j| k,l) &= a(k) b(0) (\tau(k,0|k,0) + \tau(k,0|k,1)) + a(k) b(1) (\tau(k,1|k,0) + \tau(k,1|k,1)) \\
-    &= - a(k) b(0) \sum_{c \neq k}\sum_{l} \tau(k,0 | c, l) - a(k) b(1) \sum_{c \neq k} \sum_{l}\tau(k,1|c,l) \\
-    &= - \sum_{c \neq k} \sum_{j,l} a(k) b(j) \tau(k,j |c,l).
-\end{align}
-Plugging this into Eq. \ref{eq:n_qubit_fixed_pt_intermediate_1} allows us to simplify as follows
-\begin{align}
-    \sum_{i,j,l} a(i) b(j) \tau(i,j|k,l) &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) \tau(i,j|k,l)) - \sum_{c \neq k} \sum_{j,l} a(k) b(j) \tau(k,j|c,l) \\
-    &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) \tau(i,j|k,l)) - \sum_{i \neq k} \sum_{j,l} a(k) b(l) \tau(i,j|k,l) \\
-    &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j | k,l).
-\end{align}
-
-We now can bound our desired quantity as follows
-\begin{align}
-    &\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \sum_{k} \abs{\sum_{i \neq k} \sum_{j,l} ((a(i) b(j) -a(k) b(l)) \tau(i,j|k,l)}^2 \\
-    &\leq \sum_{j,l,k} \sum_{i \neq k} \tau(i,j|k,l)^2 (a(i) b(j) - a(k) b(l))^2 \\
-    &\leq \sum_{j,l,k} \sum_{i \neq k} \tau(i,j|k,l)^2 \\
-    &= \sum_{j,l,k} \sum_{i \neq k} \frac{\alpha^4 t^4}{(\dim + 1)^2} \sinc(\Delta(i,j|k,l) t/ 2)^4 \\
-    &= \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 \sum_k \sum_{i \neq k} \parens{2 \sinc\parens{ \frac{\Delta_S(i,k) t}{2}}^2 + \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2 + \sinc\parens{\frac{(\Delta_S(i,k) + \gamma)t}{2}}^2} \\
-    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 \sum_k \sum_{i \neq k} \parens{3 \epsilon_{\sinc}^2 + \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2} \\
-    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 (3 \epsilon_{\sinc}^2 \dim_S (\dim_S - 1) + \sum_{k} \sum_{i \neq k} \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2.
-\end{align}
-Now given a specific value of $\gamma$ we can define a ``near-degeneracy" set of indices $S_\gamma$ that contains all indices $i,k$ such that their energy difference is close enough to $\gamma$:
-\begin{equation}
-    S_\gamma \coloneqq \set{(i,k) : i,k \in \set{1, 2, \ldots, \dim_S}, i \neq k, |\Delta_S(i,k) - \gamma| \leq \Delta_{\min}}.
-\end{equation}
-The size of this set can vary drastically depending on the eigenvalues of the system Hamiltonian. For example, take the harmonic oscillator with energy difference of 1 and set $\gamma = 1$. Then $S_{\gamma}$ in this case would be of size $|S_{1}| = \dim_S - 1$. On the other hand, take $H_S$ to be the identity, then $S_\gamma$ for any nonzero $\gamma$ is empty. 
-
-Now picking back up from where we left off:
-\begin{align}
-    &= \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 (3 \epsilon_{\sinc}^2 \dim_S (\dim_S - 1) + \sum_{(i,k) \in S_{\gamma}} \sinc\parens{\frac{(\Delta_S(i,k) - \gamma)t}{2}}^2 + \epsilon_{\sinc}^2 (\dim_S^2 - |S_{\gamma}|)) \\
-    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 \parens{\epsilon_{\sinc}^2 (4 \dim_S^2 - 3 \dim_S - |S_{\gamma}|) + |S_{\gamma}|} \\
-    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^{2} \parens{\epsilon_{\sinc}^2 (4 \dim_S^2 - 3 \dim_S) + \dim_S(\dim_S - 1)} \\
-    &\leq \parens{\frac{\alpha^2 t^2}{\dim + 1}}^2 \dim_S^2 (4 \epsilon_{\sinc} + 1). \label{eq:fixed_pt_bound_1}
-\end{align}
-Now we simply enforce that 
-\begin{equation}
-    \epsilon_{\sinc} \leq \frac{1}{4}
-\end{equation}
-so that we can say 
-\begin{equation}
-    \alpha t \leq \epsilon_{fix}^{1/4} \sqrt{\frac{\dim + 1}{\dim_S}} \implies \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_2^2 \leq \epsilon_{fix}.
-\end{equation}
+     We use the expansion of $\Phi^{(2)}(X) = X + T^{(2)} (X)$, along with defining $p(i) = \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)}$ and $q(j) = \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)}$ to write
+     \begin{align}
+        &\norm{\rho_S(\beta) - \Phi^{(2)} (\rho_S(\beta))}_1 \nonumber \\
+        &= \norm{T^{(2)}(\rho_S(\beta))}_1 \\
+        &= \sum_k \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j | k,l)} \\
+        &= \sum_{k \neq \gamma_U, \gamma_L} \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j|k,l)} + \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j | \gamma_U, l)} + \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j | \gamma_L, l)} \\
+        &\geq \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j | \gamma_U, l)} + \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j | \gamma_L, l)} \\
+        &\geq \sum_{i,j,l} p(i) q(j) \tau(i,j | \gamma_U, l) + \sum_{i,j,l} p(i) q(j) \tau(i,j | \gamma_L, l)
+     \end{align}
+     
+     It will prove simpler to lower bound one of the two terms and the other will follow almost the exact same manner.
+     \begin{align}
+        \sum_{i,j,l} p(i) q(j) \tau(i,j| \gamma_U)
+     \end{align}
 \end{proof}
 
-\begin{lemma}
-    Assume that $H_S$ is a $(\Delta_{\min}, \Delta_{\sinc}, \epsilon_{\sinc}$)-separated Hamiltonian satisfying Def. \ref{def:separated_hamiltonians}. Let $(u,l)$ denote the unique index pair such that $|\Delta_S(u,l) - \gamma| \leq \Delta_{\sinc}$ and for all $(i,j) \neq (u,l)$ we have $|\Delta_S(i,j) - \gamma| \geq \Delta_{\min}$. We let $u$ denote the higher energy state, i.e $\lambda_S(l) < \lambda_S(u)$. Using $\delta \coloneqq \beta_E - \beta$, we show that the assumptions on $H$ and $\gamma$ along with the requirement $\delta \geq \beta_E \frac{\Delta_{\min}}{\Delta_S(u,l)} + \frac{1}{\Delta_S(u,l)} \ln \parens{\frac{1}{(2\dim + 1) \epsilon_{\sinc}}}$ imply the following bound
-    % \begin{align}
-    %     -2 \alpha^2 t^2 \epsilon_{\sinc} \parens{1 + \frac{1}{\dim + 1} + \frac{\epsilon_{exp}}{\dim + 1} }\leq \sum_{i, j, k} \frac{e^{-\beta \lambda_S(i)} e^{-\beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|l,k) - \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta \lambda_S(u)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \leq 2 \epsilon_{\sinc} \alpha^2 t^2
-    % \end{align}
+\begin{lemma} \label{lem:big_tau_sum_simplifier}
+    Assume that $H_S$ is a $(\Delta_{\min}, \Delta_{\sinc}, \epsilon_{\sinc}$)-separated Hamiltonian satisfying Def. \ref{def:separated_hamiltonians}. Let $(\gamma_U,\gamma_L)$ denote the unique index pair such that $|\Delta_S(\gamma_U,\gamma_L) - \gamma| \leq \Delta_{\sinc}$ and for all $(i,j) \neq (\gamma_U, \gamma_L)$ we have $|\Delta_S(i,j) - \gamma| \geq \Delta_{\min}$. We let $\gamma_U$ denote the higher energy state, i.e $\lambda_S(\gamma_L) < \lambda_S(\gamma_U)$. Using $\delta \coloneqq \beta_E - \beta$, we show that the assumptions on $H$ and $\gamma$ along with the requirement $\delta \geq \beta_E \frac{\Delta_{\min}}{\Delta_S(u,l)} + \frac{1}{\Delta_S(u,l)} \ln \parens{\frac{1}{(2\dim + 1) \epsilon_{\sinc}}}$ imply the following bounds.
+    Let $p(i) = \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)}$ and $q(j) = \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)}$. 
     \begin{align}
-        \abs{\sum_{i, j, k} \frac{e^{-\beta \lambda_S(i)} e^{-\beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|l,k) - \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta \lambda_S(u)}}{\partfun_S(\beta) \partfun_E(\beta_E)}} \leq 4 \epsilon_{\sinc} \alpha^2 t^2
+        \abs{\sum_{i, j, l} p(i) q(j) \tau(i,j| \gamma_L, l) - \frac{\alpha^2 t^2}{\dim + 1} p(\gamma_U) q(0)} &\leq 4 \alpha^2 t^2 \epsilon_{\sinc}  \\
+        \abs{\sum_{i, j, l} p(i) q(j) \tau(i,j| \gamma_U, l) - \frac{\alpha^2 t^2}{\dim + 1} p(\gamma_L) q(1)} &\leq 4  \alpha^2 t^2 \epsilon_{\sinc} \\
+        k \neq \gamma_L, \gamma_U \implies \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j| k, l) } &\leq 4 \alpha^2 t^2 \epsilon_{\sinc}.
     \end{align}
 \end{lemma}
 \begin{proof}
+    \todo{update this lemma to use $p,q$ instead of $a,b$. }
     For simplicity, we let $a(i') = \frac{e^{-\beta \lambda_S(i')}}{\partfun_S(\beta)}$ and $b(j') = \frac{e^{-\beta_E \lambda_E(j')}}{\partfun_E(\beta_E)}$. Using Lemma \ref{lem:transition_idx_sub} we write the summation as
     \begin{align}
         &\sum_{i,j,k} \sum_{i, j, k} \frac{e^{-\beta \lambda_S(i)} e^{-\beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|l,k) = \sum_{i \neq l} \sum_{j,k} (a(i) b(j) - a(l) b(k)) \tau(i,j|l,k) \\
@@ -776,6 +788,15 @@ so that we can say
         \sum_{i, j, k} \frac{e^{-\beta \lambda_S(i)} e^{-\beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|l,k) - \frac{e^{-\beta \lambda_S(u)}}{\partfun_S(\beta) \partfun_E(\beta_E)}\frac{\alpha^2 t^2}{\dim + 1} \geq - \alpha^2 t^2 \parens{\frac{\epsilon_{exp} + \epsilon_{\sinc}}{\dim + 1} + 2 \epsilon_{\sinc}}. \label{eq:transition_prob_lower_bound_final}
     \end{equation}
     We now use the fact that we only need to control $\epsilon_{exp}$ relatively loosely to simplify the bound. Setting $\epsilon_{exp} = (2 \dim + 1) \epsilon_{exp}$ for Eq. \eqref{eq:transition_prob_lower_bound_final}, along with the inequality from Eq. \eqref{eq:transition_prob_upper_bound_final}, yields the Lemma statement.
+
+    The last inequality we need is the rather straightforward one where $k \neq \gamma_L, \gamma_U$
+    \begin{align}
+        \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j|k,l)} &\leq \abs{\sum_{i\neq k} \sum_{j,l} (p(i)q(j) - p(k) q(l)) \tau(i,j|k,l)} \\
+        &\leq \sum_{i \neq k} \sum_{j,l} \abs{p(i) q(j) - p(k) q(l)} \tau(i,j|k,l) \\
+        &\leq \sum_{i \neq k} \sum_{j,l} \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+        &\leq 4 \dim \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+        &\leq 4 \alpha^2 t^2 \epsilon_{\sinc}
+    \end{align}
 \end{proof}
 
 
