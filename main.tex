@@ -567,6 +567,7 @@ We now need to bound $\int \norm{G}^3 dG$. This is a fun probability question. F
     &= \int \norm{D}^3 dD \\
     &= \expect{\max_i |d_i|^3}
 \end{align}
+\todo{As it stands this is more like the skeleton of a proof than a final product. Need to clean this up.}
 
 It is pretty straightforward to upper bound this integral by $\int \norm{D}^3 dD \leq 2 \dim$. This then gives
 \begin{equation}
@@ -581,7 +582,7 @@ So this says we need $\alpha t \leq \frac{\epsilon_{R}^{1/3}}{2 \dim^{1/3}}$ in 
 \section{Generalizations to Many Qubits}
 
 In this first section we introduce the conditions required for more detailed analysis. The first is 
-\begin{definition} \label{def:separated_hamiltonians}
+\begin{definition}[Well-separated Hamiltonian] \label{def:separated_hamiltonians}
     A Hamiltonian $H_S$ is $(\Delta_{\sinc}, \Delta_{\min}$)-separated if there are not only no degeneracies, but every eigenvalue difference is bounded from below and eigenvalue differences are sufficiently spaced.
     \begin{align}
         &\forall i \neq j : \Delta_{S}(i,j) \geq \Delta_{\min}, \\
@@ -615,6 +616,32 @@ This introduction part needs to introduce the setup that will be used for these 
         \sum_{i,j,l} a(i) b(j) \tau(i,j|k,l) &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) \tau(i,j|k,l)) - \sum_{c \neq k} \sum_{j,l} a(k) b(j) \tau(k,j|c,l) \\
         &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) \tau(i,j|k,l)) - \sum_{i \neq k} \sum_{j,l} a(k) b(l) \tau(i,j|k,l) \\
         &= \sum_{i \neq k} \sum_{j,l} (a(i) b(j) - a(k) b(l)) \tau(i,j | k,l).
+    \end{align}
+\end{proof}
+
+\begin{theorem}[Approximate Fixed Points]
+    Let $H_S$ be a well-separated Hamiltonian, per Def. \ref{def:separated_hamiltonians}. For all values of $\gamma \geq \Delta_{\min}$ and $t$ such that $\epsilon_{\sinc} \leq \frac{1}{4}$ we have that 
+    \begin{equation}
+        \alpha t \leq \sqrt{2} \epsilon_{fix}^{1/4} \sqrt{1 + \frac{1}{\dim}} \implies \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_1 \leq \epsilon_{fix}.
+    \end{equation}
+    Further, if $\gamma$ is an energy that causes transitions (todo: make more precise) then we have that the following temperatures are not fixed
+    \begin{align}
+        \beta_E - \beta \geq \delta_{LB} \implies \norm{\rho_S(\beta) - \Phi^{(2)}(\rho_S(\beta))} \geq \epsilon_{fix}.
+    \end{align}
+\end{theorem}
+\begin{proof}
+    We start out with the expansion of the channel
+    \begin{align}
+        \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_1 &= \norm{\Phi^{(2)}(\rho_S(\beta_E)) + R_{\Phi}(\rho_S(\beta_E))}_1 \\
+        &\leq \norm{\Phi^{(2)}(\rho_S(\beta_E))}_1 + \norm{R_{\Phi}(\rho_S(\beta_E))}_1 \\
+        &\leq \norm{\Phi^{(2)}(\rho_S(\beta_E))}_1 + \dim \norm{R_{\Phi}} \\
+        &\leq \norm{\Phi^{(2)}(\rho_S(\beta_E))}_1 + \dim \epsilon_R.
+    \end{align}
+    We will use up half of our error budget for this, $\epsilon_R = \epsilon_{fix} / (2 \dim)$, leading us to require that $\norm{\Phi^{(2)}(\rho_S(\beta_E))}_1 \leq \epsilon_{fix} / 2$. 
+
+    Plugging in the second order correction for the channel gives us
+    \begin{align}
+        \norm{\Phi^{(2)}(\rho_S(\beta_E)}_1 &= \sum_k \abs{\frac{\alpha^2 t^2}{2}}
     \end{align}
 \end{proof}
 
@@ -751,14 +778,9 @@ so that we can say
     We now use the fact that we only need to control $\epsilon_{exp}$ relatively loosely to simplify the bound. Setting $\epsilon_{exp} = (2 \dim + 1) \epsilon_{exp}$ for Eq. \eqref{eq:transition_prob_lower_bound_final}, along with the inequality from Eq. \eqref{eq:transition_prob_upper_bound_final}, yields the Lemma statement.
 \end{proof}
 
-As we see above, the thermal state $\rho_S(\beta_E)$ is an approximate fixed point The next step we need to prove is to find the range of temperatures for which the system is \emph{ not} in an approximate fixed state. This means
-\begin{claim}
-   Let $\delta = \beta_E - \beta$ and assume $H_S$ is well separated per Def. \ref{def:separated_hamiltonians}. Further, let $\gamma$ be $\Delta_{\sinc}$ close to the energy difference $\Delta_S(u,l)$. If $\delta \geq \delta_{LB}$ then the thermal state is not an approximate fixed point
-   \begin{equation}
-    \norm{\rho_S(\beta) - \Phi^{(2)}(\rho_S(\beta))}_2^2 \geq \epsilon_{fix}.
-   \end{equation}
-\end{claim}
+
 \begin{proof}
+\textbf{This is a bogus proof}
     We need to show that there is no way to lower bound the distance of the actual channel, instead we have to lower bound the distance of $\rho_S(\beta_E)$ and the second order approximation to the channel. 
     The following is what we want to show. \todo{this should be $\beta$ not $\beta_E$ ...}
     \begin{align}
@@ -828,19 +850,74 @@ As we see above, the thermal state $\rho_S(\beta_E)$ is an approximate fixed poi
     As we should think of $\epsilon_{\sinc}$ as approaching 0 as $t \to \infty$, we see that the sum should end up very close to $\frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)}$. 
 \end{proof}
 
+First need a straightforward lemma
+\begin{lemma}
+    Let $0 \leq \delta = \beta_E - \beta$. We want to know what ranges on $\delta$ are sufficient to imply
+    \begin{equation}
+        \delta \leq \frac{\epsilon_{\beta_E}}{2 \dim_S \norm{H}} \implies \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \leq \epsilon_{\beta_E}
+    \end{equation}
+\end{lemma}
+\begin{proof}
+    We first note that
+    \begin{equation}
+        \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 = \sum_k \abs{\frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}}. \label{eq:thermal_diffs_1}
+    \end{equation}
+    This suggests that we should investigate a Taylor Series for the Boltzmann factors $g_k(\beta) = \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}$ about $\beta = \beta_E$. As we would like to bound the error we will end up needing a total of two derivatives, which is what we compute. It will be helpful to have simple expressions for derivatives of the partition functions. The first one is straightforward
+    \begin{align}
+        \frac{d}{d\beta} \partfun_S(\beta) &= \frac{d}{d\beta} \sum_i e^{-\beta \lambda_S(i)} \\
+        &= - \sum_i \lambda_S(i) e^{-\beta \lambda_S(i)} \\
+        &= - \trace{H e^{-\beta H}},
+    \end{align}
+    while the second one is computed similarly as
+    \begin{align}
+        \frac{d^2}{d\beta^2} \partfun_S(\beta) &= - \frac{d}{d\beta} \trace{H e^{-\beta H}} \\
+        &= \trace{H^2 e^{-\beta H}}.
+    \end{align}
+    To simplify the notation we will let $\anglebrackets{X} \coloneqq \trace{X \rho_S(\beta)}$.
+
+    Now we can compute the first order Taylor approximation as
+    \begin{equation}
+        g_k(\beta) = \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} = \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} + (\beta_E - \beta) \frac{d g_k}{d\beta} (\beta_{\star}),
+    \end{equation}
+    where the $\beta_{\star}$ is the arbitrary point guaranteed to exist by Taylor's Theorem. The derivative is computed as
+    \begin{align}
+        \frac{d g_k}{d \beta} &= - \lambda_S(k) \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)^2} \frac{d}{d\beta}\partfun_S(\beta) \\
+        &= \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} \parens{\anglebrackets{H} - \lambda_S(k)}.
+    \end{align}
+    We can plug this in to Eq. \eqref{eq:thermal_diffs_1} to get
+    \begin{align}
+        \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 &= \sum_k \abs{(\beta_E - \beta) \frac{d g_k}{d\beta} (\beta_{\star})} \\
+        &= \delta \sum_k \frac{e^{-\beta_{\star} \lambda_S(k)}}{\partfun_S(\beta_{\star})} \abs{\trace{\rho_S(\beta_{\star})H} - \lambda_S(k)} \\
+        &\leq \delta \sum_k \parens{|\trace{\rho_S(\beta_{\star}) H}| + |\lambda_S(k)|} \\
+        &
+    \end{align}
+    Now we note that the inequalities $\lambda_S(0) \leq \trace{\rho_S(\beta_{\star}) H} \leq \lambda_S(\dim) = \norm{H}$, $-\lambda_S(0) \leq \norm{H}$ and $\lambda_S(0) \leq \lambda_S(k) \leq \norm{H}$ yield $\abs{\trace{\rho_S(\beta_{\star}) H} - \lambda_S(k)} \leq 2 \norm{H}$. This then gives the final inequality
+    \begin{align}
+        \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 &\leq \delta \sum_k 2 \norm{H} \\
+        &\leq 2 \dim_S \norm{H} \delta,
+    \end{align}
+    which yields the implication in the lemma statement straightforwardly.\todo{Need to try and eliminate the factor of $\dim_S$ in the above lemma.}
+\end{proof}
+
 Want to find the "single shot" capture radius.
-\begin{theorem}
+\begin{theorem}[Single-Shot capture]
+    Assume that $H_S$ is a well separated Hamiltonian according to Def. \ref{def:separated_hamiltonians}. Our goal is to show that 
     Need to find $\beta_{UB}$ such that 
     \begin{equation}
-        \beta_{LB} \leq \beta \leq \beta_{UB} \implies \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_2^2 \leq \epsilon_{fix}.
+        \beta_{LB} \leq \beta \leq \beta_{UB} \implies \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 \leq \epsilon_{fix}.
     \end{equation}
     Note we should also show this by averaging over the known eigenvalue difference distribution.
 \end{theorem}
 
-\begin{theorem}
-    This is the actual legit one, so work here. 
+\begin{theorem}[Cooling Schedule]
+    Suppose
 \end{theorem}
+
+\begin{claim}
+    This is some bogus stuff
+\end{claim}
 \begin{proof}
+\textbf{leftover work that still might be useful.}
     First we want to define the (multi)set
     \begin{equation}
         S = \set{\Delta_S(i,j) : 0 \leq i < j \leq \dim_S}.
