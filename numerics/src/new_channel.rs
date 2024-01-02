@@ -133,11 +133,8 @@ pub struct ExperimentConstants {
 
 /// This is supposed to capture the variables we change
 pub enum ExperimentType {
-    EpsilonVsTime {
-        eps: Vec<f64>,
-        times: Vec<f64>,
-    },
-    BetaVsTime,
+    EpsilonVsTime (Vec<(f64, f64)>),
+    BetaVsTime (Vec<(f64, f64)>),
 }
 
 pub struct IteratedChannel {
