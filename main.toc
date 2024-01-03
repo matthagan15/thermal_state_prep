@@ -1,11 +1,11 @@
 \@ifundefined {etoctocstyle}{\let \etoc@startlocaltoc \@gobble \let \etoc@settocdepth \@gobble \let \etoc@depthtag \@gobble \let \etoc@setlocaltop \@gobble }{}
 \contentsline {section}{\numberline {1}Introduction}{1}{}%
 \contentsline {section}{\numberline {2}Preliminaries}{1}{}%
-\contentsline {section}{\numberline {3}Taylor's Series for $\Phi $}{5}{}%
-\contentsline {subsection}{\numberline {3.1}Remainder Bound}{15}{}%
-\contentsline {section}{\numberline {4}Generalizations to Many Qubits}{17}{}%
-\contentsline {section}{\numberline {A}Detailed Balance}{35}{}%
-\contentsline {section}{\numberline {B}Proof of Lemma 8\hbox {}}{39}{}%
-\contentsline {section}{\numberline {C}Single Qubit System \& Environment}{39}{}%
-\contentsline {subsection}{\numberline {C.1}Fixed Points}{41}{}%
-\contentsline {subsection}{\numberline {C.2}Distance Reduction}{43}{}%
+\contentsline {section}{\numberline {3}Taylor's Series for $\Phi $}{4}{}%
+\contentsline {subsection}{\numberline {3.1}Remainder Bound}{14}{}%
+\contentsline {section}{\numberline {4}Fixed points and convergences}{16}{}%
+\contentsline {section}{\numberline {A}Detailed Balance}{24}{}%
+\contentsline {section}{\numberline {B}Proof of Lemma 7\hbox {}}{29}{}%
+\contentsline {section}{\numberline {C}Single Qubit System \& Environment}{29}{}%
+\contentsline {subsection}{\numberline {C.1}Fixed Points}{31}{}%
+\contentsline {subsection}{\numberline {C.2}Distance Reduction}{33}{}%
