@@ -4,5 +4,6 @@
 \contentsline {section}{\numberline {3}Taylor's Series for $\Phi $}{4}{}%
 \contentsline {subsection}{\numberline {3.1}Remainder Bound}{14}{}%
 \contentsline {section}{\numberline {4}Fixed points and convergences}{16}{}%
-\contentsline {section}{\numberline {A}Detailed Balance}{24}{}%
+\contentsline {section}{\numberline {A}Detailed Balance}{25}{}%
 \contentsline {section}{\numberline {B}Proof of Lemma 7\hbox {}}{29}{}%
+\contentsline {section}{\numberline {C}Possibly useful Lemmas}{29}{}%

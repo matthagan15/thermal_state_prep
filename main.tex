@@ -902,55 +902,6 @@ Note that we only lower bound the second order approximation to the channel as o
 %     As we should think of $\epsilon_{\sinc}$ as approaching 0 as $t \to \infty$, we see that the sum should end up very close to $\frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)}$. 
 % \end{proof}
 
-First need a straightforward lemma
-\begin{lemma} \label{lem:thermal_state_diff_bound}
-    Let $0 \leq \delta = \beta_E - \beta$. We want to know what ranges on $\delta$ are sufficient to imply
-    \begin{equation}
-        \delta \leq \frac{\epsilon_{\beta_E}}{\dim \norm{H}} \implies \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \leq \epsilon_{\beta_E}
-    \end{equation}
-\end{lemma}
-\begin{proof}
-    We first note that
-    \begin{equation}
-        \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 = \sum_k \abs{\frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}}. \label{eq:thermal_diffs_1}
-    \end{equation}
-    This suggests that we should investigate a Taylor Series for the Boltzmann factors $g_k(\beta) = \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}$ about $\beta = \beta_E$. As we would like to bound the error we will end up needing a total of two derivatives, which is what we compute. It will be helpful to have simple expressions for derivatives of the partition functions. The first one is straightforward
-    \begin{align}
-        \frac{d}{d\beta} \partfun_S(\beta) &= \frac{d}{d\beta} \sum_i e^{-\beta \lambda_S(i)} \\
-        &= - \sum_i \lambda_S(i) e^{-\beta \lambda_S(i)} \\
-        &= - \trace{H e^{-\beta H}},
-    \end{align}
-    while the second one is computed similarly as
-    \begin{align}
-        \frac{d^2}{d\beta^2} \partfun_S(\beta) &= - \frac{d}{d\beta} \trace{H e^{-\beta H}} \\
-        &= \trace{H^2 e^{-\beta H}}.
-    \end{align}
-    To simplify the notation we will let $\anglebrackets{X} \coloneqq \trace{X \rho_S(\beta)}$.
-
-    Now we can compute the first order Taylor approximation as
-    \begin{equation}
-        g_k(\beta) = \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} = \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} + (\beta_E - \beta) \frac{d g_k}{d\beta} (\beta_{\star}),
-    \end{equation}
-    where the $\beta_{\star}$ is the arbitrary point guaranteed to exist by Taylor's Theorem. The derivative is computed as
-    \begin{align}
-        \frac{d g_k}{d \beta} &= - \lambda_S(k) \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)^2} \frac{d}{d\beta}\partfun_S(\beta) \\
-        &= \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} \parens{\anglebrackets{H} - \lambda_S(k)}.
-    \end{align}
-    We can plug this in to Eq. \eqref{eq:thermal_diffs_1} to get
-    \begin{align}
-        \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 &= \sum_k \abs{(\beta_E - \beta) \frac{d g_k}{d\beta} (\beta_{\star})} \\
-        &= \delta \sum_k \frac{e^{-\beta_{\star} \lambda_S(k)}}{\partfun_S(\beta_{\star})} \abs{\trace{\rho_S(\beta_{\star})H} - \lambda_S(k)} \\
-        &\leq \delta \sum_k \parens{|\trace{\rho_S(\beta_{\star}) H}| + |\lambda_S(k)|} \\
-        &
-    \end{align}
-    Now we note that the inequalities $\lambda_S(0) \leq \trace{\rho_S(\beta_{\star}) H} \leq \lambda_S(\dim) = \norm{H}$, $-\lambda_S(0) \leq \norm{H}$ and $\lambda_S(0) \leq \lambda_S(k) \leq \norm{H}$ yield $\abs{\trace{\rho_S(\beta_{\star}) H} - \lambda_S(k)} \leq 2 \norm{H}$. This then gives the final inequality
-    \begin{align}
-        \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 &\leq \delta \sum_k 2 \norm{H} \\
-        &\leq 2 \dim_S \norm{H} \delta,
-    \end{align}
-    which yields the implication in the lemma statement straightforwardly.\todo{Need to try and eliminate the factor of $\dim_S$ in the above lemma.}
-\end{proof}
-
 Want to find the ``single shot" capture radius.
 \begin{theorem}[Single-Shot capture]
     Assume that $H_S$ is a well separated Hamiltonian according to Def. \ref{def:separated_hamiltonians}. Our goal is to show that 
@@ -958,9 +909,58 @@ Want to find the ``single shot" capture radius.
     \begin{equation}
         \beta_{LB} \leq \beta \leq \beta_{UB} \implies \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 \leq \epsilon_{fix}.
     \end{equation}
-    Note we should also show this by averaging over the known eigenvalue difference distribution.
+    Note we should also show this by averaging over the perfect knowledge eigenvalue difference distribution.
 \end{theorem}
 \begin{proof}
+    We first expand the norm as usual, assuming that $\gamma$ is $\Delta_{\sinc}$ close to the eigenvalue difference $\Delta_S(\gamma_U, \gamma_L)$,
+    \begin{align}
+        \norm{\rho_S(\beta_E) - \Phi_\gamma(\rho_S(\beta))}_1 &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta) - T^{(2)}_{\gamma}(\rho_S(\beta))}_1 + \norm{R_[\Phi]}_1.
+    \end{align}
+    Ignoring the channel approximation error term for now, we then expand the one norm to a sum as the matrix is diagonal, letting $p_E(i) = \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)}$, $p_{\beta}(i) = \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)}$, and $q(j) = \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)}$,
+    \begin{align}
+        &\norm{\rho_S(\beta_E) - \rho_S(\beta) - T^{(2)}_{\gamma}(\rho_S(\beta))}_1 \nonumber \\
+        &= \sum_k \abs{p_E(k) - p_{\beta}(k) - \sum_{i,j,l} p_{\beta}(i) q(j) \tau(i,j | k, l) } \\
+        &= \sum_{k \neq \gamma_U, \gamma_L} \abs{p_E(k) - p_{\beta}(k) - \sum_{i,j,l} p_{\beta}(i) q(j) \tau(i,j | k, l) } \nonumber \\
+        &\quad + \abs{p_E(\gamma_U) - p_{\beta}(\gamma_U) - \sum_{i,j,l} p_{\beta}(i) q(j) \tau(i,j| \gamma_U, l) } \nonumber \\
+        &\quad +\abs{p_E(\gamma_U) - p_{\beta}(\gamma_U) - \sum_{i,j,l} p_{\beta}(i) q(j) \tau(i,j| \gamma_U, l) }.
+    \end{align}
+    The first term is where we take the hit by not averaging over $\gamma$. For now, I will expand the other terms about $\beta \to \beta_E$.
+
+    \begin{align}
+        &\abs{p_E(\gamma_U) - p_{\beta}(\gamma_U) - \sum_{i,j,l} p_{\beta}(i) q(j) \tau(i,j| \gamma_U, l) } \nonumber \\
+        &= \abs{p_E(\gamma_U) - p_{\beta}(\gamma_U) - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(\gamma_L) q(1) + \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(\gamma_L) q(1) - \sum_{i,j,l} p_{\beta}(i) q(j) \tau(i,j| \gamma_U, l) } \\
+        &\leq \abs{p_E(\gamma_U) - p_{\beta}(\gamma_U) - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(\gamma_L) q(1)} + \abs{\frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(\gamma_L) q(1) - \sum_{i,j,l} p_{\beta}(i) q(j) \tau(i,j| \gamma_U, l) } \\
+        &\leq \abs{p_E(\gamma_U) - p_{\beta}(\gamma_U) - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(\gamma_L) q(1)} + 16 \frac{\alpha^2}{\Delta_{\min}^2}.
+    \end{align}
+    We have now arrived at the expression we need to expand, 
+    \begin{align}
+        g(\beta) &= p_{\beta}(\gamma_U) + p_{\beta}(\gamma_L) q(1) \frac{\alpha^2 t^2}{\dim + 1} \\
+        &= \frac{e^{-\beta \lambda_S(\gamma_U)}}{\partfun_S(\beta)} + \frac{e^{-\beta \lambda_S(\gamma_L)}}{\partfun_S(\beta)} q(1) \frac{\alpha^2 t^2}{\dim  +1}.
+    \end{align}
+     We compute the zeroth order term as
+    \begin{align}
+        g(\beta_E) = \frac{e^{-\beta_E \lambda_S(\gamma_U)}}{\partfun_S(\beta_E)} + \frac{e^{-\beta_E \lambda_S(\gamma_L)}}{\partfun_S(\beta_E)} q(1) \frac{\alpha^2 t^2}{\dim  +1}.
+    \end{align}
+    In order to compute the derivative we will first compute $\frac{d}{d\beta} \frac{e^{-\beta x}}{\partfun_S(\beta)}$, using the notation $\anglebrackets{H}_{\beta} = \trace{H \rho_S(\beta)}$. First we compute the derivative of the partition function
+    \begin{align}
+        \frac{d}{d\beta} \partfun_S(\beta) &= \frac{d}{d\beta} \sum_i e^{-\beta \lambda_S(i)} \\
+        &= - \sum_i \lambda_S(i) e^{-\beta \lambda_S(i)} \\
+        &= - \trace{H e^{-\beta H}}.
+    \end{align}
+    Then computing the total Boltzmann factor derivative
+    \begin{align}
+        \frac{d}{d \beta} \frac{e^{-\beta x}}{\partfun_S(\beta)} &= - x \frac{e^{-\beta x}}{\partfun_S(\beta)} - \frac{e^{-\beta x}}{\partfun_S(\beta)^2} \frac{d}{d\beta}\partfun_S(\beta) \\
+        &= \frac{e^{-\beta x}}{\partfun_S(\beta)} \parens{\anglebrackets{H} - x}.
+    \end{align}
+    Now we can compute the total first order derivative as
+    \begin{align}
+        \frac{d}{d\beta} g(\beta) &= \frac{d}{d\beta} \frac{e^{-\beta \lambda_S(\gamma_U)}}{\partfun_S(\beta)} + \frac{d}{d\beta} \frac{e^{-\beta \lambda_S(\gamma_L)}}{\partfun_S(\beta)} q(1) \frac{\alpha^2 t^2}{\dim + 1} \\
+        &= \frac{e^{-\beta \lambda_S(\gamma_U)}}{\partfun_S(\beta)}\parens{\anglebrackets{H}_{\beta} - \lambda_S(\gamma_U)} + \frac{e^{-\beta \lambda_S(\gamma_L)}}{\partfun_S(\beta)}\parens{\anglebrackets{H}_{\beta} - \lambda_S(\gamma_L)} q(1) \frac{\alpha^2 t^2}{\dim + 1}
+    \end{align}
+
+\end{proof}
+\begin{proof}
+    \textbf{This is the bad proof}
     Then
     \begin{align}
         \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 &= \norm{\rho_S(\beta_E) - \rho_S(\beta) - T^{(2)}(\rho_S(\beta)) - R_{\Phi}}_1 \\
@@ -1125,5 +1125,55 @@ As
 
 \section{Proof of Lemma \ref{lem:the_double_duhamel}}
 
+\section{Possibly useful Lemmas}
+
+First need a straightforward lemma
+\begin{lemma} \label{lem:thermal_state_diff_bound}
+    Let $0 \leq \delta = \beta_E - \beta$. We want to know what ranges on $\delta$ are sufficient to imply
+    \begin{equation}
+        \delta \leq \frac{\epsilon_{\beta_E}}{\dim \norm{H}} \implies \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \leq \epsilon_{\beta_E}
+    \end{equation}
+\end{lemma}
+\begin{proof}
+    We first note that
+    \begin{equation}
+        \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 = \sum_k \abs{\frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}}. \label{eq:thermal_diffs_1}
+    \end{equation}
+    This suggests that we should investigate a Taylor Series for the Boltzmann factors $g_k(\beta) = \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}$ about $\beta = \beta_E$. As we would like to bound the error we will end up needing a total of two derivatives, which is what we compute. It will be helpful to have simple expressions for derivatives of the partition functions. The first one is straightforward
+    \begin{align}
+        \frac{d}{d\beta} \partfun_S(\beta) &= \frac{d}{d\beta} \sum_i e^{-\beta \lambda_S(i)} \\
+        &= - \sum_i \lambda_S(i) e^{-\beta \lambda_S(i)} \\
+        &= - \trace{H e^{-\beta H}},
+    \end{align}
+    while the second one is computed similarly as
+    \begin{align}
+        \frac{d^2}{d\beta^2} \partfun_S(\beta) &= - \frac{d}{d\beta} \trace{H e^{-\beta H}} \\
+        &= \trace{H^2 e^{-\beta H}}.
+    \end{align}
+    To simplify the notation we will let $\anglebrackets{X} \coloneqq \trace{X \rho_S(\beta)}$.
+
+    Now we can compute the first order Taylor approximation as
+    \begin{equation}
+        g_k(\beta) = \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} = \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} + (\beta_E - \beta) \frac{d g_k}{d\beta} (\beta_{\star}),
+    \end{equation}
+    where the $\beta_{\star}$ is the arbitrary point guaranteed to exist by Taylor's Theorem. The derivative is computed as
+    \begin{align}
+        \frac{d g_k}{d \beta} &= - \lambda_S(k) \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)^2} \frac{d}{d\beta}\partfun_S(\beta) \\
+        &= \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} \parens{\anglebrackets{H} - \lambda_S(k)}.
+    \end{align}
+    We can plug this in to Eq. \eqref{eq:thermal_diffs_1} to get
+    \begin{align}
+        \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 &= \sum_k \abs{(\beta_E - \beta) \frac{d g_k}{d\beta} (\beta_{\star})} \\
+        &= \delta \sum_k \frac{e^{-\beta_{\star} \lambda_S(k)}}{\partfun_S(\beta_{\star})} \abs{\trace{\rho_S(\beta_{\star})H} - \lambda_S(k)} \\
+        &\leq \delta \sum_k \parens{|\trace{\rho_S(\beta_{\star}) H}| + |\lambda_S(k)|} \\
+        &
+    \end{align}
+    Now we note that the inequalities $\lambda_S(0) \leq \trace{\rho_S(\beta_{\star}) H} \leq \lambda_S(\dim) = \norm{H}$, $-\lambda_S(0) \leq \norm{H}$ and $\lambda_S(0) \leq \lambda_S(k) \leq \norm{H}$ yield $\abs{\trace{\rho_S(\beta_{\star}) H} - \lambda_S(k)} \leq 2 \norm{H}$. This then gives the final inequality
+    \begin{align}
+        \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 &\leq \delta \sum_k 2 \norm{H} \\
+        &\leq 2 \dim_S \norm{H} \delta,
+    \end{align}
+    which yields the implication in the lemma statement straightforwardly.\todo{Need to try and eliminate the factor of $\dim_S$ in the above lemma.}
+\end{proof}
 
 \end{document}
