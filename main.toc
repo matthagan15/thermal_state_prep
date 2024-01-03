@@ -6,6 +6,3 @@
 \contentsline {section}{\numberline {4}Fixed points and convergences}{16}{}%
 \contentsline {section}{\numberline {A}Detailed Balance}{24}{}%
 \contentsline {section}{\numberline {B}Proof of Lemma 7\hbox {}}{29}{}%
-\contentsline {section}{\numberline {C}Single Qubit System \& Environment}{29}{}%
-\contentsline {subsection}{\numberline {C.1}Fixed Points}{31}{}%
-\contentsline {subsection}{\numberline {C.2}Distance Reduction}{33}{}%
