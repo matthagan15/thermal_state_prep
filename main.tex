@@ -164,7 +164,7 @@ We will often rely on a particularly parametrized form of $f(x)$ which is worth 
     $$|x| \geq \Delta_{\min} \implies f\parens{xt / 2} \leq \epsilon_{\sinc}$$
     and
     $$|x| = |\Delta_S(i,j) - \gamma| \leq \sqrt{2} \Delta_{\min} \epsilon_{\sinc} \implies f(xt/2) \geq 1 - \epsilon_{\sinc}$$
-    hold for $t = \frac{2}{\Delta_{\min} \sqrt{\epsilon_{\sinc}}}$. We denote the barrier $\Delta_{\sinc} = \sqrt{2} \Delta_{\min} \epsilon_{\sinc}$. 
+    hold for $t = \frac{2}{\Delta_{\min} \sqrt{\epsilon_{\sinc}}}$. This gives $\epsilon_{\sinc} = \frac{4}{\Delta_{\min}^2 t^2}$. We denote the barrier $\Delta_{\sinc} = \sqrt{2} \Delta_{\min} \epsilon_{\sinc}$. 
 \end{corollary}
 \begin{proof}
     Throughout this proof we can think of $0 \leq \Delta_{\min} \leq \Delta_S(i,j)$ as a constant, so we avoid writing it as function arguments.
@@ -688,7 +688,7 @@ This introduction part needs to introduce the setup that will be used for these 
     \end{align}
     Now here we use the requirement that $\epsilon_{\sinc} \leq \frac{1}{\dim + 1} \frac{1}{2 \dim}$ to yield the inequality
     \begin{equation}
-        \norm{T^{(2)}(\rho_S(\beta_E))}_1 \leq 2 \alpha^2 t^2.
+        \norm{T^{(2)}(\rho_S(\beta_E))}_1 \leq 2 \alpha^2 t^2. \label{eq:upper_bound_on_T_2}
     \end{equation}
     We note that $\epsilon_{\sinc} \leq \frac{1}{2 \dim (\dim + 1)}$ is equivalent to the lower bound on $t$ of $2 \sqrt{2} \Delta_{\min} \dim \leq t$. Scaling of $t$ with dimension is expected in the worst case. 
 
@@ -705,9 +705,7 @@ Note that we only lower bound the second order approximation to the channel as o
 \begin{proof}
      We use the expansion of $\Phi^{(2)}(X) = X + T^{(2)} (X)$, along with defining $p(i) = \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)}$ and $q(j) = \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)}$ to write
      \begin{align}
-        &\norm{\rho_S(\beta) - \Phi^{(2)} (\rho_S(\beta))}_1 \nonumber \\
-        &= \norm{T^{(2)}(\rho_S(\beta))}_1 \\
-        &= \sum_k \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j | k,l)} \\
+        &\norm{\rho_S(\beta) - \Phi^{(2)} (\rho_S(\beta))}_1 = \norm{T^{(2)}(\rho_S(\beta))}_1 = \sum_k \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j | k,l)} \\
         &= \sum_{k \neq \gamma_U, \gamma_L} \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j|k,l)} + \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j | \gamma_U, l)} + \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j | \gamma_L, l)} \\
         &\geq \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j | \gamma_U, l)} + \abs{\sum_{i,j,l} p(i) q(j) \tau(i,j | \gamma_L, l)} \\
         &\geq \sum_{i,j,l} p(i) q(j) \tau(i,j | \gamma_U, l) + \sum_{i,j,l} p(i) q(j) \tau(i,j | \gamma_L, l)
@@ -715,7 +713,40 @@ Note that we only lower bound the second order approximation to the channel as o
      
      It will prove simpler to lower bound one of the two terms and the other will follow almost the exact same manner.
      \begin{align}
-        \sum_{i,j,l} p(i) q(j) \tau(i,j| \gamma_U)
+        \sum_{i,j,l} p(i) q(j) \tau(i,j| \gamma_U,l) &= \sum_{i \neq \gamma_U} \sum_{j,l} (p(i) q(j) - p(\gamma_U) q(l)) \tau(i,j|\gamma_U, l) \\
+        &= (p(\gamma_L) q(1) - p(\gamma_U) q(0)) \tau(\gamma_L, 1| \gamma_U, 0) + \sum_{(j,l) \neq (1, 0)} (p(\gamma_L) q(j) - p(\gamma_U) q(l)) \tau(\gamma_L, j| \gamma_U , l) + \sum_{i \neq \gamma_U, \gamma_L} \sum_{j,l} (p(i) q(j) - p(\gamma_U) q(l)) \tau(i,j | \gamma_U, l) \\
+        &\geq (p(\gamma_L) q(1) - p(\gamma_U) q(0)) \tau(\gamma_L, 1| \gamma_U, 0) + \sum_{(j,l) \neq (1, 0)} (-1) \tau(\gamma_L, j | \gamma_U, l) + \sum_{i \neq \gamma_U, \gamma_L} \sum_{j,l} (-1) \tau(i,j | \gamma_U,l) \\
+        &\geq (p(\gamma_L) q(1) - p(\gamma_U) q(0)) \tau(\gamma_L, 1| \gamma_U, 0) - 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} - (\dim_S - 2) 4 \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc} \\
+        &\geq (p(\gamma_L) q(1) - p(\gamma_U) q(0)) \tau(\gamma_L, 1| \gamma_U, 0) - 2 \dim \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}.
+     \end{align}
+     Now we note that $\gamma$ is within $\Delta_{\sinc}$ of $\Delta_S(\gamma_U, \gamma_L)$ which allows us to say $1 - \epsilon_{\sinc} \leq \tau(\gamma_U, 0 | \gamma_L, 1) \frac{\dim + 1}{\alpha^2 t^2} \leq 1$ per Corollary \ref{cor:gamma_difference_reqs}. This simplifies the above bound to
+     \begin{equation}
+        (p(\gamma_L) q(1) - p(\gamma_U)q(0)) \frac{\alpha^2 t^2}{\dim + 1} - (2 \dim + 1) \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1}.
+     \end{equation}
+     This is rather unfortunate, because it is the wrong term we should analyze first. To see this, as $\beta_E \to \infty$ we have $q(0) \to 1, q(1) \to 0$. This means the above quantity is negative, implying it only contributes to the norm lower bound because of the absolute value. We instead look for the opposite term.
+
+     Writing out the same for $\gamma_L$ yields
+     \begin{align}
+        \sum_{i,j,l} p(i) q(j) \tau(i,j | \gamma_L, l) &\geq \parens{(p(\gamma_U) q(0) - p(\gamma_L) q(1))  - (2 \dim + 1) \epsilon_{\sinc}} \frac{\alpha^2 t^2}{\dim + 1}.
+     \end{align}
+     Now we see that this should be positive. To do so, we analyze the probability differences in more detail.
+     \begin{align}
+        p(\gamma_U) q(0) - p(\gamma_L) q(1) &= \frac{e^{-\beta \lambda_S(\gamma_U)}}{\partfun_S(\beta)} \frac{e^{-\beta_E \lambda_E(0)}}{\partfun_E(\beta_E)} - \frac{e^{-\beta \lambda_S(\gamma_L)}}{\partfun_S(\beta)} \frac{e^{-\beta_E \lambda_E(1)}}{\partfun_E(\beta_E)} \\
+        &= \frac{e^{-\beta \lambda_S(\gamma_U)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \parens{1 - e^{-\beta_E \gamma + \beta \Delta_S(\gamma_U, \gamma_L)}}.
+     \end{align}
+     For now, let $\Delta_S = \Delta_S(\gamma_U, \gamma_L)$ to save space. We show that $\delta \geq \frac{\beta_E \Delta_{\min} + \ln (1 / \epsilon_{exp})}{\Delta_S} \geq \beta_E \frac{\Delta_{\min}}{\Delta_S}$ implies $1 - e^{-\beta_E \gamma + \beta \Delta_S} \geq 1 - \epsilon_{exp}$. Note the assumption $\ln (1/ \epsilon_{exp}) \geq 0$. 
+     \begin{align}
+        \ln (1 / \epsilon_{exp}) &\leq \delta \Delta_S - \beta_E \Delta_{\min} \\
+        \iff \ln (1 / \epsilon_{exp}) &\leq \beta_E (\Delta_S - \Delta_{\min}) - \beta \Delta_S \\
+        &\leq \beta_E \gamma - \beta \Delta_S \\
+        \iff \epsilon_{exp} &\geq e^{-\beta_E \gamma + \beta \Delta_S} \\
+        \iff 1 - e^{-\beta \gamma + \beta \Delta_S}  &\geq 1 - \epsilon_{exp}.
+     \end{align}
+
+     Plugging this in, along with a simple substitution that $\epsilon_{exp} = \epsilon_{\sinc}$ yields 
+     \begin{align}
+        \sum_{i,j,l} p(i) q(j) \tau(i,j | \gamma_L, l) &\geq \parens{\frac{e^{-\beta \lambda_S(\gamma_U)}}{\partfun_S(\beta) \partfun_E(\beta_E)} (1 - \epsilon_{exp}) - (2 \dim + 1) \epsilon_{\sinc}} \frac{\alpha^2 t^2}{\dim + 1} \\
+        &\geq \parens{\frac{e^{-\beta \lambda_S(\gamma_U)}}{\partfun_S(\beta) \partfun_E(\beta_E)} - 2 (\dim + 1) \epsilon_{\sinc}} \frac{\alpha^2 t^2}{\dim + 1}
      \end{align}
 \end{proof}
 
@@ -800,82 +831,82 @@ Note that we only lower bound the second order approximation to the channel as o
 \end{proof}
 
 
-\begin{proof}
-\textbf{This is a bogus proof}
-    We need to show that there is no way to lower bound the distance of the actual channel, instead we have to lower bound the distance of $\rho_S(\beta_E)$ and the second order approximation to the channel. 
-    The following is what we want to show. \todo{this should be $\beta$ not $\beta_E$ ...}
-    \begin{align}
-        \norm{\rho_S(\beta_E) - \Phi^{(2)}(\rho_S(\beta))}_2^2 \geq \epsilon_{fix}.
-    \end{align}
-    We use Lemma (insert schatten deconstruction lemma here) to get
-    \begin{align}
-        \norm{\rho_S(\beta_E) - \Phi^{(2)}(\rho_S(\beta))}_2^2 &= \sum_k \abs{\frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|k ,l)}^2 \\
-        &\geq \abs{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} - \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)}\tau(i,j|0,l)}^2 \\
-        &= \parens{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}}^2 \nonumber \\
-        &\quad - 2 \parens{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}} \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) \nonumber \\
-        &\quad + \parens{\sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l)}^2.
-    \end{align}
-    We now need to simplify
-    \begin{align}
-        \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) &= \sum_{i \neq 0} (a(i) b(j) - a(k) b(l)) \tau(i,j|0,l) \\
-        &\geq \sum_{i \neq 0} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}}
-    \end{align}
-    \todo{propagate missing factors of $\alpha^2 t^2$ on the $\epsilon_{\sinc}$}
-    Now we assume that there exists one and only one index $\kappa$ such that $\abs{\Delta_S(\kappa, 0) - \gamma} \leq \Delta_{\min}$. This ensures that if $i \neq \kappa$ then $\tau(i,j | 0, l) \leq \epsilon_{\sinc}$ and that $\epsilon_{\sinc} \leq \tau(\kappa, 0 | 0, 1) \leq 1$. This allows us to simplify the sum as
-    \begin{align}
-        \sum_{i \neq 0} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}} &= \parens{(a(\kappa) b(0) - a(0) b(1)) \tau(\kappa, 0 | 0, 1) - 3 \epsilon_{\sinc}} \nonumber \\
-        &\quad + \sum_{i \neq 0, \kappa} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}} \\
-        &\geq (a(\kappa) b(0) - a(0) b(1)) \tau(\kappa, 0 | 0, 1) - \epsilon_{\sinc}(3 + 4 (\dim - 2))
-    \end{align}
+% \begin{proof}
+% \textbf{This is a bogus proof}
+%     We need to show that there is no way to lower bound the distance of the actual channel, instead we have to lower bound the distance of $\rho_S(\beta_E)$ and the second order approximation to the channel. 
+%     The following is what we want to show. \todo{this should be $\beta$ not $\beta_E$ ...}
+%     \begin{align}
+%         \norm{\rho_S(\beta_E) - \Phi^{(2)}(\rho_S(\beta))}_2^2 \geq \epsilon_{fix}.
+%     \end{align}
+%     We use Lemma (insert schatten deconstruction lemma here) to get
+%     \begin{align}
+%         \norm{\rho_S(\beta_E) - \Phi^{(2)}(\rho_S(\beta))}_2^2 &= \sum_k \abs{\frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|k ,l)}^2 \\
+%         &\geq \abs{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} - \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)}\tau(i,j|0,l)}^2 \\
+%         &= \parens{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}}^2 \nonumber \\
+%         &\quad - 2 \parens{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}} \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) \nonumber \\
+%         &\quad + \parens{\sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l)}^2.
+%     \end{align}
+%     We now need to simplify
+%     \begin{align}
+%         \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) &= \sum_{i \neq 0} (a(i) b(j) - a(k) b(l)) \tau(i,j|0,l) \\
+%         &\geq \sum_{i \neq 0} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}}
+%     \end{align}
+%     \todo{propagate missing factors of $\alpha^2 t^2$ on the $\epsilon_{\sinc}$}
+%     Now we assume that there exists one and only one index $\kappa$ such that $\abs{\Delta_S(\kappa, 0) - \gamma} \leq \Delta_{\min}$. This ensures that if $i \neq \kappa$ then $\tau(i,j | 0, l) \leq \epsilon_{\sinc}$ and that $\epsilon_{\sinc} \leq \tau(\kappa, 0 | 0, 1) \leq 1$. This allows us to simplify the sum as
+%     \begin{align}
+%         \sum_{i \neq 0} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}} &= \parens{(a(\kappa) b(0) - a(0) b(1)) \tau(\kappa, 0 | 0, 1) - 3 \epsilon_{\sinc}} \nonumber \\
+%         &\quad + \sum_{i \neq 0, \kappa} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}} \\
+%         &\geq (a(\kappa) b(0) - a(0) b(1)) \tau(\kappa, 0 | 0, 1) - \epsilon_{\sinc}(3 + 4 (\dim - 2))
+%     \end{align}
 
-    We now explore the prefactor in front of the transition factor,
-    \begin{align}
-        a(i)b(0) - a(0) b(1) &= \frac{1}{\partfun_S(\beta) \partfun_E(\beta_E)} \parens{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(0)} - e^{-\beta \lambda_S(0) - \beta_E \lambda_E(1)}} \\
-        &= \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \parens{1 - e^{\beta \Delta_S(i,0) - \beta_E \gamma}}.
-    \end{align}
-    As we would like the theorem statement to hold in the limit as $\beta_E \to \infty$, we expect that this factor should be positive for finite $\beta$ and $\Delta_S(i,0)$. We utilize the assumptions $\beta_E - \beta > \delta$ and $|\Delta_S(i,0) - \gamma| \leq \Delta_{\min}$ to show that this factor is positive for certain values of $\delta$.
-    \begin{align}
-        1 - e^{\beta \Delta_S(i,0) - \beta_E \gamma} \geq 0 \iff \beta_E \gamma &\geq \beta \Delta_S(i,0) \\
-        &\iff 0 \leq \beta_E \gamma - \beta \Delta_S(i,0)  \\
-        &\iff 0 \leq \beta_E \parens{\gamma - \Delta_S(i,0)} + (\beta_E - \beta) \Delta_S(i,0).
-    \end{align}
-    Now we know that $|\Delta_S(i,0) - \gamma| \leq \Delta_{\min}$ implies that $\gamma - \Delta_S(i,0) \geq - \Delta_{\min}$. This shows that $\beta_E(\gamma - \Delta_S(i,0)) \geq - \beta_E \Delta_{\min}$. For the other term we know that $\beta_E - \beta > \delta$. Combining these shows that 
-    \begin{align}
-        &\beta_E(\gamma - \Delta_S(i,0)) + (\beta_E - \beta) \Delta_S(i,0) > - \beta_E \Delta_{\min} + \delta \Delta_S(i,0) \\
-        &\delta \geq \frac{\beta_E \Delta_{\min}}{\Delta_S(i,0)} \implies 1 - e^{\beta \Delta_S(i,0) - \beta_E \gamma} \geq 0
-    \end{align}
+%     We now explore the prefactor in front of the transition factor,
+%     \begin{align}
+%         a(i)b(0) - a(0) b(1) &= \frac{1}{\partfun_S(\beta) \partfun_E(\beta_E)} \parens{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(0)} - e^{-\beta \lambda_S(0) - \beta_E \lambda_E(1)}} \\
+%         &= \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \parens{1 - e^{\beta \Delta_S(i,0) - \beta_E \gamma}}.
+%     \end{align}
+%     As we would like the theorem statement to hold in the limit as $\beta_E \to \infty$, we expect that this factor should be positive for finite $\beta$ and $\Delta_S(i,0)$. We utilize the assumptions $\beta_E - \beta > \delta$ and $|\Delta_S(i,0) - \gamma| \leq \Delta_{\min}$ to show that this factor is positive for certain values of $\delta$.
+%     \begin{align}
+%         1 - e^{\beta \Delta_S(i,0) - \beta_E \gamma} \geq 0 \iff \beta_E \gamma &\geq \beta \Delta_S(i,0) \\
+%         &\iff 0 \leq \beta_E \gamma - \beta \Delta_S(i,0)  \\
+%         &\iff 0 \leq \beta_E \parens{\gamma - \Delta_S(i,0)} + (\beta_E - \beta) \Delta_S(i,0).
+%     \end{align}
+%     Now we know that $|\Delta_S(i,0) - \gamma| \leq \Delta_{\min}$ implies that $\gamma - \Delta_S(i,0) \geq - \Delta_{\min}$. This shows that $\beta_E(\gamma - \Delta_S(i,0)) \geq - \beta_E \Delta_{\min}$. For the other term we know that $\beta_E - \beta > \delta$. Combining these shows that 
+%     \begin{align}
+%         &\beta_E(\gamma - \Delta_S(i,0)) + (\beta_E - \beta) \Delta_S(i,0) > - \beta_E \Delta_{\min} + \delta \Delta_S(i,0) \\
+%         &\delta \geq \frac{\beta_E \Delta_{\min}}{\Delta_S(i,0)} \implies 1 - e^{\beta \Delta_S(i,0) - \beta_E \gamma} \geq 0
+%     \end{align}
 
-    For now we will use $\Delta_S$ as shorthand for $\Delta_S(i,0)$. Here we want to show that if $1 - e^{-(\beta_E \gamma - \beta \Delta_S)}$ is greater than some value, say $\epsilon_{exp}$. To do this, all we have to show is that $x \geq \ln\parens{\frac{1}{\epsilon_{exp}}} \implies 1 - e^{-x} \geq 1 - \epsilon_{exp}$. As we know that $\beta_E \gamma - \beta \Delta_S > -\beta_E \Delta_{\min} + \delta \Delta_S$, this reduces to requiring that $\delta \geq \frac{\beta_E \Delta_{\min} + \ln{1/\epsilon_{exp}}}{\Delta_S(i,0)}$. So now we have that 
-    \begin{equation}
-        \delta \geq \frac{\beta_E \Delta_{\min} + \ln 1/\epsilon_{exp}}{\Delta_S(i,0)} \implies 1 - e^{-\beta_E \gamma + \beta \Delta_S(i,0)} \geq 1 - \epsilon_{exp}.
-    \end{equation}
-    This reduces our inequality to
-    \begin{equation}
-        \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) \geq \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)} (1 - \epsilon_{exp}) \tau(\kappa, 0 |0, 1) - \epsilon_{\sinc} (4 \dim - 5).
-    \end{equation}
-    Now we utilize our knowledge of $\Delta_S(\kappa, 0 )$ to create another inequality about $\tau$. If $\abs{\gamma - \Delta_S(\kappa, 0)} \leq \frac{2 \sqrt{\widetilde{\epsilon_{\sinc}}}}{t}$ then $\tau(\kappa, 0| 0, 1) \geq \frac{\alpha^2 t^2}{\dim + 1} (1 - \widetilde{\epsilon_{\sinc}})$. Our final lower bound for this summation is then
-    \begin{equation}
-        \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) \geq \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} (1 - \epsilon_{exp}) (1 - \widetilde{\epsilon}_{\sinc}) - \epsilon_{\sinc} (4 \dim - 5).
-    \end{equation}
+%     For now we will use $\Delta_S$ as shorthand for $\Delta_S(i,0)$. Here we want to show that if $1 - e^{-(\beta_E \gamma - \beta \Delta_S)}$ is greater than some value, say $\epsilon_{exp}$. To do this, all we have to show is that $x \geq \ln\parens{\frac{1}{\epsilon_{exp}}} \implies 1 - e^{-x} \geq 1 - \epsilon_{exp}$. As we know that $\beta_E \gamma - \beta \Delta_S > -\beta_E \Delta_{\min} + \delta \Delta_S$, this reduces to requiring that $\delta \geq \frac{\beta_E \Delta_{\min} + \ln{1/\epsilon_{exp}}}{\Delta_S(i,0)}$. So now we have that 
+%     \begin{equation}
+%         \delta \geq \frac{\beta_E \Delta_{\min} + \ln 1/\epsilon_{exp}}{\Delta_S(i,0)} \implies 1 - e^{-\beta_E \gamma + \beta \Delta_S(i,0)} \geq 1 - \epsilon_{exp}.
+%     \end{equation}
+%     This reduces our inequality to
+%     \begin{equation}
+%         \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) \geq \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)} (1 - \epsilon_{exp}) \tau(\kappa, 0 |0, 1) - \epsilon_{\sinc} (4 \dim - 5).
+%     \end{equation}
+%     Now we utilize our knowledge of $\Delta_S(\kappa, 0 )$ to create another inequality about $\tau$. If $\abs{\gamma - \Delta_S(\kappa, 0)} \leq \frac{2 \sqrt{\widetilde{\epsilon_{\sinc}}}}{t}$ then $\tau(\kappa, 0| 0, 1) \geq \frac{\alpha^2 t^2}{\dim + 1} (1 - \widetilde{\epsilon_{\sinc}})$. Our final lower bound for this summation is then
+%     \begin{equation}
+%         \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) \geq \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} (1 - \epsilon_{exp}) (1 - \widetilde{\epsilon}_{\sinc}) - \epsilon_{\sinc} (4 \dim - 5).
+%     \end{equation}
 
-    Our next objective is to create an upper bound for this summation. We can again upper bound the trivial transitions with $\epsilon_{\sinc}$
-    \begin{align}
-        \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) &= \sum_{j,l} (a(\kappa) b(j) - a(0) b(l)) \tau(\kappa,j|0,l) \nonumber \\
-        &\quad + \sum_{i \neq 0, \kappa} \sum_{j,l} (a(i) b(j) - a(0) b(l)) \tau(i,j|0,l) \\
-        &\leq (a(\kappa) b(0) -a(0) b(1)) \tau(\kappa, 0 | 0, 1) + \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}\parens{3 + 4(\dim - 2)}.
-    \end{align}
-    Now we repeat a similar process to before and upper bound $a(\kappa) b(0) - a(0) b(1) = \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)}(1 - e^{-\beta_E \gamma + \beta \Delta_S(\kappa, 0)})$. This time we will only require the simple bound $1 - e^{-\beta_E \gamma + \beta \Delta_S(\kappa, 0)} \leq 1$, which is true as $e^x \geq 0$ for all finite $x$. We then use the fact that $\tau(\kappa, 0| 0,1) \leq \frac{\alpha^2 t^2}{\dim + 1}$ to produce our final upper bound
-    \begin{align}
-        \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) &\leq \frac{\alpha^2 t^2}{\dim + 1}\parens{ \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)} + 4 \dim \epsilon_{\sinc}}.
-    \end{align}
-    As we should think of $\epsilon_{\sinc}$ as approaching 0 as $t \to \infty$, we see that the sum should end up very close to $\frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)}$. 
-\end{proof}
+%     Our next objective is to create an upper bound for this summation. We can again upper bound the trivial transitions with $\epsilon_{\sinc}$
+%     \begin{align}
+%         \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) &= \sum_{j,l} (a(\kappa) b(j) - a(0) b(l)) \tau(\kappa,j|0,l) \nonumber \\
+%         &\quad + \sum_{i \neq 0, \kappa} \sum_{j,l} (a(i) b(j) - a(0) b(l)) \tau(i,j|0,l) \\
+%         &\leq (a(\kappa) b(0) -a(0) b(1)) \tau(\kappa, 0 | 0, 1) + \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}\parens{3 + 4(\dim - 2)}.
+%     \end{align}
+%     Now we repeat a similar process to before and upper bound $a(\kappa) b(0) - a(0) b(1) = \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)}(1 - e^{-\beta_E \gamma + \beta \Delta_S(\kappa, 0)})$. This time we will only require the simple bound $1 - e^{-\beta_E \gamma + \beta \Delta_S(\kappa, 0)} \leq 1$, which is true as $e^x \geq 0$ for all finite $x$. We then use the fact that $\tau(\kappa, 0| 0,1) \leq \frac{\alpha^2 t^2}{\dim + 1}$ to produce our final upper bound
+%     \begin{align}
+%         \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) &\leq \frac{\alpha^2 t^2}{\dim + 1}\parens{ \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)} + 4 \dim \epsilon_{\sinc}}.
+%     \end{align}
+%     As we should think of $\epsilon_{\sinc}$ as approaching 0 as $t \to \infty$, we see that the sum should end up very close to $\frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)}$. 
+% \end{proof}
 
 First need a straightforward lemma
-\begin{lemma}
+\begin{lemma} \label{lem:thermal_state_diff_bound}
     Let $0 \leq \delta = \beta_E - \beta$. We want to know what ranges on $\delta$ are sufficient to imply
     \begin{equation}
-        \delta \leq \frac{\epsilon_{\beta_E}}{2 \dim_S \norm{H}} \implies \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \leq \epsilon_{\beta_E}
+        \delta \leq \frac{\epsilon_{\beta_E}}{\dim \norm{H}} \implies \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \leq \epsilon_{\beta_E}
     \end{equation}
 \end{lemma}
 \begin{proof}
@@ -920,7 +951,7 @@ First need a straightforward lemma
     which yields the implication in the lemma statement straightforwardly.\todo{Need to try and eliminate the factor of $\dim_S$ in the above lemma.}
 \end{proof}
 
-Want to find the "single shot" capture radius.
+Want to find the ``single shot" capture radius.
 \begin{theorem}[Single-Shot capture]
     Assume that $H_S$ is a well separated Hamiltonian according to Def. \ref{def:separated_hamiltonians}. Our goal is to show that 
     Need to find $\beta_{UB}$ such that 
@@ -929,14 +960,31 @@ Want to find the "single shot" capture radius.
     \end{equation}
     Note we should also show this by averaging over the known eigenvalue difference distribution.
 \end{theorem}
+\begin{proof}
+    Then
+    \begin{align}
+        \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 &= \norm{\rho_S(\beta_E) - \rho_S(\beta) - T^{(2)}(\rho_S(\beta)) - R_{\Phi}}_1 \\
+        &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 + \norm{T^{(2)}(\rho_S(\beta))}_1 + \norm{R_{\Phi}}_1.
+    \end{align}
+    We show that each of these 3 terms can be made less than $\epsilon_{fix} / 3$. First we note that $\delta \leq \frac{\epsilon_{fix}}{3 \dim \norm{H}}$ implies $\norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \leq \epsilon_{fix} / 3$ per Lemma \ref{lem:thermal_state_diff_bound}. Then per Eq \eqref{eq:upper_bound_on_T_2} we have $2 \alpha^2 t^2 \leq \epsilon_{fix} / 3$, along with the requirement $t \geq 2 \sqrt{2} \Delta_{\min} \dim$, yields $\norm{T^{(2)}(\rho_S(\beta))}_1 \leq \epsilon_{fix} / 3$. The final bound on the norm comes from Lemma \ref{lem:remainder_bound}, where we require $\alpha t \leq \parens{\frac{\epsilon_{fix}}{6 \dim^2}}^{1/3}$ which yields $\norm{R_{\Phi}}_1 \leq \dim \norm{R_{\phi}} \leq \epsilon_{fix} / 3$. 
 
-\begin{theorem}[Cooling Schedule]
+    Combining each of these three then gives the total error as $\epsilon_{fix}$.
+\end{proof}
+
+\begin{claim}[Cooling Schedule]
     Suppose
-\end{theorem}
-
-\begin{claim}
-    This is some bogus stuff
 \end{claim}
+\begin{proof}
+    Let $0 = \beta_0 \leq \beta_1 \leq \ldots \leq \beta_L = \beta$ denote a cooling schedule and $$\Phi_{i}(X) = \partrace{\hilb_E}{\int e^{-i (H + \alpha G)t} X \otimes \rho_E(\beta_i) e^{+i(H + \alpha G)t} dG},$$
+    where we are simply changing the environment temperature at each step of the schedule with the end goal of preparing a state that approximates $\rho_S(\beta)$. We claim
+    \begin{align}
+        \norm{\rho_S(\beta) - \Phi_{L} \circ \Phi_{L - 1} \circ \ldots \circ \Phi_{1} (\identity / \dim)}_1 &= \norm{\rho_S(\beta_L) - \Phi_{L} (\rho_S(\beta_{L - 1})) + \Phi_L (\rho_S(\beta_{L-1})) - \Phi_L \circ \ldots \circ \Phi_1 (\rho_S(0))}_1 \\
+        &\leq \norm{\rho_S(\beta_L) - \Phi_L (\rho_S(\beta_{L-1}))}_1 + \norm{\Phi_L \parens{\rho_S(\beta_{L-1}) - \Phi_{L-1} \circ \ldots \circ \Phi_1 (\rho_S(0))}}_1 \\
+        &\leq \norm{\rho_S(\beta_L) - \Phi_L (\rho_S(\beta_{L-1}))}_1 + \norm{\rho_S(\beta_{L-1}) - \Phi_{L-1} \circ \ldots \circ \Phi_1 (\rho_S(0))}_1 \\
+        & \ldots \nonumber \\
+        &\leq \sum_{i = 1}^L \norm{\rho_S(\beta_i) - \Phi_i (\rho_S(\beta_{i - 1}))}_1
+    \end{align}
+\end{proof}
 \begin{proof}
 \textbf{leftover work that still might be useful.}
     First we want to define the (multi)set

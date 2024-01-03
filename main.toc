@@ -4,8 +4,8 @@
 \contentsline {section}{\numberline {3}Taylor's Series for $\Phi $}{5}{}%
 \contentsline {subsection}{\numberline {3.1}Remainder Bound}{15}{}%
 \contentsline {section}{\numberline {4}Generalizations to Many Qubits}{17}{}%
-\contentsline {section}{\numberline {A}Detailed Balance}{36}{}%
-\contentsline {section}{\numberline {B}Proof of Lemma 8\hbox {}}{40}{}%
-\contentsline {section}{\numberline {C}Single Qubit System \& Environment}{40}{}%
-\contentsline {subsection}{\numberline {C.1}Fixed Points}{42}{}%
-\contentsline {subsection}{\numberline {C.2}Distance Reduction}{44}{}%
+\contentsline {section}{\numberline {A}Detailed Balance}{35}{}%
+\contentsline {section}{\numberline {B}Proof of Lemma 8\hbox {}}{39}{}%
+\contentsline {section}{\numberline {C}Single Qubit System \& Environment}{39}{}%
+\contentsline {subsection}{\numberline {C.1}Fixed Points}{41}{}%
+\contentsline {subsection}{\numberline {C.2}Distance Reduction}{43}{}%
