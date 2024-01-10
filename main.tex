@@ -961,19 +961,6 @@ Want to find the ``single shot" capture radius. First should study the single-sh
     \end{align}
 
 \end{proof}
-\begin{proof}
-    \textbf{This is the bad proof}
-    Then
-    \begin{align}
-        \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 &= \norm{\rho_S(\beta_E) - \rho_S(\beta) - T^{(2)}(\rho_S(\beta)) - R_{\Phi}}_1 \\
-        &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 + \norm{T^{(2)}(\rho_S(\beta))}_1 + \norm{R_{\Phi}}_1.
-    \end{align}
-    We show that each of these 3 terms can be made less than $\epsilon_{fix} / 3$. First we note that $\delta \leq \frac{\epsilon_{fix}}{3 \dim \norm{H}}$ implies $\norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \leq \epsilon_{fix} / 3$ per Lemma \ref{lem:thermal_state_diff_bound}. Then per Eq \eqref{eq:upper_bound_on_T_2} we have $2 \alpha^2 t^2 \leq \epsilon_{fix} / 3$, along with the requirement $t \geq 2 \sqrt{2} \Delta_{\min} \dim$, yields $\norm{T^{(2)}(\rho_S(\beta))}_1 \leq \epsilon_{fix} / 3$. The final bound on the norm comes from Lemma \ref{lem:remainder_bound}, where we require $\alpha t \leq \parens{\frac{\epsilon_{fix}}{6 \dim^2}}^{1/3}$ which yields $\norm{R_{\Phi}}_1 \leq \dim \norm{R_{\phi}} \leq \epsilon_{fix} / 3$. 
-
-    Combining each of these three then gives the total error as $\epsilon_{fix}$.
-\end{proof}
-
-
 
 \begin{claim}[Cooling Schedule]
     Suppose
@@ -996,102 +983,6 @@ Want to find the ``single shot" capture radius. First should study the single-sh
 \appendix
 
 \section{Boltzmann Taylor Series}
-There exists a $\beta_{\star}$ such that
-\begin{align}
-    \frac{e^{-\beta \lambda_S(i)}}{\sum_j e^{-\beta \lambda_S(j)}} = \frac{e^{-\beta_E \lambda_S(i)}}{\sum_j e^{-\beta_E \lambda_S(j)}} + (\beta_E - \beta) \frac{e^{-\beta_{\star} \lambda_S(i)}}{\sum_j e^{-\beta_{\star} \lambda_S(j)}} \parens{\trace{H_S \frac{e^{-\beta_{\star} H}}{\trace{e^{-\beta_{\star}H_S}}}} - \lambda_S(i)}
-\end{align}
-
-We need a lower bound 
-\begin{equation}
-    \epsilon_{\beta} \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1
-\end{equation}
-
-Going to investigate a Taylor's series about $\beta_E$ for the Boltzmann coefficient of the ground state energy
-\begin{align}
-    \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} = \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E )} + (\beta - \beta_E) \frac{d}{d\beta} \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \bigg|_{\beta \to \beta_E} + R_2(\beta).
-\end{align}
-Actually I think the first order term might be sufficient
-\begin{align}
-    \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} = \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta)} + R_0(\beta),
-\end{align}
-where we use the integral form of the $R_0$ remainder term as
-\begin{align}
-    R_0(\beta) = \int_{\beta}^{\beta_E} (x - \beta) \frac{d}{d\beta} \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}\bigg|_{\beta = x} dx .
-\end{align}
-
-Now we have to compute the derivatives. Up first is the derivative of the partition function
-\begin{align}
-    \frac{d}{d\beta} \partfun_S(\beta) &= \frac{d}{d\beta} \sum_i e^{-\beta \lambda_S(i)} \\
-    &= \sum_i -\lambda_S(i) e^{-\beta \lambda_S(i)} \\
-    &= -\trace{H e^{-\beta H}}.
-\end{align}
-Up second is the first derivative
-\begin{align}
-    \frac{d}{d\beta} \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} &= -\lambda_S(0) \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)^2} \frac{d}{d\beta} \partfun_S(\beta) \\
-    &= \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}\parens{\trace{H \frac{e^{-\beta H}}{\partfun_S(\beta)}} - \lambda_S(0)}.
-\end{align}
-We note that this can be extended to any Boltzmann coefficient for eigenvalue $i$ straightforwardly. Now we can plug this in to the first order remainder
-\begin{align}
-    R_0(\beta) = \int_{\beta}^{\beta_E} (x - \beta) \frac{e^{-x \lambda_S(0)}}{\partfun_S(x)}\parens{\trace{H \frac{e^{- x H}}{\partfun_S(x)}} - \lambda_S(0)} dx.
-\end{align}
-We note that this number is manifestly positive, as $\trace{H \frac{e^{-x H}}{\partfun_S(x)}} \geq \lambda_S(0)$ for all $x$. 
-
-Now we note that we want to compute a lower bound on the difference:
-\begin{align}
-    \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 &= \sum_k \abs{\frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}} \\
-    &\geq \abs{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}} \\
-    &= \abs{R_0(\beta)},
-\end{align}
-where the last expression holds assuming that $\beta < \beta_E$.
-
-As $x - \beta$ is positive for $x \geq \beta$, $\frac{e^{-x \lambda_S(0)}}{\partfun_S(x)} \geq 0$, and $\trace{H \frac{e^{-x H}}{\partfun_S(x)}} - \lambda_S(0) \geq 0$ we have to compute lower bounds for each of these expressions.
-
-First up is 
-\begin{align}
-    \trace{H_S \frac{e^{-x H_S}}{\partfun_S(x)}} - \lambda_S(0) &= \trace{H_S \frac{e^{-x H_S}}{\partfun_S(x)}} - \lambda_S(0) \trace{\frac{e^{-x H_S}}{\partfun_S(x)}} \\
-    &= \trace{\parens{H_S - \lambda_S(0) \identity} \frac{e^{-x H_S}}{\partfun_S(x)}} \\
-    &= \sum_k (\lambda_S(k) - \lambda_S(0)) \frac{e^{-x \lambda_S(k)}}{\partfun_S(x)} \\
-    &\geq \Delta_{\min} \sum_{k > 0} \frac{e{-x \lambda_S(k)}}{\partfun_S(x)} \\
-    &= \Delta_{\min} \parens{1 - \frac{e^{-x \lambda_S(0)}}{\partfun_S(x)}}.
-\end{align}
-For the Boltzmann coefficients we will first try the simple bounds 
-\begin{equation}
-    \beta \leq x \leq \beta_E \implies \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \leq \frac{e^{-x \lambda_S(0)}}{\partfun_S(x)} \leq \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)}.
-\end{equation}
-This simplifies the remainder as
-\begin{align}
-    R_0(\beta) &\geq \Delta_{\min} \int_{\beta}^{\beta_E} (x - \beta) \frac{e^{-x \lambda_S(0)}}{\partfun_S(x)} \parens{1 - \frac{e^{-x \lambda_S(x)}}{\partfun_S(x)}} dx. \\
-    &\geq \Delta_{\min} \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \parens{1 - \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)}} \int_{\beta}^{\beta_E} (x - \beta) dx \\
-    &= \Delta_{\min} \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \parens{1 - \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)}} \frac{\delta^2}{2},
-\end{align}
-where $\delta = \beta_E - \beta$. Now we use the dumb bound that $\frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \geq \frac{1}{\dim}$ to get
-\begin{align}
-    R_0(\beta) \geq \frac{\Delta_{\min} \delta^2}{2 \dim_S} \parens{1 - \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)}}.
-\end{align}
-
-The last bound we need is $1 - \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} \geq \epsilon_{\rho}$. This will be done through a bound on the partition function, seen below
-\begin{align}
-    \partfun_S(\beta_E) &=  \sum_k e^{-\beta_E \lambda_S(k)} \\
-    &= e^{-\beta_E \lambda_S(0)} \parens{1 + \sum_{k > 0} e^{-\beta_E (\lambda_S(k) - \lambda_S(0))}}.
-\end{align}
-Rearranging yields
-\begin{align}
-    \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} &= \frac{1}{1 + \sum_{k > 0} e^{-\beta_E (\lambda_S(k) - \lambda_S(0))}}.
-\end{align}
-As we would like to upper bound this, we note that $\lambda_S(k) - \lambda_S(0) \geq \Delta_{\min}$, which yields
-\begin{align}
-    -\beta_E (\lambda_S(k) - \lambda_S(0)) &\geq - \beta_E \Delta_{\min} \\
-    \iff \sum_{k > 0} e^{-\beta_E (\lambda_S(k) - \lambda_S(0)} &\geq \sum_{k > 0} e^{- \beta_E \Delta_{\min}} \\
-    \iff \frac{1}{1 + \sum_{k > 0} e^{-\beta_E (\lambda_S(k) - \lambda_S(0))}} &\leq \frac{1}{1 + e^{- \beta_E \Delta_{\min}} (\dim_S - 1)}.
-\end{align}
-Through straightforward algebra, it can be seen that requiring 
-\begin{equation}
-    \beta_E \leq \frac{1}{\Delta_{\min}} \parens{\ln (\dim_S - 1) + \ln \parens{1 + \frac{1}{\epsilon_{\rho}}}} \label{eq:beta_e_upper_bound_thermal_diffs}
-\end{equation}
-is sufficient to guarantee that $1 - \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} \geq \epsilon_{\rho}$.
-
-We can finally then declare that if $\beta_E$ satisfies the bound in Eq. \eqref{eq:beta_e_upper_bound_thermal_diffs} then we have
-$$\norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \geq R_0(\beta) \geq \frac{\Delta_{\min} \delta^2 \epsilon_{\rho}}{2 \dim_S}.$$
 
 
 
@@ -1227,56 +1118,121 @@ As
 
 \section{Proof of Lemma \ref{lem:the_double_duhamel}}
 
-\section{Possibly useful Lemmas}
+\section{Thermal State Bounds}
 
-First need a straightforward lemma
+
 \begin{lemma} \label{lem:thermal_state_diff_bound}
-    Let $0 \leq \delta = \beta_E - \beta$. We want to know what ranges on $\delta$ are sufficient to imply
-    \begin{equation}
-        \delta \leq \frac{\epsilon_{\beta_E}}{\dim \norm{H}} \implies \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \leq \epsilon_{\beta_E}
-    \end{equation}
+    Let $0 \leq \delta = \beta_E - \beta$ and $H_S$ be a Hamiltonian such that $\lambda_S(k) - \lambda_S(i) \geq \Delta_{\min}$ for all $k > i$. The trace distance between the thermal states $\rho_S(\beta)$ and $\rho_S(\beta_E)$ can be bounded from above and below as
+    \begin{align}
+        \frac{\Delta_{\min} \delta^2 \epsilon_{\rho}}{2 \dim_S} \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \leq 2 \dim_S \norm{H} \delta,
+    \end{align}
+    provided that $\beta_E$ satisfies the upper bound $\beta_E \leq \frac{1}{\Delta_{\min}} \parens{\ln (\dim_S - 1) + \ln \parens{1 + \frac{1}{\epsilon_{\rho}}}}$. 
 \end{lemma}
 \begin{proof}
-    We first note that
+    We first decompose the trace distance using the fact that thermal states are diagonal in the $H_S$ basis
     \begin{equation}
         \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 = \sum_k \abs{\frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}}. \label{eq:thermal_diffs_1}
     \end{equation}
-    This suggests that we should investigate a Taylor Series for the Boltzmann factors $g_k(\beta) = \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}$ about $\beta = \beta_E$. As we would like to bound the error we will end up needing a total of two derivatives, which is what we compute. It will be helpful to have simple expressions for derivatives of the partition functions. The first one is straightforward
+    This suggests a Taylor Series for the Boltzmann factors $\frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}$ about $\beta = \beta_E$ would be useful. We will only need the zeroth order approximation,
+    \begin{equation}
+        \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} = \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} + R_0(\beta, \beta_E, k),
+    \end{equation}
+    and will use the integral form of $R_0$ for the lower bound and the Lagrange or mean-value form for the upper bound. 
+    
+    As the upper bound is easier we will compute it first. The remainder in this case is given by
+    \begin{equation}
+        R_0(\beta, \beta_E, k) = (\beta - \beta_E) \frac{d}{d\beta} \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} \bigg|_{\beta = \beta_{k}},
+    \end{equation}
+    where $\beta_{k} \in (\beta, \beta_E)$ is the arbitrary point guaranteed to exist by the Taylor's Theorem. To compute the derivative of the Boltzmann coefficient we first compute the derivative of the partition function
     \begin{align}
         \frac{d}{d\beta} \partfun_S(\beta) &= \frac{d}{d\beta} \sum_i e^{-\beta \lambda_S(i)} \\
         &= - \sum_i \lambda_S(i) e^{-\beta \lambda_S(i)} \\
-        &= - \trace{H e^{-\beta H}},
+        &= - \trace{H e^{-\beta H}}.
     \end{align}
-    while the second one is computed similarly as
+    This gives the total derivative of the Boltzmann coefficient is computed as
     \begin{align}
-        \frac{d^2}{d\beta^2} \partfun_S(\beta) &= - \frac{d}{d\beta} \trace{H e^{-\beta H}} \\
-        &= \trace{H^2 e^{-\beta H}}.
-    \end{align}
-    To simplify the notation we will let $\anglebrackets{X} \coloneqq \trace{X \rho_S(\beta)}$.
-
-    Now we can compute the first order Taylor approximation as
-    \begin{equation}
-        g_k(\beta) = \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} = \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} + (\beta_E - \beta) \frac{d g_k}{d\beta} (\beta_{\star}),
-    \end{equation}
-    where the $\beta_{\star}$ is the arbitrary point guaranteed to exist by Taylor's Theorem. The derivative is computed as
-    \begin{align}
-        \frac{d g_k}{d \beta} &= - \lambda_S(k) \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)^2} \frac{d}{d\beta}\partfun_S(\beta) \\
-        &= \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} \parens{\anglebrackets{H} - \lambda_S(k)}.
+        \frac{d}{d \beta}\frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} &= - \lambda_S(k) \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)^2} \frac{d}{d\beta}\partfun_S(\beta) \\
+        &= \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} \parens{\trace{H \frac{e^{-\beta H}}{\partfun_S(\beta)}} - \lambda_S(k)}. \label{eq:boltzmann_derivative}
     \end{align}
     We can plug this in to Eq. \eqref{eq:thermal_diffs_1} to get
     \begin{align}
-        \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 &= \sum_k \abs{(\beta_E - \beta) \frac{d g_k}{d\beta} (\beta_{\star})} \\
-        &= \delta \sum_k \frac{e^{-\beta_{\star} \lambda_S(k)}}{\partfun_S(\beta_{\star})} \abs{\trace{\rho_S(\beta_{\star})H} - \lambda_S(k)} \\
-        &\leq \delta \sum_k \parens{|\trace{\rho_S(\beta_{\star}) H}| + |\lambda_S(k)|} \\
-        &
+        \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 &= \sum_k \abs{\frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}} \\
+        &= \sum_k \abs{R_0(\beta, \beta_E, k)} \\
+        &= \sum_k \abs{\beta - \beta_E} \frac{e^{-\beta_{k} \lambda_S(k)}}{\partfun_S(\beta_{k})} \abs{\trace{\rho_S(\beta_{k})H} - \lambda_S(k)} \\
+        &\leq \delta \sum_k \parens{\abs{\sum_{j} \frac{e^{-\beta_k \lambda_S(j)}}{\partfun_S(\beta_k)} \lambda_S(j)} + |\lambda_S(k)|} \\
+        &\leq \delta \sum_k \parens{\norm{H} \sum_j \frac{e^{-\beta_k \lambda_S(j)}}{\partfun_S(\beta_k)} + \norm{H}} \\
+        &\leq 2 \delta \dim_S \norm{H}.
     \end{align}
-    Now we note that the inequalities $\lambda_S(0) \leq \trace{\rho_S(\beta_{\star}) H} \leq \lambda_S(\dim) = \norm{H}$, $-\lambda_S(0) \leq \norm{H}$ and $\lambda_S(0) \leq \lambda_S(k) \leq \norm{H}$ yield $\abs{\trace{\rho_S(\beta_{\star}) H} - \lambda_S(k)} \leq 2 \norm{H}$. This then gives the final inequality
+    This gives the upper bound required in the lemma statement.
+
+    We now move on to the lower bound. We use the same breakdown in the eigenbasis of $H_S$, but this time we drop all terms that are not the ground state 
     \begin{align}
-        \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 &\leq \delta \sum_k 2 \norm{H} \\
-        &\leq 2 \dim_S \norm{H} \delta,
+        \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 &= \sum_k \abs{\frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}} \\
+        &\geq \abs{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}} \\
+        &= \abs{R_0(\beta, \beta_E, 0)} \\
+        &\geq R_0(\beta, \beta_E, 0),
     \end{align}
-    which yields the implication in the lemma statement straightforwardly.\todo{Need to try and eliminate the factor of $\dim_S$ in the above lemma.}
+    and we will stop writing the implicit argument of 0 at the end from now on. 
+    
+    We drop the higher order contributions for a few reasons. The first being that thermal states are typically used as close approximations to ground states, which approaches the exact ground state as $\beta_E \to \infty$, and we are imagining a scenario in which $\beta$ is somewhat close to $\beta_E$. In this situation, the dominant contribution to the trace distance comes from the difference in the ground state Boltzmann factors. The other rationale behind just studying the ground state contribution is the fact that $\beta_1 \leq \beta_2$ implies that $\frac{e^{-\beta_1 \lambda_S(0)}}{\partfun_S(\beta_1)} \leq \frac{e^{-\beta_2 \lambda_S(0)}}{\partfun_S(\beta_2)}$, or that the overlap that the thermal state has with the ground state, $\trace{\Pi_0 \rho_S(\beta)}$, is monotonically increasing with $\beta$. This is shown using a straightforward lower bound on the first derivative computed in Eq. \eqref{eq:boltzmann_derivative}:
+    \begin{align}
+        \frac{d}{d\beta} \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} &= \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \parens{ \sum_k \left(\lambda_S(k) \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} \right) - \lambda_S(0) } \\
+        &= \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \parens{ \sum_k \left(\lambda_S(k) \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} \right) - \lambda_S(0) \sum_k \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(k)} } \\
+        &= \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \sum_k (\lambda_S(k) - \lambda_S(0)) \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}  \\
+        &\geq \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \Delta_{\min} \sum_{k > 0} \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(k)} \\
+        &= \Delta_{\min} \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \parens{1 - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}}, \label{eq:boltzmann_derivative_lower_bound}
+    \end{align}
+    where we see that this is always positive for finite $\beta$ and 0 in the limit $\beta \to \infty$.  
+    
+    To compute this lower bound we will use the integral version of the remainder $R_0$, which is given as 
+    \begin{align}
+        R_0(\beta, \beta_E) = \int_{\beta}^{\beta_E} (x - \beta) \frac{d}{d\beta} \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}\bigg|_{\beta = x} dx ~.
+    \end{align}
+    Plugging in the derivative computed in Eq. \eqref{eq:boltzmann_derivative} gives
+    \begin{align}
+        R_0(\beta, \beta_E) = \int_{\beta}^{\beta_E} (x - \beta) \frac{e^{-x \lambda_S(0)}}{\partfun_S(x)}\parens{\trace{H \frac{e^{- x H}}{\partfun_S(x)}} - \lambda_S(0)} dx,
+    \end{align}
+    where we note that this is positive as $x > \beta$ and the derivative is always positive, as noted above. Plugging in the lower bound computed in Eq. \eqref{eq:boltzmann_derivative_lower_bound} yields
+    \begin{align}
+        R_0(\beta, \beta_E) &\geq \Delta_{\min} \int_{\beta}^{\beta_E} (x - \beta) \frac{e^{-x \lambda_S(0)}}{\partfun_S(x)} \parens{1 - \frac{e^{-x \lambda_S(0)}}{\partfun_S(x)}} dx \\
+        &\geq \Delta_{\min} \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \parens{1 - \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)}} \int_{\beta}^{\beta_E} (x - \beta) dx \\
+        &= \frac{\Delta_{\min} (\beta_E - \beta)^2}{2} \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \parens{1 - \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)}}. \label{eq:boltzmann_lower_bound_penultimate}
+    \end{align}
+
+    The last step is to lower bound the the Boltzmann factors as seen above. We can use the simplistic bound $\frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \geq \frac{1}{\dim_S}$ to take care of the one factor, and the other we need to show a bound of $\parens{1 - \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E}} \geq \epsilon_{\rho}$
+    This will be done through a bound on the partition function, seen below
+    \begin{align}
+        \partfun_S(\beta_E) &=  \sum_k e^{-\beta_E \lambda_S(k)} = e^{-\beta_E \lambda_S(0)} \parens{1 + \sum_{k > 0} e^{-\beta_E (\lambda_S(k) - \lambda_S(0))}}.
+    \end{align}
+    Rearranging yields
+    \begin{align}
+        \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} &= \frac{1}{1 + \sum_{k > 0} e^{-\beta_E (\lambda_S(k) - \lambda_S(0))}}.
+    \end{align}
+    To upper bound this quantity we use fact that $\lambda_S(k) - \lambda_S(0) \leq 2 \norm{H}$ holds for all $k$, which yields
+    \begin{align}
+        -\beta_E(\lambda_S(k) - \lambda_S(0)) &\geq -\beta_E 2 \norm{H} \\
+        \implies e^{-\beta_E (\lambda_S(k) - \lambda_S(0))} &\geq e^{-\beta_E 2 \norm{H}} \\
+        \implies \sum_{k > 0} e^{-\beta_E (\lambda_S(k) - \lambda_S(0))} &\geq (\dim_S - 1) e^{-\beta_E 2 \norm{H}} \\
+        \implies \frac{1}{1 + \sum_{k > 0} e^{-\beta_E (\lambda_S(k) - \lambda_S(0))} } &\leq \frac{1} {1 + (\dim_S - 1) e^{-\beta_E 2 \norm{H}} } .
+    \end{align}
+    Now this serves as an upper bound on $\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)}$. We would therefore like that 
+    \begin{align}
+        \frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} = \frac{1}{1 + \sum_{k > 0} e^{-\beta_E (\lambda_S(k) - \lambda_S(0))}} &\leq \frac{1}{1 + (\dim_S - 1) e^{-\beta_E 2 \norm{H}}} \\
+        &\leq 1 - \epsilon_{\rho} \label{eq:epsilon_rho_inequality}
+    \end{align}
+    Through straightforward algebra, it can be seen that requiring 
+    \begin{equation}
+        \beta_E \leq \frac{1}{2 \norm{H}} \parens{\ln (\dim_S - 1) + \ln \left( \frac{1}{\epsilon_{\rho}} - 1\right) } \label{eq:beta_e_upper_bound_thermal_diffs}
+    \end{equation}
+    is sufficient to satisfy the above inequality in Eq. \eqref{eq:epsilon_rho_inequality}. Plugging Eq. \eqref{eq:epsilon_rho_inequality}, along with the inequality $\frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} \geq \frac{1}{\dim_S}$, into Eq. \eqref{eq:boltzmann_lower_bound_penultimate} yields
+    \begin{align}
+        R_0(\beta, \beta_E) \geq \frac{\epsilon_{\rho} \Delta_{\min} \delta^2}{2 \dim_S},
+    \end{align}
+    which gives the lemma statement. 
+    
 \end{proof}
+
+
 
 \section{Some Scratch}
 \begin{lemma}
@@ -1346,95 +1302,5 @@ First need a straightforward lemma
     \end{align}
 \end{proof}
 
-Goal is to bound the expectation over the perfect knowledge distribution for $\gamma$ of the second order correction $T_{\gamma}^{(2)}(\rho_S(\beta))$. Letting $p(i) = \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)}$ This looks like
-\begin{align}
-    T_{\gamma}^{(2)} (\rho_S(\beta)) &= \sum_{i,j,k,l} \ketbra{k}{k} p(i) \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)} \tau(i,j | k,l) \\
-    &= \frac{\alpha^2 t^2}{\dim + 1} \sum_{k}\sum_{i \neq k} \sum_{j,l} \parens{p(i) \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)} - p(k) \frac{e^{-\beta_E \lambda_E(l)}}{\partfun_E(\beta_E)}} \sinc^2((\Delta_S(i,k) + \Delta_E(j,l)) t/2) \ketbra{k}{k}.
-\end{align}
-We now make the dependence on $\gamma$ explicit by computing the sum over $j,l$. This is tedious, but given as
-\begin{align}
-    T^{(2)}_{\gamma}(\rho_S(\beta)) &= \frac{\alpha^2 t^2}{\dim + 1} \sum_{k} \sum_{i \neq k} \ketbra{k}{k} \frac{1}{1 + e^{-\beta_E \gamma}}\bigg[ (p(i) - p(k)) \sinc^2(\Delta_S(i,k) t/ 2) \nonumber \\
-    &\quad + (p(i) - e^{-\beta_E \gamma} p(k))\sinc^2((\Delta_S(i,k) - \gamma)t/2) \nonumber \\
-    &\quad + (e^{-\beta_E \gamma} p(i) - p(k)) \sinc^2((\Delta_S(i,k) + \gamma)t/2)  \nonumber \\
-    &\quad + e^{-\beta_E \gamma} (p(i) - p(k)) \sinc^2(\Delta_S(i,k) t/2) \bigg] \label{tmp:big_second_order_sum}
-\end{align}
-
-Since our Hamiltonian is well-separated and we are sampling from the perfect knowledge distribution for each $i \neq k$ we will choose the one and only one $\gamma = \Delta_S(i,k)$ and all other $\gamma$'s will yield small transitions. For this reason, we now investigate the average of a single $(i,k)$ term over $\gamma$. This looks like:
-\begin{align}
-    \mathbb{E}_{\gamma} X(\gamma) = \sum_{(a,b) : a > b} \frac{2}{\dim_S (\dim_S - 1)} X(\Delta_S(a,b)).
-\end{align}
-We now evaluate a single summand of the $i,k$ sum in Eq. \eqref{tmp:big_second_order_sum}, but we do so term by term.
-First we note that the terms where $\gamma$ is not in the $\sinc$ argument are trivially bounded from above and below:
-\begin{align}
-    \frac{1}{1 + e^{-\beta_E \gamma}} (p(i) - p(k)) \sinc^2(\Delta_S(i,k) t/2) &\leq \sinc^2(\Delta_S(i,k)t/2)\\
-    &\leq \epsilon_{\sinc}
-\end{align}
-\begin{align}
-    \frac{1}{1 + e^{-\beta_E \gamma}} (p(i) - p(k)) \sinc^2(\Delta_S(i,k) t/2) &\geq - \sinc^2(\Delta_S(i,k)t/2) \\
-    &\geq - \epsilon_{\sinc}
-\end{align}
-which implies 
-\begin{equation}
-    -\epsilon_{\sinc} \leq \mathbb{E}_{\gamma} \frac{1}{1 + e^{-\beta_E \gamma}} (p(i) - p(k)) \sinc^2(\Delta_S(i,k) t/2) \leq \epsilon_{\sinc}.
-\end{equation}
-The exact same arguments imply
-\begin{equation}
-    -\epsilon_{\sinc} \leq \mathbb{E}_{\gamma} \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} (p(i) - p(k)) \sinc^2(\Delta_S(i,k) t/2) \leq \epsilon_{\sinc}.
-\end{equation}
-Now we assume $i < k \implies \lambda_S(i) < \lambda_S(k) \implies \Delta_S(i,k) < 0$. Note that this implies that for a thermal state $p(i) \geq p(k)$. We can then reduce one of the remaining terms 
-\begin{align}
-    &\frac{1}{1 + e^{-\beta_E \gamma}}(p(i) - e^{-\beta_E \gamma} p(k))\sinc^2((\Delta_S(i,k) - \gamma)t/2) \\
-    &=\frac{1}{1 + e^{-\beta_E \gamma}}(p(i) - e^{-\beta_E \gamma} p(k))\sinc^2((\Delta_S(k,i) + \gamma)t/2) \\
-    &\leq \sinc^2((\Delta_S(k,i) + \gamma)t/2) \\
-    &\leq \epsilon_{\sinc}.
-\end{align}
-Similar arguments work to show that this term is greater than $-\epsilon_{\sinc}$. We now turn to the last term, the one interesting term. We also will simplify the probability terms as follows
-\begin{align}
-    \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}}p(i) - \frac{1}{1 + e^{-\beta_E \gamma}}p(k) 
-\end{align}
-\begin{align}
-    &\mathbb{E}_{\gamma} \frac{e^{-\beta_E \gamma} p(i) - p(k)}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,k) + \gamma)t/2) \\
-    &= \parens{\frac{2}{\dim_S(\dim_S - 1)}}\sum_{(a,b): a > b, (a,b) \neq (k,i)} \frac{e^{-\beta_E \Delta_S(b,a)} p(i) - p(k)}{1 + e^{-\beta_E \Delta_S(b,a)}} \sinc^2((\Delta_S(i,k) + \Delta_S(b,a))t/2) \nonumber \\
-    &\quad + \frac{2}{\dim_S (\dim_S - 1)}\frac{e^{-\beta_E \Delta_S(k,i)} p(i) - p(k)}{1 + e^{-\beta_E \Delta_S(k,i)}} \sinc^2((\Delta_S(i,k) + \Delta_S(k,i)t/2).
-\end{align} 
-Again we bound the non-contributing indices straightforwardly
-\begin{align}
-    &\parens{\frac{2}{\dim_S(\dim_S - 1)}}\sum_{(a,b): a > b, (a,b) \neq (k,i)} \frac{1}{1 + e^{-\beta_E \Delta_S(b,a)}}(e^{-\beta_E \Delta_S(b,a)} p(i) - p(k)) \sinc^2((\Delta_S(i,k) + \Delta_S(b,a))t/2) \\
-    & \leq \frac{2}{\dim_S (\dim_S - 1)} \sum_{(a,b): a > b, (a,b) \neq (k,i)} \epsilon_{\sinc} \\
-    &\leq \epsilon_{\sinc},
-\end{align}
-and similarly $-\epsilon_{\sinc}$ forms a lower bound on this term. The remaining term is characterized by the function $\frac{e^{-\beta_E \Delta_S(k,i)} p(i) - p(k)}{1 + e^{-\beta_E \Delta_S(k,i)}}$.
-
-Putting it all together, for $i < k$ we have 
-\begin{align}
-    -4 \epsilon_{\sinc} \leq \mathbb{E}_{\gamma} \sum_{j,l} (p(i) q(j) - p(k) q(l)) \tau(i,j | k,l) - \frac{2}{\dim_S(\dim_S - 1)} \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta_E \Delta_S(k,i)} p(i) - p(k)}{1 + e^{-\beta_E \Delta_S(k,i)}} \leq 4 \epsilon_{\sinc}.
-    \end{align}
-Repeating the same process but with $i > k$, and therefore $\Delta_S(i,k) \geq 0$, we get
-\begin{align}
-    -4 \epsilon_{\sinc} \leq \mathbb{E}_{\gamma} \sum_{j,l} (p(i) q(j) - p(k) q(l)) \tau(i,j| k,l) - \frac{2}{\dim_S(\dim_S - 1)} \frac{\alpha^2 t^2}{\dim + 1} \frac{p(i) - e^{-\beta_E \Delta_S(i,k)} p(k)}{1 + e^{-\beta_E \Delta_S(i,k)}} \leq 4 \epsilon_{\sinc}
-\end{align}
-This then gives the lemma
-\begin{align}
-    \bra{k} \mathbb{E}_{\gamma} T_{\gamma}^{(2)}(\rho_S(\beta))\ket{k} 
-\end{align}
-
-
-So if we want to look at the single shot capture radius
-\begin{align}
-    \norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta) - \mathbb{E}_{\gamma}T^{(2)}(\rho_S(\beta)}_1 + \norm{R_{\Phi}}_1 \\
-    &= \sum_k \abs{p_E(k) - p(k) - \mathbb{E}_{\gamma} \sum_{i \neq k} \sum_{j,l} p(i) q(j) \tau(i,j|k,l)} + \norm{R_{\Phi}}_1.
-\end{align}
-We now can zoom in on the sum over $i$:
-\begin{align}
-    \sum_{i < k} \mathbb{E}_{\gamma}p(i) q(j) \tau(i,j| k,l) + \sum_{i > k} \mathbb{E}_{\gamma}p(i) q(j) \tau(i,j| k,l)
-\end{align}
-\begin{align}
-    &\abs{p_E(k) - p(k) - \sum_{i \neq k} \mathbb{E}_{\gamma} p(i) q(j) \tau(i,j|k,l)} \nonumber \\
-    &\leq \abs{p_E(k) - p(k) - \frac{2}{\dim_S (\dim_S - 1)} \frac{\alpha^2 t^2}{\dim + 1}\parens{ \sum_{i < k} \frac{p(i) - e^{-\beta_E \Delta_S(k,i)} p(k)}{ 1 + e^{-\beta_E \Delta_S(k,i)}} + \sum_{i > k} \frac{e^{-\beta_E \Delta_S(i, k)} p(i) - p(k)}{ 1 + e^{-\beta_E \Delta_S(i, k)}}} } \nonumber \\
-    &+ 4 (\dim_S - 1) \epsilon_{\sinc} \\
-    &= \bigg| p_E(k) - p(k) \parens{1 - \frac{2}{\dim_S(\dim_S - 1)} \frac{\alpha^2 t^2}{\dim + 1} \sum_{i \neq k} \frac{1}{1 + e^{-\beta_E \Delta_S(i,k)}}} \nonumber \\
-    &\quad \quad - \frac{2}{\dim_S (\dim_S - 1)} \frac{\alpha^2 t^2}{\dim + 1} \sum_{i \neq k} \frac{p(i)}{1 + e^{-\beta_E \Delta_S(i, k)}} \bigg| \nonumber \\
-    &+ 4 (\dim_S - 1) \epsilon_{\sinc} \\
-\end{align}
 
 \end{document}
