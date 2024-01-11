@@ -126,9 +126,13 @@ fn epsilon_vs_time_scaling(
     ret
 }
 
+struct BetaVsDistance {
+    beta_e: f64,
+    
+}
+
 pub struct ExperimentConstants {
-    target_beta: f64,
-    alpha_t_reduction: f64,
+    single_shot_capture_radius:  Vec<(f64, f64)>,
 }
 
 /// This is supposed to capture the variables we change
