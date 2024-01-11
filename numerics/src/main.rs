@@ -3,7 +3,7 @@ extern crate ndarray;
 extern crate num_complex;
 
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{PathBuf, Path};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Instant;
 
@@ -23,7 +23,7 @@ use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use numerics::*;
-
+use numerics::new_channel::*;
 
 #[derive(Subcommand)]
 pub enum Experiments {
@@ -42,6 +42,24 @@ pub struct Cli {
 }
 
 fn main() {
+    let h_sys = harmonic_oscillator_hamiltonian(15);
+    let mut conf = CaptureRadiusConfig {
+        label: String::from("Harmonic Oscillator (15 dim) high temp"),
+        beta_e: 1.0,
+        deltas: Array::linspace(-0.25, 0.25, 50).to_vec(),
+        alpha: 0.0005,
+        time: 200.,
+        gamma: GammaStrategy::Fixed(1.0),
+        h_sys,
+        num_samples: 200,
+    };
+    let output_path = Path::new("/Users/matt/repos/thermal_state_prep/numerics/tmp/capture_radius/harmonic_oscillator_high_temp.json");
+    let outputs = config_to_results(conf);
+    let serialized = serde_json::to_string(&outputs).expect("Could not serialize output.");
+    std::fs::write(output_path, serialized).expect("Could not write results");
+}
+
+fn cli_main() {
     let start = Instant::now();
     let cli = Cli::parse();
     match cli.experiment_type {
@@ -83,7 +101,7 @@ fn main() {
 }
 
 mod tests {
-    use crate::{adjoint, i, partial_trace, zero, NodeConfig, RandomInteractionGen};
+    use crate::{adjoint, i, partial_trace, zero, RandomInteractionGen};
     use ndarray::{linalg::kron, prelude::*};
     use ndarray_linalg::{expm::expm, random_hermite, OperationNorm, Trace};
     use num_complex::{Complex64 as c64, ComplexFloat};
@@ -94,25 +112,6 @@ mod tests {
         let mut gen2 = RandomInteractionGen::new(1, 2);
         assert_eq!(gen1.sample_gue(), gen2.sample_gue());
     }
-
-    #[test]
-    fn serialize_a_config() {
-        let nc = NodeConfig {
-            num_interactions: 100,
-            num_samples: 1000,
-            time: 100.,
-            alpha: 0.01,
-            sys_start_beta: 0.,
-            env_beta: 1.,
-            sys_hamiltonian: numerics::HamiltonianType::HarmonicOscillator,
-            sys_dim: 10,
-            env_dim: 2,
-        };
-        let nc_string = serde_json::to_string(&nc).expect("no serialization?");
-        std::fs::write("/Users/matt/scratch/tsp/test_config/tsp.conf", nc_string)
-            .expect("couldn't write");
-    }
-
 
     #[test]
     fn test_partial_trace() {
