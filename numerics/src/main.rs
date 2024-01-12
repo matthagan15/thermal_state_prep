@@ -43,15 +43,18 @@ pub struct Cli {
 
 fn main() {
     let h_sys = harmonic_oscillator_hamiltonian(15);
+    let beta_e = 2.5;
+    let alpha = 1e-4;
     let mut conf = CaptureRadiusConfig {
         label: String::from("Harmonic Oscillator (15 dim) high temp"),
-        beta_e: 1.0,
-        deltas: Array::linspace(-0.25, 0.25, 50).to_vec(),
-        alpha: 0.0005,
-        time: 200.,
+        beta_e,
+        // deltas: Array::logspace(10., 0., f64::log10(beta_e), 150).to_vec(),
+        deltas: Array::linspace(0.0, beta_e, 150).to_vec(),
+        alpha,
+        time: 1e-2 / alpha,
         gamma: GammaStrategy::Fixed(1.0),
         h_sys,
-        num_samples: 200,
+        num_samples: 250,
     };
     let output_path = Path::new("/Users/matt/repos/thermal_state_prep/numerics/tmp/capture_radius/harmonic_oscillator_high_temp.json");
     let outputs = config_to_results(conf);

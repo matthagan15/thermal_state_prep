@@ -124,6 +124,7 @@ pub fn config_to_results(config: CaptureRadiusConfig) -> CaptureRadiusResults {
         time: config.time,
     };
     let rho_ideal = thermal_state(&config.h_sys, params.beta_e);
+    dbg!(rho_ideal.clone().into_diag());
     let thermal_state_dist = | delta | {
         let rho_input = thermal_state(&config.h_sys, params.beta_e - delta);
         schatten_2_distance(&rho_ideal, &rho_input)
