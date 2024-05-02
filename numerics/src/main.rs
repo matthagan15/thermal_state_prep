@@ -3,7 +3,7 @@ extern crate ndarray;
 extern crate num_complex;
 
 use std::collections::HashMap;
-use std::path::{PathBuf, Path};
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Instant;
 
@@ -15,19 +15,25 @@ use ndarray_linalg::random_hermite;
 use ndarray_linalg::{OperationNorm, Scalar};
 use num_complex::Complex64 as c64;
 use num_complex::ComplexFloat;
-use numerics::channel::Channel;
-use numerics::single_qubit_dist::{TraceNormReductionConfig, TraceNormReductionOutput};
+
+use numerics::single_shot_dist::{TraceNormReductionConfig, TraceNormReductionOutput};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use numerics::channel::*;
 use numerics::*;
-use numerics::new_channel::*;
 
 #[derive(Subcommand)]
 pub enum Experiments {
-    SingleShotTraceDistSweep,
+    SingleShotTraceDistSweep {
+        #[arg(short, long, value_name = "CONFIG")]
+        config: PathBuf,
+
+        #[arg(short, long, value_name = "OUTPUT")]
+        output: PathBuf,
+    },
     FixedPointSweep,
 }
 
@@ -35,24 +41,34 @@ pub enum Experiments {
 pub struct Cli {
     #[command(subcommand)]
     experiment_type: Experiments,
-    config: PathBuf,
-    output: PathBuf,
-    #[arg(short = 'l', long, value_name = "LABEL")]
-    experiment_label: Option<String>,
+}
+
+fn harmonic_oscillator_gaps(dim: usize) -> Vec<f64> {
+    let mut ret = Vec::new();
+    let h = harmonic_oscillator_hamiltonian(dim);
+    for ix in 0..dim - 1 {
+        for jx in ix + 1..dim {
+            ret.push(Scalar::abs(h[[jx, jx]] - h[[ix, ix]]));
+        }
+    }
+    ret
 }
 
 fn main() {
-    let h_sys = harmonic_oscillator_hamiltonian(15);
-    let beta_e = 2.5;
-    let alpha = 1e-4;
+    let dim = 15;
+    let h_sys = harmonic_oscillator_hamiltonian(dim);
+    let gaps = harmonic_oscillator_gaps(dim);
+    let gs = GammaStrategy::known(gaps, 30);
+    let beta_e = 5.0;
+    let alpha = 1e-2;
     let mut conf = CaptureRadiusConfig {
         label: String::from("Harmonic Oscillator (15 dim) high temp"),
         beta_e,
         // deltas: Array::logspace(10., 0., f64::log10(beta_e), 150).to_vec(),
         deltas: Array::linspace(0.0, beta_e, 150).to_vec(),
         alpha,
-        time: 1e-2 / alpha,
-        gamma: GammaStrategy::Fixed(1.0),
+        time: 0.5 / alpha,
+        gamma: gs,
         h_sys,
         num_samples: 250,
     };
@@ -66,26 +82,23 @@ fn cli_main() {
     let start = Instant::now();
     let cli = Cli::parse();
     match cli.experiment_type {
-        Experiments::SingleShotTraceDistSweep => {
+        Experiments::SingleShotTraceDistSweep { config, output } => {
             println!("single shot trace distance sweep");
-            if cli.config.is_file() == false {
-                println!("Could not find config file at: {:}", cli.config.display());
+            if config.is_file() == false {
+                println!("Could not find config file at: {:}", config.display());
                 return;
             }
-            let conf_path = cli
-                .config
+            let conf_path = config
                 .to_str()
                 .expect("Could not convert input path to string.")
                 .to_string();
-            let out_path = cli
-                .output
+            let out_path = output
                 .to_str()
                 .expect("Could not convert output path to string.")
                 .to_string();
             let conf = TraceNormReductionConfig::from_json(conf_path);
             let results = conf.run();
             let out = TraceNormReductionOutput {
-                label: cli.experiment_label.unwrap_or(String::new()),
                 experiment_type: String::from("SingleShotTraceDistSweep"),
                 num_samples: conf.num_samples,
                 data: results,
@@ -104,7 +117,7 @@ fn cli_main() {
 }
 
 mod tests {
-    use crate::{adjoint, i, partial_trace, zero, RandomInteractionGen};
+    use crate::{adjoint, i, interaction_generator::RandomInteractionGen, partial_trace, zero};
     use ndarray::{linalg::kron, prelude::*};
     use ndarray_linalg::{expm::expm, random_hermite, OperationNorm, Trace};
     use num_complex::{Complex64 as c64, ComplexFloat};

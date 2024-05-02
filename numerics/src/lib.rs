@@ -10,123 +10,13 @@ use rand_distr::{Distribution, Normal, StandardNormal};
 use serde::{Deserialize, Serialize};
 
 pub mod channel;
-pub mod fixed_points;
-pub mod new_channel;
-pub mod quantities;
-pub mod single_qubit_dist;
-pub mod thermometry;
+pub mod interaction_generator;
+pub mod single_shot_dist;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HamiltonianType {
     HarmonicOscillator,
     MarkedState,
-}
-
-#[derive(Debug)]
-pub struct RandomInteractionGen {
-    rng: Arc<Mutex<ChaCha8Rng>>,
-    pub dim: usize,
-}
-
-impl RandomInteractionGen {
-    pub fn new(seed: u64, dim: usize) -> Self {
-        RandomInteractionGen {
-            rng: Arc::new(Mutex::new(ChaCha8Rng::seed_from_u64(seed))),
-            dim,
-        }
-    }
-
-    pub fn sample_gue(&self) -> Array2<c64> {
-        let mut chacha = self.rng.lock().expect("couldn't get cha cha");
-        let mut g = Array2::<c64>::zeros((self.dim, self.dim).f());
-        for i in 0..self.dim {
-            for j in 0..i {
-                let x: c64 = chacha.gen();
-                g[[i, j]] = x;
-                g[[j, i]] = x.conj();
-            }
-            let y: c64 = chacha.gen();
-            g[[i, i]] = y + y.conj();
-        }
-        g
-    }
-
-    pub fn sample_multiple_gue(&self, num_samples: usize) -> Vec<Array2<c64>> {
-        let mut ret = Vec::with_capacity(num_samples);
-        let mut chacha = self.rng.lock().expect("couldn't get cha cha");
-        for _ in 0..num_samples {
-            let mut g = Array2::<c64>::zeros((self.dim, self.dim).f());
-            for i in 0..self.dim {
-                for j in 0..i {
-                    let x: c64 = chacha.gen();
-                    g[[i, j]] = x;
-                    g[[j, i]] = x.conj();
-                }
-                let y: c64 = chacha.gen();
-                g[[i, i]] = y + y.conj();
-            }
-            ret.push(g);
-        }
-        ret
-    }
-
-    /// Samples a haar random unitary.
-    pub fn sample_haar_unitary(&self) -> Array2<c64> {
-        let mut rng = self.rng.lock().expect("Couldn't lock rng.");
-        let dim = self.dim;
-        let mut real_gauss: Vec<c64> = Vec::with_capacity(dim * dim);
-        for _ in 0..(dim * dim) {
-            real_gauss.push(c64::new(
-                rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.),
-                rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.),
-            ));
-        }
-        let gauss_array = Array2::<c64>::from_shape_vec((dim, dim), real_gauss).unwrap();
-        let (q, r) = gauss_array.qr_square().unwrap();
-        let mut lambda = Array2::<c64>::zeros((dim, dim).f());
-        for ix in 0..dim {
-            lambda[[ix, ix]] = r[[ix, ix]] / r[[ix, ix]].norm();
-        }
-        q.dot(&lambda)
-    }
-
-    /// Samples a matrix with Haar random eigenvectors and
-    /// i.i.d gaussian eigenvalues.
-    pub fn sample_iid_interaction(&self) -> Array2<c64> {
-        let mut rng = self.rng.lock().expect("Couldn't lock rng.");
-        let dim = self.dim;
-        let mut real_gauss: Vec<c64> = Vec::with_capacity(dim * dim);
-        for _ in 0..(dim * dim) {
-            real_gauss.push(c64::new(
-                rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.),
-                rng.sample::<f64, _>(StandardNormal) / f64::sqrt(2.),
-            ));
-        }
-        let gauss_array = Array2::<c64>::from_shape_vec((dim, dim), real_gauss).unwrap();
-        let (q, r) = gauss_array.qr_square().unwrap();
-        let mut lambda = Array2::<c64>::zeros((dim, dim).f());
-        for ix in 0..dim {
-            lambda[[ix, ix]] = r[[ix, ix]] / r[[ix, ix]].norm();
-        }
-        let u = q.dot(&lambda);
-        let u_dagger = adjoint(&u);
-        let normal = Normal::new(0., 1.).unwrap();
-        let mut out = Array2::<c64>::zeros((self.dim, self.dim).f());
-        for ix in 0..dim {
-            out[[ix, ix]] = c64::from_real(rng.sample(normal));
-        }
-        out = out.dot(&u_dagger);
-        u.dot(&out)
-    }
-}
-
-impl Clone for RandomInteractionGen {
-    fn clone(&self) -> Self {
-        Self {
-            rng: self.rng.clone(),
-            dim: self.dim.clone(),
-        }
-    }
 }
 
 pub fn perform_fixed_interaction_channel(
@@ -259,7 +149,7 @@ mod test {
     use ndarray_linalg::OperationNorm;
     use num_complex::Complex64 as c64;
 
-    use crate::{adjoint, RandomInteractionGen};
+    use crate::{adjoint, interaction_generator::RandomInteractionGen};
 
     #[test]
     fn test_haar_unitary() {
@@ -267,7 +157,6 @@ mod test {
         let u = chacha.sample_haar_unitary();
         let u_dagger = adjoint(&u);
         let diff = u.dot(&u_dagger) - Array2::<c64>::eye(10);
-        crate::thermometry::thermometry();
         println!(
             "diff magnitude per epsilon: {:}",
             diff.opnorm_one().unwrap() / f64::EPSILON
