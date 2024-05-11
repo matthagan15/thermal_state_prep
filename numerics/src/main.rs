@@ -2,25 +2,16 @@ extern crate blas_src;
 extern crate ndarray;
 extern crate num_complex;
 
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex, RwLock};
 use std::time::Instant;
 
 use clap::{Parser, Subcommand};
-use ndarray::linalg::kron;
+
 use ndarray::prelude::*;
-use ndarray_linalg::expm::expm;
-use ndarray_linalg::random_hermite;
-use ndarray_linalg::{OperationNorm, Scalar};
-use num_complex::Complex64 as c64;
-use num_complex::ComplexFloat;
+
+use ndarray_linalg::Scalar;
 
 use numerics::single_shot_dist::{TraceNormReductionConfig, TraceNormReductionOutput};
-use rand::prelude::*;
-use rand_chacha::ChaCha8Rng;
-use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
 
 use numerics::channel::*;
 use numerics::*;

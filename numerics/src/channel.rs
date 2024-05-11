@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 use crate::interaction_generator::RandomInteractionGen;
 use crate::{adjoint, mean_and_std, partial_trace, schatten_2_distance, thermal_state};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum GammaStrategy {
     Fixed(f64),
     Iterative(Vec<f64>),

@@ -11,12 +11,56 @@ use serde::{Deserialize, Serialize};
 
 pub mod channel;
 pub mod interaction_generator;
+pub mod multi_shot_dist;
 pub mod single_shot_dist;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum HamiltonianType {
     HarmonicOscillator,
     MarkedState,
+    Log,
+    Sqrt,
+    Square,
+}
+
+impl HamiltonianType {
+    pub fn as_ndarray(&self, dim: usize) -> Array2<c64> {
+        let mut out = Array2::<c64>::zeros((dim, dim).f());
+        for ix in 0..dim {
+            out[[ix, ix]] = match self {
+                HamiltonianType::HarmonicOscillator => c64::new(0.5 + ix as f64, 0.),
+                HamiltonianType::MarkedState => {
+                    if ix == 0 {
+                        c64::new(1., 0.)
+                    } else {
+                        c64::new(0., 0.)
+                    }
+                }
+                HamiltonianType::Log => {
+                    let x = c64::new(ix as f64, 0.);
+                    x.log(std::f64::consts::E)
+                }
+                HamiltonianType::Sqrt => c64::new((ix as f64).sqrt(), 0.),
+                HamiltonianType::Square => c64::new((ix * ix) as f64, 0.),
+            };
+        }
+        out
+    }
+}
+
+impl std::str::FromStr for HamiltonianType {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match &s.to_lowercase()[..] {
+            "harmonic" => Ok(HamiltonianType::HarmonicOscillator),
+            "marked_state" => Ok(HamiltonianType::MarkedState),
+            "log" => Ok(HamiltonianType::Log),
+            "sqrt" => Ok(HamiltonianType::Sqrt),
+            "square" => Ok(HamiltonianType::Square),
+            _ => Err(()),
+        }
+    }
 }
 
 pub fn perform_fixed_interaction_channel(
