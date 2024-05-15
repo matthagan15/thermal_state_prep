@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use crate::{channel::GammaStrategy, HamiltonianType};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-struct MultiShotParameters {
+struct FixedEpsilonConfig {
     alpha_start: f64,
     alpha_stop: f64,
     alpha_steps: usize,
@@ -18,10 +18,6 @@ struct MultiShotParameters {
     time_stop: f64,
     time_steps: usize,
     time_logspace: bool,
-    beta_sys_start: f64,
-    beta_sys_stop: f64,
-    beta_sys_steps: usize,
-    beta_sys_logspace: bool,
     beta_env_start: f64,
     beta_env_stop: f64,
     beta_env_steps: usize,
@@ -33,11 +29,10 @@ struct MultiShotParameters {
     hamiltonian_type: HamiltonianType,
     dim_sys: usize,
     num_samples: usize,
-    time: f64,
     gamma_strategy: GammaStrategy,
 }
 
-impl MultiShotParameters {
+impl FixedEpsilonConfig {
     fn to_file(&self, path: &Path) {
         let s = serde_json::to_string_pretty(self).expect("Could not serialize parameters.");
         let mut file = File::create(path).expect("Could not open file for write.");
@@ -59,5 +54,25 @@ impl MultiShotParameters {
         } else {
             panic!("Could not open file")
         }
+    }
+}
+
+/// format of inputs is: (alpha, beta_env, epsilon, time)
+/// format of outputs is: (num_steps, mean_dist, dist_of_mean, std)
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct MultiShotResults {
+    inputs: Vec<(f64, f64, f64, f64)>,
+    outputs: Vec<(usize, f64, f64, f64)>,
+    num_samples: usize,
+    dim_sys: usize,
+    label: String,
+}
+
+impl MultiShotResults {
+    fn to_file(&self, path: &Path) {
+        let s = serde_json::to_string_pretty(self).expect("Could not serialize parameters.");
+        let mut file = File::create(path).expect("Could not open file for write.");
+        file.write_all(s.as_bytes())
+            .expect("Could not write serialized data to file.");
     }
 }

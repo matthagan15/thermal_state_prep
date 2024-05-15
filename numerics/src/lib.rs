@@ -10,8 +10,9 @@ use rand_distr::{Distribution, Normal, StandardNormal};
 use serde::{Deserialize, Serialize};
 
 pub mod channel;
+pub mod fixed_epsilon;
+pub mod fixed_num_steps;
 pub mod interaction_generator;
-pub mod multi_shot_dist;
 pub mod single_shot_dist;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -63,19 +64,12 @@ impl std::str::FromStr for HamiltonianType {
     }
 }
 
-pub fn perform_fixed_interaction_channel(
-    h_tot: &Array2<c64>,
-    interaction: &Array2<c64>,
-    rho: &Array2<c64>,
-    time: f64,
-    dim_sys: usize,
-) -> Array2<c64> {
-    let x = c64::new(0., time) * (h_tot + interaction);
-    let u = expm(&x).expect("Could not exponentiate");
-    let u_dagger = adjoint(&u);
-    let mut out = rho.dot(&u_dagger);
-    out = u.dot(&out);
-    partial_trace(&out, dim_sys, h_tot.nrows() / dim_sys)
+pub fn generate_floats(start: f64, stop: f64, num_steps: usize, logspace: bool) -> Vec<f64> {
+    if logspace {
+        ndarray::Array::logspace(10.0, start.log10(), stop.log10(), num_steps).to_vec()
+    } else {
+        ndarray::Array::linspace(start, stop, num_steps).to_vec()
+    }
 }
 
 /// Returns a hamiltonian with a highly degenerate spectrum. Has a single

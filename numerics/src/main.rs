@@ -11,27 +11,29 @@ use ndarray::prelude::*;
 
 use ndarray_linalg::Scalar;
 
-use numerics::single_shot_dist::{TraceNormReductionConfig, TraceNormReductionOutput};
-
 use numerics::channel::*;
 use numerics::*;
 
 #[derive(Subcommand)]
 pub enum Experiments {
-    SingleShotTraceDistSweep {
-        #[arg(short, long, value_name = "CONFIG")]
-        config: PathBuf,
-
-        #[arg(short, long, value_name = "OUTPUT")]
-        output: PathBuf,
-    },
-    FixedPointSweep,
+    SingleShot,
+    FixedEpsilon,
+    FixedNumSteps,
 }
 
 #[derive(Parser)]
 pub struct Cli {
     #[command(subcommand)]
     experiment_type: Experiments,
+
+    #[arg(short, long, value_name = "CONFIG_PATH")]
+    config_path: PathBuf,
+
+    #[arg(short, long, value_name = "RESULTS_PATH")]
+    results_path: PathBuf,
+
+    #[arg(short, long, value_name = "LABEL")]
+    label: String,
 }
 
 fn harmonic_oscillator_gaps(dim: usize) -> Vec<f64> {
@@ -46,61 +48,17 @@ fn harmonic_oscillator_gaps(dim: usize) -> Vec<f64> {
 }
 
 fn main() {
-    let dim = 15;
-    let h_sys = harmonic_oscillator_hamiltonian(dim);
-    let gaps = harmonic_oscillator_gaps(dim);
-    let gs = GammaStrategy::known(gaps, 30);
-    let beta_e = 5.0;
-    let alpha = 1e-2;
-    let mut conf = CaptureRadiusConfig {
-        label: String::from("Harmonic Oscillator (15 dim) high temp"),
-        beta_e,
-        // deltas: Array::logspace(10., 0., f64::log10(beta_e), 150).to_vec(),
-        deltas: Array::linspace(0.0, beta_e, 150).to_vec(),
-        alpha,
-        time: 0.5 / alpha,
-        gamma: gs,
-        h_sys,
-        num_samples: 250,
-    };
-    let output_path = Path::new("/Users/matt/repos/thermal_state_prep/numerics/tmp/capture_radius/harmonic_oscillator_high_temp.json");
-    let outputs = config_to_results(conf);
-    let serialized = serde_json::to_string(&outputs).expect("Could not serialize output.");
-    std::fs::write(output_path, serialized).expect("Could not write results");
-}
-
-fn cli_main() {
+    let gs = GammaStrategy::Fixed(1.0);
+    println!("pretty gamma strategy below.");
+    println!("{:}", serde_json::to_string_pretty(&gs).unwrap());
     let start = Instant::now();
     let cli = Cli::parse();
     match cli.experiment_type {
-        Experiments::SingleShotTraceDistSweep { config, output } => {
-            println!("single shot trace distance sweep");
-            if config.is_file() == false {
-                println!("Could not find config file at: {:}", config.display());
-                return;
-            }
-            let conf_path = config
-                .to_str()
-                .expect("Could not convert input path to string.")
-                .to_string();
-            let out_path = output
-                .to_str()
-                .expect("Could not convert output path to string.")
-                .to_string();
-            let conf = TraceNormReductionConfig::from_json(conf_path);
-            let results = conf.run();
-            let out = TraceNormReductionOutput {
-                experiment_type: String::from("SingleShotTraceDistSweep"),
-                num_samples: conf.num_samples,
-                data: results,
-                beta_env: conf.beta_env,
-                time: conf.time,
-            };
-            out.write_json_to_file(out_path);
+        Experiments::SingleShot => {
+            single_shot_dist::run(&cli.config_path, &cli.results_path, cli.label.clone());
         }
-        Experiments::FixedPointSweep => {
-            println!("fixed point sweep!");
-        }
+        Experiments::FixedEpsilon => todo!(),
+        Experiments::FixedNumSteps => todo!(),
     }
 
     let duration = start.elapsed();

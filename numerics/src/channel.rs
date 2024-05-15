@@ -3,6 +3,7 @@ use std::{
     cmp::min,
     collections::HashMap,
     env,
+    iter::zip,
     ops::AddAssign,
     path::{Path, PathBuf},
     sync::{Arc, Mutex, RwLock},
@@ -19,7 +20,7 @@ use rayon::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::interaction_generator::RandomInteractionGen;
+use crate::interaction_generator::{self, RandomInteractionGen};
 use crate::{adjoint, mean_and_std, partial_trace, schatten_2_distance, thermal_state};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -111,68 +112,6 @@ pub struct SingleShotParameters {
     time: f64,
 }
 
-pub struct CaptureRadiusConfig {
-    pub label: String,
-    pub beta_e: f64,
-    pub deltas: Vec<f64>,
-    pub alpha: f64,
-    pub time: f64,
-    pub gamma: GammaStrategy,
-    pub h_sys: Array2<c64>,
-    pub num_samples: usize,
-}
-
-#[derive(Debug, Serialize)]
-pub struct CaptureRadiusResults {
-    label: String,
-    alpha: f64,
-    time: f64,
-    deltas: Vec<f64>,
-    /// Record the mean, std, and distance of average state
-    channel_output_distances: Vec<(f64, f64, f64)>,
-    thermal_state_distances: Vec<f64>,
-}
-
-pub fn config_to_results(config: CaptureRadiusConfig) -> CaptureRadiusResults {
-    let mut ret = CaptureRadiusResults {
-        label: config.label,
-        alpha: config.alpha,
-        time: config.time,
-        deltas: config.deltas.clone(),
-        channel_output_distances: Vec::with_capacity(config.deltas.len()),
-        thermal_state_distances: Vec::with_capacity(config.deltas.len()),
-    };
-    let mut params = SingleShotParameters {
-        alpha: config.alpha,
-        beta_e: config.beta_e,
-        time: config.time,
-    };
-    let rho_ideal = thermal_state(&config.h_sys, params.beta_e);
-
-    let thermal_state_dist = |delta| {
-        let rho_input = thermal_state(&config.h_sys, params.beta_e - delta);
-        schatten_2_distance(&rho_ideal, &rho_input)
-    };
-    let rand_gen = RandomInteractionGen::new(1, config.h_sys.nrows() * 2);
-    let mut phi = IteratedChannel {
-        h_sys: config.h_sys.clone(),
-        parameter_schedule: vec![params.clone()],
-        initial_beta: 0.0,
-        target_beta: config.beta_e,
-        gamma_strategy: config.gamma,
-        rng_seed: None,
-        interaction_gen: rand_gen,
-    };
-    for delta in config.deltas {
-        phi.initial_beta = config.beta_e - delta;
-        let results = phi.simulate(config.num_samples);
-        let result = results.first().expect("Did not get simulation results.");
-        ret.thermal_state_distances.push(thermal_state_dist(delta));
-        ret.channel_output_distances.push(*result);
-    }
-    ret
-}
-
 /// Assumes properly normalized, panics if it isn't and cannot generate a sample. assumes `prob_dist` is formatted as `Vec<(value, prob)>`
 fn sample_from_distribution(prob_dist: &Vec<(f64, f64)>) -> f64 {
     let mut acc = 0.0;
@@ -198,54 +137,66 @@ pub fn build_rho_env(beta: f64, gamma: f64) -> Array2<c64> {
         ]
     ]
 }
-struct TimeVsEpsilonOut {
-    sim_parameters: SingleShotParameters,
-    schatten_2_norm_to_ideal: f64,
-    total_sim_time: f64,
-}
-
-fn epsilon_vs_time_scaling(
-    h_sys: &Array2<c64>,
-    gamma_strategy: GammaStrategy,
-) -> Vec<TimeVsEpsilonOut> {
-    let mut ret = Vec::new();
-    let mut beta_e = 1.0_f64;
-    let mut alpha_t_reduction_factor = f64::square(0.75);
-    let min_ep: f64 = -2.0;
-    let num_points = 100;
-    let eps = Array::logspace(10.0, 0.0, min_ep, num_points).to_vec();
-    for ep in eps {
-        let mut phi = IteratedChannel {
-            h_sys: h_sys.clone(),
-            parameter_schedule: vec![SingleShotParameters {
-                alpha: 0.1,
-                beta_e: 0.0,
-                time: 10.,
-            }],
-            initial_beta: 0.0,
-            target_beta: 1.0,
-            gamma_strategy: gamma_strategy.clone(),
-            rng_seed: None,
-            interaction_gen: RandomInteractionGen::new(1, h_sys.nrows() * 2),
-        };
-    }
-    ret
-}
 
 pub struct IteratedChannel {
     h_sys: Array2<c64>,
     parameter_schedule: Vec<SingleShotParameters>,
-    initial_beta: f64,
-    target_beta: f64,
     gamma_strategy: GammaStrategy,
-    rng_seed: Option<u64>,
     interaction_gen: RandomInteractionGen,
 }
 
 impl IteratedChannel {
+    pub fn new(
+        h_sys: Array2<c64>,
+        alphas: Vec<f64>,
+        beta_envs: Vec<f64>,
+        times: Vec<f64>,
+        gamma_strategy: GammaStrategy,
+    ) -> Self {
+        if alphas.len() != beta_envs.len() && alphas.len() != times.len() {
+            panic!("Parameters not all of same length.")
+        }
+        let mut v = Vec::with_capacity(alphas.len());
+        for ix in 0..alphas.len() {
+            v.push(SingleShotParameters {
+                alpha: alphas[ix],
+                beta_e: beta_envs[ix],
+                time: times[ix],
+            });
+        }
+        let interaction_gen = RandomInteractionGen::new(0, h_sys.nrows() * 2);
+        Self {
+            h_sys,
+            parameter_schedule: v,
+            gamma_strategy,
+            interaction_gen,
+        }
+    }
+
+    pub fn state_distance(&self, beta_1: f64, beta_2: f64) -> f64 {
+        let rho_1 = thermal_state(&self.h_sys, beta_1);
+        let rho_2 = thermal_state(&self.h_sys, beta_2);
+        schatten_2_distance(&rho_1, &rho_2)
+    }
+
+    pub fn set_parameters(&mut self, alphas: Vec<f64>, beta_envs: Vec<f64>, times: Vec<f64>) {
+        if alphas.len() != beta_envs.len() && alphas.len() != times.len() {
+            panic!("Parameter inputs need to match length.")
+        }
+        let mut v = Vec::with_capacity(alphas.len());
+        for ix in 0..alphas.len() {
+            v.push(SingleShotParameters {
+                alpha: alphas[ix],
+                beta_e: beta_envs[ix],
+                time: times[ix],
+            });
+        }
+        self.parameter_schedule = v;
+    }
+
     /// Creates a fresh bath and evolves the provided rho_sys
     /// through a single application of the channel.
-    pub fn simulate_sample_with_params(
+    fn simulate_sample_with_params(
         &self,
         alpha: f64,
         beta: f64,
@@ -272,7 +223,12 @@ impl IteratedChannel {
     }
 
     /// Returns the (mean, std, dist_of_avg) of each parameter in the cooling schedule
-    pub fn simulate(&self, num_samples: usize) -> Vec<(f64, f64, f64)> {
+    pub fn simulate(
+        &self,
+        initial_beta: f64,
+        target_beta: f64,
+        num_samples: usize,
+    ) -> Vec<(f64, f64, f64)> {
         let mut avg_states: HashMap<usize, Array2<c64>> =
             HashMap::with_capacity(self.parameter_schedule.len());
         let mut stat_map: HashMap<usize, Vec<f64>> =
@@ -289,10 +245,10 @@ impl IteratedChannel {
         let statistics_locker = Arc::new(Mutex::new(stat_map));
         let gamma_std_locker = Arc::new(Mutex::new(gamma_std_map));
 
-        let rho_ideal = thermal_state(&self.h_sys, self.target_beta);
+        let rho_ideal = thermal_state(&self.h_sys, target_beta);
 
         (0..num_samples).into_par_iter().for_each(|_| {
-            let mut rho_sys = thermal_state(&self.h_sys, self.initial_beta);
+            let mut rho_sys = thermal_state(&self.h_sys, initial_beta);
 
             for ix in 0..self.parameter_schedule.len() {
                 let param = &self.parameter_schedule[ix];
@@ -360,13 +316,13 @@ mod tests {
     use ndarray::Array;
 
     use crate::{
-        harmonic_oscillator_hamiltonian, interaction_generator::RandomInteractionGen, mean_and_std,
+        channel::{sample_from_distribution, GammaStrategy},
+        harmonic_oscillator_hamiltonian,
+        interaction_generator::RandomInteractionGen,
+        mean_and_std,
     };
 
-    use super::{
-        config_to_results, sample_from_distribution, CaptureRadiusConfig, GammaStrategy,
-        IteratedChannel, SingleShotParameters,
-    };
+    use super::{IteratedChannel, SingleShotParameters};
 
     #[test]
     fn test_distribution_sampler() {
@@ -382,25 +338,6 @@ mod tests {
             .map(|_| sample_from_distribution(&easy_dist))
             .collect();
         println!("mean + std: {:?}", mean_and_std(&samps));
-    }
-
-    #[test]
-    fn test_capture_radius() {
-        let h_sys = harmonic_oscillator_hamiltonian(15);
-        let gammas = GammaStrategy::Fixed(1.);
-        let deltas = Array::linspace(0.0, 1.0, 50).to_vec();
-        let conf = CaptureRadiusConfig {
-            label: String::from("test"),
-            beta_e: 1.0,
-            deltas: deltas,
-            alpha: 0.0005,
-            time: 500.,
-            gamma: gammas,
-            h_sys,
-            num_samples: 200,
-        };
-        let res = config_to_results(conf);
-        dbg!(res);
     }
 
     #[test]
@@ -426,12 +363,9 @@ mod tests {
         let phi = IteratedChannel {
             h_sys,
             parameter_schedule: params,
-            initial_beta: 0.0,
-            target_beta: beta_e,
             gamma_strategy,
-            rng_seed: None,
             interaction_gen: int_gen,
         };
-        phi.simulate(100);
+        phi.simulate(0.0, beta_e, 100);
     }
 }
