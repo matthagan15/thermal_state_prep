@@ -496,6 +496,142 @@ So this says we need $\alpha t \leq \frac{\epsilon_{R}^{1/3}}{2 \dim^{1/3}}$ in 
 \textcolor{red}{TODO: Change this to be the norm of the average instead of the average of the norm. The norm of the average should be reducible to the third moment of the distribution of eigenvalues. Even then though we might pick up dimensionful factors because we have to do a spectral decomposition of each random matrix $D$. This then introduces a sum over all 3 diagonals. We can use independence to get rid of two of them, but the last remaining one I'm not sure how to, as we have projectors interspersed throughout the factors. Using triangle inequality and submultiplicativity gives you a factor of dimension, in which case we are just as good with our dumb bound of the average of the norm cubed.}
 \todo{Fix the definitions used here.}
 
+\section{Approximate Detailed Balance}
+In this section we show the most mild form of thermalization for all possible system Hamiltonians $H_S$. What we will show is that if $\Phi$ has a fixed point, then it will be arbitrarily close to the fixed point of the $\bigo{(\alpha t)^2}$ approximation to the channel $\Phi$. Then we show that the fixed point of this approximation, in the limit as $t \to \infty$, $\alpha \to 0$, and we have perfect knowledge of the distribution of eigenvalue differences $\Delta_S(i,k)$, is the thermal state $\rho_S(\beta_E)$. We say this is the most mild form of thermalization as it provides no guarantees for how long it takes the system to reach this fixed point, or even how long it takes to get close to it's fixed point. 
+
+Given that we are able to rotate the basis we work with into the System Hamiltonian's eigenbasis, and moreover we previously showed that off-diagonal coherences in this basis are negligible, we can treat this process as a stochastic one. Explicitly, if we give a diagonal state as input to the channel $\Phi$, to order $\bigo{\alpha^2}$ we get a diagonal state back. Since diagonal states can be thought of as probability distributions, the map $\Phi$ can roughly be thought of as a Markov process on the eigenstates of the Hamiltonian $H_S$. Since our goal is to show that this map produces a thermal state,
+we would need to show that this probability distribution converges to the Boltzmann distribution $e^{-\beta_E \lambda_S(i)} / \partfun_S(\beta_E)$, for state $i$. In classical probability sampling literature this is done through a Detailed Balance calculation, which shows that the desired distribution is a fixed point. Ergodicity arguments of the desired Markov chain are then used to claim that the fixed point is unique and that therefore the process produces samples of the desired distribution.
+
+Given that our map is only approximate, we cannot make rigorous claims regarding detailed balance at fixed $\alpha, t,$ or $\gamma$. However, in this section we show that in the appropriate limits that our mapping satisfies Detailed Balance exactly. This is enough to give solid evidence that for appropriate regimes our channel should converge approximately to this goal distribution.
+
+
+First we need to show that the fixed point of the thermalizing channel $\Phi$, if it exists, is close to it's approximation $T^{(2)}$. In this case, let $\rho_{\Phi}$ denote the fixed point of $\Phi$ and similarly for $\rho_T$.
+\begin{align}
+    \norm{\rho_{\Phi} - \rho_T} &= \norm{\Phi(\rho_{\Phi}) - T^{(2)}(\rho_T)} \\
+    &= \norm{\Phi(\rho_{\Phi}) - T^{(2)}(\rho_{\Phi}) + T^{(2)}(\rho_{\Phi}) - T^{(2)}(\rho_T)}
+\end{align}
+
+
+\begin{align}
+    &\prob{\text{System transition } i \to j | \text{ env at } \beta_E} \nonumber \\
+    &\approx \frac{\alpha^2 t^2}{\dim + 1} \parens {\frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}}  \sinc^2((\Delta(i,j) + \gamma)t) + \frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2 ((\Delta(i,j) - \gamma)t) + 2 \sinc^2(\Delta(i,j) t)} \nonumber
+\end{align}
+
+\begin{align}
+    &\prob{\text{System transition } i \to j | \text{ env at } \beta_E} \nonumber \\
+    &= \bra{j} \Phi_{\gamma}(\ketbra{i}{i}) \ket{j} \\
+    &= \braket{j}{i}\braket{i}{j} + \sum_{k,l} \tau(i, k | j, l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} + \bra{j} R_{\Phi}(\ketbra{i}{i})\ket{j}
+\end{align}
+Now as we are studying Detailed Balance, we assume that $i \neq j$. For our purposes, without loss of generality we let $\lambda_S(i) \geq \lambda_S(j)$, so by transitioning from $i \to j$ we are losing energy to the environment. We simplify the non-trivial term from above as
+\begin{align}
+    &\sum_{k,l} \tau(i,k| j,l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} = \frac{e^{-\beta_E \lambda_E(0)}}{\partfun_E(\beta_E)}(\tau(i,0|j,0) + \tau(i,0|j,1)) + \frac{e^{-\beta_E \lambda_E(1)}}{\partfun_E(\beta_E)} (\tau(i,1|j,0) + \tau(i,1|j,1) \\
+    &= \frac{\alpha^2 t^2}{\dim + 1} \bigg(\frac{1}{1 + e^{-\beta_E \gamma}} (\sinc^2(\Delta_S(i,j)t/2) + \sinc^2((\Delta_S(i,j) - \gamma)t/2)) \nonumber \\
+    &\quad \quad \quad \quad \quad \quad  +\frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} (\sinc^2((\Delta_S(i,j) + \gamma)t/2) + \sinc^2(\Delta_S(i,j) t/2)) \bigg) \\
+    &\frac{\alpha^2 t^2}{\dim + 1} \bigg(\frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) + \gamma)t/2) + \sinc^2(\Delta_S(i,j)t/2)
+\end{align}
+As $\Delta_S(i,j) \geq 0 $ we expect that only the $\sinc^2((\Delta_S(i,j) - \gamma) t/2)$ term will contribute significantly to this sum. We can similarly write down the probability of the state to transition from $j \to i$ as
+\begin{align}
+    \prob{\text{System transition } j \to i | \text{ env at } \beta_E} = \sum_{k,l} \tau(j,k|i,l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} + \bra{i} R_{\Phi}(\ketbra{j}{j})\ket{i},
+\end{align}
+where we write the non-trivial term as
+\begin{align}
+    \sum_{k,l} \tau(j,k|i,l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} = \frac{\alpha^2 t^2}{\dim + 1} \bigg(&\frac{1}{1 + e^{-\beta_E \gamma}} (\sinc^2(\Delta_S(j,i)t/2) + \sinc^2((\Delta_S(j,i) - \gamma)t/2)) \nonumber \\
+    &+\frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} (\sinc^2((\Delta_S(j,i) + \gamma)t/2) + \sinc^2(\Delta_S(j,i) t/2)) \bigg).
+\end{align}
+We simplify this by noting $\Delta_S(i,j) = - \Delta_S(j,i)$ and that $\sinc^2(x) = \sinc^2(-x)$ to get
+\begin{align}
+&\sum_{k,l} \tau(j,k|i,l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} \\
+&= \frac{\alpha^2 t^2}{\dim + 1} \bigg(\frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) + \gamma)t/2) + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) + \sinc^2(\Delta_S(i,j)t/2)
+\end{align}
+
+Now we would like to show some form of Detailed Balance, in appropriate limits, for the thermal state of the system. We will show that Detailed Balance holds in expectation, or with some non-zero probability. The thermal state give $\prob{\text{state in } i} = \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)}$. We then need to expand differences
+\begin{align}
+    \chi(i,j) \coloneqq &\prob{\text{System transition } i \to j | \text{ env at } \beta_E} \prob{\text{state in } i} \nonumber \\
+    &- \prob{\text{System transition } j \to i | \text{ env at } \beta_E} \prob{\text{state in } j}.
+\end{align}
+This expression is written in full glory as
+\begin{align}
+    \chi(i,j) &= \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \bra{j} R_{\Phi}(\ketbra{i}{i})\ket{j} \nonumber \\
+    &+ \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) - \gamma) t/2) \nonumber \\
+    &+\frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) + \gamma) t/2) \nonumber \\
+    &+ \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \sinc^2(\Delta_S(i,j)t/2) \nonumber \\
+    &-\frac{e^{-\beta_E \lambda_S(j)}}{\partfun_S(\beta_E)} \bra{i} R_{\Phi}(\ketbra{j}{j})\ket{i} \nonumber \\
+    &- \frac{e^{-\beta_E \lambda_S(j)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) + \gamma) t/2) \nonumber \\
+    &-\frac{e^{-\beta_E \lambda_S(j)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) - \gamma) t/2) \nonumber \\
+    &- \frac{e^{-\beta_E \lambda_S(j)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \sinc^2(\Delta_S(i,j)t/2).
+\end{align}
+In order to simplify this, we will group these expressions with an end goal in mind. As we would like this to hold for all $i \neq j$ but we have a fixed $\gamma$, we need to randomly choose a $\gamma$ and show that this holds in expectation. Further, we would like to bound the absolute value of these differences. So we want $\mathbb{E}_{\gamma}\abs{\chi(i,j)}$. We can then use the triangle inequality, the fact that $\abs{\bra{j}R_{\Phi}(\ketbra{i}{i})\ket{j}} \leq \norm{R_{\Phi}}$, $\abs{\frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)}} \leq 1$, 
+
+along with the fact that transitions such as $\sinc^2(\Delta_S(i,j)t/2)$ are suppressed by $\epsilon_{\sinc}$ to get a simplified upper bound:
+\begin{align}
+    \mathbb{E}_{\gamma} \abs{\chi(i,j)} &\leq \mathbb{E}_{\gamma} 2 \norm{R_{\Phi}} \nonumber \\
+    &+ \mathbb{E}_{\gamma} \frac{\alpha^2 t^2}{\dim + 1} 4 \epsilon_{\sinc}  \nonumber \\
+    &+ \mathbb{E}_{\gamma} \frac{\alpha^2 t^2}{\dim + 1} \frac{1}{1 + e^{-\beta_E \gamma}} \frac{1}{\partfun_S(\beta_E)} \abs{\parens{e^{-\beta_E \lambda_S(i)} - e^{-\beta_E \gamma} e^{-\beta_E \lambda_S(j)}} \sinc^2((\Delta_S(i,j) - \gamma) t/2)} \\
+    &\leq 2 \norm{R_{\Phi}} + 4 \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1} \nonumber \\
+    &+ \frac{\alpha^2 t^2}{\dim + 1} \mathbb{E}_{\gamma} \sinc^2((\Delta_S(i,j) - \gamma) t/2) \abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}}. \label{eq:detailed_balance_upper_bound}
+\end{align}
+This is where we have to introduce our distribution over $\gamma$. We note that if $\gamma$ is far away from $\Delta_S(i,j)$, then as $t \to \infty$ we have that this product is trivially 0. We want to show that Detailed Balance is satisfied even when $\gamma \to \Delta_S(i,j)$. To do so we upper bound $\sinc^2 \leq 1$ whenever $\abs{\Delta_S(i,j) - \gamma} \leq \Delta_{\min}$ and $\sinc^2 \leq \epsilon_{\sinc}$ whenever $\abs{\Delta_S(i,j) - \gamma} \geq \Delta_{\min}$. 
+
+We now are at an impasse. Our goal for this argument is to show that if our channel does anything non-trivial, then in the appropriate limits ($t \to \infty, \alpha \to 0, \alpha t \to c_{small}$) it should satisfy detailed balance conditions, or at least get arbitrarily close to it. We see that when our channel has a $\gamma$ that is not close to any $\Delta_S(i,j)$ we do not induce any transitions among states (in the $t \to \infty$ limit). This then trivially satisfies Detailed balance, as $\prob{i \to j} = \prob{j \to i} = 0$ gives $0 = 0$ for Detailed Balance. We would like to show that all $i \neq j$ can get arbitrarily close to satisfying Detailed Balance by choosing a $\gamma$ randomly. To do so there are three obvious candidates for distributions of $\gamma$ that we could analyze theoretically:
+\begin{enumerate}
+    \item A maximum entropy prior, or choosing $\gamma$ uniformly from 0 to $\norm{H}$,
+    \item A minimal entropy prior, or exact knowledge of $\Delta_S(i,j)$ for all $i,j$, where we choose indices or differences uniformly,
+    \item Choose a difference $\Delta_S(i,j)$ uniformly and then add in noise, either in the form of a Gaussian or a simple uniform box centered about the gap $\Delta_S(i,j)$.
+\end{enumerate}
+
+The simplest for us to look at first is the maximum entropy prior, or the uniform distribution of $\gamma$ from 0 to $\norm{H}$. This then gives us two regimes, $|\Delta_S(i,j) - \gamma| \leq \Delta_{\min}$ and $|\Delta_S(i,j) - \gamma| > \Delta_{\min}$. The $\sinc^2$ term is upper bounded by 1 in the former and $\epsilon_{\sinc}$ in the latter. 
+\begin{align}
+    &\mathbb{E}_{\gamma} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} \nonumber \\
+    &= \frac{1}{\norm{H}} \int_0^{\norm{H}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma \\
+    &= \frac{1}{\norm{H}} \int_0^{\Delta_S(i,j) - \Delta_{\min}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma \nonumber \\
+    &\quad + \frac{1}{\norm{H}} \int_{\Delta_S(i,j) - \Delta_{\min}}^{\Delta_S(i,j) + \Delta_{\min}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma \nonumber \\
+    &\quad + \int_{\Delta_S(i,j) + \Delta_{\min}}^{\norm{H}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma.
+\end{align}
+We will simplify these integrals separately. Starting with the first
+\begin{align}
+    &\frac{1}{\norm{H}} \int_0^{\Delta_S(i,j) - \Delta_{\min}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma \nonumber \\
+    &\leq \frac{\epsilon_{\sinc}}{\norm{H}} \int_0^{\Delta_S(i,j) - \Delta_{\min}} \left(e^{\beta_E(\Delta_S(i,j) - \gamma)} - 1\right) d\gamma \\
+    &= \frac{\epsilon_{\sinc}}{\norm{H}}\parens{\Delta_{\min} - \Delta_S(i,j) + \frac{e^{\beta_E \Delta_S(i,j)}}{\beta_E}\left( 1 - e^{-\beta_E(\Delta_S(i,j) - \Delta_{\min})} \right)}.
+\end{align}
+We then compute the third, as it is more similar to the first as
+\begin{align}
+    &\frac{1}{\norm{H}} \int_{\Delta_S(i,j) + \Delta_{\min}}^{\norm{H}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} d\gamma \nonumber \\
+    &\leq \frac{\epsilon_{\sinc}}{\norm{H}} \int_{\Delta_S(i,j) + \Delta_{\min}}^{\norm{H}} \left(1 - e^{\beta_E (\Delta_S(i,j) - \gamma)} \right) d\gamma \\
+    &=\frac{\epsilon_{\sinc}}{\norm{H}}\parens{\norm{H} - (\Delta_S(i,j) + \Delta_{\min}) + \frac{1}{\beta_E} \left(e^{-\beta_E(\norm{H} - \Delta_S(i,j))} - e^{-\beta_E \Delta_{\min}} \right) }.
+\end{align}
+Adding the results of these two integrals yields
+\begin{align}
+    \frac{\epsilon_{\sinc}}{\norm{H}}\parens{\norm{H} - 2 \Delta_S(i,j) +  \frac{1}{\beta_E} e^{\beta_E \Delta_S(i,j)}(2 + e^{-\beta_E \norm{H}}) + \frac{e^{\beta_E \Delta_{\min}} - e^{-\beta_E \Delta_{\min}}}{\beta_E}}.
+\end{align}
+We make two observations. First that this is positive given that $\norm{H} \geq 2 \Delta_S(i,j)$ and tends towards infinity as $\beta_E \to \infty$. The second is that there is no time dependence on the factor within the parenthesis, meaning that for fixed $\beta_E$ we can make this quantity arbitrarily small by reducing $\epsilon_{\sinc} \propto 1/t^2$. 
+
+The more reasonable distribution to analyze is the minimal entropy, or perfect knowledge distribution. In this distribution we pick an eigenvalue difference uniformly at random. We denote the set of eigenvalue gaps as $G_{\gamma}$. Then the expectation can be split into two: $S_{\gamma}$ being the set of gaps that are close to $\gamma$ and $T_{\gamma}$ as those that are far apart. Let $N_{diff}$ denote the number of differences. Specifically, let $S_{\gamma} = \set{\lambda_S(k) - \lambda_S(l) = \Delta_S(k,l) : \sinc^2((\Delta_S(i,j) - \Delta_S(k,l))t/2) \geq \epsilon_{\sinc}}$, and $T_{\gamma} = \set{\Delta_S(k,l) : \sinc^2((\Delta_S(i,j) - \Delta_S(k,l))t/2) < \epsilon_{\sinc}}$. Then the expected value over $\gamma$ becomes
+\begin{align}
+    &\mathbb{E}_{\gamma} \sinc^2((\Delta_S(i,j) - \gamma) t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} \nonumber \\
+    &=\frac{1}{N_{diff}}\sum_{\gamma \in S_{\gamma}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} + \frac{1}{N_{diff}} \sum_{\gamma \in T_{\gamma}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} \\
+    &\leq \frac{1}{N_{diff}} \sum_{\gamma \in S_{\gamma}} \abs{1 - e^{\beta_E(\Delta_S(i,j) -\gamma)}} + \frac{1}{N_{diff}} \epsilon_{\sinc} \sum_{\gamma \in T_{\gamma}}\abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}}.
+\end{align}
+We see that for the right hand sum the factor of $\epsilon_{\sinc}$, which vanishes as $t \to \infty$, causes the total sum to vanish as there are no explicit $t$ dependent terms. The set $T_{\gamma}$ does change with $t$, but it is upper bounded by a finite value and so is each possible summand. Now the real kicker is what happens to the leftmost summation. We investigate when an eigenvalue gap $\Delta_S(k,l)$ can be included in $S_{\gamma}$ as $t \to \infty$. 
+\begin{align}
+    \lim_{t \to \infty} \sinc^2((\Delta_S(i,j) - \Delta_S(k,l)) t/2) = \begin{cases}
+        0 & \Delta_S(i,j) \neq \Delta_S(k,l) \\
+        1 & \Delta_S(i,j) = \Delta_S(k,l).
+    \end{cases}
+\end{align}
+Because of this $S_{\gamma} = \set{\Delta_S(i,j)}$ becomes a multiset consisting solely of $\Delta_S(i,j)$ with the number of degeneracies of the eigenvalue $S_{\gamma}$. This means that any term in the summation then becomes $\abs{1 - e^{\beta_E(\Delta_S(i,j) - \Delta_S(i,j)}} = 0$. Then given that $\epsilon_{\sinc} = 1/(\Delta_(\min)^2 t^2) \to 0$, we have that $\lim_{t \to \infty} \mathbb{E}_{\gamma} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} = 0$. Looking at Eq. \eqref{eq:detailed_balance_upper_bound}, along with $\epsilon_{\sinc} = 1/(\Delta_{\min}^2 t^2)$ and $\alpha = \epsilon_{\alpha} / t$, we see that 
+\begin{align}
+    &\lim_{t \to \infty} \mathbb{E}_{\gamma} \abs{\chi(i,j)} \leq 2 \lim_{t \to \infty} \norm{R_{\Phi}} + 4 \lim_{t \to \infty} \frac{\epsilon_{\alpha}^2}{t^2 \Delta_{\min}^2 (\dim + 1)} \nonumber \\
+    &+ \frac{\epsilon_{\alpha}^2}{\dim + 1} \lim_{t \to \infty} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} \\
+    &= 2 \lim_{t \to \infty} \norm{R_{\Phi}}.
+\end{align}
+As 
+
+\begin{align}
+    \frac{\prob{i \to j}}{\prob{j \to i}} &\approx \frac{\frac{1}{1 + e^{-\beta_E \gamma}}\sinc^2 ((\Delta(i,j) - \gamma)t)+ 3 \epsilon_{\sinc}}{\frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((-\Delta(i,j) + \gamma)t) + 3 \epsilon_{\sinc}}  \nonumber \\
+    \lim_{t \to \infty} &\implies e^{\beta_E \gamma} = e^{-\beta_E \Delta(i,j)} \nonumber \\
+    &= \frac{\prob{\text{System in } j}}{ \prob{\text{System in } i}} \nonumber
+\end{align}
+
 \section{Fixed points and convergences}
 
 In this first section we introduce the conditions required for more detailed analysis. The first is 
@@ -812,7 +948,7 @@ Want to find the ``single shot" capture radius. First should study the single-sh
 \begin{claim}
     We want to characterize the single-shot capture radius, or the $\delta = \beta_E - \beta$ such that 
     \begin{equation}
-        \norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 \leq \frac{1}{2} \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 .
+        \norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 \leq  \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 .
     \end{equation}
 \end{claim}
 \begin{proof}
@@ -827,26 +963,205 @@ As $T_{\gamma}^{(2)}$ is diagonal in the $H_S$ basis we can expand the one norm 
 \begin{align}
     \norm{\rho_S(\beta_E) - \rho_S(\beta) - \mathbb{E}_{\gamma} T_{\gamma}^{(2)}(\rho_S(\beta))}_1 &= \sum_k \abs{p_E(k) - p_{\beta}(k) - \mathbb{E}_{\gamma} \bra{k}  T_{\gamma}^{(2)}(\rho_S(\beta)) \ket{k}} .
 \end{align}
-We will investigate a generic term in the above expression by substituting in the Boltzmann remainder $R_0$ used in Lemma \ref{lem:thermal_state_diff_bound} and the characterization of the expected second order term from Lemma \ref{lem:expected_second_order_term}. Substituting these in gives
+We will investigate a generic term in the above expression by substituting in the Boltzmann remainder $R_0$ used in Lemma \ref{lem:thermal_state_diff_bound} and the characterization of the expected second order term from Lemma \ref{lem:expected_second_order_term}. Substituting in the values for $T_{\gamma}^{(2)}$ for a specific $k$ gives
 \begin{align}
     &\abs{p_E(k) - p_{\beta}(k) - \mathbb{E}_{\gamma} \bra{k} T_{\gamma}^{(2)}(\rho_S(\beta)) \ket{k}} \\
-    &\leq \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \abs{R_0(\beta, \beta_E, k) - \frac{\alpha^2 t^2}{\dim + 1} \frac{2}{\dim_S (\dim_S - 1)}\parens{\sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}}}}.
+    &\leq \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \abs{-R_0(\beta, \beta_E, k) - \frac{\alpha^2 t^2}{\dim + 1} \frac{2}{\dim_S (\dim_S - 1)}\parens{\sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}}}} \\
+    &= \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \abs{R_0(\beta, \beta_E, k) + \frac{\alpha^2 t^2}{\dim + 1} \frac{2}{\dim_S (\dim_S - 1)} \parens{\sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}}}}.
 \end{align}
-Zooming in even more, we need to substitute in one of the following forms of the remainder term
+This is pretty cumbersome to write and analyze, so we use the variable $S_k$ to capture the summation
 \begin{align}
-    R_0(\beta, \beta_E, k) &= (\beta - \beta_E) \frac{e^{-\beta_{\star} \lambda_S(k)}}{\partfun_S(\beta_{\star})} \parens{\sum_j \frac{e^{-\beta_{\star} \lambda_S(j)}}{\partfun_S(\beta_{\star})} (\lambda_S(j) - \lambda_S(k))} \\
-    &= \int_{\beta}^{\beta_E} (x - \beta) \frac{e^{-x \lambda_S(k)}}{\partfun_S(x)}\parens{\sum_j \frac{e^{-x \lambda_S(j)}}{\partfun_S(x)}( \lambda_S(j) - \lambda_S(k)},
+    S_k &\coloneqq \frac{\alpha^2 t^2}{\dim + 1} \frac{2}{\dim_S (\dim_S - 1)} \sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{- \beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}}. \label{eq:single_shot_sum_def}
 \end{align}
-where $\beta_{\star} \in (\beta, \beta_E)$ is an arbitrary point guaranteed by Taylor's Theorem. Note by restricting the sum to 
-Want a positive $R_0$, so think about ground state for now. Call $\frac{\alpha^2 t^2}{\dim +1} \frac{2}{\dim_S(\dim_S - 1)}$ this some function $c$
+
+This allows us to write our total norm as
 \begin{align}
-    c \sum_{i \neq 0} \frac{p_{\beta}(i)}{1 + e^{- \beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(0)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}} \geq \frac{1}{2} R_0(\beta, \beta_E, 0)
+    &\norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi(\rho_S(\beta)) }_1 \leq \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \sum_k \abs{ R_0(\beta, \beta_E, k) + S_k }. \label{eq:single_shot_capture_sum}
 \end{align}
-is our goal.  
+The path forward becomes clear once we realize that $\norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 = \sum_k \abs{p_{\beta_E}(k) - p_{\beta}(k)} = \sum_k \abs{R_0(\beta, \beta_E, k)}$. Looking at the identity we would like to prove $\norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1$, we see that the goal is to have the $S_k$ cancel out parts of the $R_0(k)$ values. We then need that the amount ``cancelled" by the $S_k$ is smaller than the positive contributions of the $S_k$ combined with the approximation errors $\norm{R_{\Phi}}_1$ and $\dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2$. To do this we need to know when $R_0(k)$ is negative and the structure of the $S_k$. 
+
+As $R_0(\beta, \beta_E, k)$ can change sign based on $k$, we need to isolate when each $R_0$ contribution is positive or negative, and then break down the sum over absolute values. Before we approach $R_0$ though, we approach the simpler problem of bounding $S_k$. 
+
+We first will show that each term in $S_k$ is non-negative. This boils down to a simple condition on $i$ compared to $k$: 
+\begin{align}
+    \frac{p_{\beta}(i)}{1 + e^{- \beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}} &\geq 0 \\
+    \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} &\geq \frac{p_{\beta}(k)}{1 + e^{+\beta_E |\Delta_S(i,k)|}} \\
+    e^{-\beta \Delta_S(i,k)} &\geq \frac{1 + e^{-\beta_E |\Delta_S(i,k)|}}{1 + e^{+ \beta_E |\Delta_S(i,k)|}} = e^{-\beta_E |\Delta_S(i,k)|} \\
+    -\beta \Delta_S(i,k) &\geq -\beta_E |\Delta_S(i,k)|.
+\end{align}
+We see if $\Delta_S(i,k) > 0$ the condition reduces to $\beta \leq \beta_E$, which is always true for a cooling channel. If $\Delta_S(i,k) < 0$, then the condition reduces to $\beta \geq - \beta_E$, which for $\beta_E \geq 0$ and $\beta \geq 0$ also always holds. Therefore we can claim that for a cooling channel with $\beta \in [0, \beta_E)$ that $S_k \geq 0$ holds.
+
+Now we want to do a small $\beta_E$ (aka a high temperature limit) and small $\delta \coloneqq \beta_E - \beta$ expansion of $S_k$. First we do a small $\delta$ expansion of $p_{\beta}(k)$. This is pretty straightforward without doing rigorous error bounds:
+\begin{align}
+    e^{-\beta \lambda_S(k)} &= e^{-\beta_E \lambda_S(k)} (1 + \delta \lambda_S(k) + \bigo{\delta^2} ) \\
+    \trace{e^{-\beta H}} &= \trace{e^{-\beta_E H}} + \delta \trace{e^{-\beta_E H} H} + \bigo{\delta^2} \\
+    \implies \frac{e^{-\beta \lambda_S(k)}}{\trace{e^{-\beta H}}} &= \frac{e^{-\beta_E \lambda_S(k)}}{\trace{e^{-\beta_E H}}}\parens{1 + \delta (\lambda_S(k) - \trace{\rho_S(\beta_E) H})} + \bigo{\delta^2}.
+\end{align}
+Now we do a small $\beta_E$ expansion of the boltzmann factors, which is similar work to the above:
+\begin{align}
+    \frac{e^{-\beta_E \lambda_S(k)}}{\trace{e^{-\beta_E H}}} &= \frac{1}{\dim_S}\parens{1 + \beta_E (\frac{1}{\dim} \trace{H} - \lambda_S(k))} + \bigo{\beta_E^2}.
+\end{align}
+Plugging this into the expansion about $\delta$ for $p_{\beta}(k)$, with the reminder that $\delta = \beta_E - \beta \implies \delta \in [0, \beta_E] \implies \delta \in \bigo{\beta_E}$ for a cooling channel, we get
+\begin{align}
+    \frac{e^{-\beta \lambda_S(k)}}{\trace{e^{-\beta H}}} &= \frac{1}{\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(k))} + \bigo{\beta_E^2}
+\end{align}
+We also have the expansion
+\begin{align}
+    \frac{1}{1 + e^{\pm \beta_E |\Delta_S(i,k)|}} &= \frac{1}{2} \mp \beta_E \frac{|\Delta_S(i,k)|}{4} + \bigo{\beta_E^2}.
+\end{align}
+
+Plugging in the above expansions we get the following simplification
+\begin{align}
+    \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} &= \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(i))}\parens{1 + \frac{\beta_E}{2}|\Delta_S(i,k)|} + \bigo{\beta_E^2} \\
+    &= \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(i)) + \frac{\beta_E}{2}|\Delta_S(i,k)|}
+\end{align}
+Computing the same thing for the negative term in \ref{eq:single_shot_sum_def} and plugging in yields the final subtraction
+\begin{align}
+    \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+\beta_E |\Delta_S(i,k)|}} &= \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(i)) + \frac{\beta_E}{2}|\Delta_S(i,k)|} \\
+    &\quad - \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(k)) - \frac{\beta_E}{2}|\Delta_S(i,k)|} + \bigo{\beta_E^2} \\
+    &= \beta (\lambda_S(k) - \lambda_S(i)) + \beta_E |\Delta_S(i,k)| +\bigo{\beta_E^2}\\
+    &= |\Delta_S(i,k)| \parens{\beta_E - \text{sign} \left[\Delta_S(i,k)\right] \beta} + \bigo{\beta_E^2}.
+\end{align}
+We see if $i < k$ this reduces to $|\Delta_S(i,k)| \delta$ and $i > k$ it reduces to $|\Delta_S(i,k)| (\beta_E + \beta)$. 
+
+\newpage
+
+We now aim on bounding the denominators of $1 + e^{\pm \beta_E |\Delta_S(i,k)|}$. To do so, we introduce upper and lower bound on $\beta_E$. The upper bound is given by requiring 
+\begin{align}
+    \frac{1}{1 + e^{+\beta_E |\Delta_S(i,k)|}} &\geq \epsilon_2 \\
+    \frac{1}{\epsilon_2} - 1 &\geq e^{+\beta_E |\Delta_S(i,k)|} \\
+    \frac{1}{|\Delta_S(i,k)|} \ln (\epsilon_2^{-1} - 1) &\geq \beta_E,
+\end{align}
+where we note this bound is implied by $\frac{1}{2 \norm{H}} \ln(\epsilon_2^{-1} - 1 ) \geq \beta_E$. Now we work on the lower bound
+\begin{align}
+    \frac{1}{1 + e^{+\beta_E |\Delta_S(i,k)|}} &\leq \epsilon_1 \\
+    \frac{1}{\epsilon_1} - 1 &\leq e^{+\beta_E |\Delta_S(i,k)|} \\
+    \frac{1}{|\Delta_S(i,k)|} \ln (\epsilon_1^{-1} - 1) &\leq \beta_E,
+\end{align}
+where we note this bound is implied by $\frac{1}{\Delta_{\min}} \ln (\epsilon_1^{-1} - 1) \leq \beta_E$. We also want to route these bounds through to the $e^{-\beta_E |\Delta_S|}$ terms
+\begin{align}
+    \epsilon_1 \leq \frac{1}{1 + e^{-\beta_E |\Delta_S(i,k)|}} \leq \epsilon_2
+\end{align}
+
+Now we return to the $S_k$ terms. We state the upper bound (ignoring the prefactors for now)
+\begin{align}
+    S_k &\leq \sum_{i \neq k} \epsilon_{2} p_{\beta}(i) - \epsilon_{2} p_{\beta}(k) \\
+    &= \epsilon_{2} (1 - p_{\beta}(k) - (\dim_S - 1)p_{\beta}(k)) \\
+    &= \epsilon_{2}(1 - \dim_S p_{\beta}(k)).
+\end{align}
+The lower bound follows similarly
+\begin{align}
+    S_{k} &\geq \sum_{i \neq k} \epsilon_{1} p_{\beta}(i) - \epsilon_{1} p_{\beta}(k) \\
+    &= \epsilon_{1}(1 - p_{\beta}(k) - (\dim_S - 1) p_{\beta}(k)) \\
+    &= \epsilon_{1}(1 - \dim_S p_{\beta}(k)).
+\end{align}
+
+
+We need to profit by substituting these bounds into our summation in Eq. \eqref{eq:single_shot_capture_sum}. Isolating the sum over $k$ in that expression we have
+\begin{align}
+    \sum_{k} \abs{R_0(\beta, \beta_E, k) + S_k}.
+\end{align}
+It is tempting to apply the triangle inequality and see what can be pulled out of here, but as before we noted $\sum_k \abs{R_0(k)} = \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1$, which means as soon as we apply the triangle inequality we lose. Therefore we need to unpack the absolute values. To do so, we note that $S_k \in \bigo{\alpha^2 t^2 / \dim}$, so we can make it arbitrarily small so that the sign of $R_0(k) + S_k$ is the same as the sign of $R_0$. Then we can think about increasing $S_k$. Also note that $R_0(k) = 0$ implies that $\beta_E = \beta$, which we do not have. So we can always set $\alpha^2 t^2$ to be small enough such that every $S_k$ is smaller than the smallest $R_0$. 
+
+Now our goal is to reduce this sum by controlling values of $S_k$. We know that $R_0(\beta, \beta_E, 0) < 0$ for $\beta < \beta_E$ and that $S_k \geq 0$ for all $k$, so we will target our choice of $\frac{\alpha^2 t^2}{\dim + 1}$ to ensure that $S_0$ is close to cancelling out the error due to $R_0(\beta, \beta_E, 0)$ (remember the subscript 0 denotes the order of the remainder and we will drop the implicit arguments of $\beta, \beta_E$). Then we will use the triangle inequality to deal with the remaining terms. Now when controlling $\alpha^2 t^2 / \dim + 1$ to cancel out $R_0(0)$ we should aim to make $S_0$ as small as we can, as our only knob to adjust $S_0$ (the scalar $\alpha^2 t^2 / \dim + 1$) affects the other $S_k$'s directly and we would like those to be small. 
+
+\begin{align}
+    \abs{R_0(0) + S_0} &\leq \epsilon_S \\
+    \implies \abs{R_0(0)} - \epsilon_S &\leq S_0 \leq \abs{R_0(0)} + \epsilon_S
+\end{align}
+To attack this we will plug in for $S_0 - \abs{R_0(0)}$ and start simplifying.
+\begin{align}
+    S_0 - \abs{R_0(0)} &= \sum_{i > 0} \left( \frac{p_{\beta}(i)}{1 + e^{- \beta_E \abs{\Delta_S(i,0)}}} - \frac{p_{\beta}(0)}{1 + e^{+ \beta_E \abs{\Delta_S(i,0)}}} \right) - |\beta - \beta_E| p_{\beta_{\star}}(0) \parens{\anglebrackets{H}_{\beta_{\star}} - \lambda_S(0)} \label{tmp:ugly_sum_1}
+\end{align}
+Now the crucial point to this argument is the sum over $i > 0$. If this sum is bounded through simple bounds on $\beta_E$ we lose all of our gains. Further, after preliminary numerical investigations this sum does not seem to be sufficient to prove thermalization for various well separated hamiltonians, such as the number operator squared $N^2 = (a^\dagger a)^2$ analagous to the harmonic oscillator. For this proof, we will investigate a truncated square root of the number operator, or $\lambda_S(k) \propto \sqrt{k}$. To give us one extra knob of control, we will explicitly use $\lambda_S(k) = h \sqrt{k}$ with little $h$ capturing the energy scale. This Hamiltonian is well separated, first off the smallest difference is $\lambda_S(2) - \lambda_S(1) = \sqrt{2} - 1$. For the well-separated condition we need $|\lambda_S(i) - \lambda_S(j)| - |\lambda_S(k) - \lambda_S(l)| \geq \Delta_{\min}$ to be bounded away from zero for nonequal $(i,j)$ and $(k,l)$. This seems to be clear but is busy work I shouldn't do unless it leads to something useful.
+
+The well-separated Hamiltonian we will investigate analytically is the natural logarithm hamiltonian, where $\lambda_S(k) = \ln k$. Should include a proof that it is well-separated. For now we need to determine if it yields any kind of useful bound. First we tackle the term containing $p_{\beta}(1)$. \matt{Need to go through and make sure everything in the paper is one-indexed. Cry.} We have the sum
+\begin{align}
+    \sum_{i = 2}^{\dim_S} \frac{1}{1 + e^{\beta_E \lambda_S(i)}} &= \sum_{i = 2}^{\dim_S} \frac{1}{1 + i^{\beta_E}}
+\end{align}
+Now we need to show that this is monotonically decreasing. 
+\begin{align}
+    \frac{\partial}{\partial x} \frac{1}{1 + x^{\beta_E}} &= \frac{-1}{(1 + x^{\beta_E})^2} \cdot \beta_E x^{\beta_E - 1}.
+\end{align}
+For $x, \beta_E \geq 0$ this is clearly always negative and therefore each term in the summation is monotonically decreasing. Now we use integral bounds to get good stuff. 
+
+\begin{center}
+\textbf{Below is bad}
+\end{center}
+
+Now we assume that $\lambda_S(k) = h \sqrt{k}$ is a well-separated Hamiltonian. Our goal is to bound the sums present in Eq. \eqref{tmp:ugly_sum_1}. We start with the easier one on the negative term for $S_0$. To do so we will linearize the sum about $\beta_E \to \infty$, or in other words as the environment temperature approaches zero. 
+\begin{align}
+    \frac{\partial}{\partial \beta_E^{-1}} \frac{1}{1 + e^{+ \beta_E h \sqrt{i}}} &= \frac{1}{\parens{1 + e^{+ \beta_E h \sqrt{i}}}^2 } \cdot e^{\beta_E h \sqrt{i}} (-1)\beta_E^2 h \sqrt{i}.
+\end{align}
+It is easy to see that as $\beta_E \to \infty$ the denominator containing the $\left(e^{\beta_E h \sqrt{i}}\right)^2$ term will dominate and the overall derivative approaches zero. When is this regime of approximation valid?
+Anyways, this means we \emph{should} be able to use the $\beta_E \to \infty$ behavior as a good approximation. This gives
+\begin{align}
+    S_0 &\approx \sum_{i > 0} p_{\beta}(i) - p_{\beta}(0) \\
+    &= 1 - p_{\beta}(0) - (\dim_S - 1) p_{\beta}(0) \\
+    &= 1 - \dim_S p_{\beta}(0).
+\end{align}
+Unfortunately, this bound is useless for $\beta > 0$. This is because for $\beta > 0$, $p_{\beta}(0) > 1 / \dim_S$, but we already know from before that $S_k > 0$ for all $k$. This means the bound is bad, and if we want to continue we have to analytically compute this sum.
+\newpage
+Now we have to determine the sign of $R_0$. We will not determine the sign of each term exactly, but we will give conditions on when the sign of $R_0$ only changes once. To start off, we remind the reader of that the remainder is written (using the Mean-Value version)
+\begin{align}
+    R_0(\beta, \beta_E, k) &= (\beta - \beta_E) p_{\beta_{\star}}(k) \parens{\parens{\sum_i p_{\beta_{\star}}(i) \lambda_S(i)} - \lambda_S(k)}.
+\end{align}
+Now we know that $\beta_{\star} \in (\beta, \beta_E)$. What we want to do is squeeze this range so small such that the difference in the mean energies $\anglebrackets{H}_{\beta_{\star}} \coloneqq \sum_i p_{\beta_{\star}}(i) \lambda_S(i)$ at $\beta$ and $\beta_E$ are very close. Below, let $\beta_i$ denote the mean value temperature guaranteed for $R_0(\beta, \beta_E, i)$. Also, it will prove sufficient to upper bound the absolute value
+\begin{align}
+    \abs{\anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E}} &= \left| \sum_i (p_{\beta}(i) - p_{\beta_E}(i)) \lambda_S(i) \right| \\
+    &\leq \sum_i \abs{R_0(\beta, \beta_E, i)} \abs{\lambda_S(i)} \\
+    &\leq \norm{H} \sum_i |\beta - \beta_E| p_{\beta_i}(i) \abs{\sum_j p_{\beta_i}(j) \lambda_S(j) - \lambda_S(i)} \\
+    &\leq \norm{H} \delta \sum_i p_{\beta_i}(i) \parens{\sum_{j} p_{\beta_i}(j) \abs{\lambda_S(j)} + \abs{\lambda_S(i)}} \\
+    &\leq 2 \norm{H}^2 \delta \sum_i p_{\beta_i}(i) \\
+    &\leq 2 \dim_S \delta \norm{H}^2.
+\end{align}
+Now we can require $\delta \leq \frac{\Delta_{\min}}{2 \dim_S \norm{H}^2}$ to get $\abs{\anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E}} \leq \Delta_{\min}$.
+
+Our next goal is to show that if some index $k_1$ has a positive zeroth order Boltzmann remainder $R_0(\beta, \beta_E, k_1)$, then every index $k_2 > k_1$ also has a positive zeroth order Boltzmann remainder. Note that $R_0(\beta, \beta_E, j) \geq 0 $ if and only if $\anglebrackets{H}_{\beta_j} - \lambda_S(j) \leq 0$. This means that we only need to show that For below, let $\beta_1$ denote the mean value $\beta$ for $k_1$ and similarly for $\beta_2$
+\begin{align}
+    \anglebrackets{H}_{\beta_2} - \lambda_S(k_2) &= \anglebrackets{H}_{\beta_2} - \anglebrackets{H}_{\beta_1} + \anglebrackets{H}_{\beta_1} - \lambda_S(k_1) + \lambda_S(k_1) - \lambda_S(k_2) \\
+    &\leq \anglebrackets{H}_{\beta_2} - \anglebrackets{H}_{\beta_1} + \lambda_S(k_1) - \lambda_S(k_2) \\
+    &\leq \anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E} - \Delta_{\min} \\
+    &\leq \abs{\anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E}} - \Delta_{\min} \\
+    &\leq 0.
+\end{align}
+This shows that $R_0(\beta, \beta_E, k_2) \geq 0$ if $R_0(\beta, \beta_E, k_1) \geq 0$ and $k_2 > k_1$. This result, combined with the observation that $R_0(\beta, \beta_E, 0) \leq 0$ yields the proposition that there exists a value $\widetilde{k}$ such that $k < \widetilde{k}$ implies $R_0(\beta, \beta_E, k) \leq 0$ and $k \geq \widetilde{k}$ implies $R_0(\beta, \beta_E, k) \geq 0$. Note we do not really care what this particular value of $\widetilde{k}$ is, just that it exists.
+
+Now we can break down our sum into the following two sums
+\begin{align}
+    \sum_k \abs{R_0(\beta, \beta_E, k) + S_k} &= \sum_{k < \widetilde{k}} \abs{R_0(\beta, \beta_E, k) + S_k} + \sum_{k \geq \widetilde{k}} \abs{R_0(\beta, \beta_E, k) + S_k} \\
+    &= \sum_{k < \widetilde{k}} -(R_0(\beta, \beta_E, k) + S_k) + \sum_{k \geq \widetilde{k}} R_0(\beta, \beta_E, k) + S_k \\ 
+    &= \sum_{k < \widetilde{k}} -R_0(\beta, \beta_E, k) + \sum_{k \geq \widetilde{k}} R_0(k) - \sum_{k < \widetilde{k}} S_k + \sum_{k \geq \widetilde{k}} S_k \\
+    &= \sum_k \abs{R_0(k)} - \sum_{k < \widetilde{k}} S_k + \sum_{k \geq \widetilde{k}} S_k
+\end{align}
+This yields
+\begin{align}
+    \norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 + \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \sum_{k \geq \widetilde{k}} S_k - \sum_{k < \widetilde{k}} S_k.
+\end{align}
+
+If our only goal is to show contraction, this reduces our problem to proving the following inequality
+\begin{align}
+    \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 + \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \sum_{k \geq \widetilde{k}} S_k - \sum_{k < \widetilde{k}} S_k &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \\
+    \iff \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 &\leq \sum_{k < \widetilde{k}} S_k - \sum_{k \geq \widetilde{k}} S_k 
+\end{align}
+To prove this we will produce a lower bound on the RHS, and show that this lower bound is greater than the LHS. Our lower bounds from before give
+\begin{align}
+    \sum_{k < \widetilde{k}} S_k - \sum_{k \geq \widetilde{k}} S_k &\geq \epsilon_{1} \sum_{k < \widetilde{k}} (1 - \dim_S p_{\beta}(k)) - \epsilon_{2} \sum_{k \geq \widetilde{k}} (1 - \dim_S p_{\beta}(k)) \\
+    &= \epsilon_{1}(\widetilde{k} - 1 - \dim_S) + \epsilon_{1} \dim_S \sum_{k \geq \widetilde{k}} p_{\beta}(k) - \epsilon_{2}(\dim_S - \widetilde{k} + 1) + \epsilon_{2} \dim_S \sum_{k \geq \widetilde{k}} p_{\beta}(k) \\
+    &= \parens{\dim_S \sum_{k \geq \widetilde{k}} p_{\beta}(k) - (\dim_S - \widetilde{k} + 1)}(\epsilon_{1} + \epsilon_{2}) \\
+    &= \dim_S (\epsilon_{1} + \epsilon_{2}) \parens{\sum_{k \geq \widetilde{k}} p_{\beta}(k) - \parens{1 - \frac{\widetilde{k} - 1}{\dim_S}}} \\
+    &= \dim_S (\epsilon_{1} + \epsilon_{2}) \parens{\frac{\widetilde{k} - 1}{\dim_S} - \sum_{k < \widetilde{k}} p_{\beta}(k)}.
+\end{align}
+We see right off the bat that this fails for very low temperatures, or when $\widetilde{k} = 2$, as the ground state energy $p_{\beta}(1)$ is always greater than $1 / \dim_S$ where as the positive term is $1 / \dim_S$ exactly. In the other limit, say $\widetilde{k} = \dim_S$, we have that the positive term is $1 - 1 /\dim_S$ and the negative term is $\sum_{k < \dim_S} p_{\beta}(k) = 1 - p_{\beta}(\dim_S)$, yielding a subtraction of $p_{\beta}(\dim_S) - 1 / \dim_S$, which is always negative. Again this lower bound does not work. Could it work somewhere in the middle? Evaluating this sum numerically for a harmonic oscillator (linear spectrum), square root spectrum, and squared spectrum seem to show that this bound is always negative. Intuitively this also makes sense, it says that in order to be positive the low-energy states need have less average probability mass than the infinite temperature limit of $1 / \dim_S$, which does not make sense as the low-energy states is where the probability mass of the thermal states increasingly concentrate as the temperature decreases.
+
+I now need to salvage this project some how. The first option I have is to revisit 
+
+
+\noindent\makebox[\linewidth]{\rule{\paperwidth}{0.4pt}}
 
 
 \begin{claim}[Cooling Schedule]
-    Suppose
+    Suppose a nice cooling schedule existed and this algorithm worked perfectly.
 \end{claim}
 \begin{proof}
     Let $0 = \beta_0 \leq \beta_1 \leq \ldots \leq \beta_L = \beta$ denote a cooling schedule and $$\Phi_{i}(X) = \partrace{\hilb_E}{\int e^{-i (H + \alpha G)t} X \otimes \rho_E(\beta_i) e^{+i(H + \alpha G)t} dG},$$
@@ -869,134 +1184,7 @@ is our goal.
 
 
 \section{Detailed Balance} \label{sec:detailed_balance}
-Given that we are able to rotate the basis we work with into the System Hamiltonian's eigenbasis, and moreover we previously showed that off-diagonal coherences in this basis are negligible, we can treat this process as a stochastic one. Explicitly, if we give a diagonal state as input to the channel $\Phi$, to order $\bigo{\alpha^2}$ we get a diagonal state back. Since diagonal states can be thought of as probability distributions, the map $\Phi$ can roughly be thought of as a Markov process on the eigenstates of the Hamiltonian $H_S$. Since our goal is to show that this map produces a thermal state,
-we would need to show that this probability distribution converges to the Boltzmann distribution $e^{-\beta_E \lambda_S(i)} / \partfun_S(\beta_E)$, for state $i$. In classical probability sampling literature this is done through a Detailed Balance calculation, which shows that the desired distribution is a fixed point. Ergodicity arguments of the desired Markov chain are then used to claim that the fixed point is unique and that therefore the process produces samples of the desired distribution.
 
-Given that our map is only approximate, we cannot make rigorous claims regarding detailed balance at fixed $\alpha, t,$ or $\gamma$. However, in this section we show that in the appropriate limits that our mapping satisfies Detailed Balance exactly. This is enough to give solid evidence that for appropriate regimes our channel should converge approximately to this goal distribution.
-
-
-
-\begin{align}
-    &\prob{\text{System transition } i \to j | \text{ env at } \beta_E} \nonumber \\
-    &\approx \frac{\alpha^2 t^2}{\dim + 1} \parens {\frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}}  \sinc^2((\Delta(i,j) + \gamma)t) + \frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2 ((\Delta(i,j) - \gamma)t) + 2 \sinc^2(\Delta(i,j) t)} \nonumber
-\end{align}
-
-\begin{align}
-    &\prob{\text{System transition } i \to j | \text{ env at } \beta_E} \nonumber \\
-    &= \bra{j} \Phi_{\gamma}(\ketbra{i}{i}) \ket{j} \\
-    &= \braket{j}{i}\braket{i}{j} + \sum_{k,l} \tau(i, k | j, l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} + \bra{j} R_{\Phi}(\ketbra{i}{i})\ket{j}
-\end{align}
-Now as we are studying Detailed Balance, we assume that $i \neq j$. For our purposes, without loss of generality we let $\lambda_S(i) \geq \lambda_S(j)$, so by transitioning from $i \to j$ we are losing energy to the environment. We simplify the non-trivial term from above as
-\begin{align}
-    &\sum_{k,l} \tau(i,k| j,l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} = \frac{e^{-\beta_E \lambda_E(0)}}{\partfun_E(\beta_E)}(\tau(i,0|j,0) + \tau(i,0|j,1)) + \frac{e^{-\beta_E \lambda_E(1)}}{\partfun_E(\beta_E)} (\tau(i,1|j,0) + \tau(i,1|j,1) \\
-    &= \frac{\alpha^2 t^2}{\dim + 1} \bigg(\frac{1}{1 + e^{-\beta_E \gamma}} (\sinc^2(\Delta_S(i,j)t/2) + \sinc^2((\Delta_S(i,j) - \gamma)t/2)) \nonumber \\
-    &\quad \quad \quad \quad \quad \quad  +\frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} (\sinc^2((\Delta_S(i,j) + \gamma)t/2) + \sinc^2(\Delta_S(i,j) t/2)) \bigg) \\
-    &\frac{\alpha^2 t^2}{\dim + 1} \bigg(\frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) + \gamma)t/2) + \sinc^2(\Delta_S(i,j)t/2)
-\end{align}
-As $\Delta_S(i,j) \geq 0 $ we expect that only the $\sinc^2((\Delta_S(i,j) - \gamma) t/2)$ term will contribute significantly to this sum. We can similarly write down the probability of the state to transition from $j \to i$ as
-\begin{align}
-    \prob{\text{System transition } j \to i | \text{ env at } \beta_E} = \sum_{k,l} \tau(j,k|i,l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} + \bra{i} R_{\Phi}(\ketbra{j}{j})\ket{i},
-\end{align}
-where we write the non-trivial term as
-\begin{align}
-    \sum_{k,l} \tau(j,k|i,l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} = \frac{\alpha^2 t^2}{\dim + 1} \bigg(&\frac{1}{1 + e^{-\beta_E \gamma}} (\sinc^2(\Delta_S(j,i)t/2) + \sinc^2((\Delta_S(j,i) - \gamma)t/2)) \nonumber \\
-    &+\frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} (\sinc^2((\Delta_S(j,i) + \gamma)t/2) + \sinc^2(\Delta_S(j,i) t/2)) \bigg).
-\end{align}
-We simplify this by noting $\Delta_S(i,j) = - \Delta_S(j,i)$ and that $\sinc^2(x) = \sinc^2(-x)$ to get
-\begin{align}
-&\sum_{k,l} \tau(j,k|i,l) \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} \\
-&= \frac{\alpha^2 t^2}{\dim + 1} \bigg(\frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) + \gamma)t/2) + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) + \sinc^2(\Delta_S(i,j)t/2)
-\end{align}
-
-Now we would like to show some form of Detailed Balance, in appropriate limits, for the thermal state of the system. We will show that Detailed Balance holds in expectation, or with some non-zero probability. The thermal state give $\prob{\text{state in } i} = \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)}$. We then need to expand differences
-\begin{align}
-    \chi(i,j) \coloneqq &\prob{\text{System transition } i \to j | \text{ env at } \beta_E} \prob{\text{state in } i} \nonumber \\
-    &- \prob{\text{System transition } j \to i | \text{ env at } \beta_E} \prob{\text{state in } j}.
-\end{align}
-This expression is written in full glory as
-\begin{align}
-    \chi(i,j) &= \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \bra{j} R_{\Phi}(\ketbra{i}{i})\ket{j} \nonumber \\
-    &+ \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) - \gamma) t/2) \nonumber \\
-    &+\frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) + \gamma) t/2) \nonumber \\
-    &+ \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \sinc^2(\Delta_S(i,j)t/2) \nonumber \\
-    &-\frac{e^{-\beta_E \lambda_S(j)}}{\partfun_S(\beta_E)} \bra{i} R_{\Phi}(\ketbra{j}{j})\ket{i} \nonumber \\
-    &- \frac{e^{-\beta_E \lambda_S(j)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) + \gamma) t/2) \nonumber \\
-    &-\frac{e^{-\beta_E \lambda_S(j)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((\Delta_S(i,j) - \gamma) t/2) \nonumber \\
-    &- \frac{e^{-\beta_E \lambda_S(j)}}{\partfun_S(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} \sinc^2(\Delta_S(i,j)t/2).
-\end{align}
-In order to simplify this, we will group these expressions with an end goal in mind. As we would like this to hold for all $i \neq j$ but we have a fixed $\gamma$, we need to randomly choose a $\gamma$ and show that this holds in expectation. Further, we would like to bound the absolute value of these differences. So we want $\mathbb{E}_{\gamma}\abs{\chi(i,j)}$. We can then use the triangle inequality, the fact that $\abs{\bra{j}R_{\Phi}(\ketbra{i}{i})\ket{j}} \leq \norm{R_{\Phi}}$, $\abs{\frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)}} \leq 1$, 
-
-along with the fact that transitions such as $\sinc^2(\Delta_S(i,j)t/2)$ are suppressed by $\epsilon_{\sinc}$ to get a simplified upper bound:
-\begin{align}
-    \mathbb{E}_{\gamma} \abs{\chi(i,j)} &\leq \mathbb{E}_{\gamma} 2 \norm{R_{\Phi}} \nonumber \\
-    &+ \mathbb{E}_{\gamma} \frac{\alpha^2 t^2}{\dim + 1} 4 \epsilon_{\sinc}  \nonumber \\
-    &+ \mathbb{E}_{\gamma} \frac{\alpha^2 t^2}{\dim + 1} \frac{1}{1 + e^{-\beta_E \gamma}} \frac{1}{\partfun_S(\beta_E)} \abs{\parens{e^{-\beta_E \lambda_S(i)} - e^{-\beta_E \gamma} e^{-\beta_E \lambda_S(j)}} \sinc^2((\Delta_S(i,j) - \gamma) t/2)} \\
-    &\leq 2 \norm{R_{\Phi}} + 4 \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1} \nonumber \\
-    &+ \frac{\alpha^2 t^2}{\dim + 1} \mathbb{E}_{\gamma} \sinc^2((\Delta_S(i,j) - \gamma) t/2) \abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}}. \label{eq:detailed_balance_upper_bound}
-\end{align}
-This is where we have to introduce our distribution over $\gamma$. We note that if $\gamma$ is far away from $\Delta_S(i,j)$, then as $t \to \infty$ we have that this product is trivially 0. We want to show that Detailed Balance is satisfied even when $\gamma \to \Delta_S(i,j)$. To do so we upper bound $\sinc^2 \leq 1$ whenever $\abs{\Delta_S(i,j) - \gamma} \leq \Delta_{\min}$ and $\sinc^2 \leq \epsilon_{\sinc}$ whenever $\abs{\Delta_S(i,j) - \gamma} \geq \Delta_{\min}$. 
-
-We now are at an impasse. Our goal for this argument is to show that if our channel does anything non-trivial, then in the appropriate limits ($t \to \infty, \alpha \to 0, \alpha t \to c_{small}$) it should satisfy detailed balance conditions, or at least get arbitrarily close to it. We see that when our channel has a $\gamma$ that is not close to any $\Delta_S(i,j)$ we do not induce any transitions among states (in the $t \to \infty$ limit). This then trivially satisfies Detailed balance, as $\prob{i \to j} = \prob{j \to i} = 0$ gives $0 = 0$ for Detailed Balance. We would like to show that all $i \neq j$ can get arbitrarily close to satisfying Detailed Balance by choosing a $\gamma$ randomly. To do so there are three obvious candidates for distributions of $\gamma$ that we could analyze theoretically:
-\begin{enumerate}
-    \item A maximum entropy prior, or choosing $\gamma$ uniformly from 0 to $\norm{H}$,
-    \item A minimal entropy prior, or exact knowledge of $\Delta_S(i,j)$ for all $i,j$, where we choose indices or differences uniformly,
-    \item Choose a difference $\Delta_S(i,j)$ uniformly and then add in noise, either in the form of a Gaussian or a simple uniform box centered about the gap $\Delta_S(i,j)$.
-\end{enumerate}
-
-The simplest for us to look at first is the maximum entropy prior, or the uniform distribution of $\gamma$ from 0 to $\norm{H}$. This then gives us two regimes, $|\Delta_S(i,j) - \gamma| \leq \Delta_{\min}$ and $|\Delta_S(i,j) - \gamma| > \Delta_{\min}$. The $\sinc^2$ term is upper bounded by 1 in the former and $\epsilon_{\sinc}$ in the latter. 
-\begin{align}
-    &\mathbb{E}_{\gamma} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} \nonumber \\
-    &= \frac{1}{\norm{H}} \int_0^{\norm{H}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma \\
-    &= \frac{1}{\norm{H}} \int_0^{\Delta_S(i,j) - \Delta_{\min}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma \nonumber \\
-    &\quad + \frac{1}{\norm{H}} \int_{\Delta_S(i,j) - \Delta_{\min}}^{\Delta_S(i,j) + \Delta_{\min}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma \nonumber \\
-    &\quad + \int_{\Delta_S(i,j) + \Delta_{\min}}^{\norm{H}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma.
-\end{align}
-We will simplify these integrals separately. Starting with the first
-\begin{align}
-    &\frac{1}{\norm{H}} \int_0^{\Delta_S(i,j) - \Delta_{\min}} \sinc^2((\Delta_S(i,j) - \gamma)t/2)\abs{1 - e^{\beta_E (\Delta_S(i,j) - \gamma)}} d\gamma \nonumber \\
-    &\leq \frac{\epsilon_{\sinc}}{\norm{H}} \int_0^{\Delta_S(i,j) - \Delta_{\min}} \left(e^{\beta_E(\Delta_S(i,j) - \gamma)} - 1\right) d\gamma \\
-    &= \frac{\epsilon_{\sinc}}{\norm{H}}\parens{\Delta_{\min} - \Delta_S(i,j) + \frac{e^{\beta_E \Delta_S(i,j)}}{\beta_E}\left( 1 - e^{-\beta_E(\Delta_S(i,j) - \Delta_{\min})} \right)}.
-\end{align}
-We then compute the third, as it is more similar to the first as
-\begin{align}
-    &\frac{1}{\norm{H}} \int_{\Delta_S(i,j) + \Delta_{\min}}^{\norm{H}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} d\gamma \nonumber \\
-    &\leq \frac{\epsilon_{\sinc}}{\norm{H}} \int_{\Delta_S(i,j) + \Delta_{\min}}^{\norm{H}} \left(1 - e^{\beta_E (\Delta_S(i,j) - \gamma)} \right) d\gamma \\
-    &=\frac{\epsilon_{\sinc}}{\norm{H}}\parens{\norm{H} - (\Delta_S(i,j) + \Delta_{\min}) + \frac{1}{\beta_E} \left(e^{-\beta_E(\norm{H} - \Delta_S(i,j))} - e^{-\beta_E \Delta_{\min}} \right) }.
-\end{align}
-Adding the results of these two integrals yields
-\begin{align}
-    \frac{\epsilon_{\sinc}}{\norm{H}}\parens{\norm{H} - 2 \Delta_S(i,j) +  \frac{1}{\beta_E} e^{\beta_E \Delta_S(i,j)}(2 + e^{-\beta_E \norm{H}}) + \frac{e^{\beta_E \Delta_{\min}} - e^{-\beta_E \Delta_{\min}}}{\beta_E}}.
-\end{align}
-We make two observations. First that this is positive given that $\norm{H} \geq 2 \Delta_S(i,j)$ and tends towards infinity as $\beta_E \to \infty$. The second is that there is no time dependence on the factor within the parenthesis, meaning that for fixed $\beta_E$ we can make this quantity arbitrarily small by reducing $\epsilon_{\sinc} \propto 1/t^2$. 
-
-The more reasonable distribution to analyze is the minimal entropy, or perfect knowledge distribution. In this distribution we pick an eigenvalue difference uniformly at random. We denote the set of eigenvalue gaps as $G_{\gamma}$. Then the expectation can be split into two: $S_{\gamma}$ being the set of gaps that are close to $\gamma$ and $T_{\gamma}$ as those that are far apart. Let $N_{diff}$ denote the number of differences. Specifically, let $S_{\gamma} = \set{\lambda_S(k) - \lambda_S(l) = \Delta_S(k,l) : \sinc^2((\Delta_S(i,j) - \Delta_S(k,l))t/2) \geq \epsilon_{\sinc}}$, and $T_{\gamma} = \set{\Delta_S(k,l) : \sinc^2((\Delta_S(i,j) - \Delta_S(k,l))t/2) < \epsilon_{\sinc}}$. Then the expected value over $\gamma$ becomes
-\begin{align}
-    &\mathbb{E}_{\gamma} \sinc^2((\Delta_S(i,j) - \gamma) t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} \nonumber \\
-    &=\frac{1}{N_{diff}}\sum_{\gamma \in S_{\gamma}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} + \frac{1}{N_{diff}} \sum_{\gamma \in T_{\gamma}} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} \\
-    &\leq \frac{1}{N_{diff}} \sum_{\gamma \in S_{\gamma}} \abs{1 - e^{\beta_E(\Delta_S(i,j) -\gamma)}} + \frac{1}{N_{diff}} \epsilon_{\sinc} \sum_{\gamma \in T_{\gamma}}\abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}}.
-\end{align}
-We see that for the right hand sum the factor of $\epsilon_{\sinc}$, which vanishes as $t \to \infty$, causes the total sum to vanish as there are no explicit $t$ dependent terms. The set $T_{\gamma}$ does change with $t$, but it is upper bounded by a finite value and so is each possible summand. Now the real kicker is what happens to the leftmost summation. We investigate when an eigenvalue gap $\Delta_S(k,l)$ can be included in $S_{\gamma}$ as $t \to \infty$. 
-\begin{align}
-    \lim_{t \to \infty} \sinc^2((\Delta_S(i,j) - \Delta_S(k,l)) t/2) = \begin{cases}
-        0 & \Delta_S(i,j) \neq \Delta_S(k,l) \\
-        1 & \Delta_S(i,j) = \Delta_S(k,l).
-    \end{cases}
-\end{align}
-Because of this $S_{\gamma} = \set{\Delta_S(i,j)}$ becomes a multiset consisting solely of $\Delta_S(i,j)$ with the number of degeneracies of the eigenvalue $S_{\gamma}$. This means that any term in the summation then becomes $\abs{1 - e^{\beta_E(\Delta_S(i,j) - \Delta_S(i,j)}} = 0$. Then given that $\epsilon_{\sinc} = 1/(\Delta_(\min)^2 t^2) \to 0$, we have that $\lim_{t \to \infty} \mathbb{E}_{\gamma} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} = 0$. Looking at Eq. \eqref{eq:detailed_balance_upper_bound}, along with $\epsilon_{\sinc} = 1/(\Delta_{\min}^2 t^2)$ and $\alpha = \epsilon_{\alpha} / t$, we see that 
-\begin{align}
-    &\lim_{t \to \infty} \mathbb{E}_{\gamma} \abs{\chi(i,j)} \leq 2 \lim_{t \to \infty} \norm{R_{\Phi}} + 4 \lim_{t \to \infty} \frac{\epsilon_{\alpha}^2}{t^2 \Delta_{\min}^2 (\dim + 1)} \nonumber \\
-    &+ \frac{\epsilon_{\alpha}^2}{\dim + 1} \lim_{t \to \infty} \sinc^2((\Delta_S(i,j) - \gamma)t/2) \abs{1 - e^{\beta_E(\Delta_S(i,j) - \gamma)}} \\
-    &= 2 \lim_{t \to \infty} \norm{R_{\Phi}}.
-\end{align}
-As 
-
-
-
-\begin{align}
-    \frac{\prob{i \to j}}{\prob{j \to i}} &\approx \frac{\frac{1}{1 + e^{-\beta_E \gamma}}\sinc^2 ((\Delta(i,j) - \gamma)t)+ 3 \epsilon_{\sinc}}{\frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2((-\Delta(i,j) + \gamma)t) + 3 \epsilon_{\sinc}}  \nonumber \\
-    \lim_{t \to \infty} &\implies e^{\beta_E \gamma} = e^{-\beta_E \Delta(i,j)} \nonumber \\
-    &= \frac{\prob{\text{System in } j}}{ \prob{\text{System in } i}} \nonumber
-\end{align}
 
 
 \section{Thermal State Bounds}
@@ -1007,7 +1195,7 @@ As
     \begin{align}
         \frac{\Delta_{\min} \delta^2 \epsilon_{\rho}}{2 \dim_S} \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \leq 2 \dim_S \norm{H} \delta,
     \end{align}
-    provided that $\beta_E$ satisfies the upper bound $\beta_E \leq \frac{1}{\Delta_{\min}} \parens{\ln (\dim_S - 1) + \ln \parens{1 + \frac{1}{\epsilon_{\rho}}}}$. 
+    provided that $\beta_E$ satisfies the upper bound $\beta_E \leq \frac{1}{2 \norm{H}} \parens{\ln (\dim_S - 1) + \ln \left( \frac{1}{\epsilon_{\rho}} - 1\right) }$/. 
 \end{lemma}
 \begin{proof}
     We first decompose the trace distance using the fact that thermal states are diagonal in the $H_S$ basis
@@ -1152,7 +1340,7 @@ As
     \end{align}
     Notice how the factor of $e^{-\beta_E \gamma}$ switched in the $i < k$ case from the $i > k$ one. Similar arguments give the same lower bound as before. 
 
-    Now we introduce the expectation over $\gamma$, as expectations are linear we can do this term by term over the sum on $i \neq k$ in Eq. idk. As $H_S$ is well-separated, and $\gamma$ is distributed assuming perfect knowledge, then for each $i \neq k$ we will sample $\gamma = \Delta_S(i,k)$ exactly and every other term will be $\gamma \sim \Delta_S(a,b)$ for $(a,b) \neq (i,k)$. These other terms leave the resulting sinc function to be $\epsilon_{\sinc}$ small. We again will analyze this expectation first for terms in which $i > k$ and then show the $i < k$ case.
+    Now we introduce the expectation over $\gamma$, as expectations are linear we can do this term by term over the sum on $i \neq k$ in Eq. idk. As $H_S$ is well-separated, and $\gamma$ is distributed assuming perfect knowledge, then for each $i \neq k$ we will sample $\gamma = \Delta_S(i,k)$ exactly and every other term will be $\gamma \sim \Delta_S(a,b)$ for $(a,b) \neq (i,k)$. These other terms leave the resulting sinc function to be $\epsilon_{\sinc}$ small. We again will analyze this expectation first for terms in which $i > k$ and then show the $i < k$ case. \matt{This is where we need to tackle the $H_S$ well-separated condition.}
 
     \begin{align}
         & \mathbb{E}_{\gamma}\sum_{j,l} \parens{p(i) \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)} - p(k) \frac{e^{-\beta_E \lambda_E(l)}}{\partfun_E(\beta_E)}} \sinc^2((\Delta_S(i,k) + \Delta_E(j,l)) t/2) \nonumber \\
