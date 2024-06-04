@@ -978,6 +978,9 @@ This allows us to write our total norm as
 \begin{align}
     &\norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi(\rho_S(\beta)) }_1 \leq \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \sum_k \abs{ R_0(\beta, \beta_E, k) + S_k }. \label{eq:single_shot_capture_sum}
 \end{align}
+
+What we do next is a small $\beta_E$ and $\delta \coloneqq \beta_E - \beta$ expansion of $R_0(\beta, \beta_E, k)$ and $S_k$. 
+
 The path forward becomes clear once we realize that $\norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 = \sum_k \abs{p_{\beta_E}(k) - p_{\beta}(k)} = \sum_k \abs{R_0(\beta, \beta_E, k)}$. Looking at the identity we would like to prove $\norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1$, we see that the goal is to have the $S_k$ cancel out parts of the $R_0(k)$ values. We then need that the amount ``cancelled" by the $S_k$ is smaller than the positive contributions of the $S_k$ combined with the approximation errors $\norm{R_{\Phi}}_1$ and $\dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2$. To do this we need to know when $R_0(k)$ is negative and the structure of the $S_k$. 
 
 As $R_0(\beta, \beta_E, k)$ can change sign based on $k$, we need to isolate when each $R_0$ contribution is positive or negative, and then break down the sum over absolute values. Before we approach $R_0$ though, we approach the simpler problem of bounding $S_k$. 
@@ -1022,7 +1025,71 @@ Computing the same thing for the negative term in \ref{eq:single_shot_sum_def} a
     &= \beta (\lambda_S(k) - \lambda_S(i)) + \beta_E |\Delta_S(i,k)| +\bigo{\beta_E^2}\\
     &= |\Delta_S(i,k)| \parens{\beta_E - \text{sign} \left[\Delta_S(i,k)\right] \beta} + \bigo{\beta_E^2}.
 \end{align}
-We see if $i < k$ this reduces to $|\Delta_S(i,k)| \delta$ and $i > k$ it reduces to $|\Delta_S(i,k)| (\beta_E + \beta)$. 
+We see if $i > k$ this reduces to $|\Delta_S(i,k)| \delta$ and $i < k$ it reduces to $|\Delta_S(i,k)| (\beta_E + \beta)$. 
+
+Now tackling the $R_0(\beta, \beta_E, k)$ term we get
+\begin{align}
+    R_0(\beta, \beta_E, k) &= \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} \\
+    &=\frac{1}{\dim_S} \parens{\beta (\trace{\rho_S(0) H_S} - \lambda_S(k)) - \beta_E (\trace{\rho_S(0) H_S} - \lambda_S(k))} + \bigo{\beta_E^2} \\
+    &= \frac{- \delta}{\dim_S} \parens{\trace{\rho_S(0) H_S} - \lambda_S(k)} + \bigo{\beta_E^2}
+\end{align}
+Plugging these into these into the final norm (and letting $\widetilde{\alpha} = \frac{\alpha^2 t^2}{\dim+ 1} \frac{2}{\dim_S(\dim_S - 1)}$ )we get
+\begin{align}
+    &\sum_k \abs{R_0(\beta, \beta_E, k) + S_k} \\
+    &= \sum_k \abs{- \frac{\delta}{\dim_S}(\trace{\rho_S(0) H_S} - \lambda_S(k)) + \widetilde{\alpha} \sum_{i \neq k} |\Delta_S(i,k)|(\beta_E - \beta \text{sign} \left[ \Delta_S(i,k) \right])} + \bigo{\beta_E^2}\\
+    &= \sum_k \abs{- \frac{\delta}{\dim_S}(\trace{\rho_S(0) H_S} - \lambda_S(k)) + \widetilde{\alpha} \sum_{i < k} (\beta + \beta_E)|\Delta_S(i,k)| + \widetilde{\alpha} \sum_{i > k} \delta |\Delta_S(i,k)|} + \bigo{\beta_E^2}
+\end{align}
+Now I want to plug in $\lambda_S(i) = \log (i)$ to see when this would work. If this is the case we can clearly see that it is well separated, so this expression holds. We can also write
+\begin{align}
+    \trace{\rho_S(0) H_S} &= \sum_i \frac{1}{\dim_S} \lambda_S(i) \\
+    &= \frac{\log (\dim_S!)}{\dim_S}
+\end{align}
+
+Further we have
+\begin{align}
+    \sum_{i < k} \abs{\Delta_S(i,k)} &= \sum_{i < k} \lambda_S(k) - \lambda_S(i) \\
+    &= (k-1) \log (k) - \sum_{i < k} \log (i) \\
+    &= (k-1) \log (k) - \log((k-1)!) \\
+\end{align}
+and
+\begin{align}
+    \sum_{i > k} |\Delta_S(i,k)| &= \sum_{i > k} \lambda_S(i) - \lambda_S(k) \\
+    &= \sum_{i > k} \log(i) - (\dim_S - k) \log (k) \\
+    &= \log\parens{\frac{\dim_S!}{k!}} - (\dim_S - k) \log(k) \\
+    &= \log (\dim_S !) - \log(k!) - (\dim_S - k) \log(k).
+\end{align}
+Plugging this in, along with $\beta = \beta_E - \delta$:
+\begin{align}
+    &\sum_k \abs{- \frac{\delta}{\dim_S}(\trace{\rho_S(0) H_S} - \lambda_S(k)) + \widetilde{\alpha} \sum_{i < k} (\beta + \beta_E)|\Delta_S(i,k)| + \widetilde{\alpha} \sum_{i > k} \delta |\Delta_S(i,k)|} \\
+    &= \sum_k \bigg| - \frac{\delta}{\dim_S}\parens{\frac{\log(\dim_S!)}{\dim_S} - \log(k)} + 2 \widetilde{\alpha} \beta_E ( (k-1) \log(k) - \log((k-1)!)) \\
+    &\quad + \widetilde{\alpha} \delta \parens{ (\log(\dim_S!) - \log(k!) - (\dim_S - k) \log(k)) - ((k-1)\log(k) - \log((k-1)!))} \bigg| \\
+    &= \sum_k \bigg| - \frac{\delta}{\dim_S}\parens{\frac{\log(\dim_S!)}{\dim_S} - \log(k)} + 2 \widetilde{\alpha} \beta_E ( (k \log(k) - \log(k!) \\
+    &\quad + \widetilde{\alpha} \delta \parens{ \log(\dim_S!)  - \dim_S\log(k)} \bigg| \\
+    &= \sum_k \abs{\delta \parens{\widetilde{\alpha} - \frac{1}{\dim_S^2}} \log(\dim_S!) + \delta \parens{\frac{1}{\dim_S} - \widetilde{\alpha} \dim_S} \log (k) + 2 \widetilde{\alpha} \beta_E(k \log(k) -\log(k!))} \\
+    &= \sum_k \abs{\delta \parens{\widetilde{\alpha} - 1/\dim_S^2}\parens{\log(\dim_S!) - \dim_S \log(k)} + 2 \widetilde{\alpha} \beta_E (k \log(k) - \log(k!))} \\
+    &= \sum_k \abs{\delta ~\frac{\dim_S \log(k) - \log (\dim_S !)}{\dim_S^2} + \widetilde{\alpha} \parens{\delta (\log(\dim_S!) - \dim_S \log(k)) + 2 \beta_E (k \log (k) - \log(k!))}}
+\end{align}
+Or what I should do is instead isolate the $\widetilde{\alpha}$ version. No, instead figure out if $\widetilde{\alpha} - 1 / \dim_S^2$ is always negative (I think it is)
+\begin{align}
+    \frac{\alpha^2 t^2}{2 \dim_S + 1} \frac{2}{\dim_S(\dim_S -1)} &\leq \frac{1}{\dim_S^2} \\
+    \frac{\alpha^2 t^2}{2 \dim_S + 1} &\leq \frac{\dim_S - 1}{2 \dim_S} \\
+    &= 1 - \frac{1}{\dim}.
+\end{align}
+Which holds whenever $\dim > 2$ as we required that $\frac{\alpha^2 t^2}{\dim + 1} \leq \frac{1}{\dim}$ in order to guarantee that the transition probabilities were valid probabilities. 
+
+Since we have determined that $\widetilde{\alpha} - 1/\dim_S^2$ is always negative and $k\log(k) - \log(k!)$ is always positive, the last remaining factor of interest is
+\begin{align}
+    \log(\dim_S!) &\geq \dim_S \log(k) \\
+    \frac{\log(\dim_S!)}{\dim_S} &\geq \log(k) \\
+    (\dim_S!)^{1/\dim_S} &\geq k.
+\end{align}
+Here we see $k$ just has to be less than the geometric mean of the index set in order for the overall term to be negative. The biggest decision now is what value of $\widetilde{\alpha}$ to use. As we can see, you can think of $\widetilde{\alpha}$ as being increased from 0 to whatever value we decide. This is unfortunately a non-linear optimization problem, due to the absolute values. So we will simply give an ansatze based off some numerics and try to show that it works. The ansatz is that we don't want to set $\widetilde{\alpha}$ so high that it causes the sign of one of the terms in the absolute value to change, we want to set it just large enough to nearly cancel out the negative term that is the closest to zero. As the terms we are trying to cancel are of the form $\delta (\dim_S \log(k) - \log(\dim_S!))/\dim_S^2$, which are monotonically increasing with $k$, we see that the smallest (in absolute value) negative term is when $k = \lfloor (\dim_S!)^{1/\dim_S} \rfloor$.
+
+In order to choose a value of $\widetilde{\alpha}$ that can be analyzed we choose $\widetilde{\alpha}$ such that the following inequality is satistied, note we use $\Bar{k} \coloneqq \lfloor (\dim_S!)^{1/\dim_S} \rfloor$,
+\begin{align}
+\abs{\delta ~\frac{\dim_S \log(\Bar{k}) - \log (\dim_S !)}{\dim_S^2} + \widetilde{\alpha} \parens{\delta (\log(\dim_S!) - \dim_S \log(\Bar{k})) + 2 \beta_E (\Bar{k} \log (\Bar{k}) - \log(\Bar{k}!))}} \leq \epsilon_\alpha
+\end{align}
+
 
 \newpage
 
