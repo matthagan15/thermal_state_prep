@@ -1085,9 +1085,32 @@ Since we have determined that $\widetilde{\alpha} - 1/\dim_S^2$ is always negati
 \end{align}
 Here we see $k$ just has to be less than the geometric mean of the index set in order for the overall term to be negative. The biggest decision now is what value of $\widetilde{\alpha}$ to use. As we can see, you can think of $\widetilde{\alpha}$ as being increased from 0 to whatever value we decide. This is unfortunately a non-linear optimization problem, due to the absolute values. So we will simply give an ansatze based off some numerics and try to show that it works. The ansatz is that we don't want to set $\widetilde{\alpha}$ so high that it causes the sign of one of the terms in the absolute value to change, we want to set it just large enough to nearly cancel out the negative term that is the closest to zero. As the terms we are trying to cancel are of the form $\delta (\dim_S \log(k) - \log(\dim_S!))/\dim_S^2$, which are monotonically increasing with $k$, we see that the smallest (in absolute value) negative term is when $k = \lfloor (\dim_S!)^{1/\dim_S} \rfloor$.
 
-In order to choose a value of $\widetilde{\alpha}$ that can be analyzed we choose $\widetilde{\alpha}$ such that the following inequality is satistied, note we use $\Bar{k} \coloneqq \lfloor (\dim_S!)^{1/\dim_S} \rfloor$,
+In order to choose a value of $\widetilde{\alpha}$ that can be analyzed we choose $\widetilde{\alpha}$ such that the following inequality is satisfied, note we use $\Bar{k} \coloneqq \lfloor (\dim_S!)^{1/\dim_S} \rfloor$,
 \begin{align}
-\abs{\delta ~\frac{\dim_S \log(\Bar{k}) - \log (\dim_S !)}{\dim_S^2} + \widetilde{\alpha} \parens{\delta (\log(\dim_S!) - \dim_S \log(\Bar{k})) + 2 \beta_E (\Bar{k} \log (\Bar{k}) - \log(\Bar{k}!))}} \leq \epsilon_\alpha
+\abs{\delta ~\frac{\dim_S \log(\Bar{k}) - \log (\dim_S !)}{\dim_S^2} + \widetilde{\alpha} \parens{\delta (\log(\dim_S!) - \dim_S \log(\Bar{k})) + 2 \beta_E (\Bar{k} \log (\Bar{k}) - \log(\Bar{k}!))}} \leq \epsilon_\alpha.
+\end{align}
+Now we use the fact that $\widetilde{\alpha}$ is user defined to make the input of the absolute value on the positive branch of solutions to the inequality. Further, we remind the reader that 
+\begin{align}
+    \delta ~\frac{\dim_S \log(\Bar{k}) - \log (\dim_S !)}{\dim_S^2} + \widetilde{\alpha} \parens{\delta (\log(\dim_S!) - \dim_S \log(\Bar{k})) + 2 \beta_E (\Bar{k} \log (\Bar{k}) - \log(\Bar{k}!))} \leq \epsilon_\alpha \\
+    \widetilde{\alpha} \leq \frac{ \epsilon_{\alpha} + \delta (\log (\dim_S!) - \dim_S \log(\Bar{k})) / \dim_S^2}{\delta (\log(\dim_S!) - \dim_S \log(\Bar{k})) + 2 \beta_E (\Bar{k} \log (\Bar{k}) - \log(\Bar{k}!))}.
+\end{align}
+For simplicity we may set $\widetilde{\alpha}$ to saturate this upper bound, which for now (sorry Nathan) I denote $\alpha_{UB}$. Note that we can always set $\epsilon_{\alpha}$ such that every other term in the sum is not affected, meaning we can break up the sum as
+\begin{align}
+    &\sum_k |R_0(\beta, \beta_E, k) + S_k| \\
+    &= \sum_{k \leq \Bar{k}} |R_0(\beta, \beta_E, k) + S_k | + \sum_{k > \Bar{k}} |R_0(\beta, \beta_E, k) + S_k | \\
+    &= \sum_{k \leq \Bar{k}} -(R_0(\beta, \beta_E, k) + S_k) + \sum_{k > \Bar{k}} R_0(\beta, \beta_E, k) + S_k \\
+    &= \sum_k |R_0(\beta, \beta_E, k)| + \sum_{k > \Bar{k}} S_k - \sum_{k \leq \Bar{k}} S_k \\ 
+    &= \norm{\rho_S(\beta) - \rho_S(\beta_E)}_1 + \sum_{k > \Bar{k}} S_k - \sum_{k \leq \Bar{k}} S_k.
+\end{align}
+Now we notice that we can achieve our goal if we can prove the following:
+\begin{align}
+    \norm{R_\Phi}_1 + \dim_S \parens{\frac{4\alpha}{\Delta_{\min}}}^2 + \sum_{k > \Bar{k}} S_k \leq \sum_{k \leq \Bar{k}} S_k.
+\end{align}
+So now we just have to lower bound the sum on the right hand side and upper bound the sum on the left.
+
+We start with the upper bound.
+\begin{align}
+    
 \end{align}
 
 
