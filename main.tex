@@ -1108,11 +1108,35 @@ Now we notice that we can achieve our goal if we can prove the following:
 \end{align}
 So now we just have to lower bound the sum on the right hand side and upper bound the sum on the left.
 
-We start with the upper bound.
+We start with the lower bound as this is more straightforward. For the lower bound we are allowed to assume that $k \leq \Bar{k}$. Also we will introduce the $\bigo{\beta_E^2}$ terms and then drop them from further lines. We start by computing a single term $S_k$ of $\sum_{k \leq \Bar{k}} S_k$ as 
 \begin{align}
-    
+    S_k &= \alpha_{UB} \sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+\beta_E |\Delta_S(i, k)}} \\
+    &= \alpha_{UB} \sum_{i \neq k} |\Delta_S(i,k)| \parens{\beta_E - \text{sign} \left[\Delta_S(i,k)\right] \beta} + \bigo{\beta_E^2} \\
+    &= \alpha_{UB} \sum_{i < k} |\Delta_S(i,k)| (\beta_E + \beta) + \alpha_{UB} \sum_{i > k} |\Delta_S(i,k)| (\beta_E - \beta) + \bigo{\beta_E^2} \\
+    &= \alpha_{UB} (2 \beta_E - \delta) \sum_{i < k} \log \left( \frac{k}{i} \right) + \alpha_{UB} \delta \sum_{i > k} \log \left( \frac{i}{k} \right) + \bigo{\beta_E^2} \\
+    &= 2 \alpha_{UB} \beta_E \parens{(k-1) \log(k) - \sum_{i < k} \log(i)} + \alpha_{UB} \delta \sum_{i} (\log (i) - \log(k)) + \bigo{\beta_E^2} \\ 
+    &= 2 \alpha_{UB} \beta_E \parens{k \log (k) - \log(k!)} + \alpha_{UB} \delta \parens{\log (\dim_S !) - \dim_S \log(k)} + \bigo{\beta_E^2}.
 \end{align}
-
+We will now drop the $\bigo{\beta_E^2}$ terms. If we wanted to, we could introduce the lower bound given by 
+\begin{align}
+    k &\leq \Bar{k} \\
+    &= \lfloor \dim_S!^{1/\dim_S} \rfloor \\
+    &\leq \dim_S!^{1/\dim_S} \\
+    \implies -\dim_S \log (k) &\geq \log(\dim_S!).
+\end{align}
+So we could lower bound the $\delta$ term by zero if we wanted to. That may be what we have to do, but for now we can let it float around. The real lower bound we want to use is Stirling's approximation to lower bound $k \log k - \log k!$. Since the $\log(k!)$ has a minus sign we use the exact upper bound
+$$
+k! \leq \sqrt{2 \pi k} \parens{\frac{k}{e}}^k e^{\frac{1}{12 k}}. 
+$$
+Plugging this in to the above yields, after taking logs,
+\begin{align}
+    S_k &\geq 2 \alpha_{UB} \beta_E \parens{k -\frac{1}{2} \log(2 \pi k) - \frac{1}{12 k}}  + \alpha_{UB} \delta \log \parens{\frac{\dim_S!}{k^{\dim_S}}}.
+\end{align}
+Now we can compute the sum of these terms over $k \leq \Bar{k}$
+\begin{align}
+    \sum_{k \leq \Bar{k}} S_K & \geq \sum_{k \leq \Bar{k}} \left[ 2 \alpha_{UB} \beta_E \parens{k -\frac{1}{2} \log(2 \pi k) - \frac{1}{12 k}}  + \alpha_{UB} \delta \log \parens{\frac{\dim_S!}{k^{\dim_S}}} \right] \\
+&= \alpha_{UB} \beta_E \parens{\Bar{k} (\Bar{k} - 1) -\log (\Bar{k}!) - \Bar{k} \log(2 \pi) - \frac{1}{12} \sum_{k \leq \Bar{k}} \frac{1}{k}} + \alpha_{UB} \delta \sum_{k \leq \Bar{k}} \log \parens{\frac{\dim_S!}{k^{\dim_S}}}
+\end{align}
 
 \newpage
 

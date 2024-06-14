@@ -2,8 +2,10 @@
 \contentsline {section}{\numberline {1}Introduction}{1}{}%
 \contentsline {section}{\numberline {2}Preliminaries}{1}{}%
 \contentsline {section}{\numberline {3}Taylor's Series for $\Phi $}{4}{}%
-\contentsline {subsection}{\numberline {3.1}Remainder Bound}{14}{}%
-\contentsline {section}{\numberline {4}Fixed points and convergences}{16}{}%
-\contentsline {section}{\numberline {A}Detailed Balance}{25}{}%
-\contentsline {section}{\numberline {B}Proof of Lemma 7\hbox {}}{29}{}%
-\contentsline {section}{\numberline {C}Possibly useful Lemmas}{29}{}%
+\contentsline {subsection}{\numberline {3.1}Remainder Bound}{10}{}%
+\contentsline {section}{\numberline {4}Approximate Detailed Balance}{11}{}%
+\contentsline {section}{\numberline {5}Fixed points and convergences}{16}{}%
+\contentsline {section}{\numberline {A}Detailed Balance}{35}{}%
+\contentsline {section}{\numberline {B}Thermal State Bounds}{35}{}%
+\contentsline {section}{\numberline {C}Some Scratch}{39}{}%
+\contentsline {section}{\numberline {D}Haar Integral Proofs}{43}{}%
