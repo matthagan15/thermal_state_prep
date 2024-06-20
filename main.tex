@@ -1115,7 +1115,7 @@ We start with the lower bound as this is more straightforward. For the lower bou
     &= \alpha_{UB} \sum_{i < k} |\Delta_S(i,k)| (\beta_E + \beta) + \alpha_{UB} \sum_{i > k} |\Delta_S(i,k)| (\beta_E - \beta) + \bigo{\beta_E^2} \\
     &= \alpha_{UB} (2 \beta_E - \delta) \sum_{i < k} \log \left( \frac{k}{i} \right) + \alpha_{UB} \delta \sum_{i > k} \log \left( \frac{i}{k} \right) + \bigo{\beta_E^2} \\
     &= 2 \alpha_{UB} \beta_E \parens{(k-1) \log(k) - \sum_{i < k} \log(i)} + \alpha_{UB} \delta \sum_{i} (\log (i) - \log(k)) + \bigo{\beta_E^2} \\ 
-    &= 2 \alpha_{UB} \beta_E \parens{k \log (k) - \log(k!)} + \alpha_{UB} \delta \parens{\log (\dim_S !) - \dim_S \log(k)} + \bigo{\beta_E^2}.
+    &= 2 \alpha_{UB} \beta_E \parens{k \log (k) - \log(k!)} + \alpha_{UB} \delta \parens{\log (\dim_S !) - \dim_S \log(k)} + \bigo{\beta_E^2}. \label{eq:s_k_sum_equality}
 \end{align}
 We will now drop the $\bigo{\beta_E^2}$ terms. If we wanted to, we could introduce the lower bound given by 
 \begin{align}
@@ -1138,6 +1138,14 @@ Now we can compute the sum of these terms over $k \leq \Bar{k}$
 &= \alpha_{UB} \beta_E \parens{\Bar{k} (\Bar{k} - 1) -\log (\Bar{k}!) - \Bar{k} \log(2 \pi) - \frac{1}{12} \sum_{k \leq \Bar{k}} \frac{1}{k}} + \alpha_{UB} \delta \sum_{k \leq \Bar{k}} \log \parens{\frac{\dim_S!}{k^{\dim_S}}}
 \end{align}
 
+Now we will repeat the same calculation but for the upper bound. To do this, we use a lower bound version of Stirling's Approximation given by $\sqrt{2 \pi k} \parens{\frac{k}{e}}^k e^{\frac{1}{12k} - \frac{1}{360k^3}} \leq k!$. Since the equality Eq. \eqref{eq:s_k_sum_equality} holds for all $k$ we can plug in the lower bound given by Stirling's to get
+\begin{align}
+    S_k & \leq 2 \alpha_{UB} \beta_E \parens{k -\frac{1}{2}\log (2 \pi k) - \frac{1}{12k} + \frac{1}{360 k^3}} + \alpha_{UB} \delta \log \parens{\frac{\dim_S!}{k^{\dim_S}}}.
+\end{align}
+Now upper bounding the sum over $k > \Bar{k}$ yields 
+\begin{align}
+    
+\end{align}
 \newpage
 
 We now aim on bounding the denominators of $1 + e^{\pm \beta_E |\Delta_S(i,k)|}$. To do so, we introduce upper and lower bound on $\beta_E$. The upper bound is given by requiring 
