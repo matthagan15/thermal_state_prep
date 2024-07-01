@@ -11,3 +11,4 @@ main.dvi
 main.pdf
 main.pdf
 numerics/target/**
+numerics/cluster_data/**
