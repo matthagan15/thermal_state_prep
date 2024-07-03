@@ -6,7 +6,86 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::{channel::GammaStrategy, HamiltonianType};
+use crate::{
+    channel::{GammaStrategy, IteratedChannel},
+    generate_floats, harmonic_oscillator_gaps, HamiltonianType,
+};
+
+pub fn run(config_file: &Path, results_file: &Path, label: String) -> MultiShotResults {
+    let conf = FixedEpsilonConfig::from_file(config_file);
+    let alphas = generate_floats(
+        conf.alpha_start,
+        conf.alpha_stop,
+        conf.alpha_steps,
+        conf.alpha_logspace,
+    );
+    let beta_envs = generate_floats(
+        conf.beta_env_start,
+        conf.beta_env_stop,
+        conf.beta_env_steps,
+        conf.beta_env_logspace,
+    );
+    let times = generate_floats(
+        conf.time_start,
+        conf.time_stop,
+        conf.time_steps,
+        conf.time_logspace,
+    );
+    let epsilons = generate_floats(
+        conf.epsilon_start,
+        conf.epsilon_stop,
+        conf.epsilon_steps,
+        conf.epsilon_logspace,
+    );
+    let h_sys = conf.hamiltonian_type.as_ndarray(conf.dim_sys);
+    let oscillator_gaps = harmonic_oscillator_gaps(conf.dim_sys);
+    let gamma_strat = GammaStrategy::known(oscillator_gaps, 100);
+    let mut inputs = Vec::new();
+    let mut outputs = Vec::new();
+    for alpha in alphas.iter() {
+        for beta_env in beta_envs.iter() {
+            for time in times.iter() {
+                for epsilon in epsilons.iter() {
+                    println!("{:}", "*".repeat(50));
+                    println!("inputs: {:}, {:}, {:}, {:}", alpha, beta_env, epsilon, time);
+                    let mut current_distance = f64::MAX;
+                    let mut num_interactions = 0;
+                    let (mut mean_dist, mut std_dist, mut dist_of_avg) = (0.0, 0.0, 0.0);
+                    while current_distance > *epsilon {
+                        println!("num interactions: {:}", num_interactions);
+                        println!("current distance: {:}", current_distance);
+                        num_interactions += 1;
+                        let phi_alphas = vec![*alpha; num_interactions];
+                        let phi_beta_envs = vec![*beta_env; num_interactions];
+                        let phi_times = vec![*time; num_interactions];
+                        let phi = IteratedChannel::new(
+                            h_sys.clone(),
+                            phi_alphas,
+                            phi_beta_envs,
+                            phi_times,
+                            gamma_strat.clone(),
+                        );
+                        let phi_outputs = phi.simulate(0.0, *beta_env, conf.num_samples);
+                        if phi_outputs.len() == 0 {
+                            panic!("Simulator should have returned at least one data point.");
+                        }
+                        (mean_dist, std_dist, dist_of_avg) = phi_outputs[phi_outputs.len() - 1];
+                        current_distance = mean_dist;
+                    }
+                    inputs.push((*alpha, *beta_env, *epsilon, *time));
+                    outputs.push((num_interactions, mean_dist, std_dist, dist_of_avg))
+                }
+            }
+        }
+    }
+    MultiShotResults {
+        inputs,
+        outputs,
+        num_samples: conf.num_samples,
+        dim_sys: conf.dim_sys,
+        label,
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct FixedEpsilonConfig {
@@ -60,7 +139,7 @@ impl FixedEpsilonConfig {
 /// format of inputs is: (alpha, beta_env, epsilon, time)
 /// format of outputs is: (num_steps, mean_dist, dist_of_mean, std)
 #[derive(Debug, Serialize, Deserialize, Clone)]
-struct MultiShotResults {
+pub struct MultiShotResults {
     inputs: Vec<(f64, f64, f64, f64)>,
     outputs: Vec<(usize, f64, f64, f64)>,
     num_samples: usize,
@@ -69,7 +148,7 @@ struct MultiShotResults {
 }
 
 impl MultiShotResults {
-    fn to_file(&self, path: &Path) {
+    pub fn to_file(&self, path: &Path) {
         let s = serde_json::to_string_pretty(self).expect("Could not serialize parameters.");
         let mut file = File::create(path).expect("Could not open file for write.");
         file.write_all(s.as_bytes())

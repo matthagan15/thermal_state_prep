@@ -64,6 +64,17 @@ impl std::str::FromStr for HamiltonianType {
     }
 }
 
+pub fn harmonic_oscillator_gaps(dim: usize) -> Vec<f64> {
+    let mut ret = Vec::new();
+    let h = harmonic_oscillator_hamiltonian(dim);
+    for ix in 0..dim - 1 {
+        for jx in ix + 1..dim {
+            ret.push(Scalar::abs(h[[jx, jx]] - h[[ix, ix]]));
+        }
+    }
+    ret
+}
+
 pub fn generate_floats(start: f64, stop: f64, num_steps: usize, logspace: bool) -> Vec<f64> {
     if logspace {
         ndarray::Array::logspace(10.0, start.log10(), stop.log10(), num_steps).to_vec()

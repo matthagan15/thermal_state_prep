@@ -36,28 +36,18 @@ pub struct Cli {
     label: String,
 }
 
-fn harmonic_oscillator_gaps(dim: usize) -> Vec<f64> {
-    let mut ret = Vec::new();
-    let h = harmonic_oscillator_hamiltonian(dim);
-    for ix in 0..dim - 1 {
-        for jx in ix + 1..dim {
-            ret.push(Scalar::abs(h[[jx, jx]] - h[[ix, ix]]));
-        }
-    }
-    ret
-}
-
 fn main() {
-    let gs = GammaStrategy::Fixed(1.0);
-    println!("pretty gamma strategy below.");
-    println!("{:}", serde_json::to_string_pretty(&gs).unwrap());
     let start = Instant::now();
     let cli = Cli::parse();
     match cli.experiment_type {
         Experiments::SingleShot => {
             single_shot_dist::run(&cli.config_path, &cli.results_path, cli.label.clone());
         }
-        Experiments::FixedEpsilon => todo!(),
+        Experiments::FixedEpsilon => {
+            let results =
+                fixed_epsilon::run(&cli.config_path, &cli.results_path, cli.label.clone());
+            results.to_file(&cli.results_path);
+        }
         Experiments::FixedNumSteps => todo!(),
     }
 

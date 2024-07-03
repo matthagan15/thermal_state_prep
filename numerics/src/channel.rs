@@ -9,7 +9,7 @@ use std::{
     sync::{Arc, Mutex, RwLock},
 };
 
-use ndarray::{array, linalg::kron, Array, Array2, ShapeBuilder};
+use ndarray::{array, linalg::kron, Array, Array2, ArrayView2, ShapeBuilder};
 use ndarray_linalg::{expm, krylov::R, Scalar, Trace};
 use num_complex::Complex64 as c64;
 use rand::{thread_rng, Rng};
