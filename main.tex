@@ -872,411 +872,12 @@ We now have shown that the thermal state at the same temperature as the environm
      \end{align}
 \end{proof}
 
+Now I want to explore a very simple example to show that analytically this protocol works.
+\subsection{Small example}
+Let $H_S = U_H \begin{bmatrix} 0 & 0 & 0 \\ 0 & \lambda_A & 0 \\ 0 & 0 & \lambda_B \end{bmatrix} U_H^\dagger$  be a simple three level system with known eigenvalues and unknown eigenvectors. Our goal is to show that this algorithm converges. First we show distance reduction 
 
-% \begin{proof}
-% \textbf{This is a bogus proof}
-%     We need to show that there is no way to lower bound the distance of the actual channel, instead we have to lower bound the distance of $\rho_S(\beta_E)$ and the second order approximation to the channel. 
-%     The following is what we want to show. \todo{this should be $\beta$ not $\beta_E$ ...}
-%     \begin{align}
-%         \norm{\rho_S(\beta_E) - \Phi^{(2)}(\rho_S(\beta))}_2^2 \geq \epsilon_{fix}.
-%     \end{align}
-%     We use Lemma (insert schatten deconstruction lemma here) to get
-%     \begin{align}
-%         \norm{\rho_S(\beta_E) - \Phi^{(2)}(\rho_S(\beta))}_2^2 &= \sum_k \abs{\frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|k ,l)}^2 \\
-%         &\geq \abs{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)} - \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)}\tau(i,j|0,l)}^2 \\
-%         &= \parens{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}}^2 \nonumber \\
-%         &\quad - 2 \parens{\frac{e^{-\beta_E \lambda_S(0)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(0)}}{\partfun_S(\beta)}} \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) \nonumber \\
-%         &\quad + \parens{\sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l)}^2.
-%     \end{align}
-%     We now need to simplify
-%     \begin{align}
-%         \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) &= \sum_{i \neq 0} (a(i) b(j) - a(k) b(l)) \tau(i,j|0,l) \\
-%         &\geq \sum_{i \neq 0} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}}
-%     \end{align}
-%     \todo{propagate missing factors of $\alpha^2 t^2$ on the $\epsilon_{\sinc}$}
-%     Now we assume that there exists one and only one index $\kappa$ such that $\abs{\Delta_S(\kappa, 0) - \gamma} \leq \Delta_{\min}$. This ensures that if $i \neq \kappa$ then $\tau(i,j | 0, l) \leq \epsilon_{\sinc}$ and that $\epsilon_{\sinc} \leq \tau(\kappa, 0 | 0, 1) \leq 1$. This allows us to simplify the sum as
-%     \begin{align}
-%         \sum_{i \neq 0} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}} &= \parens{(a(\kappa) b(0) - a(0) b(1)) \tau(\kappa, 0 | 0, 1) - 3 \epsilon_{\sinc}} \nonumber \\
-%         &\quad + \sum_{i \neq 0, \kappa} \parens{(a(i) b(0) - a(0) b(1)) \tau(i, 0 | 0, 1) - 3 \epsilon_{\sinc}} \\
-%         &\geq (a(\kappa) b(0) - a(0) b(1)) \tau(\kappa, 0 | 0, 1) - \epsilon_{\sinc}(3 + 4 (\dim - 2))
-%     \end{align}
+\subsubsection{distance reduction}
 
-%     We now explore the prefactor in front of the transition factor,
-%     \begin{align}
-%         a(i)b(0) - a(0) b(1) &= \frac{1}{\partfun_S(\beta) \partfun_E(\beta_E)} \parens{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(0)} - e^{-\beta \lambda_S(0) - \beta_E \lambda_E(1)}} \\
-%         &= \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \parens{1 - e^{\beta \Delta_S(i,0) - \beta_E \gamma}}.
-%     \end{align}
-%     As we would like the theorem statement to hold in the limit as $\beta_E \to \infty$, we expect that this factor should be positive for finite $\beta$ and $\Delta_S(i,0)$. We utilize the assumptions $\beta_E - \beta > \delta$ and $|\Delta_S(i,0) - \gamma| \leq \Delta_{\min}$ to show that this factor is positive for certain values of $\delta$.
-%     \begin{align}
-%         1 - e^{\beta \Delta_S(i,0) - \beta_E \gamma} \geq 0 \iff \beta_E \gamma &\geq \beta \Delta_S(i,0) \\
-%         &\iff 0 \leq \beta_E \gamma - \beta \Delta_S(i,0)  \\
-%         &\iff 0 \leq \beta_E \parens{\gamma - \Delta_S(i,0)} + (\beta_E - \beta) \Delta_S(i,0).
-%     \end{align}
-%     Now we know that $|\Delta_S(i,0) - \gamma| \leq \Delta_{\min}$ implies that $\gamma - \Delta_S(i,0) \geq - \Delta_{\min}$. This shows that $\beta_E(\gamma - \Delta_S(i,0)) \geq - \beta_E \Delta_{\min}$. For the other term we know that $\beta_E - \beta > \delta$. Combining these shows that 
-%     \begin{align}
-%         &\beta_E(\gamma - \Delta_S(i,0)) + (\beta_E - \beta) \Delta_S(i,0) > - \beta_E \Delta_{\min} + \delta \Delta_S(i,0) \\
-%         &\delta \geq \frac{\beta_E \Delta_{\min}}{\Delta_S(i,0)} \implies 1 - e^{\beta \Delta_S(i,0) - \beta_E \gamma} \geq 0
-%     \end{align}
-
-%     For now we will use $\Delta_S$ as shorthand for $\Delta_S(i,0)$. Here we want to show that if $1 - e^{-(\beta_E \gamma - \beta \Delta_S)}$ is greater than some value, say $\epsilon_{exp}$. To do this, all we have to show is that $x \geq \ln\parens{\frac{1}{\epsilon_{exp}}} \implies 1 - e^{-x} \geq 1 - \epsilon_{exp}$. As we know that $\beta_E \gamma - \beta \Delta_S > -\beta_E \Delta_{\min} + \delta \Delta_S$, this reduces to requiring that $\delta \geq \frac{\beta_E \Delta_{\min} + \ln{1/\epsilon_{exp}}}{\Delta_S(i,0)}$. So now we have that 
-%     \begin{equation}
-%         \delta \geq \frac{\beta_E \Delta_{\min} + \ln 1/\epsilon_{exp}}{\Delta_S(i,0)} \implies 1 - e^{-\beta_E \gamma + \beta \Delta_S(i,0)} \geq 1 - \epsilon_{exp}.
-%     \end{equation}
-%     This reduces our inequality to
-%     \begin{equation}
-%         \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) \geq \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)} (1 - \epsilon_{exp}) \tau(\kappa, 0 |0, 1) - \epsilon_{\sinc} (4 \dim - 5).
-%     \end{equation}
-%     Now we utilize our knowledge of $\Delta_S(\kappa, 0 )$ to create another inequality about $\tau$. If $\abs{\gamma - \Delta_S(\kappa, 0)} \leq \frac{2 \sqrt{\widetilde{\epsilon_{\sinc}}}}{t}$ then $\tau(\kappa, 0| 0, 1) \geq \frac{\alpha^2 t^2}{\dim + 1} (1 - \widetilde{\epsilon_{\sinc}})$. Our final lower bound for this summation is then
-%     \begin{equation}
-%         \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) \geq \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \frac{\alpha^2 t^2}{\dim + 1} (1 - \epsilon_{exp}) (1 - \widetilde{\epsilon}_{\sinc}) - \epsilon_{\sinc} (4 \dim - 5).
-%     \end{equation}
-
-%     Our next objective is to create an upper bound for this summation. We can again upper bound the trivial transitions with $\epsilon_{\sinc}$
-%     \begin{align}
-%         \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) &= \sum_{j,l} (a(\kappa) b(j) - a(0) b(l)) \tau(\kappa,j|0,l) \nonumber \\
-%         &\quad + \sum_{i \neq 0, \kappa} \sum_{j,l} (a(i) b(j) - a(0) b(l)) \tau(i,j|0,l) \\
-%         &\leq (a(\kappa) b(0) -a(0) b(1)) \tau(\kappa, 0 | 0, 1) + \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}\parens{3 + 4(\dim - 2)}.
-%     \end{align}
-%     Now we repeat a similar process to before and upper bound $a(\kappa) b(0) - a(0) b(1) = \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)}(1 - e^{-\beta_E \gamma + \beta \Delta_S(\kappa, 0)})$. This time we will only require the simple bound $1 - e^{-\beta_E \gamma + \beta \Delta_S(\kappa, 0)} \leq 1$, which is true as $e^x \geq 0$ for all finite $x$. We then use the fact that $\tau(\kappa, 0| 0,1) \leq \frac{\alpha^2 t^2}{\dim + 1}$ to produce our final upper bound
-%     \begin{align}
-%         \sum_{i,j,l} \frac{e^{-\beta \lambda_S(i) - \beta_E \lambda_E(j)}}{\partfun_S(\beta) \partfun_E(\beta_E)} \tau(i,j|0,l) &\leq \frac{\alpha^2 t^2}{\dim + 1}\parens{ \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)} + 4 \dim \epsilon_{\sinc}}.
-%     \end{align}
-%     As we should think of $\epsilon_{\sinc}$ as approaching 0 as $t \to \infty$, we see that the sum should end up very close to $\frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta \lambda_S(\kappa)}}{\partfun_S(\beta) \partfun_E(\beta_E)}$. 
-% \end{proof}
-
-Want to find the ``single shot" capture radius. First should study the single-shot capture radius as $\beta_E \to \infty$, as this should simplify a lot of things. 
-\begin{claim}
-    We want to characterize the single-shot capture radius, or the $\delta = \beta_E - \beta$ such that 
-    \begin{equation}
-        \norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 \leq  \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 .
-    \end{equation}
-\end{claim}
-\begin{proof}
-See scratch work below.
-\end{proof}
-We first expand the channel using the Taylors series given by Eq. \eqref{idk}
-\begin{align}
-    \norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 &= \norm{\rho_S(\beta_E) - \rho_S(\beta) - \mathbb{E}_{\gamma} T_{\gamma}^{(2)}(\rho_S(\beta)) - \mathbb{E}_{\gamma} R_{\Phi}}_1 \\
-    &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta) - \mathbb{E}_{\gamma} T_{\gamma}^{(2)}(\rho_S(\beta))}_1 + \norm{\mathbb{E}_{\gamma} R_{\Phi}}_1.
-\end{align}
-As $T_{\gamma}^{(2)}$ is diagonal in the $H_S$ basis we can expand the one norm of the leftmost term as
-\begin{align}
-    \norm{\rho_S(\beta_E) - \rho_S(\beta) - \mathbb{E}_{\gamma} T_{\gamma}^{(2)}(\rho_S(\beta))}_1 &= \sum_k \abs{p_E(k) - p_{\beta}(k) - \mathbb{E}_{\gamma} \bra{k}  T_{\gamma}^{(2)}(\rho_S(\beta)) \ket{k}} .
-\end{align}
-We will investigate a generic term in the above expression by substituting in the Boltzmann remainder $R_0$ used in Lemma \ref{lem:thermal_state_diff_bound} and the characterization of the expected second order term from Lemma \ref{lem:expected_second_order_term}. Substituting in the values for $T_{\gamma}^{(2)}$ for a specific $k$ gives
-\begin{align}
-    &\abs{p_E(k) - p_{\beta}(k) - \mathbb{E}_{\gamma} \bra{k} T_{\gamma}^{(2)}(\rho_S(\beta)) \ket{k}} \\
-    &\leq \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \abs{-R_0(\beta, \beta_E, k) - \frac{\alpha^2 t^2}{\dim + 1} \frac{2}{\dim_S (\dim_S - 1)}\parens{\sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}}}} \\
-    &= \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \abs{R_0(\beta, \beta_E, k) + \frac{\alpha^2 t^2}{\dim + 1} \frac{2}{\dim_S (\dim_S - 1)} \parens{\sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}}}}.
-\end{align}
-This is pretty cumbersome to write and analyze, so we use the variable $S_k$ to capture the summation
-\begin{align}
-    S_k &\coloneqq \frac{\alpha^2 t^2}{\dim + 1} \frac{2}{\dim_S (\dim_S - 1)} \sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{- \beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}}. \label{eq:single_shot_sum_def}
-\end{align}
-
-This allows us to write our total norm as
-\begin{align}
-    &\norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi(\rho_S(\beta)) }_1 \leq \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \sum_k \abs{ R_0(\beta, \beta_E, k) + S_k }. \label{eq:single_shot_capture_sum}
-\end{align}
-
-What we do next is a small $\beta_E$ and $\delta \coloneqq \beta_E - \beta$ expansion of $R_0(\beta, \beta_E, k)$ and $S_k$. 
-
-The path forward becomes clear once we realize that $\norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 = \sum_k \abs{p_{\beta_E}(k) - p_{\beta}(k)} = \sum_k \abs{R_0(\beta, \beta_E, k)}$. Looking at the identity we would like to prove $\norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1$, we see that the goal is to have the $S_k$ cancel out parts of the $R_0(k)$ values. We then need that the amount ``cancelled" by the $S_k$ is smaller than the positive contributions of the $S_k$ combined with the approximation errors $\norm{R_{\Phi}}_1$ and $\dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2$. To do this we need to know when $R_0(k)$ is negative and the structure of the $S_k$. 
-
-As $R_0(\beta, \beta_E, k)$ can change sign based on $k$, we need to isolate when each $R_0$ contribution is positive or negative, and then break down the sum over absolute values. Before we approach $R_0$ though, we approach the simpler problem of bounding $S_k$. 
-
-We first will show that each term in $S_k$ is non-negative. This boils down to a simple condition on $i$ compared to $k$: 
-\begin{align}
-    \frac{p_{\beta}(i)}{1 + e^{- \beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}} &\geq 0 \\
-    \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} &\geq \frac{p_{\beta}(k)}{1 + e^{+\beta_E |\Delta_S(i,k)|}} \\
-    e^{-\beta \Delta_S(i,k)} &\geq \frac{1 + e^{-\beta_E |\Delta_S(i,k)|}}{1 + e^{+ \beta_E |\Delta_S(i,k)|}} = e^{-\beta_E |\Delta_S(i,k)|} \\
-    -\beta \Delta_S(i,k) &\geq -\beta_E |\Delta_S(i,k)|.
-\end{align}
-We see if $\Delta_S(i,k) > 0$ the condition reduces to $\beta \leq \beta_E$, which is always true for a cooling channel. If $\Delta_S(i,k) < 0$, then the condition reduces to $\beta \geq - \beta_E$, which for $\beta_E \geq 0$ and $\beta \geq 0$ also always holds. Therefore we can claim that for a cooling channel with $\beta \in [0, \beta_E)$ that $S_k \geq 0$ holds.
-
-Now we want to do a small $\beta_E$ (aka a high temperature limit) and small $\delta \coloneqq \beta_E - \beta$ expansion of $S_k$. First we do a small $\delta$ expansion of $p_{\beta}(k)$. This is pretty straightforward without doing rigorous error bounds:
-\begin{align}
-    e^{-\beta \lambda_S(k)} &= e^{-\beta_E \lambda_S(k)} (1 + \delta \lambda_S(k) + \bigo{\delta^2} ) \\
-    \trace{e^{-\beta H}} &= \trace{e^{-\beta_E H}} + \delta \trace{e^{-\beta_E H} H} + \bigo{\delta^2} \\
-    \implies \frac{e^{-\beta \lambda_S(k)}}{\trace{e^{-\beta H}}} &= \frac{e^{-\beta_E \lambda_S(k)}}{\trace{e^{-\beta_E H}}}\parens{1 + \delta (\lambda_S(k) - \trace{\rho_S(\beta_E) H})} + \bigo{\delta^2}.
-\end{align}
-Now we do a small $\beta_E$ expansion of the boltzmann factors, which is similar work to the above:
-\begin{align}
-    \frac{e^{-\beta_E \lambda_S(k)}}{\trace{e^{-\beta_E H}}} &= \frac{1}{\dim_S}\parens{1 + \beta_E (\frac{1}{\dim} \trace{H} - \lambda_S(k))} + \bigo{\beta_E^2}.
-\end{align}
-Plugging this into the expansion about $\delta$ for $p_{\beta}(k)$, with the reminder that $\delta = \beta_E - \beta \implies \delta \in [0, \beta_E] \implies \delta \in \bigo{\beta_E}$ for a cooling channel, we get
-\begin{align}
-    \frac{e^{-\beta \lambda_S(k)}}{\trace{e^{-\beta H}}} &= \frac{1}{\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(k))} + \bigo{\beta_E^2}
-\end{align}
-We also have the expansion
-\begin{align}
-    \frac{1}{1 + e^{\pm \beta_E |\Delta_S(i,k)|}} &= \frac{1}{2} \mp \beta_E \frac{|\Delta_S(i,k)|}{4} + \bigo{\beta_E^2}.
-\end{align}
-
-Plugging in the above expansions we get the following simplification
-\begin{align}
-    \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} &= \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(i))}\parens{1 + \frac{\beta_E}{2}|\Delta_S(i,k)|} + \bigo{\beta_E^2} \\
-    &= \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(i)) + \frac{\beta_E}{2}|\Delta_S(i,k)|}
-\end{align}
-Computing the same thing for the negative term in \ref{eq:single_shot_sum_def} and plugging in yields the final subtraction
-\begin{align}
-    \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+\beta_E |\Delta_S(i,k)|}} &= \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(i)) + \frac{\beta_E}{2}|\Delta_S(i,k)|} \\
-    &\quad - \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(k)) - \frac{\beta_E}{2}|\Delta_S(i,k)|} + \bigo{\beta_E^2} \\
-    &= \beta (\lambda_S(k) - \lambda_S(i)) + \beta_E |\Delta_S(i,k)| +\bigo{\beta_E^2}\\
-    &= |\Delta_S(i,k)| \parens{\beta_E - \text{sign} \left[\Delta_S(i,k)\right] \beta} + \bigo{\beta_E^2}.
-\end{align}
-We see if $i > k$ this reduces to $|\Delta_S(i,k)| \delta$ and $i < k$ it reduces to $|\Delta_S(i,k)| (\beta_E + \beta)$. 
-
-Now tackling the $R_0(\beta, \beta_E, k)$ term we get
-\begin{align}
-    R_0(\beta, \beta_E, k) &= \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} \\
-    &=\frac{1}{\dim_S} \parens{\beta (\trace{\rho_S(0) H_S} - \lambda_S(k)) - \beta_E (\trace{\rho_S(0) H_S} - \lambda_S(k))} + \bigo{\beta_E^2} \\
-    &= \frac{- \delta}{\dim_S} \parens{\trace{\rho_S(0) H_S} - \lambda_S(k)} + \bigo{\beta_E^2}
-\end{align}
-Plugging these into these into the final norm (and letting $\widetilde{\alpha} = \frac{\alpha^2 t^2}{\dim+ 1} \frac{2}{\dim_S(\dim_S - 1)}$ )we get
-\begin{align}
-    &\sum_k \abs{R_0(\beta, \beta_E, k) + S_k} \\
-    &= \sum_k \abs{- \frac{\delta}{\dim_S}(\trace{\rho_S(0) H_S} - \lambda_S(k)) + \widetilde{\alpha} \sum_{i \neq k} |\Delta_S(i,k)|(\beta_E - \beta \text{sign} \left[ \Delta_S(i,k) \right])} + \bigo{\beta_E^2}\\
-    &= \sum_k \abs{- \frac{\delta}{\dim_S}(\trace{\rho_S(0) H_S} - \lambda_S(k)) + \widetilde{\alpha} \sum_{i < k} (\beta + \beta_E)|\Delta_S(i,k)| + \widetilde{\alpha} \sum_{i > k} \delta |\Delta_S(i,k)|} + \bigo{\beta_E^2}
-\end{align}
-Now I want to plug in $\lambda_S(i) = \log (i)$ to see when this would work. If this is the case we can clearly see that it is well separated, so this expression holds. We can also write
-\begin{align}
-    \trace{\rho_S(0) H_S} &= \sum_i \frac{1}{\dim_S} \lambda_S(i) \\
-    &= \frac{\log (\dim_S!)}{\dim_S}
-\end{align}
-
-Further we have
-\begin{align}
-    \sum_{i < k} \abs{\Delta_S(i,k)} &= \sum_{i < k} \lambda_S(k) - \lambda_S(i) \\
-    &= (k-1) \log (k) - \sum_{i < k} \log (i) \\
-    &= (k-1) \log (k) - \log((k-1)!) \\
-\end{align}
-and
-\begin{align}
-    \sum_{i > k} |\Delta_S(i,k)| &= \sum_{i > k} \lambda_S(i) - \lambda_S(k) \\
-    &= \sum_{i > k} \log(i) - (\dim_S - k) \log (k) \\
-    &= \log\parens{\frac{\dim_S!}{k!}} - (\dim_S - k) \log(k) \\
-    &= \log (\dim_S !) - \log(k!) - (\dim_S - k) \log(k).
-\end{align}
-Plugging this in, along with $\beta = \beta_E - \delta$:
-\begin{align}
-    &\sum_k \abs{- \frac{\delta}{\dim_S}(\trace{\rho_S(0) H_S} - \lambda_S(k)) + \widetilde{\alpha} \sum_{i < k} (\beta + \beta_E)|\Delta_S(i,k)| + \widetilde{\alpha} \sum_{i > k} \delta |\Delta_S(i,k)|} \\
-    &= \sum_k \bigg| - \frac{\delta}{\dim_S}\parens{\frac{\log(\dim_S!)}{\dim_S} - \log(k)} + 2 \widetilde{\alpha} \beta_E ( (k-1) \log(k) - \log((k-1)!)) \\
-    &\quad + \widetilde{\alpha} \delta \parens{ (\log(\dim_S!) - \log(k!) - (\dim_S - k) \log(k)) - ((k-1)\log(k) - \log((k-1)!))} \bigg| \\
-    &= \sum_k \bigg| - \frac{\delta}{\dim_S}\parens{\frac{\log(\dim_S!)}{\dim_S} - \log(k)} + 2 \widetilde{\alpha} \beta_E ( (k \log(k) - \log(k!) \\
-    &\quad + \widetilde{\alpha} \delta \parens{ \log(\dim_S!)  - \dim_S\log(k)} \bigg| \\
-    &= \sum_k \abs{\delta \parens{\widetilde{\alpha} - \frac{1}{\dim_S^2}} \log(\dim_S!) + \delta \parens{\frac{1}{\dim_S} - \widetilde{\alpha} \dim_S} \log (k) + 2 \widetilde{\alpha} \beta_E(k \log(k) -\log(k!))} \\
-    &= \sum_k \abs{\delta \parens{\widetilde{\alpha} - 1/\dim_S^2}\parens{\log(\dim_S!) - \dim_S \log(k)} + 2 \widetilde{\alpha} \beta_E (k \log(k) - \log(k!))} \\
-    &= \sum_k \abs{\delta ~\frac{\dim_S \log(k) - \log (\dim_S !)}{\dim_S^2} + \widetilde{\alpha} \parens{\delta (\log(\dim_S!) - \dim_S \log(k)) + 2 \beta_E (k \log (k) - \log(k!))}}
-\end{align}
-Or what I should do is instead isolate the $\widetilde{\alpha}$ version. No, instead figure out if $\widetilde{\alpha} - 1 / \dim_S^2$ is always negative (I think it is)
-\begin{align}
-    \frac{\alpha^2 t^2}{2 \dim_S + 1} \frac{2}{\dim_S(\dim_S -1)} &\leq \frac{1}{\dim_S^2} \\
-    \frac{\alpha^2 t^2}{2 \dim_S + 1} &\leq \frac{\dim_S - 1}{2 \dim_S} \\
-    &= 1 - \frac{1}{\dim}.
-\end{align}
-Which holds whenever $\dim > 2$ as we required that $\frac{\alpha^2 t^2}{\dim + 1} \leq \frac{1}{\dim}$ in order to guarantee that the transition probabilities were valid probabilities. 
-
-Since we have determined that $\widetilde{\alpha} - 1/\dim_S^2$ is always negative and $k\log(k) - \log(k!)$ is always positive, the last remaining factor of interest is
-\begin{align}
-    \log(\dim_S!) &\geq \dim_S \log(k) \\
-    \frac{\log(\dim_S!)}{\dim_S} &\geq \log(k) \\
-    (\dim_S!)^{1/\dim_S} &\geq k.
-\end{align}
-Here we see $k$ just has to be less than the geometric mean of the index set in order for the overall term to be negative. The biggest decision now is what value of $\widetilde{\alpha}$ to use. As we can see, you can think of $\widetilde{\alpha}$ as being increased from 0 to whatever value we decide. This is unfortunately a non-linear optimization problem, due to the absolute values. So we will simply give an ansatze based off some numerics and try to show that it works. The ansatz is that we don't want to set $\widetilde{\alpha}$ so high that it causes the sign of one of the terms in the absolute value to change, we want to set it just large enough to nearly cancel out the negative term that is the closest to zero. As the terms we are trying to cancel are of the form $\delta (\dim_S \log(k) - \log(\dim_S!))/\dim_S^2$, which are monotonically increasing with $k$, we see that the smallest (in absolute value) negative term is when $k = \lfloor (\dim_S!)^{1/\dim_S} \rfloor$.
-
-In order to choose a value of $\widetilde{\alpha}$ that can be analyzed we choose $\widetilde{\alpha}$ such that the following inequality is satisfied, note we use $\Bar{k} \coloneqq \lfloor (\dim_S!)^{1/\dim_S} \rfloor$,
-\begin{align}
-\abs{\delta ~\frac{\dim_S \log(\Bar{k}) - \log (\dim_S !)}{\dim_S^2} + \widetilde{\alpha} \parens{\delta (\log(\dim_S!) - \dim_S \log(\Bar{k})) + 2 \beta_E (\Bar{k} \log (\Bar{k}) - \log(\Bar{k}!))}} \leq \epsilon_\alpha.
-\end{align}
-Now we use the fact that $\widetilde{\alpha}$ is user defined to make the input of the absolute value on the positive branch of solutions to the inequality. Further, we remind the reader that 
-\begin{align}
-    \delta ~\frac{\dim_S \log(\Bar{k}) - \log (\dim_S !)}{\dim_S^2} + \widetilde{\alpha} \parens{\delta (\log(\dim_S!) - \dim_S \log(\Bar{k})) + 2 \beta_E (\Bar{k} \log (\Bar{k}) - \log(\Bar{k}!))} \leq \epsilon_\alpha \\
-    \widetilde{\alpha} \leq \frac{ \epsilon_{\alpha} + \delta (\log (\dim_S!) - \dim_S \log(\Bar{k})) / \dim_S^2}{\delta (\log(\dim_S!) - \dim_S \log(\Bar{k})) + 2 \beta_E (\Bar{k} \log (\Bar{k}) - \log(\Bar{k}!))}.
-\end{align}
-For simplicity we may set $\widetilde{\alpha}$ to saturate this upper bound, which for now (sorry Nathan) I denote $\alpha_{UB}$. Note that we can always set $\epsilon_{\alpha}$ such that every other term in the sum is not affected, meaning we can break up the sum as
-\begin{align}
-    &\sum_k |R_0(\beta, \beta_E, k) + S_k| \\
-    &= \sum_{k \leq \Bar{k}} |R_0(\beta, \beta_E, k) + S_k | + \sum_{k > \Bar{k}} |R_0(\beta, \beta_E, k) + S_k | \\
-    &= \sum_{k \leq \Bar{k}} -(R_0(\beta, \beta_E, k) + S_k) + \sum_{k > \Bar{k}} R_0(\beta, \beta_E, k) + S_k \\
-    &= \sum_k |R_0(\beta, \beta_E, k)| + \sum_{k > \Bar{k}} S_k - \sum_{k \leq \Bar{k}} S_k \\ 
-    &= \norm{\rho_S(\beta) - \rho_S(\beta_E)}_1 + \sum_{k > \Bar{k}} S_k - \sum_{k \leq \Bar{k}} S_k.
-\end{align}
-Now we notice that we can achieve our goal if we can prove the following:
-\begin{align}
-    \norm{R_\Phi}_1 + \dim_S \parens{\frac{4\alpha}{\Delta_{\min}}}^2 + \sum_{k > \Bar{k}} S_k \leq \sum_{k \leq \Bar{k}} S_k.
-\end{align}
-So now we just have to lower bound the sum on the right hand side and upper bound the sum on the left.
-
-We start with the lower bound as this is more straightforward. For the lower bound we are allowed to assume that $k \leq \Bar{k}$. Also we will introduce the $\bigo{\beta_E^2}$ terms and then drop them from further lines. We start by computing a single term $S_k$ of $\sum_{k \leq \Bar{k}} S_k$ as 
-\begin{align}
-    S_k &= \alpha_{UB} \sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+\beta_E |\Delta_S(i, k)}} \\
-    &= \alpha_{UB} \sum_{i \neq k} |\Delta_S(i,k)| \parens{\beta_E - \text{sign} \left[\Delta_S(i,k)\right] \beta} + \bigo{\beta_E^2} \\
-    &= \alpha_{UB} \sum_{i < k} |\Delta_S(i,k)| (\beta_E + \beta) + \alpha_{UB} \sum_{i > k} |\Delta_S(i,k)| (\beta_E - \beta) + \bigo{\beta_E^2} \\
-    &= \alpha_{UB} (2 \beta_E - \delta) \sum_{i < k} \log \left( \frac{k}{i} \right) + \alpha_{UB} \delta \sum_{i > k} \log \left( \frac{i}{k} \right) + \bigo{\beta_E^2} \\
-    &= 2 \alpha_{UB} \beta_E \parens{(k-1) \log(k) - \sum_{i < k} \log(i)} + \alpha_{UB} \delta \sum_{i} (\log (i) - \log(k)) + \bigo{\beta_E^2} \\ 
-    &= 2 \alpha_{UB} \beta_E \parens{k \log (k) - \log(k!)} + \alpha_{UB} \delta \parens{\log (\dim_S !) - \dim_S \log(k)} + \bigo{\beta_E^2}. \label{eq:s_k_sum_equality}
-\end{align}
-We will now drop the $\bigo{\beta_E^2}$ terms. If we wanted to, we could introduce the lower bound given by 
-\begin{align}
-    k &\leq \Bar{k} \\
-    &= \lfloor \dim_S!^{1/\dim_S} \rfloor \\
-    &\leq \dim_S!^{1/\dim_S} \\
-    \implies -\dim_S \log (k) &\geq \log(\dim_S!).
-\end{align}
-So we could lower bound the $\delta$ term by zero if we wanted to. That may be what we have to do, but for now we can let it float around. The real lower bound we want to use is Stirling's approximation to lower bound $k \log k - \log k!$. Since the $\log(k!)$ has a minus sign we use the exact upper bound
-$$
-k! \leq \sqrt{2 \pi k} \parens{\frac{k}{e}}^k e^{\frac{1}{12 k}}. 
-$$
-Plugging this in to the above yields, after taking logs,
-\begin{align}
-    S_k &\geq 2 \alpha_{UB} \beta_E \parens{k -\frac{1}{2} \log(2 \pi k) - \frac{1}{12 k}}  + \alpha_{UB} \delta \log \parens{\frac{\dim_S!}{k^{\dim_S}}}.
-\end{align}
-Now we can compute the sum of these terms over $k \leq \Bar{k}$
-\begin{align}
-    \sum_{k \leq \Bar{k}} S_K & \geq \sum_{k \leq \Bar{k}} \left[ 2 \alpha_{UB} \beta_E \parens{k -\frac{1}{2} \log(2 \pi k) - \frac{1}{12 k}}  + \alpha_{UB} \delta \log \parens{\frac{\dim_S!}{k^{\dim_S}}} \right] \\
-&= \alpha_{UB} \beta_E \parens{\Bar{k} (\Bar{k} - 1) -\log (\Bar{k}!) - \Bar{k} \log(2 \pi) - \frac{1}{12} \sum_{k \leq \Bar{k}} \frac{1}{k}} + \alpha_{UB} \delta \sum_{k \leq \Bar{k}} \log \parens{\frac{\dim_S!}{k^{\dim_S}}}
-\end{align}
-
-Now we will repeat the same calculation but for the upper bound. To do this, we use a lower bound version of Stirling's Approximation given by $\sqrt{2 \pi k} \parens{\frac{k}{e}}^k e^{\frac{1}{12k} - \frac{1}{360k^3}} \leq k!$. Since the equality Eq. \eqref{eq:s_k_sum_equality} holds for all $k$ we can plug in the lower bound given by Stirling's to get
-\begin{align}
-    S_k & \leq 2 \alpha_{UB} \beta_E \parens{k -\frac{1}{2}\log (2 \pi k) - \frac{1}{12k} + \frac{1}{360 k^3}} + \alpha_{UB} \delta \log \parens{\frac{\dim_S!}{k^{\dim_S}}}.
-\end{align}
-Now upper bounding the sum over $k > \Bar{k}$ yields 
-\begin{align}
-    
-\end{align}
-\newpage
-
-We now aim on bounding the denominators of $1 + e^{\pm \beta_E |\Delta_S(i,k)|}$. To do so, we introduce upper and lower bound on $\beta_E$. The upper bound is given by requiring 
-\begin{align}
-    \frac{1}{1 + e^{+\beta_E |\Delta_S(i,k)|}} &\geq \epsilon_2 \\
-    \frac{1}{\epsilon_2} - 1 &\geq e^{+\beta_E |\Delta_S(i,k)|} \\
-    \frac{1}{|\Delta_S(i,k)|} \ln (\epsilon_2^{-1} - 1) &\geq \beta_E,
-\end{align}
-where we note this bound is implied by $\frac{1}{2 \norm{H}} \ln(\epsilon_2^{-1} - 1 ) \geq \beta_E$. Now we work on the lower bound
-\begin{align}
-    \frac{1}{1 + e^{+\beta_E |\Delta_S(i,k)|}} &\leq \epsilon_1 \\
-    \frac{1}{\epsilon_1} - 1 &\leq e^{+\beta_E |\Delta_S(i,k)|} \\
-    \frac{1}{|\Delta_S(i,k)|} \ln (\epsilon_1^{-1} - 1) &\leq \beta_E,
-\end{align}
-where we note this bound is implied by $\frac{1}{\Delta_{\min}} \ln (\epsilon_1^{-1} - 1) \leq \beta_E$. We also want to route these bounds through to the $e^{-\beta_E |\Delta_S|}$ terms
-\begin{align}
-    \epsilon_1 \leq \frac{1}{1 + e^{-\beta_E |\Delta_S(i,k)|}} \leq \epsilon_2
-\end{align}
-
-Now we return to the $S_k$ terms. We state the upper bound (ignoring the prefactors for now)
-\begin{align}
-    S_k &\leq \sum_{i \neq k} \epsilon_{2} p_{\beta}(i) - \epsilon_{2} p_{\beta}(k) \\
-    &= \epsilon_{2} (1 - p_{\beta}(k) - (\dim_S - 1)p_{\beta}(k)) \\
-    &= \epsilon_{2}(1 - \dim_S p_{\beta}(k)).
-\end{align}
-The lower bound follows similarly
-\begin{align}
-    S_{k} &\geq \sum_{i \neq k} \epsilon_{1} p_{\beta}(i) - \epsilon_{1} p_{\beta}(k) \\
-    &= \epsilon_{1}(1 - p_{\beta}(k) - (\dim_S - 1) p_{\beta}(k)) \\
-    &= \epsilon_{1}(1 - \dim_S p_{\beta}(k)).
-\end{align}
-
-
-We need to profit by substituting these bounds into our summation in Eq. \eqref{eq:single_shot_capture_sum}. Isolating the sum over $k$ in that expression we have
-\begin{align}
-    \sum_{k} \abs{R_0(\beta, \beta_E, k) + S_k}.
-\end{align}
-It is tempting to apply the triangle inequality and see what can be pulled out of here, but as before we noted $\sum_k \abs{R_0(k)} = \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1$, which means as soon as we apply the triangle inequality we lose. Therefore we need to unpack the absolute values. To do so, we note that $S_k \in \bigo{\alpha^2 t^2 / \dim}$, so we can make it arbitrarily small so that the sign of $R_0(k) + S_k$ is the same as the sign of $R_0$. Then we can think about increasing $S_k$. Also note that $R_0(k) = 0$ implies that $\beta_E = \beta$, which we do not have. So we can always set $\alpha^2 t^2$ to be small enough such that every $S_k$ is smaller than the smallest $R_0$. 
-
-Now our goal is to reduce this sum by controlling values of $S_k$. We know that $R_0(\beta, \beta_E, 0) < 0$ for $\beta < \beta_E$ and that $S_k \geq 0$ for all $k$, so we will target our choice of $\frac{\alpha^2 t^2}{\dim + 1}$ to ensure that $S_0$ is close to cancelling out the error due to $R_0(\beta, \beta_E, 0)$ (remember the subscript 0 denotes the order of the remainder and we will drop the implicit arguments of $\beta, \beta_E$). Then we will use the triangle inequality to deal with the remaining terms. Now when controlling $\alpha^2 t^2 / \dim + 1$ to cancel out $R_0(0)$ we should aim to make $S_0$ as small as we can, as our only knob to adjust $S_0$ (the scalar $\alpha^2 t^2 / \dim + 1$) affects the other $S_k$'s directly and we would like those to be small. 
-
-\begin{align}
-    \abs{R_0(0) + S_0} &\leq \epsilon_S \\
-    \implies \abs{R_0(0)} - \epsilon_S &\leq S_0 \leq \abs{R_0(0)} + \epsilon_S
-\end{align}
-To attack this we will plug in for $S_0 - \abs{R_0(0)}$ and start simplifying.
-\begin{align}
-    S_0 - \abs{R_0(0)} &= \sum_{i > 0} \left( \frac{p_{\beta}(i)}{1 + e^{- \beta_E \abs{\Delta_S(i,0)}}} - \frac{p_{\beta}(0)}{1 + e^{+ \beta_E \abs{\Delta_S(i,0)}}} \right) - |\beta - \beta_E| p_{\beta_{\star}}(0) \parens{\anglebrackets{H}_{\beta_{\star}} - \lambda_S(0)} \label{tmp:ugly_sum_1}
-\end{align}
-Now the crucial point to this argument is the sum over $i > 0$. If this sum is bounded through simple bounds on $\beta_E$ we lose all of our gains. Further, after preliminary numerical investigations this sum does not seem to be sufficient to prove thermalization for various well separated hamiltonians, such as the number operator squared $N^2 = (a^\dagger a)^2$ analagous to the harmonic oscillator. For this proof, we will investigate a truncated square root of the number operator, or $\lambda_S(k) \propto \sqrt{k}$. To give us one extra knob of control, we will explicitly use $\lambda_S(k) = h \sqrt{k}$ with little $h$ capturing the energy scale. This Hamiltonian is well separated, first off the smallest difference is $\lambda_S(2) - \lambda_S(1) = \sqrt{2} - 1$. For the well-separated condition we need $|\lambda_S(i) - \lambda_S(j)| - |\lambda_S(k) - \lambda_S(l)| \geq \Delta_{\min}$ to be bounded away from zero for nonequal $(i,j)$ and $(k,l)$. This seems to be clear but is busy work I shouldn't do unless it leads to something useful.
-
-The well-separated Hamiltonian we will investigate analytically is the natural logarithm hamiltonian, where $\lambda_S(k) = \ln k$. Should include a proof that it is well-separated. For now we need to determine if it yields any kind of useful bound. First we tackle the term containing $p_{\beta}(1)$. \matt{Need to go through and make sure everything in the paper is one-indexed. Cry.} We have the sum
-\begin{align}
-    \sum_{i = 2}^{\dim_S} \frac{1}{1 + e^{\beta_E \lambda_S(i)}} &= \sum_{i = 2}^{\dim_S} \frac{1}{1 + i^{\beta_E}}
-\end{align}
-Now we need to show that this is monotonically decreasing. 
-\begin{align}
-    \frac{\partial}{\partial x} \frac{1}{1 + x^{\beta_E}} &= \frac{-1}{(1 + x^{\beta_E})^2} \cdot \beta_E x^{\beta_E - 1}.
-\end{align}
-For $x, \beta_E \geq 0$ this is clearly always negative and therefore each term in the summation is monotonically decreasing. Now we use integral bounds to get good stuff. 
-
-\begin{center}
-\textbf{Below is bad}
-\end{center}
-
-Now we assume that $\lambda_S(k) = h \sqrt{k}$ is a well-separated Hamiltonian. Our goal is to bound the sums present in Eq. \eqref{tmp:ugly_sum_1}. We start with the easier one on the negative term for $S_0$. To do so we will linearize the sum about $\beta_E \to \infty$, or in other words as the environment temperature approaches zero. 
-\begin{align}
-    \frac{\partial}{\partial \beta_E^{-1}} \frac{1}{1 + e^{+ \beta_E h \sqrt{i}}} &= \frac{1}{\parens{1 + e^{+ \beta_E h \sqrt{i}}}^2 } \cdot e^{\beta_E h \sqrt{i}} (-1)\beta_E^2 h \sqrt{i}.
-\end{align}
-It is easy to see that as $\beta_E \to \infty$ the denominator containing the $\left(e^{\beta_E h \sqrt{i}}\right)^2$ term will dominate and the overall derivative approaches zero. When is this regime of approximation valid?
-Anyways, this means we \emph{should} be able to use the $\beta_E \to \infty$ behavior as a good approximation. This gives
-\begin{align}
-    S_0 &\approx \sum_{i > 0} p_{\beta}(i) - p_{\beta}(0) \\
-    &= 1 - p_{\beta}(0) - (\dim_S - 1) p_{\beta}(0) \\
-    &= 1 - \dim_S p_{\beta}(0).
-\end{align}
-Unfortunately, this bound is useless for $\beta > 0$. This is because for $\beta > 0$, $p_{\beta}(0) > 1 / \dim_S$, but we already know from before that $S_k > 0$ for all $k$. This means the bound is bad, and if we want to continue we have to analytically compute this sum.
-\newpage
-Now we have to determine the sign of $R_0$. We will not determine the sign of each term exactly, but we will give conditions on when the sign of $R_0$ only changes once. To start off, we remind the reader of that the remainder is written (using the Mean-Value version)
-\begin{align}
-    R_0(\beta, \beta_E, k) &= (\beta - \beta_E) p_{\beta_{\star}}(k) \parens{\parens{\sum_i p_{\beta_{\star}}(i) \lambda_S(i)} - \lambda_S(k)}.
-\end{align}
-Now we know that $\beta_{\star} \in (\beta, \beta_E)$. What we want to do is squeeze this range so small such that the difference in the mean energies $\anglebrackets{H}_{\beta_{\star}} \coloneqq \sum_i p_{\beta_{\star}}(i) \lambda_S(i)$ at $\beta$ and $\beta_E$ are very close. Below, let $\beta_i$ denote the mean value temperature guaranteed for $R_0(\beta, \beta_E, i)$. Also, it will prove sufficient to upper bound the absolute value
-\begin{align}
-    \abs{\anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E}} &= \left| \sum_i (p_{\beta}(i) - p_{\beta_E}(i)) \lambda_S(i) \right| \\
-    &\leq \sum_i \abs{R_0(\beta, \beta_E, i)} \abs{\lambda_S(i)} \\
-    &\leq \norm{H} \sum_i |\beta - \beta_E| p_{\beta_i}(i) \abs{\sum_j p_{\beta_i}(j) \lambda_S(j) - \lambda_S(i)} \\
-    &\leq \norm{H} \delta \sum_i p_{\beta_i}(i) \parens{\sum_{j} p_{\beta_i}(j) \abs{\lambda_S(j)} + \abs{\lambda_S(i)}} \\
-    &\leq 2 \norm{H}^2 \delta \sum_i p_{\beta_i}(i) \\
-    &\leq 2 \dim_S \delta \norm{H}^2.
-\end{align}
-Now we can require $\delta \leq \frac{\Delta_{\min}}{2 \dim_S \norm{H}^2}$ to get $\abs{\anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E}} \leq \Delta_{\min}$.
-
-Our next goal is to show that if some index $k_1$ has a positive zeroth order Boltzmann remainder $R_0(\beta, \beta_E, k_1)$, then every index $k_2 > k_1$ also has a positive zeroth order Boltzmann remainder. Note that $R_0(\beta, \beta_E, j) \geq 0 $ if and only if $\anglebrackets{H}_{\beta_j} - \lambda_S(j) \leq 0$. This means that we only need to show that For below, let $\beta_1$ denote the mean value $\beta$ for $k_1$ and similarly for $\beta_2$
-\begin{align}
-    \anglebrackets{H}_{\beta_2} - \lambda_S(k_2) &= \anglebrackets{H}_{\beta_2} - \anglebrackets{H}_{\beta_1} + \anglebrackets{H}_{\beta_1} - \lambda_S(k_1) + \lambda_S(k_1) - \lambda_S(k_2) \\
-    &\leq \anglebrackets{H}_{\beta_2} - \anglebrackets{H}_{\beta_1} + \lambda_S(k_1) - \lambda_S(k_2) \\
-    &\leq \anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E} - \Delta_{\min} \\
-    &\leq \abs{\anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E}} - \Delta_{\min} \\
-    &\leq 0.
-\end{align}
-This shows that $R_0(\beta, \beta_E, k_2) \geq 0$ if $R_0(\beta, \beta_E, k_1) \geq 0$ and $k_2 > k_1$. This result, combined with the observation that $R_0(\beta, \beta_E, 0) \leq 0$ yields the proposition that there exists a value $\widetilde{k}$ such that $k < \widetilde{k}$ implies $R_0(\beta, \beta_E, k) \leq 0$ and $k \geq \widetilde{k}$ implies $R_0(\beta, \beta_E, k) \geq 0$. Note we do not really care what this particular value of $\widetilde{k}$ is, just that it exists.
-
-Now we can break down our sum into the following two sums
-\begin{align}
-    \sum_k \abs{R_0(\beta, \beta_E, k) + S_k} &= \sum_{k < \widetilde{k}} \abs{R_0(\beta, \beta_E, k) + S_k} + \sum_{k \geq \widetilde{k}} \abs{R_0(\beta, \beta_E, k) + S_k} \\
-    &= \sum_{k < \widetilde{k}} -(R_0(\beta, \beta_E, k) + S_k) + \sum_{k \geq \widetilde{k}} R_0(\beta, \beta_E, k) + S_k \\ 
-    &= \sum_{k < \widetilde{k}} -R_0(\beta, \beta_E, k) + \sum_{k \geq \widetilde{k}} R_0(k) - \sum_{k < \widetilde{k}} S_k + \sum_{k \geq \widetilde{k}} S_k \\
-    &= \sum_k \abs{R_0(k)} - \sum_{k < \widetilde{k}} S_k + \sum_{k \geq \widetilde{k}} S_k
-\end{align}
-This yields
-\begin{align}
-    \norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 + \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \sum_{k \geq \widetilde{k}} S_k - \sum_{k < \widetilde{k}} S_k.
-\end{align}
-
-If our only goal is to show contraction, this reduces our problem to proving the following inequality
-\begin{align}
-    \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 + \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \sum_{k \geq \widetilde{k}} S_k - \sum_{k < \widetilde{k}} S_k &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \\
-    \iff \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 &\leq \sum_{k < \widetilde{k}} S_k - \sum_{k \geq \widetilde{k}} S_k 
-\end{align}
-To prove this we will produce a lower bound on the RHS, and show that this lower bound is greater than the LHS. Our lower bounds from before give
-\begin{align}
-    \sum_{k < \widetilde{k}} S_k - \sum_{k \geq \widetilde{k}} S_k &\geq \epsilon_{1} \sum_{k < \widetilde{k}} (1 - \dim_S p_{\beta}(k)) - \epsilon_{2} \sum_{k \geq \widetilde{k}} (1 - \dim_S p_{\beta}(k)) \\
-    &= \epsilon_{1}(\widetilde{k} - 1 - \dim_S) + \epsilon_{1} \dim_S \sum_{k \geq \widetilde{k}} p_{\beta}(k) - \epsilon_{2}(\dim_S - \widetilde{k} + 1) + \epsilon_{2} \dim_S \sum_{k \geq \widetilde{k}} p_{\beta}(k) \\
-    &= \parens{\dim_S \sum_{k \geq \widetilde{k}} p_{\beta}(k) - (\dim_S - \widetilde{k} + 1)}(\epsilon_{1} + \epsilon_{2}) \\
-    &= \dim_S (\epsilon_{1} + \epsilon_{2}) \parens{\sum_{k \geq \widetilde{k}} p_{\beta}(k) - \parens{1 - \frac{\widetilde{k} - 1}{\dim_S}}} \\
-    &= \dim_S (\epsilon_{1} + \epsilon_{2}) \parens{\frac{\widetilde{k} - 1}{\dim_S} - \sum_{k < \widetilde{k}} p_{\beta}(k)}.
-\end{align}
-We see right off the bat that this fails for very low temperatures, or when $\widetilde{k} = 2$, as the ground state energy $p_{\beta}(1)$ is always greater than $1 / \dim_S$ where as the positive term is $1 / \dim_S$ exactly. In the other limit, say $\widetilde{k} = \dim_S$, we have that the positive term is $1 - 1 /\dim_S$ and the negative term is $\sum_{k < \dim_S} p_{\beta}(k) = 1 - p_{\beta}(\dim_S)$, yielding a subtraction of $p_{\beta}(\dim_S) - 1 / \dim_S$, which is always negative. Again this lower bound does not work. Could it work somewhere in the middle? Evaluating this sum numerically for a harmonic oscillator (linear spectrum), square root spectrum, and squared spectrum seem to show that this bound is always negative. Intuitively this also makes sense, it says that in order to be positive the low-energy states need have less average probability mass than the infinite temperature limit of $1 / \dim_S$, which does not make sense as the low-energy states is where the probability mass of the thermal states increasingly concentrate as the temperature decreases.
-
-I now need to salvage this project some how. The first option I have is to revisit 
 
 
 \noindent\makebox[\linewidth]{\rule{\paperwidth}{0.4pt}}
@@ -1651,5 +1252,355 @@ Computing $(F)$ yields
     &~ +\delta_{i,k} \delta_{j,l} \frac{2 e^{i \Delta(i,j|k,l)t}}{\dim+1} \parens{ \sum_{(a,b): \Delta(i,j|a,b) \neq 0 } \frac{2(1- \cos (\Delta(i,j|a,b)t))}{\Delta(i,j|a,b)^2} \ketbra{a,b}{a,b} + t^2 \sum_{(a,b) : \Delta(i,j|a,b) = 0} \ketbra{a,b}{a,b}} \label{eq:second_order_output}
  \end{align}
 \end{proof}
+
+\section{Scratch work for single shot capture}
+
+Want to find the ``single shot" capture radius. First should study the single-shot capture radius as $\beta_E \to \infty$, as this should simplify a lot of things. 
+\begin{claim}
+    We want to characterize the single-shot capture radius, or the $\delta = \beta_E - \beta$ such that 
+    \begin{equation}
+        \norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 \leq  \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 .
+    \end{equation}
+\end{claim}
+\begin{proof}
+See scratch work below.
+\end{proof}
+We first expand the channel using the Taylors series given by Eq. \eqref{idk}
+\begin{align}
+    \norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 &= \norm{\rho_S(\beta_E) - \rho_S(\beta) - \mathbb{E}_{\gamma} T_{\gamma}^{(2)}(\rho_S(\beta)) - \mathbb{E}_{\gamma} R_{\Phi}}_1 \\
+    &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta) - \mathbb{E}_{\gamma} T_{\gamma}^{(2)}(\rho_S(\beta))}_1 + \norm{\mathbb{E}_{\gamma} R_{\Phi}}_1.
+\end{align}
+As $T_{\gamma}^{(2)}$ is diagonal in the $H_S$ basis we can expand the one norm of the leftmost term as
+\begin{align}
+    \norm{\rho_S(\beta_E) - \rho_S(\beta) - \mathbb{E}_{\gamma} T_{\gamma}^{(2)}(\rho_S(\beta))}_1 &= \sum_k \abs{p_E(k) - p_{\beta}(k) - \mathbb{E}_{\gamma} \bra{k}  T_{\gamma}^{(2)}(\rho_S(\beta)) \ket{k}} .
+\end{align}
+We will investigate a generic term in the above expression by substituting in the Boltzmann remainder $R_0$ used in Lemma \ref{lem:thermal_state_diff_bound} and the characterization of the expected second order term from Lemma \ref{lem:expected_second_order_term}. Substituting in the values for $T_{\gamma}^{(2)}$ for a specific $k$ gives
+\begin{align}
+    &\abs{p_E(k) - p_{\beta}(k) - \mathbb{E}_{\gamma} \bra{k} T_{\gamma}^{(2)}(\rho_S(\beta)) \ket{k}} \\
+    &\leq \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \abs{-R_0(\beta, \beta_E, k) - \frac{\alpha^2 t^2}{\dim + 1} \frac{2}{\dim_S (\dim_S - 1)}\parens{\sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}}}} \\
+    &= \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \abs{R_0(\beta, \beta_E, k) + \frac{\alpha^2 t^2}{\dim + 1} \frac{2}{\dim_S (\dim_S - 1)} \parens{\sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}}}}.
+\end{align}
+This is pretty cumbersome to write and analyze, so we use the variable $S_k$ to capture the summation
+\begin{align}
+    S_k &\coloneqq \frac{\alpha^2 t^2}{\dim + 1} \frac{2}{\dim_S (\dim_S - 1)} \sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{- \beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}}. \label{eq:single_shot_sum_def}
+\end{align}
+
+This allows us to write our total norm as
+\begin{align}
+    &\norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi(\rho_S(\beta)) }_1 \leq \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \sum_k \abs{ R_0(\beta, \beta_E, k) + S_k }. \label{eq:single_shot_capture_sum}
+\end{align}
+
+What we do next is a small $\beta_E$ and $\delta \coloneqq \beta_E - \beta$ expansion of $R_0(\beta, \beta_E, k)$ and $S_k$. 
+
+The path forward becomes clear once we realize that $\norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 = \sum_k \abs{p_{\beta_E}(k) - p_{\beta}(k)} = \sum_k \abs{R_0(\beta, \beta_E, k)}$. Looking at the identity we would like to prove $\norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1$, we see that the goal is to have the $S_k$ cancel out parts of the $R_0(k)$ values. We then need that the amount ``cancelled" by the $S_k$ is smaller than the positive contributions of the $S_k$ combined with the approximation errors $\norm{R_{\Phi}}_1$ and $\dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2$. To do this we need to know when $R_0(k)$ is negative and the structure of the $S_k$. 
+
+As $R_0(\beta, \beta_E, k)$ can change sign based on $k$, we need to isolate when each $R_0$ contribution is positive or negative, and then break down the sum over absolute values. Before we approach $R_0$ though, we approach the simpler problem of bounding $S_k$. 
+
+We first will show that each term in $S_k$ is non-negative. This boils down to a simple condition on $i$ compared to $k$: 
+\begin{align}
+    \frac{p_{\beta}(i)}{1 + e^{- \beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}} &\geq 0 \\
+    \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} &\geq \frac{p_{\beta}(k)}{1 + e^{+\beta_E |\Delta_S(i,k)|}} \\
+    e^{-\beta \Delta_S(i,k)} &\geq \frac{1 + e^{-\beta_E |\Delta_S(i,k)|}}{1 + e^{+ \beta_E |\Delta_S(i,k)|}} = e^{-\beta_E |\Delta_S(i,k)|} \\
+    -\beta \Delta_S(i,k) &\geq -\beta_E |\Delta_S(i,k)|.
+\end{align}
+We see if $\Delta_S(i,k) > 0$ the condition reduces to $\beta \leq \beta_E$, which is always true for a cooling channel. If $\Delta_S(i,k) < 0$, then the condition reduces to $\beta \geq - \beta_E$, which for $\beta_E \geq 0$ and $\beta \geq 0$ also always holds. Therefore we can claim that for a cooling channel with $\beta \in [0, \beta_E)$ that $S_k \geq 0$ holds.
+
+Now we want to do a small $\beta_E$ (aka a high temperature limit) and small $\delta \coloneqq \beta_E - \beta$ expansion of $S_k$. First we do a small $\delta$ expansion of $p_{\beta}(k)$. This is pretty straightforward without doing rigorous error bounds:
+\begin{align}
+    e^{-\beta \lambda_S(k)} &= e^{-\beta_E \lambda_S(k)} (1 + \delta \lambda_S(k) + \bigo{\delta^2} ) \\
+    \trace{e^{-\beta H}} &= \trace{e^{-\beta_E H}} + \delta \trace{e^{-\beta_E H} H} + \bigo{\delta^2} \\
+    \implies \frac{e^{-\beta \lambda_S(k)}}{\trace{e^{-\beta H}}} &= \frac{e^{-\beta_E \lambda_S(k)}}{\trace{e^{-\beta_E H}}}\parens{1 + \delta (\lambda_S(k) - \trace{\rho_S(\beta_E) H})} + \bigo{\delta^2}.
+\end{align}
+Now we do a small $\beta_E$ expansion of the boltzmann factors, which is similar work to the above:
+\begin{align}
+    \frac{e^{-\beta_E \lambda_S(k)}}{\trace{e^{-\beta_E H}}} &= \frac{1}{\dim_S}\parens{1 + \beta_E (\frac{1}{\dim} \trace{H} - \lambda_S(k))} + \bigo{\beta_E^2}.
+\end{align}
+Plugging this into the expansion about $\delta$ for $p_{\beta}(k)$, with the reminder that $\delta = \beta_E - \beta \implies \delta \in [0, \beta_E] \implies \delta \in \bigo{\beta_E}$ for a cooling channel, we get
+\begin{align}
+    \frac{e^{-\beta \lambda_S(k)}}{\trace{e^{-\beta H}}} &= \frac{1}{\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(k))} + \bigo{\beta_E^2}
+\end{align}
+We also have the expansion
+\begin{align}
+    \frac{1}{1 + e^{\pm \beta_E |\Delta_S(i,k)|}} &= \frac{1}{2} \mp \beta_E \frac{|\Delta_S(i,k)|}{4} + \bigo{\beta_E^2}.
+\end{align}
+
+Plugging in the above expansions we get the following simplification
+\begin{align}
+    \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} &= \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(i))}\parens{1 + \frac{\beta_E}{2}|\Delta_S(i,k)|} + \bigo{\beta_E^2} \\
+    &= \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(i)) + \frac{\beta_E}{2}|\Delta_S(i,k)|}
+\end{align}
+Computing the same thing for the negative term in \ref{eq:single_shot_sum_def} and plugging in yields the final subtraction
+\begin{align}
+    \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+\beta_E |\Delta_S(i,k)|}} &= \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(i)) + \frac{\beta_E}{2}|\Delta_S(i,k)|} \\
+    &\quad - \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(k)) - \frac{\beta_E}{2}|\Delta_S(i,k)|} + \bigo{\beta_E^2} \\
+    &= \beta (\lambda_S(k) - \lambda_S(i)) + \beta_E |\Delta_S(i,k)| +\bigo{\beta_E^2}\\
+    &= |\Delta_S(i,k)| \parens{\beta_E - \text{sign} \left[\Delta_S(i,k)\right] \beta} + \bigo{\beta_E^2}.
+\end{align}
+We see if $i > k$ this reduces to $|\Delta_S(i,k)| \delta$ and $i < k$ it reduces to $|\Delta_S(i,k)| (\beta_E + \beta)$. 
+
+Now tackling the $R_0(\beta, \beta_E, k)$ term we get
+\begin{align}
+    R_0(\beta, \beta_E, k) &= \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} \\
+    &=\frac{1}{\dim_S} \parens{\beta (\trace{\rho_S(0) H_S} - \lambda_S(k)) - \beta_E (\trace{\rho_S(0) H_S} - \lambda_S(k))} + \bigo{\beta_E^2} \\
+    &= \frac{- \delta}{\dim_S} \parens{\trace{\rho_S(0) H_S} - \lambda_S(k)} + \bigo{\beta_E^2}
+\end{align}
+Plugging these into these into the final norm (and letting $\widetilde{\alpha} = \frac{\alpha^2 t^2}{\dim+ 1} \frac{2}{\dim_S(\dim_S - 1)}$ )we get
+\begin{align}
+    &\sum_k \abs{R_0(\beta, \beta_E, k) + S_k} \\
+    &= \sum_k \abs{- \frac{\delta}{\dim_S}(\trace{\rho_S(0) H_S} - \lambda_S(k)) + \widetilde{\alpha} \sum_{i \neq k} |\Delta_S(i,k)|(\beta_E - \beta \text{sign} \left[ \Delta_S(i,k) \right])} + \bigo{\beta_E^2}\\
+    &= \sum_k \abs{- \frac{\delta}{\dim_S}(\trace{\rho_S(0) H_S} - \lambda_S(k)) + \widetilde{\alpha} \sum_{i < k} (\beta + \beta_E)|\Delta_S(i,k)| + \widetilde{\alpha} \sum_{i > k} \delta |\Delta_S(i,k)|} + \bigo{\beta_E^2}
+\end{align}
+Now I want to plug in $\lambda_S(i) = \log (i)$ to see when this would work. If this is the case we can clearly see that it is well separated, so this expression holds. We can also write
+\begin{align}
+    \trace{\rho_S(0) H_S} &= \sum_i \frac{1}{\dim_S} \lambda_S(i) \\
+    &= \frac{\log (\dim_S!)}{\dim_S}
+\end{align}
+
+Further we have
+\begin{align}
+    \sum_{i < k} \abs{\Delta_S(i,k)} &= \sum_{i < k} \lambda_S(k) - \lambda_S(i) \\
+    &= (k-1) \log (k) - \sum_{i < k} \log (i) \\
+    &= (k-1) \log (k) - \log((k-1)!) \\
+\end{align}
+and
+\begin{align}
+    \sum_{i > k} |\Delta_S(i,k)| &= \sum_{i > k} \lambda_S(i) - \lambda_S(k) \\
+    &= \sum_{i > k} \log(i) - (\dim_S - k) \log (k) \\
+    &= \log\parens{\frac{\dim_S!}{k!}} - (\dim_S - k) \log(k) \\
+    &= \log (\dim_S !) - \log(k!) - (\dim_S - k) \log(k).
+\end{align}
+Plugging this in, along with $\beta = \beta_E - \delta$:
+\begin{align}
+    &\sum_k \abs{- \frac{\delta}{\dim_S}(\trace{\rho_S(0) H_S} - \lambda_S(k)) + \widetilde{\alpha} \sum_{i < k} (\beta + \beta_E)|\Delta_S(i,k)| + \widetilde{\alpha} \sum_{i > k} \delta |\Delta_S(i,k)|} \\
+    &= \sum_k \bigg| - \frac{\delta}{\dim_S}\parens{\frac{\log(\dim_S!)}{\dim_S} - \log(k)} + 2 \widetilde{\alpha} \beta_E ( (k-1) \log(k) - \log((k-1)!)) \\
+    &\quad + \widetilde{\alpha} \delta \parens{ (\log(\dim_S!) - \log(k!) - (\dim_S - k) \log(k)) - ((k-1)\log(k) - \log((k-1)!))} \bigg| \\
+    &= \sum_k \bigg| - \frac{\delta}{\dim_S}\parens{\frac{\log(\dim_S!)}{\dim_S} - \log(k)} + 2 \widetilde{\alpha} \beta_E ( (k \log(k) - \log(k!) \\
+    &\quad + \widetilde{\alpha} \delta \parens{ \log(\dim_S!)  - \dim_S\log(k)} \bigg| \\
+    &= \sum_k \abs{\delta \parens{\widetilde{\alpha} - \frac{1}{\dim_S^2}} \log(\dim_S!) + \delta \parens{\frac{1}{\dim_S} - \widetilde{\alpha} \dim_S} \log (k) + 2 \widetilde{\alpha} \beta_E(k \log(k) -\log(k!))} \\
+    &= \sum_k \abs{\delta \parens{\widetilde{\alpha} - 1/\dim_S^2}\parens{\log(\dim_S!) - \dim_S \log(k)} + 2 \widetilde{\alpha} \beta_E (k \log(k) - \log(k!))} \\
+    &= \sum_k \abs{\delta ~\frac{\dim_S \log(k) - \log (\dim_S !)}{\dim_S^2} + \widetilde{\alpha} \parens{\delta (\log(\dim_S!) - \dim_S \log(k)) + 2 \beta_E (k \log (k) - \log(k!))}}
+\end{align}
+Or what I should do is instead isolate the $\widetilde{\alpha}$ version. No, instead figure out if $\widetilde{\alpha} - 1 / \dim_S^2$ is always negative (I think it is)
+\begin{align}
+    \frac{\alpha^2 t^2}{2 \dim_S + 1} \frac{2}{\dim_S(\dim_S -1)} &\leq \frac{1}{\dim_S^2} \\
+    \frac{\alpha^2 t^2}{2 \dim_S + 1} &\leq \frac{\dim_S - 1}{2 \dim_S} \\
+    &= 1 - \frac{1}{\dim}.
+\end{align}
+Which holds whenever $\dim > 2$ as we required that $\frac{\alpha^2 t^2}{\dim + 1} \leq \frac{1}{\dim}$ in order to guarantee that the transition probabilities were valid probabilities. 
+
+Since we have determined that $\widetilde{\alpha} - 1/\dim_S^2$ is always negative and $k\log(k) - \log(k!)$ is always positive, the last remaining factor of interest is
+\begin{align}
+    \log(\dim_S!) &\geq \dim_S \log(k) \\
+    \frac{\log(\dim_S!)}{\dim_S} &\geq \log(k) \\
+    (\dim_S!)^{1/\dim_S} &\geq k.
+\end{align}
+Here we see $k$ just has to be less than the geometric mean of the index set in order for the overall term to be negative. The biggest decision now is what value of $\widetilde{\alpha}$ to use. As we can see, you can think of $\widetilde{\alpha}$ as being increased from 0 to whatever value we decide. This is unfortunately a non-linear optimization problem, due to the absolute values. So we will simply give an ansatze based off some numerics and try to show that it works. The ansatz is that we don't want to set $\widetilde{\alpha}$ so high that it causes the sign of one of the terms in the absolute value to change, we want to set it just large enough to nearly cancel out the negative term that is the closest to zero. As the terms we are trying to cancel are of the form $\delta (\dim_S \log(k) - \log(\dim_S!))/\dim_S^2$, which are monotonically increasing with $k$, we see that the smallest (in absolute value) negative term is when $k = \lfloor (\dim_S!)^{1/\dim_S} \rfloor$.
+
+In order to choose a value of $\widetilde{\alpha}$ that can be analyzed we choose $\widetilde{\alpha}$ such that the following inequality is satisfied, note we use $\Bar{k} \coloneqq \lfloor (\dim_S!)^{1/\dim_S} \rfloor$,
+\begin{align}
+\abs{\delta ~\frac{\dim_S \log(\Bar{k}) - \log (\dim_S !)}{\dim_S^2} + \widetilde{\alpha} \parens{\delta (\log(\dim_S!) - \dim_S \log(\Bar{k})) + 2 \beta_E (\Bar{k} \log (\Bar{k}) - \log(\Bar{k}!))}} \leq \epsilon_\alpha.
+\end{align}
+Now we use the fact that $\widetilde{\alpha}$ is user defined to make the input of the absolute value on the positive branch of solutions to the inequality. Further, we remind the reader that 
+\begin{align}
+    \delta ~\frac{\dim_S \log(\Bar{k}) - \log (\dim_S !)}{\dim_S^2} + \widetilde{\alpha} \parens{\delta (\log(\dim_S!) - \dim_S \log(\Bar{k})) + 2 \beta_E (\Bar{k} \log (\Bar{k}) - \log(\Bar{k}!))} \leq \epsilon_\alpha \\
+    \widetilde{\alpha} \leq \frac{ \epsilon_{\alpha} + \delta (\log (\dim_S!) - \dim_S \log(\Bar{k})) / \dim_S^2}{\delta (\log(\dim_S!) - \dim_S \log(\Bar{k})) + 2 \beta_E (\Bar{k} \log (\Bar{k}) - \log(\Bar{k}!))}.
+\end{align}
+For simplicity we may set $\widetilde{\alpha}$ to saturate this upper bound, which for now (sorry Nathan) I denote $\alpha_{UB}$. Note that we can always set $\epsilon_{\alpha}$ such that every other term in the sum is not affected, meaning we can break up the sum as
+\begin{align}
+    &\sum_k |R_0(\beta, \beta_E, k) + S_k| \\
+    &= \sum_{k \leq \Bar{k}} |R_0(\beta, \beta_E, k) + S_k | + \sum_{k > \Bar{k}} |R_0(\beta, \beta_E, k) + S_k | \\
+    &= \sum_{k \leq \Bar{k}} -(R_0(\beta, \beta_E, k) + S_k) + \sum_{k > \Bar{k}} R_0(\beta, \beta_E, k) + S_k \\
+    &= \sum_k |R_0(\beta, \beta_E, k)| + \sum_{k > \Bar{k}} S_k - \sum_{k \leq \Bar{k}} S_k \\ 
+    &= \norm{\rho_S(\beta) - \rho_S(\beta_E)}_1 + \sum_{k > \Bar{k}} S_k - \sum_{k \leq \Bar{k}} S_k.
+\end{align}
+Now we notice that we can achieve our goal ($\norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi(\rho_S(\beta))}_1 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1$) if we can prove the following:
+\begin{align}
+    \norm{R_\Phi}_1 + \dim_S \parens{\frac{4\alpha}{\Delta_{\min}}}^2 + \sum_{k > \Bar{k}} S_k \leq \sum_{k \leq \Bar{k}} S_k.
+\end{align}
+So now we just have to lower bound the sum on the right hand side and upper bound the sum on the left.
+
+We start with the lower bound as this is more straightforward. For the lower bound we are allowed to assume that $k \leq \Bar{k}$. Also we will introduce the $\bigo{\beta_E^2}$ terms and then drop them from further lines. We start by computing a single term $S_k$ of $\sum_{k \leq \Bar{k}} S_k$ as 
+\begin{align}
+    S_k &= \alpha_{UB} \sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+\beta_E |\Delta_S(i, k)}} \\
+    &= \alpha_{UB} \sum_{i \neq k} |\Delta_S(i,k)| \parens{\beta_E - \text{sign} \left[\Delta_S(i,k)\right] \beta} + \bigo{\beta_E^2} \\
+    &= \alpha_{UB} \sum_{i < k} |\Delta_S(i,k)| (\beta_E + \beta) + \alpha_{UB} \sum_{i > k} |\Delta_S(i,k)| (\beta_E - \beta) + \bigo{\beta_E^2} \\
+    &= \alpha_{UB} (2 \beta_E - \delta) \sum_{i < k} \log \left( \frac{k}{i} \right) + \alpha_{UB} \delta \sum_{i > k} \log \left( \frac{i}{k} \right) + \bigo{\beta_E^2} \\
+    &= 2 \alpha_{UB} \beta_E \parens{(k-1) \log(k) - \sum_{i < k} \log(i)} + \alpha_{UB} \delta \sum_{i} (\log (i) - \log(k)) + \bigo{\beta_E^2} \\ 
+    &= 2 \alpha_{UB} \beta_E \parens{k \log (k) - \log(k!)} + \alpha_{UB} \delta \parens{\log (\dim_S !) - \dim_S \log(k)} + \bigo{\beta_E^2}. \label{eq:s_k_sum_equality}
+\end{align}
+We will now drop the $\bigo{\beta_E^2}$ terms. If we wanted to, we could introduce the lower bound given by 
+\begin{align}
+    k &\leq \Bar{k} \\
+    &= \lfloor \dim_S!^{1/\dim_S} \rfloor \\
+    &\leq \dim_S!^{1/\dim_S} \\
+    \implies -\dim_S \log (k) &\geq \log(\dim_S!).
+\end{align}
+So we could lower bound the $\delta$ term by zero if we wanted to. That may be what we have to do, but for now we can let it float around. The real lower bound we want to use is Stirling's approximation to lower bound $k \log k - \log k!$. Since the $\log(k!)$ has a minus sign we use the exact upper bound
+$$
+k! \leq \sqrt{2 \pi k} \parens{\frac{k}{e}}^k e^{\frac{1}{12 k}}. 
+$$
+Plugging this in to the above yields, after taking logs,
+\begin{align}
+    S_k &\geq 2 \alpha_{UB} \beta_E \parens{k -\frac{1}{2} \log(2 \pi k) - \frac{1}{12 k}}  + \alpha_{UB} \delta \log \parens{\frac{\dim_S!}{k^{\dim_S}}}.
+\end{align}
+Now we can compute the sum of these terms over $k \leq \Bar{k}$
+\begin{align}
+    \sum_{k \leq \Bar{k}} S_K & \geq \sum_{k \leq \Bar{k}} \left[ 2 \alpha_{UB} \beta_E \parens{k -\frac{1}{2} \log(2 \pi k) - \frac{1}{12 k}}  + \alpha_{UB} \delta \log \parens{\frac{\dim_S!}{k^{\dim_S}}} \right] \\
+&= \alpha_{UB} \beta_E \parens{\Bar{k} (\Bar{k} - 1) -\log (\Bar{k}!) - \Bar{k} \log(2 \pi) - \frac{1}{6} \sum_{k \leq \Bar{k}} \frac{1}{k}} + \alpha_{UB} \delta \sum_{k \leq \Bar{k}} \log \parens{\frac{\dim_S!}{k^{\dim_S}}}
+\end{align}
+
+Now we will repeat the same calculation but for the upper bound. To do this, we use a lower bound version of Stirling's Approximation given by $\sqrt{2 \pi k} \parens{\frac{k}{e}}^k e^{\frac{1}{12k} - \frac{1}{360k^3}} \leq k!$. Since the equality Eq. \eqref{eq:s_k_sum_equality} holds for all $k$ we can plug in the lower bound given by Stirling's to get
+\begin{align}
+    S_k & \leq 2 \alpha_{UB} \beta_E \parens{k -\frac{1}{2}\log (2 \pi k) - \frac{1}{12k} + \frac{1}{360 k^3}} + \alpha_{UB} \delta \log \parens{\frac{\dim_S!}{k^{\dim_S}}}.
+\end{align}
+Now upper bounding the sum over $k > \Bar{k}$ yields 
+\begin{align}
+     \sum_{k > \Bar{k}} S_k &\leq \sum_{k > \Bar{k}} \left[ 2 \alpha_{UB} \beta_E \parens{k -\frac{1}{2}\log (2 \pi k) - \frac{1}{12k} + \frac{1}{360 k^3}} + \alpha_{UB} \delta \log \parens{\frac{\dim_S!}{k^{\dim_S}}} \right] \\
+     &= \alpha_{UB} \beta_E \parens{ \dim_S (\dim_S + 1 - \log(2 \pi)) - \Bar{k} (\Bar{k} +1 + \log(2 \pi)) - \log \parens{\frac{\dim_S!  }{\Bar{k}!}} - \sum_{k > \Bar{k}} \frac{30 k^2 + 1}{180 k^3}} + \alpha_{UB} \delta \log \sum_{k > \Bar{k}} \parens{\frac{\dim_S!}{k^{\dim_S}}}
+\end{align}
+
+We note that in order to prove our goal, we only have to lower bound the difference of the first sum with the second. This is shown below
+\begin{align}
+    \sum_{k \leq \Bar{k}} S_k - \sum_{k > \Bar{k}} S_k &\geq \alpha_{UB} \beta_E \parens{\Bar{k} (\Bar{k} - 1) -\log (\Bar{k}!) - \Bar{k} \log(2 \pi) - \frac{1}{6} \sum_{k \leq \Bar{k}} \frac{1}{k}} \nonumber \\
+    &\quad + \alpha_{UB} \delta \sum_{k \leq \Bar{k}} \log \parens{\frac{\dim_S!}{k^{\dim_S}}} \nonumber \\
+    &\quad - \alpha_{UB} \beta_E \parens{ \dim_S (\dim_S + 1 - \log(2 \pi)) - \Bar{k} (\Bar{k} +1 + \log(2 \pi)) - \log \parens{\frac{\dim_S!  }{\Bar{k}!}} - \sum_{k > \Bar{k}} \frac{30 k^2 + 1}{180 k^3}} \nonumber \\
+    &\quad - \alpha_{UB} \delta \log \sum_{k > \Bar{k}} \parens{\frac{\dim_S!}{k^{\dim_S}}} \\
+    &= \alpha_{UB} \beta_E \parens{2 \Bar{k}^2 - 2 \log (\Bar{k}!) - \frac{1}{6} \sum_{k \leq \Bar{k}} \frac{1}{k} + \sum_{k > \Bar{k}} \frac{1 - 30 k^2}{180 k^3} - \dim_S (\dim_S + 1 - \log (2 \pi) )} \nonumber \\
+    &\quad + \alpha_{UB} \delta \parens{\sum_{k \leq \Bar{k}} \log \parens{\frac{\dim_S!}{k^{\dim_S}}} -  \sum_{k > \Bar{k}} \log \parens{\frac{\dim_S!}{k^{\dim_S}}}} \\
+    &= \alpha_{UB} \beta_E \parens{2 \Bar{k}^2 - 2 \log (\Bar{k}!) - \frac{1}{6} \sum_{k \leq \Bar{k}} \frac{1}{k} + \sum_{k > \Bar{k}} \frac{1 - 30 k^2}{180 k^3} - \dim_S (\dim_S + 1 - \log (2 \pi) )} \nonumber \\
+    &\quad + 2 \alpha_{UB} \delta \parens{\Bar{k} \log(\dim_S!) - \dim_S \log(\Bar{k}!)}  \\
+\end{align}
+
+\newpage
+
+We now aim on bounding the denominators of $1 + e^{\pm \beta_E |\Delta_S(i,k)|}$. To do so, we introduce upper and lower bound on $\beta_E$. The upper bound is given by requiring 
+\begin{align}
+    \frac{1}{1 + e^{+\beta_E |\Delta_S(i,k)|}} &\geq \epsilon_2 \\
+    \frac{1}{\epsilon_2} - 1 &\geq e^{+\beta_E |\Delta_S(i,k)|} \\
+    \frac{1}{|\Delta_S(i,k)|} \ln (\epsilon_2^{-1} - 1) &\geq \beta_E,
+\end{align}
+where we note this bound is implied by $\frac{1}{2 \norm{H}} \ln(\epsilon_2^{-1} - 1 ) \geq \beta_E$. Now we work on the lower bound
+\begin{align}
+    \frac{1}{1 + e^{+\beta_E |\Delta_S(i,k)|}} &\leq \epsilon_1 \\
+    \frac{1}{\epsilon_1} - 1 &\leq e^{+\beta_E |\Delta_S(i,k)|} \\
+    \frac{1}{|\Delta_S(i,k)|} \ln (\epsilon_1^{-1} - 1) &\leq \beta_E,
+\end{align}
+where we note this bound is implied by $\frac{1}{\Delta_{\min}} \ln (\epsilon_1^{-1} - 1) \leq \beta_E$. We also want to route these bounds through to the $e^{-\beta_E |\Delta_S|}$ terms
+\begin{align}
+    \epsilon_1 \leq \frac{1}{1 + e^{-\beta_E |\Delta_S(i,k)|}} \leq \epsilon_2
+\end{align}
+
+Now we return to the $S_k$ terms. We state the upper bound (ignoring the prefactors for now)
+\begin{align}
+    S_k &\leq \sum_{i \neq k} \epsilon_{2} p_{\beta}(i) - \epsilon_{2} p_{\beta}(k) \\
+    &= \epsilon_{2} (1 - p_{\beta}(k) - (\dim_S - 1)p_{\beta}(k)) \\
+    &= \epsilon_{2}(1 - \dim_S p_{\beta}(k)).
+\end{align}
+The lower bound follows similarly
+\begin{align}
+    S_{k} &\geq \sum_{i \neq k} \epsilon_{1} p_{\beta}(i) - \epsilon_{1} p_{\beta}(k) \\
+    &= \epsilon_{1}(1 - p_{\beta}(k) - (\dim_S - 1) p_{\beta}(k)) \\
+    &= \epsilon_{1}(1 - \dim_S p_{\beta}(k)).
+\end{align}
+
+
+We need to profit by substituting these bounds into our summation in Eq. \eqref{eq:single_shot_capture_sum}. Isolating the sum over $k$ in that expression we have
+\begin{align}
+    \sum_{k} \abs{R_0(\beta, \beta_E, k) + S_k}.
+\end{align}
+It is tempting to apply the triangle inequality and see what can be pulled out of here, but as before we noted $\sum_k \abs{R_0(k)} = \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1$, which means as soon as we apply the triangle inequality we lose. Therefore we need to unpack the absolute values. To do so, we note that $S_k \in \bigo{\alpha^2 t^2 / \dim}$, so we can make it arbitrarily small so that the sign of $R_0(k) + S_k$ is the same as the sign of $R_0$. Then we can think about increasing $S_k$. Also note that $R_0(k) = 0$ implies that $\beta_E = \beta$, which we do not have. So we can always set $\alpha^2 t^2$ to be small enough such that every $S_k$ is smaller than the smallest $R_0$. 
+
+Now our goal is to reduce this sum by controlling values of $S_k$. We know that $R_0(\beta, \beta_E, 0) < 0$ for $\beta < \beta_E$ and that $S_k \geq 0$ for all $k$, so we will target our choice of $\frac{\alpha^2 t^2}{\dim + 1}$ to ensure that $S_0$ is close to cancelling out the error due to $R_0(\beta, \beta_E, 0)$ (remember the subscript 0 denotes the order of the remainder and we will drop the implicit arguments of $\beta, \beta_E$). Then we will use the triangle inequality to deal with the remaining terms. Now when controlling $\alpha^2 t^2 / \dim + 1$ to cancel out $R_0(0)$ we should aim to make $S_0$ as small as we can, as our only knob to adjust $S_0$ (the scalar $\alpha^2 t^2 / \dim + 1$) affects the other $S_k$'s directly and we would like those to be small. 
+
+\begin{align}
+    \abs{R_0(0) + S_0} &\leq \epsilon_S \\
+    \implies \abs{R_0(0)} - \epsilon_S &\leq S_0 \leq \abs{R_0(0)} + \epsilon_S
+\end{align}
+To attack this we will plug in for $S_0 - \abs{R_0(0)}$ and start simplifying.
+\begin{align}
+    S_0 - \abs{R_0(0)} &= \sum_{i > 0} \left( \frac{p_{\beta}(i)}{1 + e^{- \beta_E \abs{\Delta_S(i,0)}}} - \frac{p_{\beta}(0)}{1 + e^{+ \beta_E \abs{\Delta_S(i,0)}}} \right) - |\beta - \beta_E| p_{\beta_{\star}}(0) \parens{\anglebrackets{H}_{\beta_{\star}} - \lambda_S(0)} \label{tmp:ugly_sum_1}
+\end{align}
+Now the crucial point to this argument is the sum over $i > 0$. If this sum is bounded through simple bounds on $\beta_E$ we lose all of our gains. Further, after preliminary numerical investigations this sum does not seem to be sufficient to prove thermalization for various well separated hamiltonians, such as the number operator squared $N^2 = (a^\dagger a)^2$ analagous to the harmonic oscillator. For this proof, we will investigate a truncated square root of the number operator, or $\lambda_S(k) \propto \sqrt{k}$. To give us one extra knob of control, we will explicitly use $\lambda_S(k) = h \sqrt{k}$ with little $h$ capturing the energy scale. This Hamiltonian is well separated, first off the smallest difference is $\lambda_S(2) - \lambda_S(1) = \sqrt{2} - 1$. For the well-separated condition we need $|\lambda_S(i) - \lambda_S(j)| - |\lambda_S(k) - \lambda_S(l)| \geq \Delta_{\min}$ to be bounded away from zero for nonequal $(i,j)$ and $(k,l)$. This seems to be clear but is busy work I shouldn't do unless it leads to something useful.
+
+The well-separated Hamiltonian we will investigate analytically is the natural logarithm hamiltonian, where $\lambda_S(k) = \ln k$. Should include a proof that it is well-separated. For now we need to determine if it yields any kind of useful bound. First we tackle the term containing $p_{\beta}(1)$. \matt{Need to go through and make sure everything in the paper is one-indexed. Cry.} We have the sum
+\begin{align}
+    \sum_{i = 2}^{\dim_S} \frac{1}{1 + e^{\beta_E \lambda_S(i)}} &= \sum_{i = 2}^{\dim_S} \frac{1}{1 + i^{\beta_E}}
+\end{align}
+Now we need to show that this is monotonically decreasing. 
+\begin{align}
+    \frac{\partial}{\partial x} \frac{1}{1 + x^{\beta_E}} &= \frac{-1}{(1 + x^{\beta_E})^2} \cdot \beta_E x^{\beta_E - 1}.
+\end{align}
+For $x, \beta_E \geq 0$ this is clearly always negative and therefore each term in the summation is monotonically decreasing. Now we use integral bounds to get good stuff. 
+
+\begin{center}
+\textbf{Below is bad}
+\end{center}
+
+Now we assume that $\lambda_S(k) = h \sqrt{k}$ is a well-separated Hamiltonian. Our goal is to bound the sums present in Eq. \eqref{tmp:ugly_sum_1}. We start with the easier one on the negative term for $S_0$. To do so we will linearize the sum about $\beta_E \to \infty$, or in other words as the environment temperature approaches zero. 
+\begin{align}
+    \frac{\partial}{\partial \beta_E^{-1}} \frac{1}{1 + e^{+ \beta_E h \sqrt{i}}} &= \frac{1}{\parens{1 + e^{+ \beta_E h \sqrt{i}}}^2 } \cdot e^{\beta_E h \sqrt{i}} (-1)\beta_E^2 h \sqrt{i}.
+\end{align}
+It is easy to see that as $\beta_E \to \infty$ the denominator containing the $\left(e^{\beta_E h \sqrt{i}}\right)^2$ term will dominate and the overall derivative approaches zero. When is this regime of approximation valid?
+Anyways, this means we \emph{should} be able to use the $\beta_E \to \infty$ behavior as a good approximation. This gives
+\begin{align}
+    S_0 &\approx \sum_{i > 0} p_{\beta}(i) - p_{\beta}(0) \\
+    &= 1 - p_{\beta}(0) - (\dim_S - 1) p_{\beta}(0) \\
+    &= 1 - \dim_S p_{\beta}(0).
+\end{align}
+Unfortunately, this bound is useless for $\beta > 0$. This is because for $\beta > 0$, $p_{\beta}(0) > 1 / \dim_S$, but we already know from before that $S_k > 0$ for all $k$. This means the bound is bad, and if we want to continue we have to analytically compute this sum.
+\newpage
+Now we have to determine the sign of $R_0$. We will not determine the sign of each term exactly, but we will give conditions on when the sign of $R_0$ only changes once. To start off, we remind the reader of that the remainder is written (using the Mean-Value version)
+\begin{align}
+    R_0(\beta, \beta_E, k) &= (\beta - \beta_E) p_{\beta_{\star}}(k) \parens{\parens{\sum_i p_{\beta_{\star}}(i) \lambda_S(i)} - \lambda_S(k)}.
+\end{align}
+Now we know that $\beta_{\star} \in (\beta, \beta_E)$. What we want to do is squeeze this range so small such that the difference in the mean energies $\anglebrackets{H}_{\beta_{\star}} \coloneqq \sum_i p_{\beta_{\star}}(i) \lambda_S(i)$ at $\beta$ and $\beta_E$ are very close. Below, let $\beta_i$ denote the mean value temperature guaranteed for $R_0(\beta, \beta_E, i)$. Also, it will prove sufficient to upper bound the absolute value
+\begin{align}
+    \abs{\anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E}} &= \left| \sum_i (p_{\beta}(i) - p_{\beta_E}(i)) \lambda_S(i) \right| \\
+    &\leq \sum_i \abs{R_0(\beta, \beta_E, i)} \abs{\lambda_S(i)} \\
+    &\leq \norm{H} \sum_i |\beta - \beta_E| p_{\beta_i}(i) \abs{\sum_j p_{\beta_i}(j) \lambda_S(j) - \lambda_S(i)} \\
+    &\leq \norm{H} \delta \sum_i p_{\beta_i}(i) \parens{\sum_{j} p_{\beta_i}(j) \abs{\lambda_S(j)} + \abs{\lambda_S(i)}} \\
+    &\leq 2 \norm{H}^2 \delta \sum_i p_{\beta_i}(i) \\
+    &\leq 2 \dim_S \delta \norm{H}^2.
+\end{align}
+Now we can require $\delta \leq \frac{\Delta_{\min}}{2 \dim_S \norm{H}^2}$ to get $\abs{\anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E}} \leq \Delta_{\min}$.
+
+Our next goal is to show that if some index $k_1$ has a positive zeroth order Boltzmann remainder $R_0(\beta, \beta_E, k_1)$, then every index $k_2 > k_1$ also has a positive zeroth order Boltzmann remainder. Note that $R_0(\beta, \beta_E, j) \geq 0 $ if and only if $\anglebrackets{H}_{\beta_j} - \lambda_S(j) \leq 0$. This means that we only need to show that For below, let $\beta_1$ denote the mean value $\beta$ for $k_1$ and similarly for $\beta_2$
+\begin{align}
+    \anglebrackets{H}_{\beta_2} - \lambda_S(k_2) &= \anglebrackets{H}_{\beta_2} - \anglebrackets{H}_{\beta_1} + \anglebrackets{H}_{\beta_1} - \lambda_S(k_1) + \lambda_S(k_1) - \lambda_S(k_2) \\
+    &\leq \anglebrackets{H}_{\beta_2} - \anglebrackets{H}_{\beta_1} + \lambda_S(k_1) - \lambda_S(k_2) \\
+    &\leq \anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E} - \Delta_{\min} \\
+    &\leq \abs{\anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E}} - \Delta_{\min} \\
+    &\leq 0.
+\end{align}
+This shows that $R_0(\beta, \beta_E, k_2) \geq 0$ if $R_0(\beta, \beta_E, k_1) \geq 0$ and $k_2 > k_1$. This result, combined with the observation that $R_0(\beta, \beta_E, 0) \leq 0$ yields the proposition that there exists a value $\widetilde{k}$ such that $k < \widetilde{k}$ implies $R_0(\beta, \beta_E, k) \leq 0$ and $k \geq \widetilde{k}$ implies $R_0(\beta, \beta_E, k) \geq 0$. Note we do not really care what this particular value of $\widetilde{k}$ is, just that it exists.
+
+Now we can break down our sum into the following two sums
+\begin{align}
+    \sum_k \abs{R_0(\beta, \beta_E, k) + S_k} &= \sum_{k < \widetilde{k}} \abs{R_0(\beta, \beta_E, k) + S_k} + \sum_{k \geq \widetilde{k}} \abs{R_0(\beta, \beta_E, k) + S_k} \\
+    &= \sum_{k < \widetilde{k}} -(R_0(\beta, \beta_E, k) + S_k) + \sum_{k \geq \widetilde{k}} R_0(\beta, \beta_E, k) + S_k \\ 
+    &= \sum_{k < \widetilde{k}} -R_0(\beta, \beta_E, k) + \sum_{k \geq \widetilde{k}} R_0(k) - \sum_{k < \widetilde{k}} S_k + \sum_{k \geq \widetilde{k}} S_k \\
+    &= \sum_k \abs{R_0(k)} - \sum_{k < \widetilde{k}} S_k + \sum_{k \geq \widetilde{k}} S_k
+\end{align}
+This yields
+\begin{align}
+    \norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 + \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \sum_{k \geq \widetilde{k}} S_k - \sum_{k < \widetilde{k}} S_k.
+\end{align}
+
+If our only goal is to show contraction, this reduces our problem to proving the following inequality
+\begin{align}
+    \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 + \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \sum_{k \geq \widetilde{k}} S_k - \sum_{k < \widetilde{k}} S_k &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \\
+    \iff \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 &\leq \sum_{k < \widetilde{k}} S_k - \sum_{k \geq \widetilde{k}} S_k 
+\end{align}
+To prove this we will produce a lower bound on the RHS, and show that this lower bound is greater than the LHS. Our lower bounds from before give
+\begin{align}
+    \sum_{k < \widetilde{k}} S_k - \sum_{k \geq \widetilde{k}} S_k &\geq \epsilon_{1} \sum_{k < \widetilde{k}} (1 - \dim_S p_{\beta}(k)) - \epsilon_{2} \sum_{k \geq \widetilde{k}} (1 - \dim_S p_{\beta}(k)) \\
+    &= \epsilon_{1}(\widetilde{k} - 1 - \dim_S) + \epsilon_{1} \dim_S \sum_{k \geq \widetilde{k}} p_{\beta}(k) - \epsilon_{2}(\dim_S - \widetilde{k} + 1) + \epsilon_{2} \dim_S \sum_{k \geq \widetilde{k}} p_{\beta}(k) \\
+    &= \parens{\dim_S \sum_{k \geq \widetilde{k}} p_{\beta}(k) - (\dim_S - \widetilde{k} + 1)}(\epsilon_{1} + \epsilon_{2}) \\
+    &= \dim_S (\epsilon_{1} + \epsilon_{2}) \parens{\sum_{k \geq \widetilde{k}} p_{\beta}(k) - \parens{1 - \frac{\widetilde{k} - 1}{\dim_S}}} \\
+    &= \dim_S (\epsilon_{1} + \epsilon_{2}) \parens{\frac{\widetilde{k} - 1}{\dim_S} - \sum_{k < \widetilde{k}} p_{\beta}(k)}.
+\end{align}
+We see right off the bat that this fails for very low temperatures, or when $\widetilde{k} = 2$, as the ground state energy $p_{\beta}(1)$ is always greater than $1 / \dim_S$ where as the positive term is $1 / \dim_S$ exactly. In the other limit, say $\widetilde{k} = \dim_S$, we have that the positive term is $1 - 1 /\dim_S$ and the negative term is $\sum_{k < \dim_S} p_{\beta}(k) = 1 - p_{\beta}(\dim_S)$, yielding a subtraction of $p_{\beta}(\dim_S) - 1 / \dim_S$, which is always negative. Again this lower bound does not work. Could it work somewhere in the middle? Evaluating this sum numerically for a harmonic oscillator (linear spectrum), square root spectrum, and squared spectrum seem to show that this bound is always negative. Intuitively this also makes sense, it says that in order to be positive the low-energy states need have less average probability mass than the infinite temperature limit of $1 / \dim_S$, which does not make sense as the low-energy states is where the probability mass of the thermal states increasingly concentrate as the temperature decreases.
+
+I now need to salvage this project some how. The first option I have is to revisit 
 
 \end{document}
