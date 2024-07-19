@@ -12,6 +12,7 @@
 \usepackage{mathrsfs}
 \usepackage{tikz}
 \usepackage{thm-restate}
+\usepackage{hyperref}
 
 \usepackage{etoc}
 
@@ -97,24 +98,23 @@ We will primarily work in the eigenbasis for each Hamiltonian:
 \end{equation}
 for convenience we will denote the tensor product of eigenvectors simply by their indices $\ket{i,j} \coloneqq \ket{s_i} \otimes \ket{e_j}$. For convenience we define $\lambda(i,j) \coloneqq \lambda_S(i) + \lambda_E(j)$. We also make use of the following notation for the energy differences of the system-environment Hamiltonian
 $$\Delta(i,j|k,l) \coloneqq \lambda(i,j) - \lambda(k,l),$$
-and will use $\Delta_S(i,j) \coloneqq \lambda_S(i) - \lambda_S(j)$ for just the system differences. To define the degeneracy of each eigenvalue we use the symbol
-$$\eta(i,j) \coloneqq \sum_{(k,l) : \Delta(i,j|k,l) = 0} 1.$$ We use the notation $\delta(i,j|k,l)$ to denote the product of Kronecker delta functions $\delta(i,j|k,l) = \delta_{i,k} \delta_{j,l}$.
+and will use $\Delta_S(i,j) \coloneqq \lambda_S(i) - \lambda_S(j)$ for just the system differences. We use the notation $\delta(i,j|k,l)$ to denote the product of Kronecker delta functions $\delta(i,j|k,l) = \delta_{i,k} \delta_{j,l}$.
 
-For input states we will typically assume thermal states of the form $\rho_S(\beta) = \frac{e^{-\beta H_S}}{\partfun_S}$, where $\partfun_S = \trace{e^{-\beta H_S}}$, where the inverse temperature $\beta$ of the partition function will typically be assumed but written explicitly if need be. We will assume environment states of the form $\rho_E(\beta) = \frac{e^{-\beta H_E}}{\partfun_E}$ and we will typically denote the tensor product of the system and environment states as $\rho(\beta_S, \beta_E) = \rho_S(\beta_S) \otimes \rho_E(\beta_E)$. The inputs $\beta_S, \beta_E$ will typically be surpressed in most cases as well.
+For input states we will typically assume thermal states of the form $\rho_S(\beta) = \frac{e^{-\beta H_S}}{\partfun_S}$, where $\partfun_S = \trace{e^{-\beta H_S}}$, where the inverse temperature $\beta$ of the partition function will typically be assumed but written explicitly if need be. We will assume environment states of the form $\rho_E(\beta) = \frac{e^{-\beta H_E}}{\partfun_E}$.
 
 
 Overall one application of our channel is represented as
 \begin{equation}
-    \Phi(\rho) := \int \partrace{\hilb_E}{e^{+i(H + \alpha G)t} \rho e^{-i(H + \alpha G) t}} dG.
+    \Phi(\rho ; \alpha, \beta_E, t) :=  \partrace{\hilb_E}{\int e^{+i(H + \alpha G)t} \rho \otimes \rho_E(\beta_E) e^{-i(H + \alpha G) t} dG},
 \end{equation}
-It will prove convenient to study the time evolution of a fixed interaction as a map from the total system-environment space to itself. We denote this channel for a specific random interaction $G$ as
+and we will typically let the parameters $\alpha, \beta_E,$ and $t$ for the channel be implicit. It will prove convenient to study the time evolution of a fixed interaction as a map from the total system-environment Hilbert space to itself. We denote this channel for a fixed interaction $G$ as
 \begin{equation}
-    \Phi_G(\rho_S \otimes \rho_E) := e^{+i (H+ \alpha G) t} \rho_S \otimes \rho_E e^{-i (H + \alpha G) t}. \label{eq:phi_g_definition}
+    \Phi_G(\rho_S \otimes \rho_E(\beta_E) := e^{+i (H+ \alpha G) t} \rho_S \otimes \rho_E(\beta_E) e^{-i (H + \alpha G) t}. \label{eq:phi_g_definition}
 \end{equation}
-Clearly then $\Phi(\rho_S) = \partrace{env}{\int \Phi_G (\rho_S \otimes \rho_E) dG}$. We use $G$ to denote the randomized interaction term, where $G = U_G D U_G^\dagger$. The measure we choose for the eigenbasis of $G$ is $U_G \sim Haar$ and the eigenvalues are i.i.d with mean 0 and variance $1$.  This gives the overall interaction measure as the decomposition $\int dG = \int \int dD ~ dU_G$. The interaction strength of $G$ will be controlled through the coupling coefficient $\alpha$.
+Clearly then $\Phi(\rho_S) = \partrace{\hilb_E}{\int \Phi_G (\rho_S \otimes \rho_E) dG}$. We use $G$ to denote the randomized interaction term, where $G = U_G D U_G^\dagger$. The measure we choose for the eigenbasis of $G$ is $U_G \sim Haar$ and the eigenvalues are i.i.d with mean 0 and variance $1$.  This gives the overall interaction measure as the decomposition $\int dG = \int \int dD ~ dU_G$. The interaction strength of $G$ will be controlled through the coupling coefficient $\alpha$.
 
 \begin{restatable}{lemma}{haar_two_moment} \label{lem:haar_two_moment}
-    Let $U$ be a unitary matrix over $\dim$ dimensions that is distributed according to the Haar measure. Then the following average is
+    Let $\int (\cdot) dU$ denote the average distributed according to the Haar measure over $\dim$-dimensional unitary matrices $U$. Then for $\ket{i_1},\ket{i_2},\ldots,\ket{k_2}$ drawn from an orthonormal basis
     \begin{align}
         &\int \bra{i_1} U \ket{j_1} \bra{i_2} U \ket{j_2} \bra{k_1} U^\dagger \ket{l_1} ~ \bra{k_2} U^\dagger \ket{l_2} dU \nonumber \\
         &= ~\frac{1}{\dim^2 - 1} \parens{\delta_{i_1, l_1} \delta_{j_1, k_1} \delta_{i_2, l_2} \delta_{j_2, k_2} + \delta_{i_1, l_2} \delta_{j_1, k_2} \delta_{i_2, l_1} \delta_{j_2, k_1}} \nonumber \\
@@ -257,35 +257,56 @@ The other direction ($\Delta_S(i,j) \leq \gamma \leq \Delta_S(k,l)$ ) holds simi
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Taylor's Series for $\Phi$}
+\section{Taylor's Series for $\Phi$} \label{sec:taylor_series_phi}
 
-We will work extensively with a polynomial approximation, with respect to $\alpha t$, of the overall channel $\Phi$. This section provides results about the structure of the first and second order terms in the Taylor's Series and provides a bound on the remainder term $R_{\Phi}$. As we will exclusively work with a second order approximation we leave the order of the remainder term implicit.
+The easiest way for us to understand the thermalizing channel $\Phi$ is through a Taylor's series with respect to the coupling constant $\alpha$, which will turn out to give us a series in terms of $\alpha t$ instead. This can be thought of as the weak interaction regime, which is extensively studied in open quantum systems. This section provides results about the first and second order terms in the Taylor's Series for $\Phi$ and we give an upper bound on the norm of the remainder term $R_{\Phi}$. As many of the proofs for the statements in this section tend to be rather technical and do not lend themselves to much insight they can be found in the appendix. 
 
+$\Phi$ can be written with the mean-value version of Taylor's theorem as:
 \begin{equation}
-    \Phi(X, \alpha) = \Phi(X, 0) + \alpha \frac{\partial}{\partial \alpha} \Phi(X, \alpha) \bigg|_{\alpha = 0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(X, \alpha) \bigg|_{\alpha = 0} + R_{\Phi}(X, \alpha_{\star}).
+    \Phi(\rho_S; \alpha) = \Phi(\rho_S; \alpha = 0) + \alpha \frac{\partial}{\partial \alpha} \Phi(\rho_S; \alpha) \bigg|_{\alpha = 0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho_S; \alpha) \bigg|_{\alpha = 0} + R_{\Phi}(\rho_S, \alpha_{\star}).
 \end{equation}
 We will denote the second order approximation as
 \begin{equation}
-    \Phi^{(2)}(X, \alpha) \coloneqq \Phi(X, 0) + \frac{\partial}{\partial \alpha} \Phi(X, \alpha) \bigg|_{\alpha = 0} + \frac{1}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(X, \alpha) \bigg|_{\alpha = 0}. \label{def:second_order_approx}
+    \Phi^{(2)}(\rho_S) \coloneqq \Phi(\rho_S) - R_{\Phi}(\rho_S, \alpha_\star) = \Phi(\rho_S;\alpha= 0) + \frac{\partial}{\partial \alpha} \Phi(\rho_S, \alpha) \bigg|_{\alpha = 0} + \frac{1}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho_S, \alpha) \bigg|_{\alpha = 0}. \label{def:second_order_approx}
 \end{equation}
 We will also find it helpful to denote each of the terms as
 \begin{equation}
-    T^{(k)}(X, \alpha) \coloneqq \frac{\alpha^k}{k!} \frac{\partial^k}{\partial \alpha^k} \Phi(X, \alpha)\bigg|_{\alpha = 0} \label{def:taylor_series_terms}
+    T^{(k)}(X, \alpha) \coloneqq \frac{\alpha^k}{k!} \frac{\partial^k}{\partial \alpha^k} \Phi(X, \alpha)\bigg|_{\alpha = 0}.\label{def:taylor_series_terms}
 \end{equation}
+If we were to write out the channel $\Phi$ as a Taylor's Series it would be $\Phi(\rho_S) = \sum_{k = 0}^{\infty} T^{(k)}(\rho_S)$.
 
-\begin{lemma}[First Order $\alpha$ Correction to $\Phi$]
-   Given a randomized environment interaction channel $\Phi$ with coupling coefficient $\alpha$, the first order correction is
+We now go through and compute the correction terms $T^{(0)}$, $T^{(1)}$, and $T^{(2)}$. The first one is nearly trivial
+\begin{lemma}
+    The zeroth order correction $T^{(0)}$ to the thermalizing channel $\Phi$ is the Heisenberg evolved input 
+    \begin{equation}
+        T^{(0)}(\rho_S) = e^{i H_S t} \rho_S e^{-i H_S t},
+    \end{equation}
+    where this expression holds for all matrix inputs and not just density operators.
+\end{lemma}
+\begin{proof}
+This is a straightforward computation after plugging in the definitions
+    \begin{align}
+        T^{(0)}(\rho_S) &= \partrace{\hilb_E}{\int e^{i(H + 0 G)t} \rho_S \otimes \rho_E(\beta_E) e^{-i(H + 0 G)t} dG } \\
+        &= \partrace{\hilb_E}{e^{i (H_S \otimes \identity + \identity \otimes H_E)t} \rho_S \otimes \rho_E(\beta_E) e^{-i (H_S \otimes \identity + \identity \otimes H_E)t}} \\
+        &= e^{i H_S t} \rho_S e^{-i H_S t}.
+    \end{align}
+\end{proof}
+It will prove useful that this result holds even if we extend the $\rho_S$ input to an arbitrary matrix input, as nowhere in the proof did we rely on the properties of density matrices. This will be necessary in arguing that coherences, or off-diagonal matrix elements in a density matrix, do not accumulate with repeated uses of our channel.
+
+The next order correction shows that to $O(\alpha)$ the effects of the environment on the system are zero. This shows that higher order corrections are necessary to compute nontrivial environmental effects. We leave this proof in this section to give the reader a taste for how these arguments work in the higher order calculations. This proof in particular solely relies on the randomly chosen eigenvalues of the interaction to be mean 0.
+\begin{lemma}
+   The first order correction $T^{(1)}$ to the thermalizing channel $\Phi$, with randomized interactions $G = U_G D U_G^\dagger $ such that the average of each eigenvalue satisfies $\mathbb{E}[d_{i,i}] = 0$, is zero:
    \begin{equation}
-        \frac{\partial}{\partial \alpha} \Phi(\rho_S) \bigg|_{\alpha = 0} = 0.
+        T^{(1)}(\rho_S) = 0.
    \end{equation}
 \end{lemma}
 \begin{proof}
-    We start by using linearity of derivatives, integration, and partial trace to pull the $\alpha$ derivative to act on $\Phi_G$ as
+    We start by using linearity of derivatives, integration, and partial trace to compute the action of the $\alpha$ derivative on $\Phi_G$ as
     \begin{align}
-        \frac{\partial}{\partial \alpha} \Phi(\rho_S) \bigg|_{\alpha = 0} &= \frac{\partial}{\partial \alpha} \partrace{\mathcal{H}_E}{\int \Phi_G(\rho_s) dG} \bigg|_{\alpha = 0} \\
+        \frac{\partial}{\partial \alpha} \Phi(\rho_S) \bigg|_{\alpha = 0} &= \frac{\partial}{\partial \alpha} \partrace{\mathcal{H}_E}{\int \Phi_G(\rho_S) dG} \bigg|_{\alpha = 0} \\
          &= \partrace{\mathcal{H}_E}{\int \frac{\partial}{\partial \alpha} \Phi_G(\rho_S) dG \bigg|_{\alpha = 0} } .
     \end{align}
-    Now we use Eq. \eqref{eq:phi_g_definition} to compute the derivatives, we remind the reader that $\rho = \rho_S \otimes \rho_E$,
+    Now we use the expression for $\Phi_G$ in Eq. \eqref{eq:phi_g_definition} to compute the derivatives, and we use the compact notation $\rho = \rho_S \otimes \rho_E(\beta_E)$ to represent the entire system-environment input,
     \begin{align}
         \frac{\partial}{\partial \alpha} \Phi_G (\rho_S) &= \parens{\frac{\partial}{\partial \alpha} e^{+ i (H + \alpha G)t}} \rho e^{-i (H + \alpha G) t} + e^{+i (H + \alpha G)t} \rho \parens{\frac{\partial}{\partial \alpha} e^{- i (H + \alpha G)t}} \\
         &= \parens{\int_{0}^{1} e^{i s (H+\alpha G)t} (i t G) e^{i (1-s) (H+\alpha G)t} ds} \rho e^{-i(H+\alpha G)t} \nonumber \\
@@ -309,57 +330,111 @@ We will also find it helpful to denote each of the terms as
     This last step relies on the use of random eigenvalues with mean 0, implying $\int D ~dD = 0$ which shows that $\frac{\partial}{\partial \alpha} \Phi(\rho_S) \big|_{\alpha = 0 } = 0$.
 \end{proof}
 
-\begin{lemma} \label{lem:two_heisenberg_interactions}
-    Let $G(t)$ denote the Heisenberg evolved random interaction $G(t) = e^{iHt} G e^{-iHt}$ for a total Hamiltonian $H$. After averaging over the interaction measure the product $G(x) G(y)$ can be computed as
+Now we move on to calculating the second order correction $T^{(2)}$. This is a significantly more tedious computation, so we move the proof of this result to the appendices. First we compute the "pre-trace" matrix elements of the second order correction $T^{(2)}$, but for off-diagonal elements first and then diagonal elements.
+
+These can be seen from Lemma \ref{lem:big_one}.
+
+\begin{lemma}
+     For the following we are investigating off-diagonal elements, so we assume $i' \neq k'$ and $j' \neq l'$.
+    \begin{align}
+    &\int \bra{i', j'}  T^{(2)}_G \left( \ketbra{i, j}{k, l} \right) \ket{k', l'} ~dG \\
+    &=\begin{cases}
+        -\frac{\alpha^2 e^{i \Delta(i,j|k,l) t}}{\dim + 1} \bigg( \sigma(i,j) + \sigma(k,l) + \frac{t^2}{2}(\eta(i,j) + \eta(k,l)) \bigg) & (i, j) = (i', j') \text{ and } (k, l) = (k', l') \\
+        0 & (i, j) \neq (i', j') \text{ and } (k, l) \neq (k', l')
+    \end{cases}
+    \end{align}
+    where we let $\sigma$ denote
     \begin{equation}
-        \int G(x) G(y) dG = \frac{1}{\dim + 1} \parens{\sum_{(i,j),(k,l)} e^{i \Delta(i,j|k,l) (x-y)} \ketbra{i,j}{i,j} + \identity}.
+        \sigma(i,j) \coloneqq \sum_{a,b: \Delta(i,j,|a,b) \neq 0} \frac{1 - i \Delta(i,j|a,b)t - e^{-i \Delta(i,j|a,b) t}}{\Delta(i,j|a,b)^2}
     \end{equation}
+    and we remind the reader that $\eta(i,j)$ denotes the degeneracy of eigenvalue $\lambda_S(i,j)$ of the joint system-environment Hamiltonian. 
+\end{lemma}
+The real utility of this Lemma is that it shows that to $O(\alpha^2)$ there is no contribution to off-diagonal elements from other off-diagonal elements or from diagonal elements.
+\begin{lemma}
+    The diagonal elements in the pre-trace second order correction are given as
+    \begin{align}
+        &\int \bra{i', j'} T^{(2)}_G \left( \ketbra{i, j}{i, j} \right) \ket{i', j'} ~dG \\
+        &= \begin{cases}
+            - \frac{\alpha^2 t^2 }{\dim + 1} \sum_{(a,b) \neq (i, j)} \sinc^2(\Delta(a,b|i,j) t / 2) & (i,j) = (i', j') \\
+    \frac{\alpha^2 t^2 }{\dim + 1} \sinc^2(\Delta(i,j | i', j') t /2) & (i, j) \neq (i', j'),
+        \end{cases} \label{eq:second_order_transitions_final_final}
+    \end{align}
+    where we use the fact that $\lim_{x \to 0} \sinc(x) = 1$ to compute the degenerate contributions (when $\Delta(i, j | i', j') = 0$)
+\end{lemma}
+However, if we want to compute the effects of the channel on a given input, we have to perform the partial trace over the environment, which clearly depends on initial state of the environment we choose. To proceed, we choose a simple two-level environment $H_E = \begin{bmatrix}
+    0 & 0 \\ 0 & \gamma
+\end{bmatrix}$, where the eigenvectors $\ket{0}$ and $\ket{1}$ have eigenvalues 0 and $\gamma$ respectively. Here, and throughout the rest of the paper, $\gamma$ should be thought of as a user defined parameter that can be adjusted, or chosen probablistically, throughout the cooling procedure. We use a thermal input state $\rho_E(\beta_E)$, as defined in the preliminaries. 
+
+\begin{lemma} \label{lem:t_2_system_only}}
+    The second order correction to the channel $\Phi$ with two level environment as described above, differs if the output state $j$ is less than, equal to, or greater than $i$. For $i < j$, meaning we are transitioning the systme from a lower energy state to a higher energy and the environment is losing energy, we have
+    \begin{equation}
+        \left| \bra{j}T^{(2)}(\ketbra{i}{i})\ket{j} - \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2 \parens{(\Delta_S(i,j) + \gamma) t/ 2} \right| \leq 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}.
+    \end{equation}
+    For $i > j$, meaning we are transitioning the system from a high energy state to a lower energy state, we have
+    \begin{equation}
+        \left| \bra{j}T^{(2)}(\ketbra{i}{i})\ket{j} - \frac{\alpha^2 t^2}{\dim + 1} \frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2 \parens{(\Delta_S(i,j) - \gamma) t/ 2} \right| \leq 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}.
+    \end{equation}
+    For $i = j$, where the state does not gain or lose energy, we get contributions from all other system states that are weighted based on the gain or loss of energy and is given by
+    \begin{align}
+        &\left| \bra{i} T^{(2)}(\ketbra{i}{i}) \ket{i} + \frac{\alpha^2 t^2}{\dim + 1} \parens{\frac{1}{1 + e^{-\beta_E \gamma}} \sum_{a < i} \sinc^2 ((\Delta_S(a, i) + \gamma) t/ 2) + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sum_{a > i} \sinc^2((\Delta_S(a, i) - \gamma)t/ 2)} \right| \nonumber \\
+        &\leq 4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc},
+    \end{align}
+    where we point out the difference in sign for the $i = j$ terms and the $i \neq j $ terms.
 \end{lemma}
 \begin{proof}
-The overall structure of this proof is to evaluate the product in the Hamiltonian eigenbasis and split the product into three factors: a phase contribution from the time evolution, a Haar integral from the eigenvalues of the random interaction, and the eigenvalue contribution of the random interaction. Since this involves the use of multiple indices, it will greatly simplify the proof to use a single index over the total Hilbert space $\hilb$ as opposed to two indices over $\hilb_S \otimes \hilb_E$. For example, the index $a$ should be thought of as a pair $(a_s, a_e)$, and functions $\lambda(a)$ should be thought of as $\lambda(a_s, a_e)$. Once the final form of the expression is reached we will substitute in pairs of indices for easier use of the lemma in other places.
+    For $i < j$ we use Eq. \eqref{eq:second_order_transitions_final_final} straightforwardly
     \begin{align}
-        \int G(x) G(y) dG &= \int e^{+i H x} U_G D U_G^\dagger e^{-i H x} e^{+i H y} U_G D U_G^\dagger e^{-i H y} dU_G ~dD \\
-        &= \int \bigg[\sum_a e^{+i \lambda(a)x}\ketbra{a}{a}  U_G \sum_b D(b)\ketbra{b}{b} U_G^\dagger \nonumber \\
-        &\quad \sum_c e^{-i \lambda(c) (x - y)} \ketbra{c}{c} U_G \sum_d D(d)\ketbra{d}{d} U_G^\dagger \sum_e e^{-i \lambda(e) y} \ketbra{e}{e} \bigg] dU_G ~dD\\
-        &=\sum_{a,b,c,d,e} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \nonumber \\
-        &\quad \times \int \bra{a} U_G \ket{b} \bra{c} U_G \ket{d} \bra{b} U_G^{\dagger} \ket{c} \bra{d} U_G^\dagger \ket{e} dU_G \int D(b) D(d) dD \\
-        &=  \sum_{a, b, c, d, e} \delta_{bd} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \nonumber \\
-        &\quad \times \int \bra{a} U_G \ket{b} \bra{c} U_G \ket{d} \bra{b} U_G^{\dagger} \ket{c} \bra{d} U_G^\dagger \ket{e} dU_G. \\
+        &\bra{j} T^{(2)} (\ketbra{i}{i}) \ket{j} \nonumber \\
+        &= \frac{1}{1 + e^{-\beta_E \gamma}} \int \parens{\bra{j, 0} T^{(2)}_G(\ketbra{i,0}{i, 0}) \ket{j, 0} + \bra{j, 1} T^{(2)}_G (\ketbra{i, 0}{i ,0}) \ket{j, 1} } dG \nonumber \\
+        &~+ \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \int \parens{\bra{j, 0} T^{(2)}_G (\ketbra{i, 1}{i, 1}) \ket{j, 0} + \bra{j, 1} T^{(2)}_G (\ketbra{i, 1}{i, 1}) \ket{j, 1}} dG \\
+        &= \frac{1}{1 + e^{-\beta_E \gamma}} \frac{\alpha^2 t^2}{\dim + 1}\parens{\sinc^2(\Delta_S(i, j) t/ 2) + \sinc^2 (\Delta_S(i, j) - \gamma)t /2} \nonumber \\
+        &~+ \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \frac{\alpha^2 t^2 }{\dim + 1} \parens{\sinc^2((\Delta_S(i,j) + \gamma) t/ 2) + \sinc^2(\Delta_S(i,j) t/ 2)}.
     \end{align}
-    Now the summation over $d$ fixes $d=b$ and we use Lemma \ref{lem:haar_two_moment} to compute the Haar integral, which simplifies greatly due to the repeated $b$ index. Plugging the result into the above yields the following
-    \begin{align}
-        &= \frac{1}{\dim^2 - 1} \sum_{a, b, c, e} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \parens{\delta_{ac} \delta_{ce} + \delta_{ae} - \frac{1}{\dim} \parens{\delta_{ac} \delta_{ce} + \delta_{ae}}}  \\
-        &= \frac{1}{\dim^2 - 1} \parens{1 - \frac{1}{\dim}} \sum_{a, b, c, e} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \delta_{ae} (1 + \delta_{ac}) \\
-        &= \frac{1}{\dim^2 - 1} \parens{1 - \frac{1}{\dim}} \sum_{a, b, c} \ketbra{a}{a} e^{i (\lambda(a) - \lambda(c))(x-y)} (1 + \delta_{ac}) \\
-        &= \frac{1 \parens{\dim - 1}}{\dim^2 - 1} \sum_{a,c} \ketbra{a}{a} e^{i (\lambda(a) - \lambda(c))(x - y)} (1 + \delta_{ac}) \\
-        &= \frac{1}{\dim + 1} \parens{\sum_{a,c} e^{i (\lambda(a) - \lambda(c))(x-y)} \ketbra{a}{a} + \identity}.
-    \end{align}
-    Reindexing by $a \mapsto i,j$, $c \mapsto k,l$, and plugging in the definition of $\Delta$ yields the statement of the lemma.
-\end{proof}
-
-
-\begin{lemma} \label{lem:sandwiched_interaction}
-    Given two Heisenberg evolved random interactions, $G(x)$ and $G(y)$, we compute their action on an outer-product $\ketbra{i,j}{k,l}$ as
+    From this expression, we see that since $i < j \implies \Delta_S(i,j) < 0$ we have that only the sinc function with input $\Delta_S(i,j) + \gamma$ is possibly larger than $\epsilon_{\sinc}$. This leads to the norm of the difference as
     \begin{equation}
-        \int G(x) \ketbra{i,j}{k,l} G(y) ~dG = \frac{1}{\dim + 1} \parens{\ketbra{i,j}{k,l} + \delta(i,j|k,l) \sum_{m,n} e^{i \Delta(m,n | i,j) (x-y)} \ketbra{m,n}{m,n}}
+        \left| \bra{j}T^{(2)}(\ketbra{i}{i})\ket{j} - \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2 \parens{(\Delta_S(i,j) + \gamma) t/ 2} \right| \leq 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}.
     \end{equation}
-\end{lemma}
-\begin{proof}
-This proof is structured the same as Lemma \ref{lem:two_heisenberg_interactions} and similarly we will use a single index of the total Hilbert space $\hilb$ and switch to two indices to match the rest of the exposition.
+
+    The $i > j$ calculation is very similar, except that since $i > j$ this implies $\Delta_S(i,j) > 0$ and the only surviving term in the decomposition is the $\sinc$ function with input $\Delta_S(i,j) - \gamma$.
+    
+    For the $i = j$ calculation we have
     \begin{align}
-        \int G(x) \ketbra{a}{b} G(y) dG &=  \int e^{i H x} U_G D U_G^{\dagger} e^{-i H x} \ketbra{a}{b} e^{i H y} U_G D U_G^\dagger e^{-i H y} ~dG \\
-        &= \sum_{c, d, e, f} e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \nonumber \\
-        &\quad \times \int \ketbra{c}{c} U_G D(d) \ketbra{d}{d} U_G^\dagger \ketbra{a}{b} U_G D(e) \ketbra{e}{e} U_G^\dagger \ketbra{f}{f} dG \\
-        &= \sum_{c, d, e, f}  e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \ketbra{c}{f} \nonumber \\
-        &\quad \times \int D(d) D(e) dD \int \bra{c} U_G \ket{d} \bra{b} U_G \ket{e} \bra{d} U_G^\dagger \ket{a} \bra{e} U_G^\dagger \ket{f} dU_G \\
-        &=  \sum_{c,d,f} e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \ketbra{c}{f} \nonumber \\ 
-        &\quad \times \int \bra{c} U_G \ket{d} \bra{b} U_G \ket{d} \bra{a} \overline{U_G} \ket{d} \bra{f} \overline{U_G} \ket{d} dU_G \\
-        &= \frac{1}{\dim^2 - 1} \sum_{c,d,f} e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \ketbra{c}{f} (\delta_{ca} \delta_{bf} + \delta_{cf}\delta_{ab})\parens{1 - \frac{1}{\dim}} \\
-        &= \frac{1}{\dim + 1} \sum_{c,f} e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \ketbra{c}{f} (\delta_{ca} \delta_{bf} + \delta_{cf}\delta_{ab}) \\
-        &= \frac{1}{\dim + 1} \parens{\ketbra{a}{b} + \delta_{ab} \sum_{c} e^{i(\lambda(c) - \lambda(a))(x-y)} \ketbra{c}{c} }.
+        \bra{i} T^{(2)}(\ketbra{i}{i}) \ket{i} &= \frac{1}{1 + e^{-\beta_E \gamma}} \bra{i, 0} T^{(2)}_G (\ketbra{i, 0}{i, 0}) \ket{i, 0} + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \bra{i, 0} T^{(2)}_G (\ketbra{i, 1}{i, 1}) \ket{i, 0} \nonumber \\
+        &~+ \frac{1}{1 + e^{-\beta_E \gamma}} \bra{i, 1} T^{(2)}_G (\ketbra{i, 0}{i, 0}) \ket{i, 1} + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \bra{i, 1} T^{(2)}_G (\ketbra{i, 1}{i, 1}) \ket{i, 1}. \label{eq:same_state_transition_with_env}
     \end{align}
-    Now re-indexing by $a \mapsto (i,j)$, $b \mapsto (k,l)$ and $c \mapsto (m,n)$ results in the expression given in the statement of the lemma.
-\end{proof}
+    Now we see that there are two contributions of the same-state transitions of $\ket{i, 0} \to \ket{i, 0}$ and $\ket{i, 1} \to \ket{i,1}$, which we can ues Eq. \eqref{eq:second_order_transitions_final_final} to expand in terms of a summation over all other states. The other two terms in the equation above, $\ket{i, 0} \to \ket{i, 1}$ and $\ket{i, 1} \to \ket{i,0}$ we can suppress due to the following calculation
+    \begin{align}
+        \abs{\bra{i, 0} T^{(2)}_G (\ketbra{i, 1}{i, 1}) \ket{i,0}} &= \frac{\alpha^2 t^2}{\dim + 1} \sinc^2(\gamma t /2) \\
+        &\leq \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc},
+    \end{align}
+    so we only pay the price of an $\epsilon_{\sinc}$ term. The other off-diagonal transition $\ket{i, 0} \to \ket{i, 1}$ can be similarly bounded. We focus on expanding the same-state contributions in Eq. \eqref{eq:same_state_transition_with_env}
+    \begin{align}
+        &\bra{i,0} T^{(2)}_G (\ketbra{i, 0}{i, 0}) \ket{i,0} \nonumber \\
+        &= -\frac{\alpha^2 t^2}{\dim + 1} \sum_{(a,b) \neq (i, 0)} \sinc^2 \parens{\Delta_S(a, b | i, 0) t / 2} \\ 
+        &= - \frac{\alpha^2 t^2}{\dim  + 1} \parens{\sinc^2 (\gamma t / 2) + \sum_{a \neq i} \sum_{b = 0, 1} \sinc^2\parens{\frac{(\Delta_S(a, i) + \Delta_E(b, 0))t}{2}} } \\
+        &=- \frac{\alpha^2 t^2}{\dim  + 1} \parens{\sinc^2 (\gamma t / 2) + \sum_{a < i} \sum_{b = 0, 1} \sinc^2\parens{\frac{(\Delta_S(a, i) + \Delta_E(b, 0))t}{2}} + \sum_{a > i} \sum_{b = 0, 1} \sinc^2\parens{\frac{(\Delta_S(a, i) + \Delta_E(b, 0))t}{2}} } \\
+        &= - \frac{\alpha^2 t^2}{\dim + 1} \sinc^2 (\gamma t / 2) \nonumber \\
+        &~ - \frac{\alpha^2 t^2}{\dim + 1} \sum_{a > i} \sum_{b = 0, 1} \sinc^2 \parens{\frac{(\Delta_S(a, i) + \Delta_E(b, 0))t}{2}} \nonumber \\
+        &~ -\frac{\alpha^2 t^2}{\dim + 1} \parens{\sum_{a < i} \sinc^2 \parens{\frac{\Delta_S(a, i) t}{2}} + \sum_{a < i} \sinc^2 \parens{\frac{(\Delta_S(a, i) + \gamma)t}{2}} }. \label{eq:same_state_transition_1}
+    \end{align}
+    Each of these terms, other than those in the very last term of the form $\sinc^2((\Delta_S(a,i) + \gamma)/2)$, will be upper bounded by $\epsilon_{\sinc}$ as the input arguments are above $\Delta_{\min}$. So $\sinc^2(\gamma t /2) \leq \epsilon_{\sinc}$, $\sinc^2((\Delta_S(a,i) + \lambda_E(b))t/2) \leq \epsilon_{\sinc}$ for all $b$ and $a > i$, and $\sinc^2(\Delta_S(a,i)t/2) \leq \epsilon_{\sinc}$. The only surviving term from this contribution is $- \frac{\alpha^2 t^2}{\dim +1} \sum_{a < i} \sinc^2 ((\Delta_S(a,i) + \gamma)t/2)$. 
+
+    The other equal state transition contribution is computed similarly as
+    \begin{align}
+        &\bra{i,1} T^{(2)}_G(\ketbra{i, 1}{i,1}) \ket{i, 1} \nonumber \\
+        &= - \frac{\alpha^2 t^2}{\dim + 1} \sinc^2(\gamma t/ 2) \nonumber \\
+        &~- \frac{\alpha^2 t^2}{\dim + 1} \sum_{a < i} \sum_{b=0,1} \sinc^2\parens{\frac{(\Delta_S(a, i) + \Delta_E(b, 1))t}{2}} \nonumber \\
+        &~- \frac{\alpha^2 t^2}{\dim + 1} \parens{ \sum_{a > i} \sinc^2\parens{\frac{\Delta_S(a, i) t}{2}} + \sum_{a > i} \sinc^2 \parens{\frac{(\Delta_S(a, i) - \gamma)t}{2}}}. \label{eq:same_state_transition_2}
+    \end{align}
+    Now we can count up the number of terms that are upper bounded by $\epsilon_{\sinc}$. In Eq. \eqref{eq:same_state_transition_2} we have $1 + 2 * ( \dim_S - i) + (i - 1) = 2 \dim_S - i$ and in Eq. \eqref{eq:same_state_transition_2} we have $1 + 2*(i - 1) + (\dim_S - i) = \dim_S + i$, giving a total count of $3 \dim_S$ from these terms. In addition we have the two off-diagonal state contributions from the first decomposition, which if we require $2 \leq \dim_S$ we can upper bound by $\dim_S$ with a minor constant factor increase. We can now state the final result as
+    \begin{align}
+        &\left| \bra{i} T^{(2)}(\ketbra{i}{i}) \ket{i} + \frac{\alpha^2 t^2}{\dim + 1} \parens{\frac{1}{1 + e^{-\beta_E \gamma}} \sum_{a < i} \sinc^2 ((\Delta_S(a, i) + \gamma) t/ 2) + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sum_{a > i} \sinc^2((\Delta_S(a, i) - \gamma)t/ 2)} \right| \nonumber \\
+        &\leq 4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}.
+    \end{align}
+ \end{proof}
+
+
+
 
 \begin{restatable}[Second Order Correction]{lemma}{secondOrderChannelHaar} \label{lem:big_one}
     Given a system Hamiltonian $H_{S}$, an environment Hamiltonian $H_{E}$, a simulation time $t$, and coupling coefficient $\alpha$, let $\Phi_G : \hilb_S \otimes \hilb_E \to \hilb_S \otimes \hilb_E$ denote the fixed interaction channel 
@@ -376,71 +451,7 @@ This proof is structured the same as Lemma \ref{lem:two_heisenberg_interactions}
 \end{restatable}
 The proof of this is given in Appendix \ref{sec:haar_integral_appendix}. 
 
-The goal for the remainder of this section is to simplify the expression for the channel output given by the above lemma. The first thing to note is that our channel does not appear to have large off-diagonal contributions to second order in $\alpha$. 
-\begin{corollary}
-    Given the inputs to Lemma \ref{lem:big_one} and a diagonal input state $\rho = \sum_{i,j} \rho_{i,j} \ketbra{i,j}{i,j}$, then we have $$\int \bra{k,l} \Phi_G(\rho)  \ket{m,n} ~dG~ \in \bigo{\alpha^3},$$ for $(k,l) \neq (m,n)$.
-\end{corollary}
-\begin{proof}
-    We start from the Taylor's series of $\Phi_G$ with respect to $\alpha$:
-    \begin{equation}
-        \Phi_G(\rho) = \rho + \frac{\alpha^2}{2!} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho) dG + \bigo{\alpha^3}. \label{eq:off_diagonal_taylors}
-    \end{equation}
-    First we note that $\bra{k,l}\rho \ket{m,n} =0$, as $\rho$ is diagonal and we assumed that $(k,l) \neq (m,n)$. Substituting Lemma \ref{lem:big_one} for the second order derivative and taking matrix elements yields:
-    \begin{align}
-        &\bra{k,l} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\rho)\bigg|_{\alpha = 0} dG ~dG ~\ket{m,n}  \\
-     &= -\frac{2 }{\dim + 1} \bigg(\sum_{(a,b): \Delta(i,j|a,b) \neq 0} \frac{1 - i \Delta(i,j|a,b)t - e^{-i \Delta(i,j|a,b) t}}{\Delta(i,j|a,b)^2} \nonumber \\
-     &~+ \sum_{(a,b): \Delta(k,l|a,b) \neq 0} \frac{1 + i \Delta(k,l|a,b) t - e^{i \Delta(k,l|a,b) t}}{\Delta(k,l|a,b)^2} + \frac{t^2}{2}(\eta(i,j) + \eta(k,l)) \bigg) \bra{k,l} \rho \ket{m,n} \nonumber \\
-    &~ + \frac{2}{\dim+1}\sum_{i,j} \rho_{i,j} \bigg(\sum_{(a,b): \Delta(i,j|a,b) \neq 0 } \frac{2(1- \cos (\Delta(i,j|a,b)t))}{\Delta(i,j|a,b)^2} \braket{k,l}{a,b} \braket{a,b}{m,n} \nonumber \\
-    &~ + t^2 \sum_{(a,b) : \Delta(i,j|a,b) = 0} \braket{k,l}{a,b} \braket{a,b}{m,n} \bigg).
-    \end{align}
-    We see that the factors $\bra{k,l}\rho \ket{m,n}$ and $\braket{k,l}{i,j} \braket{i,j}{m,n}$ can never be non-zero due to the assumption $(k,l) \neq (m,n)$. The only remaining term in Eq. \ref{eq:off_diagonal_taylors} is of $\bigo{\alpha^3}$, yielding the stated result.
-\end{proof}
 
-Our last objective in this section is to yield a (relatively) concise statement for transition probabilities among diagonal matrix elements for density matrices. As we will be interested in computing trace distances 
-\todo{Update the proof to include the expression for $T^{(2)}$}
-\begin{theorem} \label{thm:second_order_transition_coeffs}
-Given the inputs to Lemma \ref{lem:big_one}, let 
-$$\tau(i,j | k,l) \coloneqq \frac{\alpha^2 }{2} \bra{k,l} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{i,j}{i,j})\bigg|_{\alpha = 0} dG \ket{k,l},$$ denote the second order transition coefficients in $\alpha$. These are expressed in terms of the eigenvalue differences $\Delta(i',j'|k',l')$ and other constants as 
-$$\tau(i,j | k,l) = \begin{cases}
-    - \frac{\alpha^2 t^2 }{\dim + 1} \parens{\sum_{(a,b) : \Delta(i,j | a,b) \neq 0} \frac{\sinc^2(\Delta(a,b|i,j) t}{2} + (\eta(i,j) - 1)} & (i,j) = (k,l) \\
-    \frac{\alpha^2 t^2}{\dim + 1} & (i,j) \neq (k,l), \Delta(i,j | k,l) = 0 \\
-    \frac{\alpha^2 t^2 }{\dim + 1} \sinc^2(\Delta t /2) & \Delta(i,j| k,l) \neq 0.
-\end{cases}$$
-. A summation shows that $\tau(i,j|i,j) = -\sum_{(k,l) \neq (i,j)} \tau(i,j|k,l)$, which as a byproduct shows that the mapping $\Phi$ is trace preserving to order $\bigo{\alpha^2}$.
-
-We can write out the second order channel term for a thermal state density input with environment at $\beta_E$ as
-\begin{equation}
-    T^{(2)}(\rho_S(\beta), \alpha) = \sum_{i,j,k,l} \ketbra{k}{k} \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)} \frac{e^{-\beta_E(j)}}{\partfun_E(\beta_E)} \tau(i,j | k,l) \label{eq:second_order_channel_with_tau}
-\end{equation}
-\end{theorem}
-\begin{proof}
-    We focus exclusively on diagonal inputs and outputs for density matrices, $\ketbra{a}{a}$ and $\ketbra{b}{b}$. We use Eq. \eqref{eq:second_order_output}, starting with transitions within the degenerate subspace of $a$. For the following we assume $a \neq b$ and $\Delta_{ab} = 0$: 
-    \begin{align}
-        &\prob{a \to b | a \neq b, \Delta_{ab} = 0} = \trace{\ketbra{b}{b} \int \Phi_G(\ketbra{a}{a}) dG} \\
-        &= \braket{b}{a} \braket{a}{b} + \frac{\alpha^2}{2} \bra{b} \int \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{a}{a})\bigg|_{\alpha = 0} dG \ket{b} \\
-        &= -\frac{\sigma^2 \alpha^2}{\dim + 1} \bigg(\sum_{j: \Delta_{aj} \neq 0} \frac{1 - i \Delta_{aj}t - e^{-i \Delta_{aj} t}}{\Delta_{aj}^2} + \sum_{j: \Delta_{aj} \neq 0} \frac{1 + i \Delta_{aj} t - e^{i \Delta_{aj} t}}{\Delta_{aj}^2} + t^2 \eta(a) \bigg) \braket{b}{a} \braket{a}{b} \nonumber \\
-        &~+ \frac{\alpha^2 \sigma^2}{\dim + 1} \parens{\sum_{i: \Delta_{ai} \neq 0} \frac{2(1- \cos(\Delta_{ai} t)}{\Delta_{ai}^2} \braket{b}{i}\braket{i}{b} + t^2 \sum_{i: \Delta_{ai} = 0 } \braket{b}{i} \braket{i}{b}} \label{eq:transition_intermediate} \\
-        &= \frac{\sigma^2 \alpha^2 t^2}{\dim + 1}. 
-    \end{align}
-    We now proceed to the case that $b \neq a$ and $\Delta_{ab} \neq 0$, where we can start from Eq. \eqref{eq:transition_intermediate} and we get
-    \begin{equation}
-        \prob{a \to b | a \neq b, \Delta_{ab} \neq 0} = \frac{2 \sigma^2 \alpha^2 }{\dim + 1} \frac{1 - \cos (\Delta_{ab} t)}{\Delta_{ab}^2}.
-    \end{equation}
-
-    The remaining case to consider is when $b = a$. This involves simplifying the summations in Eq. \eqref{eq:second_order_output} and including the zeroth order $\bigo{\alpha^0}$ term which simply contributes a 1. 
-    \begin{align}
-        \prob{a \to a} &= 1 -\frac{\sigma^2 \alpha^2 }{\dim + 1} \bigg(\sum_{j: \Delta_{aj} \neq 0} \frac{1 - i \Delta_{aj}t - e^{-i \Delta_{aj} t}}{\Delta_{aj}^2} + \sum_{j: \Delta_{aj} \neq 0} \frac{1 + i \Delta_{aj} t - e^{i \Delta_{aj} t}}{\Delta_{aj}^2} + t^2 \eta(a) \bigg) \nonumber \\
-    &~ +\frac{\sigma^2 \alpha^2 }{\dim+1} \parens{ \sum_{i: \Delta_{ai} \neq 0 } \frac{2(1- \cos (\Delta_{ai}t))}{\Delta_{ai}^2} \braket{a}{i} \braket{i}{a} + t^2  \sum_{i : \Delta_{ai} = 0} \braket{a}{i} \braket{i}{a}} \\
-    &= 1 - \frac{\sigma^2 \alpha^2}{\dim + 1} \parens{\sum_{i: \Delta_{ai} \neq 0} \frac{2(1 - \cos(\Delta_{ai}t))}{\Delta_{ai}^2} + t^2 (\eta(a) - 1)}.
-    \end{align}
-    To simplify further we reduce the cosine terms to a sinc function as follows
-    \begin{align}
-        \frac{2(1 - \cos(\Delta t)}{\Delta^2} &= \frac{2(1 - \cos^2(\Delta t / 2) + \sin^2(\Delta t /2)}{\Delta^2} \\
-        &= \frac{t^2}{2} \frac{\sin^2 (\Delta t / 2)}{ (\Delta t/ 2)^2} \\
-        &= \frac{t^2}{2} \sinc^2(\Delta t /2).
-    \end{align}
-    This completes the transition probability computation. It is straightforward to see that $\sum_{b} \prob{a \to b} = 1$ and that $0 \leq \prob{a \to b} \leq 1$ given that $\alpha t \leq \sqrt{\dim + 1}$.
-\end{proof}
 
 \subsection{Remainder Bound}
 We now aim to bound the spectral norm of the remainder term $R_{\Phi}$. This is rather tedious, as even to third order in $\alpha$ we have 24 terms to bound. For example, looking first at the $(A)$ term resulting from the second order derivative in Eq. \eqref{eq:second_order_deriv_intermediate_a} we have 4 multiplicative factors involving $\alpha$, leading to 4 terms from this single term of the second order derivative. As there are six terms in total, this yeilds 24 terms. We can profit from the fact though that the expressions for the second order derivatives do simplify and the final expression only has 3 terms, as two of the derivatives act similarly. We first will analyze the single term from Eq. \eqref{eq:second_order_deriv_intermediate_a} in detail. 
@@ -451,50 +462,122 @@ We now aim to bound the spectral norm of the remainder term $R_{\Phi}$. This is 
     \begin{equation}
         R_{\Phi}(\rho, \alpha) = \Phi(\rho, \alpha) - \rho - \frac{\alpha}{1!} \frac{\partial}{\partial \alpha} \Phi(\rho)\bigg|_{\alpha = 0} - \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho) \bigg|_{\alpha = 0}.
     \end{equation}
-    Then we have that
+    Then we have that $\norm{R_{\Phi}} \leq \epsilon_R$ for a simulation duration of
     \begin{equation}
-        \alpha t \leq \parens{\frac{\epsilon_R}{2 \dim}}^{1/3} \implies \norm{R_{\Phi}} \leq \epsilon_R.
+        \alpha t \in O\parens{\frac{\epsilon_R^{1/3}}{ \sqrt{\log(\dim_S)}}}.
     \end{equation}
 \end{lemma}
 \begin{proof}
     First I need to write down what exactly we are trying to bound. What we are essentially trying to do is bound the matrix entries:
 \begin{equation}
-    \Phi(\rho) = \rho + \frac{\alpha}{1} \frac{\partial}{\partial \alpha} \Phi(\rho) \bigg|_{\alpha = 0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho) \bigg|_{\alpha = 0} + \frac{\alpha^3}{3!} \frac{\partial^3}{\partial \alpha^3} \Phi(\rho) \bigg|_{\alpha = \alpha^\star},
+    \Phi(\rho) = \rho + \frac{\alpha}{1} \frac{\partial}{\partial \alpha} \Phi(\rho) \bigg|_{\alpha = 0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho) \bigg|_{\alpha = 0} + \frac{\alpha^3}{3!} \frac{\partial^3}{\partial \alpha^3} \Phi(\rho) \bigg|_{\alpha = \alpha^\star},\label{eq:remExpress}
 \end{equation}
 where $\alpha^\star \in [0, \alpha]$. Our goal is then to bound the spectral norm of the remainder term for all such $\alpha^\star$.
 
+% \begin{align}
+%     &\norm{\frac{\partial}{\partial \alpha} (it)^2 \int_0^1 \parens{\int_0^1 e^{i s_1 s_2 (H+\alpha G)t} s_1 G e^{i s_1 (1-s_2) (H+\alpha G)t} ds_2} G e^{i(1-s_1) (H+\alpha G)t} ds_1 \rho e^{-i(H+\alpha G) t}} \\
+%     &=t^3 \norm{\int_0^1 \int_0^1 \int_0^1 e^{i s_1 s_2 s_3(H + \alpha G)t} G e^{i s_1 s_2 (1 - s_3)} ds_3 G e^{i s_1 (1-s_2)(H + \alpha G)t} ds_2 G e^{i(1-s_1)(H + \alpha G)t} ds_1 \rho e^{-i(H + \alpha G)t} }  + t^3 \norm{\ldots}\\
+%     &\leq t^3 \norm{G}^3 + t^3 \norm{\ldots} \\
+%     &\leq 4 t^3 \norm{G}^3,
+% \end{align}
+% where we used smoothness of the integrand to bring the norm inside the integral via the triangle inequality and submultiplicativity of the operator norm to simply break the norm of the product into the product of each of the norms. The operator norm of the unitary operators and the density matrix are each 1, and the resulting integrals yield only fractional values, which are upper bounded by 1. Now here we see the final simplification that can be made, each term $(B), (C)$, etc., will yield at most a cubic power of $\norm{G}$, so we can upper bound each term in the final sum as $t^3 \norm{G}^3$. In reality we would have terms such as $\norm{G} \norm{G^3}$ and all other polynomials, but we don't care.
+
+% Now as $G$ is a random matrix, we can only bound it's operator norm with a probabilistic guarantee. 
+
 \begin{align}
-    &\norm{\frac{\partial}{\partial \alpha} (it)^2 \int_0^1 \parens{\int_0^1 e^{i s_1 s_2 (H+\alpha G)t} s_1 G e^{i s_1 (1-s_2) (H+\alpha G)t} ds_2} G e^{i(1-s_1) (H+\alpha G)t} ds_1 \rho e^{-i(H+\alpha G) t}} \\
-    &=t^3 \norm{\int_0^1 \int_0^1 \int_0^1 e^{i s_1 s_2 s_3(H + \alpha G)t} G e^{i s_1 s_2 (1 - s_3)} ds_3 G e^{i s_1 (1-s_2)(H + \alpha G)t} ds_2 G e^{i(1-s_1)(H + \alpha G)t} ds_1 \rho e^{-i(H + \alpha G)t} }  + t^3 \norm{\ldots}\\
-    &\leq t^3 \norm{G}^3 + t^3 \norm{\ldots} \\
-    &\leq 4 t^3 \norm{G}^3,
+    \|\partial_\alpha^3 \rho(\alpha) \| &= \left\| \frac{\partial^3}{\partial \alpha^3} {\rm Tr}_{H_E} \int e^{i(H+\alpha G)t} \rho_S \otimes \rho_E e^{-i(H+\alpha G)t} dG\right\|\nonumber\\
+    &= \left\| \frac{\partial^3}{\partial \alpha^3} {\rm Tr}_{H_E} \int e^{i(H+\alpha G)t} \rho_S \otimes \rho_E e^{-i(H+\alpha G)t} dG\right\|\nonumber\\
+    &\le    \int \left\|{\rm Tr}_{H_E}\frac{\partial^3}{\partial \alpha^3}\left( e^{i(H+\alpha G)t} \rho_S \otimes \rho_E e^{-i(H+\alpha G)t}\right) \right\| dG\label{eq:3derivBd}
 \end{align}
-where we used smoothness of the integrand to bring the norm inside the integral via the triangle inequality and submultiplicativity of the operator norm to simply break the norm of the product into the product of each of the norms. The operator norm of the unitary operators and the density matrix are each 1, and the resulting integrals yield only fractional values, which are upper bounded by 1. Now here we see the final simplification that can be made, each term $(B), (C)$, etc., will yield at most a cubic power of $\norm{G}$, so we can upper bound each term in the final sum as $t^3 \norm{G}^3$. In reality we would have terms such as $\norm{G} \norm{G^3}$ and all other polynomials, but we don't care.
-
-Now as $G$ is a random matrix, we can only bound it's operator norm with a probabilistic guarantee. 
-
-This gives
+Next we can apply Duhamel's formula to see that
+\begin{align}
+    \partial_\alpha \left( e^{i(H+\alpha G)t} \rho_S \otimes \rho_E e^{-i(H+\alpha G)t}\right) &=\int_0^1 e^{i(H+\alpha G)ts} (iGt)e^{i(H+\alpha G)t(1-s)}  \rho_S \otimes \rho_E e^{-i(H+\alpha G)ts}  ds\nonumber\\
+    &\quad+\int_0^1  e^{i(H+\alpha G)t}\rho_S \otimes \rho_Ee^{-i(H+\alpha G)ts} (-iGt)e^{-i(H+\alpha G)t(1-s)}  ds
+\end{align}
+We can recurse this two more times and observe that because $G$ is independent of $\alpha$
+that $12$ terms each appear in the derivative depending on the particular locations where the derivatives land from the use of the product rule.  As an example,
+consider the first such example that appears in our norm bound which for unitary matrix valued functions $U_1,U_2,U_3 : \mathbb{R}^3 \mapsto L(\hilb_S \otimes \hilb_E)$
+\begin{align}
+    &\| {\rm Tr_{H_E}} \int_0^1\int_0^{s}\int_0^{s'} U_1(s,s',s'')(iGt)U_2(s,s',s'') (iGt) U_3(s,s',s'') (iGt) U_4(s,s',s'') d^3s\|\nonumber\\
+    &\le \int_0^1 \int_0^s \int_0^{s'} \|{\rm Tr_{\hilb_E}}U_1(s,s',s'')(iGt)U_2(s,s',s'') (iGt) U_3(s,s',s'') (iGt) U_4(s,s',s'')\| d^3s
+\end{align}
+Next we use the fact from Proposition 1 of~\cite{rastegin2012relations} that for any normal operator $A$ acting on a finite dimensional Hilbert space $\hilb_S\otimes \hilb_E$ that the spectral norm obeys
 \begin{equation}
-    \norm{\Phi(\rho) - \rho - \sum_{i,j,k,l} \ketbra{j}{j} \bra{i} \rho \ket{i} \frac{e^{-\beta_E \lambda_E(k)}}{\partfun_E(\beta_E)} \tau(i,k | j, l) } \leq 4 \alpha^3 t^3 \int \norm{G}^3 dG
+    \|{\rm Tr}_{\hilb_E} A\| \le \|A\|.
+\end{equation}
+Thus from the unitary invariance of the norm and its sub-multiplicative property
+\begin{equation}
+    \int_0^1 \int_0^s \int_0^{s'} \|{\rm Tr_{\hilb_E}}U_1(s,s',s'')(iGt)U_2(s,s',s'') (iGt) U_3(s,s',s'') (iGt) U_4(s,s',s'')\| d^3s \le (\|G\|t)^3.\label{eq:t3error}
+\end{equation}
+Next as there are $12$ such terms that need to be considered we find by combining~\eqref{eq:3derivBd} and~\eqref{eq:t3error}
+\begin{equation}
+    \|\partial_\alpha^3 \phi(\rho) \| \le 12t^3\int \|G\|^3 dG
+\end{equation}
+Then an application of~\eqref{eq:remExpress} yields
+\begin{equation}
+    \norm{\Phi(\rho) - \left(\rho + {\alpha} \frac{\partial}{\partial \alpha} \Phi(\rho) \bigg|_{\alpha = 0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho) \bigg|_{\alpha = 0} \right)} \leq 12 \alpha^3 t^3 \int \norm{G}^3 dG.\label{eq:remTaylorBd}
 \end{equation}
 
-We now need to bound $\int \norm{G}^3 dG$. This is a fun probability question. First we get rid of the Haar integrals
+At this stage an interesting statistical problem emerges.  The spectral norm is the largest singular value of a matrix but here the matrix $G$ is a random matrix with Gaussian eigenvalues distributed as a standard normal distribution.  The correct property to look at is the largest and smallest order statistic for the eigenvalues cubed of $G$.  The average value of this quantity will correspond to the norm.  Specifically we can use the theory of order statistics to write this average as
 \begin{align}
-    \int \norm{G}^3 dG &= \int \int \norm{U_G D U_G^\dagger}^3  dU dD \\
-    &= \int \norm{D}^3 dD \\
-    &= \expect{\max_i |d_i|^3}
+    \int \max_j \lambda_j(G)^3 dG &= \dim_S\int_{-\infty}^{\infty}  \lambda^3 \frac{\sqrt{2}e^{-\lambda^2/2}}{\sqrt{\pi}} \left({\rm Pr}(x\le \lambda)\right)^{\dim_S -1} d\lambda\\
+    &= \dim_S\int_{-\infty}^{\infty}  \lambda^3 \frac{\sqrt{2}e^{-\lambda^2/2}}{\sqrt{\pi}} \left(1-\frac{{\rm erfc}(\lambda/\sqrt{2})}{2} \right)^{\dim_S-1} d\lambda.\\
+    &=-\dim_S\int_{-\infty}^{\infty}  \lambda^3 \frac{\sqrt{2}e^{-\lambda^2/2}}{\sqrt{\pi}} \sum_{k=1}^{\dim_S-1} \binom{\dim_S-1}{k}\frac{{\rm erfc}(\lambda/\sqrt{2})^{k}}{2^{k}} d\lambda
 \end{align}
-\todo{As it stands this is more like the skeleton of a proof than a final product. Need to clean this up.}
-
-It is pretty straightforward to upper bound this integral by $\int \norm{D}^3 dD \leq 2 \dim$. This then gives
+Note that because the complementary error function approximates a step function about zero and $\lambda^3$ is an odd function, the above integral is positive despite the overall negative sign.
+Now let us define a cutoff on the integral of $\Lambda\ge 1$ and aim to set the value of $\Lambda$ such that the integral beyond this cutoff is at most $\epsilon$ large.  Specifically we aim to find $\Lambda$ such that
 \begin{equation}
-    \norm{R_{\Phi}} \leq 8 \alpha^3 t^3 \dim.
+    0\le -\dim_S\int_{\Lambda}^{\infty}  \lambda^3 \frac{\sqrt{2}e^{-\lambda^2/2}}{\sqrt{\pi}} \sum_{k=0}^{\lfloor \dim_S/2-1\rfloor} \binom{\dim_S-1}{2k+1}\frac{{\rm erfc}(\lambda/\sqrt{2})^{2k+1}}{2^{2k+1}} d\lambda \le \epsilon
 \end{equation}
-So this says we need $\alpha t \leq \frac{\epsilon_{R}^{1/3}}{2 \dim^{1/3}}$ in order for $\norm{R_{\Phi}} \leq \epsilon_R$.
+The complementary error function is a rapidly decaying function of $\lambda$ for $\lambda>0$.  Thus in order to simplify the sum to allow only the first order term in the expansion to dominate we wish to take $\Lambda$ large enough so that the total error is at most $\epsilon/2$ which is implied by taking
+\begin{equation}
+    \frac{{\rm erfc}(\Lambda/\sqrt{2})}{2} \le \frac{\epsilon}{4\dim_S \Lambda^3}.
+\end{equation}
+The complementary error function has the following asymptotic expansion
+\begin{equation}
+    {\rm erfc}(\lambda/\sqrt{2}) = \frac{\sqrt{2}e^{-\lambda^2/2}}{\lambda \sqrt{\pi}}\left( 1 + O(\lambda^{-2}) \right)
+\end{equation}
+Thus using the fact that here $\lambda\ge \Lambda$, $\Lambda \ge 1$ an $e^{-\Lambda^2/2}\Lambda^2 \le 1$ it suffices to take
+\begin{equation}
+    \Lambda \in O\left(\sqrt{\log(\dim_S/\epsilon)} \right)
+\end{equation}
+Next we wish to show that the leading order term in the integral is also small we have that
+\begin{align}
+    -\dim_S^2\int_{\Lambda}^{\infty}  \lambda^3 \frac{\sqrt{2}e^{-\lambda^2/2}}{\sqrt{\pi}} \frac{{\rm erfc}(\sqrt{2}\lambda)}{2} d\lambda&\le \dim_S^2\sqrt{\int_{-\infty}^\infty \lambda^6 \frac{e^{-\lambda^2/2}}{\sqrt{2\pi}}  d\lambda}\sqrt{\int_\Lambda^\infty\left(\frac{{\rm erfc}^2(\sqrt{2}\lambda)}{4}\right)\frac{e^{-\lambda^2/2}}{\sqrt{2\pi}}  d\lambda }\nonumber\\
+    &=\sqrt{15} \dim_S^2 \sqrt{\int_\Lambda^\infty\left(\frac{{\rm erfc}^2(\sqrt{2}\lambda)}{4}\right)\frac{e^{-\lambda^2/2}}{\sqrt{2\pi}}  d\lambda }\nonumber\\
+    &\le \sqrt{\frac{15}{4}} \dim_S^2 {\rm erfc}(\sqrt{2}\Lambda) \le 4 \dim_S^2 \left(\frac{e^{-2\Lambda^2}}{\Lambda \sqrt{2\pi}} \right) (1+O(\Lambda^{-2})).
+\end{align}
+As before using $\Lambda \ge 1$ and isolating for $\Lambda$ we see for this term as well that we can make the error at most $\epsilon/2$ for a value of $\Lambda$ that scales as
+\begin{equation}
+    \Lambda \in O\left(\sqrt{\log(\dim_S/\epsilon)} \right).
+\end{equation}
+We then have that the remaining integral can be bounded by
+\begin{align}
+    -\dim_S\int_{-\infty}^{\Lambda}  \lambda^3 \frac{e^{-\lambda^2/2}}{\sqrt{2\pi}} \sum_{k=0}^{\lfloor \dim_S/2-1\rfloor} \binom{\dim_S-1}{2k+1}\frac{{\rm erfc}(\lambda/\sqrt{2})^{2k+1}}{2^{2k+1}} d\lambda&=  \int_{-\infty}^\Lambda \lambda^3 {\rm Pr}(\lambda_{max}(G) = \lambda) d\lambda \nonumber\\
+    &\le \Lambda
+\end{align}
+The value of $\Lambda$ is shown above to be logarithmic in the system dimension, so we can choose $\epsilon \in \Theta(1)$ and not significantly change the value of the integral and hence
+\begin{equation}
+    \int_{-\infty}^\infty \lambda^3 {\rm Pr}(\lambda_{max}(G) = \lambda) d\lambda \in O(\log^{3/2}(\dim_S)).
+\end{equation}
+From the fact that the probability distribution for the eigenvalues is symmetric about $0$ we have that
+\begin{equation}
+    \int_{-\infty}^\infty \lambda^3 {\rm Pr}(\lambda_{\min}(G) = \lambda) d\lambda = - \int_{-\infty}^\infty \lambda^3 {\rm Pr}(\lambda_{\max}(G) = \lambda) d\lambda
+\end{equation}
+Thus we have 
+\begin{align}
+    \int_{-\infty}^\infty \|G\|^3 dG &\le \left|\int_{-\infty}^\infty \lambda^3 {\rm Pr}(\lambda_{\min}(G) = \lambda) d\lambda \right| + \left|\int_{-\infty}^\infty \lambda^3 {\rm Pr}(\lambda_{\max}(G) = \lambda) d\lambda \right|\nonumber\\
+    &\in O\left(\log^{3/2}(\dim_S) \right)
+\end{align}
+Finally after inserting this into~\eqref{eq:remTaylorBd} we find that the truncation error for the channel at second order in $\alpha$ is
+\begin{equation}
+    \norm{\Phi(\rho) - \left(\rho + {\alpha} \frac{\partial}{\partial \alpha} \Phi(\rho) \bigg|_{\alpha = 0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho) \bigg|_{\alpha = 0} \right)} \in O(\alpha^3 t^3 \log^{3/2}({\rm dim}_S)).
+\end{equation}
+This gives us that the remainder bound, $\|R_\Phi\|\le \epsilon_R$ for 
+\begin{equation}
+    \alpha t \in O\left(\frac{\epsilon_R^{1/3}}{\sqrt{\log(1/\dim_S)}} \right).
+\end{equation}
 \end{proof}
-
-\textcolor{red}{TODO: Change this to be the norm of the average instead of the average of the norm. The norm of the average should be reducible to the third moment of the distribution of eigenvalues. Even then though we might pick up dimensionful factors because we have to do a spectral decomposition of each random matrix $D$. This then introduces a sum over all 3 diagonals. We can use independence to get rid of two of them, but the last remaining one I'm not sure how to, as we have projectors interspersed throughout the factors. Using triangle inequality and submultiplicativity gives you a factor of dimension, in which case we are just as good with our dumb bound of the average of the norm cubed.}
-\todo{Fix the definitions used here.}
 
 \section{Approximate Detailed Balance}
 In this section we show the most mild form of thermalization for all possible system Hamiltonians $H_S$. What we will show is that if $\Phi$ has a fixed point, then it will be arbitrarily close to the fixed point of the $\bigo{(\alpha t)^2}$ approximation to the channel $\Phi$. Then we show that the fixed point of this approximation, in the limit as $t \to \infty$, $\alpha \to 0$, and we have perfect knowledge of the distribution of eigenvalue differences $\Delta_S(i,k)$, is the thermal state $\rho_S(\beta_E)$. We say this is the most mild form of thermalization as it provides no guarantees for how long it takes the system to reach this fixed point, or even how long it takes to get close to it's fixed point. 
@@ -631,6 +714,165 @@ As
     \lim_{t \to \infty} &\implies e^{\beta_E \gamma} = e^{-\beta_E \Delta(i,j)} \nonumber \\
     &= \frac{\prob{\text{System in } j}}{ \prob{\text{System in } i}} \nonumber
 \end{align}
+
+\section{Harmonic Oscillator}
+In this section we show thermalization of a truncated Harmonic Oscillator with an environment tuned exactly to the gap of the oscillator. Specifically, the eigenvalues of the system are given by $\lambda_S(i) = i$ and $\gamma = 1$. In order to show thermalization we need to show that the thermal state is a fixed point $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_1 \leq \epsilon_{fix}$ and that there is a range of temperatures in which the channel cools the system $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1$. Showing that the thermal state at the environment temperature is a fixed point is easier and demonstrates the techniques we will use to show cooling, so we start with that.
+
+\subsection{Fixed point}
+Using the Taylor series results from Section \ref{sec:taylor_series_phi}
+\begin{align}
+    \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_1 &= \norm{T^{(2)}(\rho_S(\beta_E)) + R_{\Phi}(\rho_S(\beta_E))}_1 \\
+    &\leq \norm{T^{(2)}(\rho_S(\beta_E))}_1 + \norm{R_{\Phi}(\rho_S(\beta_E)}_1 .
+\end{align}
+Now recalling that since $\rho_S(\beta_E)$ is diagonal in the $H_S$ eigenbasis and that $T^{(2)}$ maps diagonal elements to diagonal elements only, we can compute the norm of $T^{(2)}$ by summing the absolute values of the diagonals
+\begin{align}
+    \norm{T^{(2)}(\rho_S(\beta_E))}_1 &= \sum_j \left| \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \sum_i \bra{j} T^{(2)}(\ketbra{i}{i}) \ket{j} \right|
+\end{align}
+
+
+\subsection{Convergence}
+We now want to analyze the converge of this channel for the Harmonic oscillator and environment tuned to the harmonic oscillator gap. We are trying to show
+\begin{equation}
+    \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1
+\end{equation}
+We use $p_{\beta}(k) = \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}$ and $q(i) = \frac{e^{-\beta_E \lambda_E(i)}}{1 + e^{-\beta_E \gamma}}$.
+We do so by expanding
+\begin{align}
+    \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 &\leq \sum_j \left| p_{\beta_E}(j) - p_{\beta}(j) - \sum_i p_{\beta}(i) \bra{j}T^{(2)}(\ketbra{i}{i})\ket{j} \right| + \norm{R_{\Phi}}_1.
+\end{align}
+Now we first will analyze the $j=1$, or ground state, term. This term will be expanded using the triangle inequality to isolate terms that are of $\bigo{\epsilon_{\sinc}}$ heavily, so we make use of Lemma \ref{lem:t_2_system_only} many times, along with adding and subtracting the same term implicitly,
+\begin{align}
+    &\left| p_{\beta_E}(1) - p_{\beta}(1) - p_{\beta}(1) \bra{1} T^{(2)}(\ketbra{1}{1})\ket{1} - \sum_{i > 1} p_{\beta}(i) \bra{1} T^{(2)}(\ketbra{i}{i})\ket{1} \right| \\
+    &\leq \left| p_{\beta_E}(1) - p_{\beta}(1) + p_{\beta}(1) \frac{\alpha^2 t^2}{\dim + 1} q(1) \sum_{a > 1} \sinc^2((a  - 2)t/2) - \sum_{i > 1} p_{\beta}(i) \bra{1} T^{(2)}(\ketbra{i}{i})\ket{1} \right| \nonumber \\
+    & \quad +4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+    &\leq \left| p_{\beta_E}(1) - p_{\beta}(1) + p_{\beta}(1) q(1) \frac{\alpha^2 t^2}{\dim + 1} - \sum_{i > 1} p_{\beta}(i) \bra{1} T^{(2)}(\ketbra{i}{i})\ket{1} \right| \nonumber \\
+    &\quad + 4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + p_{\beta}(1) q(1) \frac{\alpha^2 t^2}{\dim + 1} \sum_{a > 2} \epsilon_{\sinc} \\
+    &\leq \left| p_{\beta_E}(1) - p_{\beta}(1) + p_{\beta}(1) q(1) \frac{\alpha^2 t^2}{\dim + 1} - \frac{\alpha^2 t^2}{\dim + 1}\sum_{i > 1} p_{\beta}(i) q(0) \sinc^2((i - 2)t/2) \right| \nonumber \\
+    &\quad + \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1} \parens{5 \dim_S + 3 \sum_{i > 1} p_{\beta}(i)} \\
+    &\leq \left| p_{\beta_E}(1) - p_{\beta}(1) + \frac{\alpha^2 t^2}{\dim + 1} (p_{\beta}(1) q(1) - p_{\beta}(2) q(0))  \right| + \epsilon_{\sinc}\frac{\alpha^2 t^2}{\dim + 1} (5 \dim_S + 4) \\
+    &= \left| p_{\beta_E}(1) - p_{\beta}(1) - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(2)q(0) (1 - e^{ - \delta})  \right| + \epsilon_{\sinc}\frac{\alpha^2 t^2}{\dim + 1} (5 \dim_S + 4) \\
+\end{align}
+Now assuming $\beta_E - \beta \coloneqq \delta > 0$, or we are cooling the system down, then for sufficiently small $\alpha^2 t^2$ this will reduce the ground state error. In other words, $\beta \leq \beta_E \implies p_{\beta}(1) \leq p_{\beta_E}(1)$, aka colder temperatures have a higher overlap with the ground state. This means that $\alpha t$ can be taken small enough such that it does not affect the sign of $p_{\beta_E}(1) - p_{\beta}(1) - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(2) q(0) (1 - e^{-\delta})$, and we can take this out of the absolute value, resulting in the final inequality
+\begin{align}
+    &\left| p_{\beta_E}(1) - p_{\beta}(1) - p_{\beta}(1) \bra{1} T^{(2)}(\ketbra{1}{1})\ket{1} - \sum_{i > 1} p_{\beta}(i) \bra{1} T^{(2)}(\ketbra{i}{i})\ket{1} \right| \\
+    &\leq p_{\beta_E}(1) - p_{\beta}(1) - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(2) q(0)(1 - e^{-\delta}) + \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1} (7 \dim_S) \\
+    &= \left| p_{\beta_E}(1) - p_{\beta}(1)\right| - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(2) q(0)(1 - e^{-\delta}) + \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1} (7 \dim_S)
+\end{align}
+
+We now compute a similar quantity but for $1 < j < \dim_S$. This time we will not include as many intermediate steps for isolating the dominant (non-$\epsilon_{\sinc}$) terms.
+\begin{align}
+    &\left| p_{\beta_E}(j) - p_{\beta}(j) - p_{\beta}(j) \bra{j} T^{(2)}(\ketbra{j}{j})\ket{j} - \sum_{i < j} p_{\beta}(i) \bra{j} T^{(2)}(\ketbra{i}{i})\ket{j} - \sum_{i > j} p_{\beta}(i) \bra{j} T^{(2)}(\ketbra{i}{i})\ket{j} \right| \\
+&\leq \left| p_{\beta_E}(j) - p_{\beta}(j) - p_{\beta}(j) \bra{j} T^{(2)}(\ketbra{j}{j})\ket{j} - \frac{\alpha^2 t^2}{\dim + 1}\sum_{i < j} p_{\beta}(i) q(1) \sinc^2((i - j + 1)t/2) - \sum_{i > j} p_{\beta}(i) \bra{j} T^{(2)}(\ketbra{i}{i})\ket{j} \right| \nonumber \\
+&\quad + 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+&\leq \left| p_{\beta_E}(j) - p_{\beta}(j) - p_{\beta}(j) \bra{j} T^{(2)}(\ketbra{j}{j})\ket{j} - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(j-1) q(1) - \sum_{i > j} p_{\beta}(i) \bra{j} T^{(2)}(\ketbra{i}{i})\ket{j} \right| \nonumber \\
+&\quad + 4 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+&\leq \left| p_{\beta_E}(j) - p_{\beta}(j) - p_{\beta}(j) \bra{j} T^{(2)}(\ketbra{j}{j})\ket{j} - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(j-1) q(1) - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(j+1)q(0) \right| \nonumber \\
+&\quad + 8 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+&\leq \bigg| p_{\beta_E}(j) - p_{\beta}(j) + p_{\beta}(j) \frac{\alpha^2 t^2}{\dim + 1} \parens{q(0) \sum_{a < j} \sinc^2 ((a - j + 1)t/2) + q(1) \sum_{a > j} \sinc^2((a - j - 1)t/2)} \nonumber \\
+&\quad - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(j-1) q(1) - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(j+1)q(0) \bigg| + \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} (8 + 4\dim_S) \\
+&\leq \left| p_{\beta_E}(j) - p_{\beta}(j) + \frac{\alpha^2 t^2}{\dim + 1} \parens{p_{\beta}(j) - p_{\beta}(j-1) q(1) - p_{\beta}(j+1) q(0)} \right| + 9 \dim_S \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1} 
+% &= \left| p_{\beta_E}(j) - p_{\beta}(j) + p_{\beta}(j) \frac{\alpha^2 t^2}{\dim + 1} \parens{1 - \frac{e^{\beta_E - \delta} + e^{\delta}}{e^{\beta_E} + 1}} \right| + 9 \dim_S \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1}.
+\end{align}
+
+Now finally we study the last term, $j = \dim_S$
+\begin{align}
+    &\left| p_{\beta_E}(j) - p_{\beta}(j) - \sum_{i < j} p_{\beta}(i) \bra{j} T^{(2)}(\ketbra{i}{i}) \ket{j} - p_{\beta}(j) \bra{j} T^{(2)}(\ketbra{j}{j}) \ket{j} \right| \\
+    &\leq \left| p_{\beta_E}(j) - p_{\beta}(j) - \sum_{i < j} p_{\beta}(i) q(1) \frac{\alpha^2 t^2}{\dim + 1} \sinc^2((i - j + 1)t/2) - p_{\beta}(j) \bra{j} T^{(2)}(\ketbra{j}{j}) \ket{j} \right| \nonumber \\
+    &\quad + 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+    &\leq \left| p_{\beta_E}(j) - p_{\beta}(j) - p_{\beta}(j-1) q(1) \frac{\alpha^2 t^2}{\dim + 1} - p_{\beta}(j) \bra{j} T^{(2)}(\ketbra{j}{j}) \ket{j} \right| \nonumber \\
+    &\quad + 4 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+    &\leq \left| p_{\beta_E}(j) - p_{\beta}(j) - p_{\beta}(j-1) q(1) \frac{\alpha^2 t^2}{\dim + 1} + p_{\beta}(j) q(0) \frac{\alpha^2 t^2}{\dim + 1} \sum_{a < j} \sinc^2((a - j + 1)t/2) \right| \nonumber \\
+    &\quad + 4 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+    &\leq \left| p_{\beta_E}(j) - p_{\beta}(j) - p_{\beta}(j-1) q(1) \frac{\alpha^2 t^2}{\dim + 1} + p_{\beta}(j) q(0) \frac{\alpha^2 t^2}{\dim + 1} \right| \nonumber \\
+    &\quad + \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} (4 + 7 \dim_S) \\
+    &\left| p_{\beta_E}(j) - p_{\beta}(j) + p_{\beta}(j) \frac{\alpha^2 t^2}{\dim + 1}  q(0)(1 - e^{-\delta}) \right| + \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} (4 + 7 \dim_S)
+\end{align}
+Now we repeat a similar procedure to the first $j = 1$ term where we want to take the contribution of the channel outside of the absolute value. For $j = \dim_S$, we know that cooler temperatures will have smaller overlap with the highest energy state, or in symbols $\beta < \beta_E \implies p_{\beta}(\dim_S) > p_{\beta_E}(\dim_S)$. We can then make $\alpha t$ small enough such that it fits in the difference $p_{\beta}(\dim_S) - p_{\beta_E}(\dim_S)$, giving us
+$$
+p_{\beta}(\dim_S) - p_{\beta_E}(\dim_S) \geq p_{\beta} (\dim_S) q(0) \frac{\alpha^2 t^2}{\dim + 1} (1 - e^{-\delta}),
+$$
+as $\alpha t$ is user-controlled it is clear that a small enough value to satisfy the inequality exists. This inequality also implies the following
+\begin{align}
+    &\left| p_{\beta_E}(j) - p_{\beta}(j) + p_{\beta}(j) \frac{\alpha^2 t^2}{\dim + 1}  q(0)(1 - e^{-\delta}) \right| \\
+    &= p_{\beta}(\dim_S) - p_{\beta_E}(\dim_S) - p_{\beta}(\dim_S) q(0) \frac{\alpha^2 t^2}{\dim + 1}(1 - e^{-\delta}) \\
+    &= \abs{p_{\beta_E}(\dim_S) - p_{\beta}(\dim_S)} - p_{\beta}(\dim_S) q(0) \frac{\alpha^2 t^2}{\dim + 1}(1 - e^{-\delta})
+\end{align}
+and take it out of the absolute value
+
+We need to find the terms where the intermediate contribution reduces the trace distance.
+\begin{align}
+    0 &\leq p_{\beta}(j) - p_{\beta}(j-1) q(1) - p_{\beta}(j+1) q(0) \\
+    0 &\leq e^{-\beta j} - e^{-\beta(j - 1)} \frac{e^{-\beta_E}}{1 + e^{-\beta_E}} - e^{-\beta(j+1)} \frac{1}{1 + e^{-\beta_E}} \\
+    0 &\leq 1 - e^{\beta} \frac{e^{-\beta_E}}{1 + e^{-\beta_E}} - e^{-\beta} \frac{1}{1 + e^{-\beta_E}} \\
+    0&\leq 1 + e^{-\beta_E} -e^{-\delta} - e^{-\beta} \\
+    0 &\leq 1 + e^{-\delta} e^{-\beta} - e^{-\delta } - e^{-\beta} \\
+    0 &\leq 1 - e^{-\beta} - e^{-\delta} (1 - e^{-\beta}) \\
+    0 &\leq (1-e^{-\beta})(1 - e^{-\delta}) \\
+    \iff 0 &\leq \delta \text{ and } 0 \leq \beta.
+\end{align}
+Since we know that the extra term in the absolute value for the intermediate $1 < j < \dim_S$ contributions we can show that these reduce the trace distance if $p_{\beta_E}(j) - p_{\beta}(j) \leq 0$ for these terms. Our goal will be to show that this condition holds for $1 < j$ if $\delta$ is sufficiently small. 
+
+For the truncated harmonic oscillator the partition function can be computed analytically 
+\begin{equation}
+    \partfun_S(\beta) = e^{-\beta} \frac{1 - e^{-\beta \dim_S}}{1 - e^{-\beta}}.
+\end{equation}
+Now we eventually want to prove $1 < j \implies p_{\beta_E}(j) < p_{\beta}(j)$, so we will start by rearranging the inequality we would like to show
+\begin{align}
+    p_{\beta_E}(j) &< p_{\beta}(j) \\
+    e^{-(\beta_E - \beta)j} &< \frac{\partfun_S(\beta_E)}{\partfun_S(\beta)} \\
+    j &> \frac{1}{\delta} \ln\parens{\frac{\partfun_S(\beta_E)}{\partfun_S(\beta)}}.
+\end{align}
+It is clear that if we can show $\frac{1}{\delta} \ln \parens{\frac{\partfun_S(\beta_E)}{\partfun_S(\beta)}} \leq 1$, then we can string together inequalities $1 < j \implies \frac{1}{\delta}\ln \parens{\frac{\partfun_S(\beta_E)}{\partfun_S(\beta)}} \leq 1 < j \implies p_{\beta_E}(j) < p_{\beta}(j)$.
+
+Now our job is cut out for us, find conditions on $\beta_E$ and $\delta$ such that $\ln \parens{\frac{\partfun_S(\beta_E)}{\partfun_S(\beta)}} \leq \delta$. If we have that $\partfun_S(\beta_E) \leq \partfun_S(\beta)$, then we have $\frac{\partfun_S(\beta_E)}{\partfun_S(\beta)} \leq 1$ which implies $\ln \parens{\frac{\partfun_S(\beta_E)}{\partfun_S(\beta)}} \leq 0$. This means that $0 \leq \delta$ is sufficient for $1 < j \implies p_{\beta_E}(j) < p_{\beta}(j)$. 
+
+In order to do so we need to produce upper and lower bounds on the log of the partition function, or the free energy. 
+
+
+We need to find upper and lower bounds on the free energy $\ln \partfun_S(\beta)$. We can produce the dumb bounds:
+\begin{align}
+    \partfun_S(\beta) &= \sum_{i = 1}^{\dim_S} e^{-\beta i} \leq \dim_S e^{-\beta}
+\end{align}
+and
+\begin{align}
+    \partfun_S(\beta) &= \sum_{i = 1}^{\dim_S} e^{-\beta i} \geq \dim_S e^{-\beta \dim_S}.
+\end{align}
+This gives us the bounds
+\begin{align}
+    \ln \partfun_S(\beta_E) - \ln \partfun_S(\beta) &\leq -\beta_E + \ln \dim_S - \ln \dim_S + \beta \dim_S \leq \beta_E (\dim_S - 1)
+\end{align}
+and
+\begin{align}
+    \ln \partfun_S(\beta_E) - \ln \partfun_S(\beta) &\geq - \dim_S \beta_E + \ln \dim_S - \ln \dim_S + \beta
+\end{align}
+
+Now we should be able to find a $\delta$ small enough such that this upper bound is just above 1. Taking a Taylor's Series of the right hand side with respect to delta gives
+\begin{align}
+    \frac{1}{\delta} \ln \parens{\frac{\partfun_S(\beta_E)}{\partfun_S(\beta)}} &= - \frac{\dim_S - e^{\beta_E} - \dim_S e^{\beta_E} + e^{\beta_E (\dim_S +  1)}}{(1 - e^{\beta_E})(1 - e^{\beta_E \dim_S})} + \bigo{\delta^2}
+\end{align}
+Now we need to set this upper bound to be just less than 2:
+\begin{equation}
+    \delta < 2 \frac{(1 - e^{\beta_E})(1 - e^{\beta_E \dim_S})}{-\dim_S + e^{\beta_E} + \dim_S e^{\beta_E} - e^{\beta_E (\dim_S +  1)}}
+\end{equation}
+If the above inequality is satisfied then we can guarantee that the only $j$ such that $p_{\beta_E}(j) \geq p_{\beta}(j)$ is $j = 1$, which always holds whenever $\beta < \beta_E$.
+
+
+We will find one by doing a $\delta$ expansion of the right hand side, or specifically of $\ln(\partfun_S(\beta + \delta))$.
+\begin{equation}
+    \ln (\partfun_S(\beta + \delta) \bigg|_{\delta = 0} = \ln (\partfun_S(\beta))
+\end{equation}
+
+I want to work out what the partition function is for this system
+\begin{align}
+    \partfun_S(\beta) &= \sum_{i = 1}^{\dim_S} e^{-\beta i} \\
+    &= \frac{e^{-\beta} (1 - e^{-\beta \dim_S})}{1 - e^{-\beta}}
+\end{align}
+Which gives the ratio
+\begin{align}
+    \frac{\partfun_S(\beta_E)}{\partfun_S(\beta)} &= \frac{e^{-\beta_E}(1 - e^{-\beta_E \dim_S})}{1 - e^{-\beta_E}} \frac{1 - e^{-\beta}}{e^{-\beta}(1 - e^{-\beta \dim_S})} \\
+    &= e^{-\delta} \frac{1 - e^{-\beta}}{1 - e^{-\beta_E}} \frac{1 - e^{-\beta_E \dim_S}}{1 - e^{-\beta \dim_S}}
+\end{align}
+
 
 \section{Fixed points and convergences}
 
@@ -905,11 +1147,6 @@ Let $H_S = U_H \begin{bmatrix} 0 & 0 & 0 \\ 0 & \lambda_A & 0 \\ 0 & 0 & \lambda
 
 
 
-
-\section{Detailed Balance} \label{sec:detailed_balance}
-
-
-
 \section{Thermal State Bounds}
 
 
@@ -1152,6 +1389,62 @@ Let $H_S = U_H \begin{bmatrix} 0 & 0 & 0 \\ 0 & \lambda_A & 0 \\ 0 & 0 & \lambda
 \end{proof}
 
 \section{Haar Integral Proofs} \label{sec:haar_integral_appendix}
+
+In this section we present the more technical work needed to state our results in Section \ref{sec:taylor_series_phi}. The first two results are Lemmas that compute the effects of the randomized interaction in a form that are usable in the main result of Theorem \ref{lem:big_one}.
+
+\begin{lemma} \label{lem:two_heisenberg_interactions}
+    Let $G(t)$ denote the Heisenberg evolved random interaction $G(t) = e^{iHt} G e^{-iHt}$ for a total Hamiltonian $H$. After averaging over the interaction measure the product $G(x) G(y)$ can be computed as
+    \begin{equation}
+        \int G(x) G(y) dG = \frac{1}{\dim + 1} \parens{\sum_{(i,j),(k,l)} e^{i \Delta(i,j|k,l) (x-y)} \ketbra{i,j}{i,j} + \identity}.
+    \end{equation}
+\end{lemma}
+\begin{proof}
+The overall structure of this proof is to evaluate the product in the Hamiltonian eigenbasis and split the product into three factors: a phase contribution from the time evolution, a Haar integral from the eigenvalues of the random interaction, and the eigenvalue contribution of the random interaction. Since this involves the use of multiple indices, it will greatly simplify the proof to use a single index over the total Hilbert space $\hilb$ as opposed to two indices over $\hilb_S \otimes \hilb_E$. For example, the index $a$ should be thought of as a pair $(a_s, a_e)$, and functions $\lambda(a)$ should be thought of as $\lambda(a_s, a_e)$. Once the final form of the expression is reached we will substitute in pairs of indices for easier use of the lemma in other places.
+    \begin{align}
+        \int G(x) G(y) dG &= \int e^{+i H x} U_G D U_G^\dagger e^{-i H x} e^{+i H y} U_G D U_G^\dagger e^{-i H y} dU_G ~dD \\
+        &= \int \bigg[\sum_a e^{+i \lambda(a)x}\ketbra{a}{a}  U_G \sum_b D(b)\ketbra{b}{b} U_G^\dagger \nonumber \\
+        &\quad \sum_c e^{-i \lambda(c) (x - y)} \ketbra{c}{c} U_G \sum_d D(d)\ketbra{d}{d} U_G^\dagger \sum_e e^{-i \lambda(e) y} \ketbra{e}{e} \bigg] dU_G ~dD\\
+        &=\sum_{a,b,c,d,e} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \nonumber \\
+        &\quad \times \int \bra{a} U_G \ket{b} \bra{c} U_G \ket{d} \bra{b} U_G^{\dagger} \ket{c} \bra{d} U_G^\dagger \ket{e} dU_G \int D(b) D(d) dD \\
+        &=  \sum_{a, b, c, d, e} \delta_{bd} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \nonumber \\
+        &\quad \times \int \bra{a} U_G \ket{b} \bra{c} U_G \ket{d} \bra{b} U_G^{\dagger} \ket{c} \bra{d} U_G^\dagger \ket{e} dU_G. \\
+    \end{align}
+    Now the summation over $d$ fixes $d=b$ and we use Lemma \ref{lem:haar_two_moment} to compute the Haar integral, which simplifies greatly due to the repeated $b$ index. Plugging the result into the above yields the following
+    \begin{align}
+        &= \frac{1}{\dim^2 - 1} \sum_{a, b, c, e} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \parens{\delta_{ac} \delta_{ce} + \delta_{ae} - \frac{1}{\dim} \parens{\delta_{ac} \delta_{ce} + \delta_{ae}}}  \\
+        &= \frac{1}{\dim^2 - 1} \parens{1 - \frac{1}{\dim}} \sum_{a, b, c, e} \ketbra{a}{e} e^{-i (\lambda(c) - \lambda(a))x} e^{-i (\lambda(e) - \lambda(c))y} \delta_{ae} (1 + \delta_{ac}) \\
+        &= \frac{1}{\dim^2 - 1} \parens{1 - \frac{1}{\dim}} \sum_{a, b, c} \ketbra{a}{a} e^{i (\lambda(a) - \lambda(c))(x-y)} (1 + \delta_{ac}) \\
+        &= \frac{1 \parens{\dim - 1}}{\dim^2 - 1} \sum_{a,c} \ketbra{a}{a} e^{i (\lambda(a) - \lambda(c))(x - y)} (1 + \delta_{ac}) \\
+        &= \frac{1}{\dim + 1} \parens{\sum_{a,c} e^{i (\lambda(a) - \lambda(c))(x-y)} \ketbra{a}{a} + \identity}.
+    \end{align}
+    Reindexing by $a \mapsto i,j$, $c \mapsto k,l$, and plugging in the definition of $\Delta$ yields the statement of the lemma.
+\end{proof}
+
+
+\begin{lemma} \label{lem:sandwiched_interaction}
+    Given two Heisenberg evolved random interactions, $G(x)$ and $G(y)$, we compute their action on an outer-product $\ketbra{i,j}{k,l}$ as
+    \begin{equation}
+        \int G(x) \ketbra{i,j}{k,l} G(y) ~dG = \frac{1}{\dim + 1} \parens{\ketbra{i,j}{k,l} + \delta(i,j|k,l) \sum_{m,n} e^{i \Delta(m,n | i,j) (x-y)} \ketbra{m,n}{m,n}}
+    \end{equation}
+\end{lemma}
+\begin{proof}
+This proof is structured the same as Lemma \ref{lem:two_heisenberg_interactions} and similarly we will use a single index of the total Hilbert space $\hilb$ and switch to two indices to match the rest of the exposition.
+    \begin{align}
+        \int G(x) \ketbra{a}{b} G(y) dG &=  \int e^{i H x} U_G D U_G^{\dagger} e^{-i H x} \ketbra{a}{b} e^{i H y} U_G D U_G^\dagger e^{-i H y} ~dG \\
+        &= \sum_{c, d, e, f} e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \nonumber \\
+        &\quad \times \int \ketbra{c}{c} U_G D(d) \ketbra{d}{d} U_G^\dagger \ketbra{a}{b} U_G D(e) \ketbra{e}{e} U_G^\dagger \ketbra{f}{f} dG \\
+        &= \sum_{c, d, e, f}  e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \ketbra{c}{f} \nonumber \\
+        &\quad \times \int D(d) D(e) dD \int \bra{c} U_G \ket{d} \bra{b} U_G \ket{e} \bra{d} U_G^\dagger \ket{a} \bra{e} U_G^\dagger \ket{f} dU_G \\
+        &=  \sum_{c,d,f} e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \ketbra{c}{f} \nonumber \\ 
+        &\quad \times \int \bra{c} U_G \ket{d} \bra{b} U_G \ket{d} \bra{a} \overline{U_G} \ket{d} \bra{f} \overline{U_G} \ket{d} dU_G \\
+        &= \frac{1}{\dim^2 - 1} \sum_{c,d,f} e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \ketbra{c}{f} (\delta_{ca} \delta_{bf} + \delta_{cf}\delta_{ab})\parens{1 - \frac{1}{\dim}} \\
+        &= \frac{1}{\dim + 1} \sum_{c,f} e^{i (\lambda(c) - \lambda(a))x} e^{i (\lambda(b) - \lambda(f))y} \ketbra{c}{f} (\delta_{ca} \delta_{bf} + \delta_{cf}\delta_{ab}) \\
+        &= \frac{1}{\dim + 1} \parens{\ketbra{a}{b} + \delta_{ab} \sum_{c} e^{i(\lambda(c) - \lambda(a))(x-y)} \ketbra{c}{c} }.
+    \end{align}
+    Now re-indexing by $a \mapsto (i,j)$, $b \mapsto (k,l)$ and $c \mapsto (m,n)$ results in the expression given in the statement of the lemma.
+\end{proof}
+
+
 \secondOrderChannelHaar*
 \begin{proof}
 To start we would like to note that we will use a single index notation to refer to the joint system-environment eigenbasis during this proof to help shorten the already lengthy expressions. We will convert back to a double index notation to match the statement of the theorem. We start from the expression for the first derivative of the channel $\frac{\partial}{\partial \alpha} \Phi_G(\rho_S)$ given by Eq. \eqref{eq:first_order_alpha_derivative}. To take the second derivative there are six factors involving $\alpha$, so we will end up with six terms. We repeat Eq. \eqref{eq:first_order_alpha_derivative} below, add a derivative, and label each factor containing an $\alpha$ for easier computation
@@ -1252,355 +1545,5 @@ Computing $(F)$ yields
     &~ +\delta_{i,k} \delta_{j,l} \frac{2 e^{i \Delta(i,j|k,l)t}}{\dim+1} \parens{ \sum_{(a,b): \Delta(i,j|a,b) \neq 0 } \frac{2(1- \cos (\Delta(i,j|a,b)t))}{\Delta(i,j|a,b)^2} \ketbra{a,b}{a,b} + t^2 \sum_{(a,b) : \Delta(i,j|a,b) = 0} \ketbra{a,b}{a,b}} \label{eq:second_order_output}
  \end{align}
 \end{proof}
-
-\section{Scratch work for single shot capture}
-
-Want to find the ``single shot" capture radius. First should study the single-shot capture radius as $\beta_E \to \infty$, as this should simplify a lot of things. 
-\begin{claim}
-    We want to characterize the single-shot capture radius, or the $\delta = \beta_E - \beta$ such that 
-    \begin{equation}
-        \norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 \leq  \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 .
-    \end{equation}
-\end{claim}
-\begin{proof}
-See scratch work below.
-\end{proof}
-We first expand the channel using the Taylors series given by Eq. \eqref{idk}
-\begin{align}
-    \norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 &= \norm{\rho_S(\beta_E) - \rho_S(\beta) - \mathbb{E}_{\gamma} T_{\gamma}^{(2)}(\rho_S(\beta)) - \mathbb{E}_{\gamma} R_{\Phi}}_1 \\
-    &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta) - \mathbb{E}_{\gamma} T_{\gamma}^{(2)}(\rho_S(\beta))}_1 + \norm{\mathbb{E}_{\gamma} R_{\Phi}}_1.
-\end{align}
-As $T_{\gamma}^{(2)}$ is diagonal in the $H_S$ basis we can expand the one norm of the leftmost term as
-\begin{align}
-    \norm{\rho_S(\beta_E) - \rho_S(\beta) - \mathbb{E}_{\gamma} T_{\gamma}^{(2)}(\rho_S(\beta))}_1 &= \sum_k \abs{p_E(k) - p_{\beta}(k) - \mathbb{E}_{\gamma} \bra{k}  T_{\gamma}^{(2)}(\rho_S(\beta)) \ket{k}} .
-\end{align}
-We will investigate a generic term in the above expression by substituting in the Boltzmann remainder $R_0$ used in Lemma \ref{lem:thermal_state_diff_bound} and the characterization of the expected second order term from Lemma \ref{lem:expected_second_order_term}. Substituting in the values for $T_{\gamma}^{(2)}$ for a specific $k$ gives
-\begin{align}
-    &\abs{p_E(k) - p_{\beta}(k) - \mathbb{E}_{\gamma} \bra{k} T_{\gamma}^{(2)}(\rho_S(\beta)) \ket{k}} \\
-    &\leq \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \abs{-R_0(\beta, \beta_E, k) - \frac{\alpha^2 t^2}{\dim + 1} \frac{2}{\dim_S (\dim_S - 1)}\parens{\sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}}}} \\
-    &= \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \abs{R_0(\beta, \beta_E, k) + \frac{\alpha^2 t^2}{\dim + 1} \frac{2}{\dim_S (\dim_S - 1)} \parens{\sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}}}}.
-\end{align}
-This is pretty cumbersome to write and analyze, so we use the variable $S_k$ to capture the summation
-\begin{align}
-    S_k &\coloneqq \frac{\alpha^2 t^2}{\dim + 1} \frac{2}{\dim_S (\dim_S - 1)} \sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{- \beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}}. \label{eq:single_shot_sum_def}
-\end{align}
-
-This allows us to write our total norm as
-\begin{align}
-    &\norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi(\rho_S(\beta)) }_1 \leq \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \sum_k \abs{ R_0(\beta, \beta_E, k) + S_k }. \label{eq:single_shot_capture_sum}
-\end{align}
-
-What we do next is a small $\beta_E$ and $\delta \coloneqq \beta_E - \beta$ expansion of $R_0(\beta, \beta_E, k)$ and $S_k$. 
-
-The path forward becomes clear once we realize that $\norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 = \sum_k \abs{p_{\beta_E}(k) - p_{\beta}(k)} = \sum_k \abs{R_0(\beta, \beta_E, k)}$. Looking at the identity we would like to prove $\norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1$, we see that the goal is to have the $S_k$ cancel out parts of the $R_0(k)$ values. We then need that the amount ``cancelled" by the $S_k$ is smaller than the positive contributions of the $S_k$ combined with the approximation errors $\norm{R_{\Phi}}_1$ and $\dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2$. To do this we need to know when $R_0(k)$ is negative and the structure of the $S_k$. 
-
-As $R_0(\beta, \beta_E, k)$ can change sign based on $k$, we need to isolate when each $R_0$ contribution is positive or negative, and then break down the sum over absolute values. Before we approach $R_0$ though, we approach the simpler problem of bounding $S_k$. 
-
-We first will show that each term in $S_k$ is non-negative. This boils down to a simple condition on $i$ compared to $k$: 
-\begin{align}
-    \frac{p_{\beta}(i)}{1 + e^{- \beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+ \beta_E |\Delta_S(i,k)|}} &\geq 0 \\
-    \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} &\geq \frac{p_{\beta}(k)}{1 + e^{+\beta_E |\Delta_S(i,k)|}} \\
-    e^{-\beta \Delta_S(i,k)} &\geq \frac{1 + e^{-\beta_E |\Delta_S(i,k)|}}{1 + e^{+ \beta_E |\Delta_S(i,k)|}} = e^{-\beta_E |\Delta_S(i,k)|} \\
-    -\beta \Delta_S(i,k) &\geq -\beta_E |\Delta_S(i,k)|.
-\end{align}
-We see if $\Delta_S(i,k) > 0$ the condition reduces to $\beta \leq \beta_E$, which is always true for a cooling channel. If $\Delta_S(i,k) < 0$, then the condition reduces to $\beta \geq - \beta_E$, which for $\beta_E \geq 0$ and $\beta \geq 0$ also always holds. Therefore we can claim that for a cooling channel with $\beta \in [0, \beta_E)$ that $S_k \geq 0$ holds.
-
-Now we want to do a small $\beta_E$ (aka a high temperature limit) and small $\delta \coloneqq \beta_E - \beta$ expansion of $S_k$. First we do a small $\delta$ expansion of $p_{\beta}(k)$. This is pretty straightforward without doing rigorous error bounds:
-\begin{align}
-    e^{-\beta \lambda_S(k)} &= e^{-\beta_E \lambda_S(k)} (1 + \delta \lambda_S(k) + \bigo{\delta^2} ) \\
-    \trace{e^{-\beta H}} &= \trace{e^{-\beta_E H}} + \delta \trace{e^{-\beta_E H} H} + \bigo{\delta^2} \\
-    \implies \frac{e^{-\beta \lambda_S(k)}}{\trace{e^{-\beta H}}} &= \frac{e^{-\beta_E \lambda_S(k)}}{\trace{e^{-\beta_E H}}}\parens{1 + \delta (\lambda_S(k) - \trace{\rho_S(\beta_E) H})} + \bigo{\delta^2}.
-\end{align}
-Now we do a small $\beta_E$ expansion of the boltzmann factors, which is similar work to the above:
-\begin{align}
-    \frac{e^{-\beta_E \lambda_S(k)}}{\trace{e^{-\beta_E H}}} &= \frac{1}{\dim_S}\parens{1 + \beta_E (\frac{1}{\dim} \trace{H} - \lambda_S(k))} + \bigo{\beta_E^2}.
-\end{align}
-Plugging this into the expansion about $\delta$ for $p_{\beta}(k)$, with the reminder that $\delta = \beta_E - \beta \implies \delta \in [0, \beta_E] \implies \delta \in \bigo{\beta_E}$ for a cooling channel, we get
-\begin{align}
-    \frac{e^{-\beta \lambda_S(k)}}{\trace{e^{-\beta H}}} &= \frac{1}{\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(k))} + \bigo{\beta_E^2}
-\end{align}
-We also have the expansion
-\begin{align}
-    \frac{1}{1 + e^{\pm \beta_E |\Delta_S(i,k)|}} &= \frac{1}{2} \mp \beta_E \frac{|\Delta_S(i,k)|}{4} + \bigo{\beta_E^2}.
-\end{align}
-
-Plugging in the above expansions we get the following simplification
-\begin{align}
-    \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} &= \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(i))}\parens{1 + \frac{\beta_E}{2}|\Delta_S(i,k)|} + \bigo{\beta_E^2} \\
-    &= \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(i)) + \frac{\beta_E}{2}|\Delta_S(i,k)|}
-\end{align}
-Computing the same thing for the negative term in \ref{eq:single_shot_sum_def} and plugging in yields the final subtraction
-\begin{align}
-    \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+\beta_E |\Delta_S(i,k)|}} &= \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(i)) + \frac{\beta_E}{2}|\Delta_S(i,k)|} \\
-    &\quad - \frac{1}{2\dim_S}\parens{1 + \beta (\trace{\rho_S(0) H_S} - \lambda_S(k)) - \frac{\beta_E}{2}|\Delta_S(i,k)|} + \bigo{\beta_E^2} \\
-    &= \beta (\lambda_S(k) - \lambda_S(i)) + \beta_E |\Delta_S(i,k)| +\bigo{\beta_E^2}\\
-    &= |\Delta_S(i,k)| \parens{\beta_E - \text{sign} \left[\Delta_S(i,k)\right] \beta} + \bigo{\beta_E^2}.
-\end{align}
-We see if $i > k$ this reduces to $|\Delta_S(i,k)| \delta$ and $i < k$ it reduces to $|\Delta_S(i,k)| (\beta_E + \beta)$. 
-
-Now tackling the $R_0(\beta, \beta_E, k)$ term we get
-\begin{align}
-    R_0(\beta, \beta_E, k) &= \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} - \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} \\
-    &=\frac{1}{\dim_S} \parens{\beta (\trace{\rho_S(0) H_S} - \lambda_S(k)) - \beta_E (\trace{\rho_S(0) H_S} - \lambda_S(k))} + \bigo{\beta_E^2} \\
-    &= \frac{- \delta}{\dim_S} \parens{\trace{\rho_S(0) H_S} - \lambda_S(k)} + \bigo{\beta_E^2}
-\end{align}
-Plugging these into these into the final norm (and letting $\widetilde{\alpha} = \frac{\alpha^2 t^2}{\dim+ 1} \frac{2}{\dim_S(\dim_S - 1)}$ )we get
-\begin{align}
-    &\sum_k \abs{R_0(\beta, \beta_E, k) + S_k} \\
-    &= \sum_k \abs{- \frac{\delta}{\dim_S}(\trace{\rho_S(0) H_S} - \lambda_S(k)) + \widetilde{\alpha} \sum_{i \neq k} |\Delta_S(i,k)|(\beta_E - \beta \text{sign} \left[ \Delta_S(i,k) \right])} + \bigo{\beta_E^2}\\
-    &= \sum_k \abs{- \frac{\delta}{\dim_S}(\trace{\rho_S(0) H_S} - \lambda_S(k)) + \widetilde{\alpha} \sum_{i < k} (\beta + \beta_E)|\Delta_S(i,k)| + \widetilde{\alpha} \sum_{i > k} \delta |\Delta_S(i,k)|} + \bigo{\beta_E^2}
-\end{align}
-Now I want to plug in $\lambda_S(i) = \log (i)$ to see when this would work. If this is the case we can clearly see that it is well separated, so this expression holds. We can also write
-\begin{align}
-    \trace{\rho_S(0) H_S} &= \sum_i \frac{1}{\dim_S} \lambda_S(i) \\
-    &= \frac{\log (\dim_S!)}{\dim_S}
-\end{align}
-
-Further we have
-\begin{align}
-    \sum_{i < k} \abs{\Delta_S(i,k)} &= \sum_{i < k} \lambda_S(k) - \lambda_S(i) \\
-    &= (k-1) \log (k) - \sum_{i < k} \log (i) \\
-    &= (k-1) \log (k) - \log((k-1)!) \\
-\end{align}
-and
-\begin{align}
-    \sum_{i > k} |\Delta_S(i,k)| &= \sum_{i > k} \lambda_S(i) - \lambda_S(k) \\
-    &= \sum_{i > k} \log(i) - (\dim_S - k) \log (k) \\
-    &= \log\parens{\frac{\dim_S!}{k!}} - (\dim_S - k) \log(k) \\
-    &= \log (\dim_S !) - \log(k!) - (\dim_S - k) \log(k).
-\end{align}
-Plugging this in, along with $\beta = \beta_E - \delta$:
-\begin{align}
-    &\sum_k \abs{- \frac{\delta}{\dim_S}(\trace{\rho_S(0) H_S} - \lambda_S(k)) + \widetilde{\alpha} \sum_{i < k} (\beta + \beta_E)|\Delta_S(i,k)| + \widetilde{\alpha} \sum_{i > k} \delta |\Delta_S(i,k)|} \\
-    &= \sum_k \bigg| - \frac{\delta}{\dim_S}\parens{\frac{\log(\dim_S!)}{\dim_S} - \log(k)} + 2 \widetilde{\alpha} \beta_E ( (k-1) \log(k) - \log((k-1)!)) \\
-    &\quad + \widetilde{\alpha} \delta \parens{ (\log(\dim_S!) - \log(k!) - (\dim_S - k) \log(k)) - ((k-1)\log(k) - \log((k-1)!))} \bigg| \\
-    &= \sum_k \bigg| - \frac{\delta}{\dim_S}\parens{\frac{\log(\dim_S!)}{\dim_S} - \log(k)} + 2 \widetilde{\alpha} \beta_E ( (k \log(k) - \log(k!) \\
-    &\quad + \widetilde{\alpha} \delta \parens{ \log(\dim_S!)  - \dim_S\log(k)} \bigg| \\
-    &= \sum_k \abs{\delta \parens{\widetilde{\alpha} - \frac{1}{\dim_S^2}} \log(\dim_S!) + \delta \parens{\frac{1}{\dim_S} - \widetilde{\alpha} \dim_S} \log (k) + 2 \widetilde{\alpha} \beta_E(k \log(k) -\log(k!))} \\
-    &= \sum_k \abs{\delta \parens{\widetilde{\alpha} - 1/\dim_S^2}\parens{\log(\dim_S!) - \dim_S \log(k)} + 2 \widetilde{\alpha} \beta_E (k \log(k) - \log(k!))} \\
-    &= \sum_k \abs{\delta ~\frac{\dim_S \log(k) - \log (\dim_S !)}{\dim_S^2} + \widetilde{\alpha} \parens{\delta (\log(\dim_S!) - \dim_S \log(k)) + 2 \beta_E (k \log (k) - \log(k!))}}
-\end{align}
-Or what I should do is instead isolate the $\widetilde{\alpha}$ version. No, instead figure out if $\widetilde{\alpha} - 1 / \dim_S^2$ is always negative (I think it is)
-\begin{align}
-    \frac{\alpha^2 t^2}{2 \dim_S + 1} \frac{2}{\dim_S(\dim_S -1)} &\leq \frac{1}{\dim_S^2} \\
-    \frac{\alpha^2 t^2}{2 \dim_S + 1} &\leq \frac{\dim_S - 1}{2 \dim_S} \\
-    &= 1 - \frac{1}{\dim}.
-\end{align}
-Which holds whenever $\dim > 2$ as we required that $\frac{\alpha^2 t^2}{\dim + 1} \leq \frac{1}{\dim}$ in order to guarantee that the transition probabilities were valid probabilities. 
-
-Since we have determined that $\widetilde{\alpha} - 1/\dim_S^2$ is always negative and $k\log(k) - \log(k!)$ is always positive, the last remaining factor of interest is
-\begin{align}
-    \log(\dim_S!) &\geq \dim_S \log(k) \\
-    \frac{\log(\dim_S!)}{\dim_S} &\geq \log(k) \\
-    (\dim_S!)^{1/\dim_S} &\geq k.
-\end{align}
-Here we see $k$ just has to be less than the geometric mean of the index set in order for the overall term to be negative. The biggest decision now is what value of $\widetilde{\alpha}$ to use. As we can see, you can think of $\widetilde{\alpha}$ as being increased from 0 to whatever value we decide. This is unfortunately a non-linear optimization problem, due to the absolute values. So we will simply give an ansatze based off some numerics and try to show that it works. The ansatz is that we don't want to set $\widetilde{\alpha}$ so high that it causes the sign of one of the terms in the absolute value to change, we want to set it just large enough to nearly cancel out the negative term that is the closest to zero. As the terms we are trying to cancel are of the form $\delta (\dim_S \log(k) - \log(\dim_S!))/\dim_S^2$, which are monotonically increasing with $k$, we see that the smallest (in absolute value) negative term is when $k = \lfloor (\dim_S!)^{1/\dim_S} \rfloor$.
-
-In order to choose a value of $\widetilde{\alpha}$ that can be analyzed we choose $\widetilde{\alpha}$ such that the following inequality is satisfied, note we use $\Bar{k} \coloneqq \lfloor (\dim_S!)^{1/\dim_S} \rfloor$,
-\begin{align}
-\abs{\delta ~\frac{\dim_S \log(\Bar{k}) - \log (\dim_S !)}{\dim_S^2} + \widetilde{\alpha} \parens{\delta (\log(\dim_S!) - \dim_S \log(\Bar{k})) + 2 \beta_E (\Bar{k} \log (\Bar{k}) - \log(\Bar{k}!))}} \leq \epsilon_\alpha.
-\end{align}
-Now we use the fact that $\widetilde{\alpha}$ is user defined to make the input of the absolute value on the positive branch of solutions to the inequality. Further, we remind the reader that 
-\begin{align}
-    \delta ~\frac{\dim_S \log(\Bar{k}) - \log (\dim_S !)}{\dim_S^2} + \widetilde{\alpha} \parens{\delta (\log(\dim_S!) - \dim_S \log(\Bar{k})) + 2 \beta_E (\Bar{k} \log (\Bar{k}) - \log(\Bar{k}!))} \leq \epsilon_\alpha \\
-    \widetilde{\alpha} \leq \frac{ \epsilon_{\alpha} + \delta (\log (\dim_S!) - \dim_S \log(\Bar{k})) / \dim_S^2}{\delta (\log(\dim_S!) - \dim_S \log(\Bar{k})) + 2 \beta_E (\Bar{k} \log (\Bar{k}) - \log(\Bar{k}!))}.
-\end{align}
-For simplicity we may set $\widetilde{\alpha}$ to saturate this upper bound, which for now (sorry Nathan) I denote $\alpha_{UB}$. Note that we can always set $\epsilon_{\alpha}$ such that every other term in the sum is not affected, meaning we can break up the sum as
-\begin{align}
-    &\sum_k |R_0(\beta, \beta_E, k) + S_k| \\
-    &= \sum_{k \leq \Bar{k}} |R_0(\beta, \beta_E, k) + S_k | + \sum_{k > \Bar{k}} |R_0(\beta, \beta_E, k) + S_k | \\
-    &= \sum_{k \leq \Bar{k}} -(R_0(\beta, \beta_E, k) + S_k) + \sum_{k > \Bar{k}} R_0(\beta, \beta_E, k) + S_k \\
-    &= \sum_k |R_0(\beta, \beta_E, k)| + \sum_{k > \Bar{k}} S_k - \sum_{k \leq \Bar{k}} S_k \\ 
-    &= \norm{\rho_S(\beta) - \rho_S(\beta_E)}_1 + \sum_{k > \Bar{k}} S_k - \sum_{k \leq \Bar{k}} S_k.
-\end{align}
-Now we notice that we can achieve our goal ($\norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi(\rho_S(\beta))}_1 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1$) if we can prove the following:
-\begin{align}
-    \norm{R_\Phi}_1 + \dim_S \parens{\frac{4\alpha}{\Delta_{\min}}}^2 + \sum_{k > \Bar{k}} S_k \leq \sum_{k \leq \Bar{k}} S_k.
-\end{align}
-So now we just have to lower bound the sum on the right hand side and upper bound the sum on the left.
-
-We start with the lower bound as this is more straightforward. For the lower bound we are allowed to assume that $k \leq \Bar{k}$. Also we will introduce the $\bigo{\beta_E^2}$ terms and then drop them from further lines. We start by computing a single term $S_k$ of $\sum_{k \leq \Bar{k}} S_k$ as 
-\begin{align}
-    S_k &= \alpha_{UB} \sum_{i \neq k} \frac{p_{\beta}(i)}{1 + e^{-\beta_E |\Delta_S(i,k)|}} - \frac{p_{\beta}(k)}{1 + e^{+\beta_E |\Delta_S(i, k)}} \\
-    &= \alpha_{UB} \sum_{i \neq k} |\Delta_S(i,k)| \parens{\beta_E - \text{sign} \left[\Delta_S(i,k)\right] \beta} + \bigo{\beta_E^2} \\
-    &= \alpha_{UB} \sum_{i < k} |\Delta_S(i,k)| (\beta_E + \beta) + \alpha_{UB} \sum_{i > k} |\Delta_S(i,k)| (\beta_E - \beta) + \bigo{\beta_E^2} \\
-    &= \alpha_{UB} (2 \beta_E - \delta) \sum_{i < k} \log \left( \frac{k}{i} \right) + \alpha_{UB} \delta \sum_{i > k} \log \left( \frac{i}{k} \right) + \bigo{\beta_E^2} \\
-    &= 2 \alpha_{UB} \beta_E \parens{(k-1) \log(k) - \sum_{i < k} \log(i)} + \alpha_{UB} \delta \sum_{i} (\log (i) - \log(k)) + \bigo{\beta_E^2} \\ 
-    &= 2 \alpha_{UB} \beta_E \parens{k \log (k) - \log(k!)} + \alpha_{UB} \delta \parens{\log (\dim_S !) - \dim_S \log(k)} + \bigo{\beta_E^2}. \label{eq:s_k_sum_equality}
-\end{align}
-We will now drop the $\bigo{\beta_E^2}$ terms. If we wanted to, we could introduce the lower bound given by 
-\begin{align}
-    k &\leq \Bar{k} \\
-    &= \lfloor \dim_S!^{1/\dim_S} \rfloor \\
-    &\leq \dim_S!^{1/\dim_S} \\
-    \implies -\dim_S \log (k) &\geq \log(\dim_S!).
-\end{align}
-So we could lower bound the $\delta$ term by zero if we wanted to. That may be what we have to do, but for now we can let it float around. The real lower bound we want to use is Stirling's approximation to lower bound $k \log k - \log k!$. Since the $\log(k!)$ has a minus sign we use the exact upper bound
-$$
-k! \leq \sqrt{2 \pi k} \parens{\frac{k}{e}}^k e^{\frac{1}{12 k}}. 
-$$
-Plugging this in to the above yields, after taking logs,
-\begin{align}
-    S_k &\geq 2 \alpha_{UB} \beta_E \parens{k -\frac{1}{2} \log(2 \pi k) - \frac{1}{12 k}}  + \alpha_{UB} \delta \log \parens{\frac{\dim_S!}{k^{\dim_S}}}.
-\end{align}
-Now we can compute the sum of these terms over $k \leq \Bar{k}$
-\begin{align}
-    \sum_{k \leq \Bar{k}} S_K & \geq \sum_{k \leq \Bar{k}} \left[ 2 \alpha_{UB} \beta_E \parens{k -\frac{1}{2} \log(2 \pi k) - \frac{1}{12 k}}  + \alpha_{UB} \delta \log \parens{\frac{\dim_S!}{k^{\dim_S}}} \right] \\
-&= \alpha_{UB} \beta_E \parens{\Bar{k} (\Bar{k} - 1) -\log (\Bar{k}!) - \Bar{k} \log(2 \pi) - \frac{1}{6} \sum_{k \leq \Bar{k}} \frac{1}{k}} + \alpha_{UB} \delta \sum_{k \leq \Bar{k}} \log \parens{\frac{\dim_S!}{k^{\dim_S}}}
-\end{align}
-
-Now we will repeat the same calculation but for the upper bound. To do this, we use a lower bound version of Stirling's Approximation given by $\sqrt{2 \pi k} \parens{\frac{k}{e}}^k e^{\frac{1}{12k} - \frac{1}{360k^3}} \leq k!$. Since the equality Eq. \eqref{eq:s_k_sum_equality} holds for all $k$ we can plug in the lower bound given by Stirling's to get
-\begin{align}
-    S_k & \leq 2 \alpha_{UB} \beta_E \parens{k -\frac{1}{2}\log (2 \pi k) - \frac{1}{12k} + \frac{1}{360 k^3}} + \alpha_{UB} \delta \log \parens{\frac{\dim_S!}{k^{\dim_S}}}.
-\end{align}
-Now upper bounding the sum over $k > \Bar{k}$ yields 
-\begin{align}
-     \sum_{k > \Bar{k}} S_k &\leq \sum_{k > \Bar{k}} \left[ 2 \alpha_{UB} \beta_E \parens{k -\frac{1}{2}\log (2 \pi k) - \frac{1}{12k} + \frac{1}{360 k^3}} + \alpha_{UB} \delta \log \parens{\frac{\dim_S!}{k^{\dim_S}}} \right] \\
-     &= \alpha_{UB} \beta_E \parens{ \dim_S (\dim_S + 1 - \log(2 \pi)) - \Bar{k} (\Bar{k} +1 + \log(2 \pi)) - \log \parens{\frac{\dim_S!  }{\Bar{k}!}} - \sum_{k > \Bar{k}} \frac{30 k^2 + 1}{180 k^3}} + \alpha_{UB} \delta \log \sum_{k > \Bar{k}} \parens{\frac{\dim_S!}{k^{\dim_S}}}
-\end{align}
-
-We note that in order to prove our goal, we only have to lower bound the difference of the first sum with the second. This is shown below
-\begin{align}
-    \sum_{k \leq \Bar{k}} S_k - \sum_{k > \Bar{k}} S_k &\geq \alpha_{UB} \beta_E \parens{\Bar{k} (\Bar{k} - 1) -\log (\Bar{k}!) - \Bar{k} \log(2 \pi) - \frac{1}{6} \sum_{k \leq \Bar{k}} \frac{1}{k}} \nonumber \\
-    &\quad + \alpha_{UB} \delta \sum_{k \leq \Bar{k}} \log \parens{\frac{\dim_S!}{k^{\dim_S}}} \nonumber \\
-    &\quad - \alpha_{UB} \beta_E \parens{ \dim_S (\dim_S + 1 - \log(2 \pi)) - \Bar{k} (\Bar{k} +1 + \log(2 \pi)) - \log \parens{\frac{\dim_S!  }{\Bar{k}!}} - \sum_{k > \Bar{k}} \frac{30 k^2 + 1}{180 k^3}} \nonumber \\
-    &\quad - \alpha_{UB} \delta \log \sum_{k > \Bar{k}} \parens{\frac{\dim_S!}{k^{\dim_S}}} \\
-    &= \alpha_{UB} \beta_E \parens{2 \Bar{k}^2 - 2 \log (\Bar{k}!) - \frac{1}{6} \sum_{k \leq \Bar{k}} \frac{1}{k} + \sum_{k > \Bar{k}} \frac{1 - 30 k^2}{180 k^3} - \dim_S (\dim_S + 1 - \log (2 \pi) )} \nonumber \\
-    &\quad + \alpha_{UB} \delta \parens{\sum_{k \leq \Bar{k}} \log \parens{\frac{\dim_S!}{k^{\dim_S}}} -  \sum_{k > \Bar{k}} \log \parens{\frac{\dim_S!}{k^{\dim_S}}}} \\
-    &= \alpha_{UB} \beta_E \parens{2 \Bar{k}^2 - 2 \log (\Bar{k}!) - \frac{1}{6} \sum_{k \leq \Bar{k}} \frac{1}{k} + \sum_{k > \Bar{k}} \frac{1 - 30 k^2}{180 k^3} - \dim_S (\dim_S + 1 - \log (2 \pi) )} \nonumber \\
-    &\quad + 2 \alpha_{UB} \delta \parens{\Bar{k} \log(\dim_S!) - \dim_S \log(\Bar{k}!)}  \\
-\end{align}
-
-\newpage
-
-We now aim on bounding the denominators of $1 + e^{\pm \beta_E |\Delta_S(i,k)|}$. To do so, we introduce upper and lower bound on $\beta_E$. The upper bound is given by requiring 
-\begin{align}
-    \frac{1}{1 + e^{+\beta_E |\Delta_S(i,k)|}} &\geq \epsilon_2 \\
-    \frac{1}{\epsilon_2} - 1 &\geq e^{+\beta_E |\Delta_S(i,k)|} \\
-    \frac{1}{|\Delta_S(i,k)|} \ln (\epsilon_2^{-1} - 1) &\geq \beta_E,
-\end{align}
-where we note this bound is implied by $\frac{1}{2 \norm{H}} \ln(\epsilon_2^{-1} - 1 ) \geq \beta_E$. Now we work on the lower bound
-\begin{align}
-    \frac{1}{1 + e^{+\beta_E |\Delta_S(i,k)|}} &\leq \epsilon_1 \\
-    \frac{1}{\epsilon_1} - 1 &\leq e^{+\beta_E |\Delta_S(i,k)|} \\
-    \frac{1}{|\Delta_S(i,k)|} \ln (\epsilon_1^{-1} - 1) &\leq \beta_E,
-\end{align}
-where we note this bound is implied by $\frac{1}{\Delta_{\min}} \ln (\epsilon_1^{-1} - 1) \leq \beta_E$. We also want to route these bounds through to the $e^{-\beta_E |\Delta_S|}$ terms
-\begin{align}
-    \epsilon_1 \leq \frac{1}{1 + e^{-\beta_E |\Delta_S(i,k)|}} \leq \epsilon_2
-\end{align}
-
-Now we return to the $S_k$ terms. We state the upper bound (ignoring the prefactors for now)
-\begin{align}
-    S_k &\leq \sum_{i \neq k} \epsilon_{2} p_{\beta}(i) - \epsilon_{2} p_{\beta}(k) \\
-    &= \epsilon_{2} (1 - p_{\beta}(k) - (\dim_S - 1)p_{\beta}(k)) \\
-    &= \epsilon_{2}(1 - \dim_S p_{\beta}(k)).
-\end{align}
-The lower bound follows similarly
-\begin{align}
-    S_{k} &\geq \sum_{i \neq k} \epsilon_{1} p_{\beta}(i) - \epsilon_{1} p_{\beta}(k) \\
-    &= \epsilon_{1}(1 - p_{\beta}(k) - (\dim_S - 1) p_{\beta}(k)) \\
-    &= \epsilon_{1}(1 - \dim_S p_{\beta}(k)).
-\end{align}
-
-
-We need to profit by substituting these bounds into our summation in Eq. \eqref{eq:single_shot_capture_sum}. Isolating the sum over $k$ in that expression we have
-\begin{align}
-    \sum_{k} \abs{R_0(\beta, \beta_E, k) + S_k}.
-\end{align}
-It is tempting to apply the triangle inequality and see what can be pulled out of here, but as before we noted $\sum_k \abs{R_0(k)} = \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1$, which means as soon as we apply the triangle inequality we lose. Therefore we need to unpack the absolute values. To do so, we note that $S_k \in \bigo{\alpha^2 t^2 / \dim}$, so we can make it arbitrarily small so that the sign of $R_0(k) + S_k$ is the same as the sign of $R_0$. Then we can think about increasing $S_k$. Also note that $R_0(k) = 0$ implies that $\beta_E = \beta$, which we do not have. So we can always set $\alpha^2 t^2$ to be small enough such that every $S_k$ is smaller than the smallest $R_0$. 
-
-Now our goal is to reduce this sum by controlling values of $S_k$. We know that $R_0(\beta, \beta_E, 0) < 0$ for $\beta < \beta_E$ and that $S_k \geq 0$ for all $k$, so we will target our choice of $\frac{\alpha^2 t^2}{\dim + 1}$ to ensure that $S_0$ is close to cancelling out the error due to $R_0(\beta, \beta_E, 0)$ (remember the subscript 0 denotes the order of the remainder and we will drop the implicit arguments of $\beta, \beta_E$). Then we will use the triangle inequality to deal with the remaining terms. Now when controlling $\alpha^2 t^2 / \dim + 1$ to cancel out $R_0(0)$ we should aim to make $S_0$ as small as we can, as our only knob to adjust $S_0$ (the scalar $\alpha^2 t^2 / \dim + 1$) affects the other $S_k$'s directly and we would like those to be small. 
-
-\begin{align}
-    \abs{R_0(0) + S_0} &\leq \epsilon_S \\
-    \implies \abs{R_0(0)} - \epsilon_S &\leq S_0 \leq \abs{R_0(0)} + \epsilon_S
-\end{align}
-To attack this we will plug in for $S_0 - \abs{R_0(0)}$ and start simplifying.
-\begin{align}
-    S_0 - \abs{R_0(0)} &= \sum_{i > 0} \left( \frac{p_{\beta}(i)}{1 + e^{- \beta_E \abs{\Delta_S(i,0)}}} - \frac{p_{\beta}(0)}{1 + e^{+ \beta_E \abs{\Delta_S(i,0)}}} \right) - |\beta - \beta_E| p_{\beta_{\star}}(0) \parens{\anglebrackets{H}_{\beta_{\star}} - \lambda_S(0)} \label{tmp:ugly_sum_1}
-\end{align}
-Now the crucial point to this argument is the sum over $i > 0$. If this sum is bounded through simple bounds on $\beta_E$ we lose all of our gains. Further, after preliminary numerical investigations this sum does not seem to be sufficient to prove thermalization for various well separated hamiltonians, such as the number operator squared $N^2 = (a^\dagger a)^2$ analagous to the harmonic oscillator. For this proof, we will investigate a truncated square root of the number operator, or $\lambda_S(k) \propto \sqrt{k}$. To give us one extra knob of control, we will explicitly use $\lambda_S(k) = h \sqrt{k}$ with little $h$ capturing the energy scale. This Hamiltonian is well separated, first off the smallest difference is $\lambda_S(2) - \lambda_S(1) = \sqrt{2} - 1$. For the well-separated condition we need $|\lambda_S(i) - \lambda_S(j)| - |\lambda_S(k) - \lambda_S(l)| \geq \Delta_{\min}$ to be bounded away from zero for nonequal $(i,j)$ and $(k,l)$. This seems to be clear but is busy work I shouldn't do unless it leads to something useful.
-
-The well-separated Hamiltonian we will investigate analytically is the natural logarithm hamiltonian, where $\lambda_S(k) = \ln k$. Should include a proof that it is well-separated. For now we need to determine if it yields any kind of useful bound. First we tackle the term containing $p_{\beta}(1)$. \matt{Need to go through and make sure everything in the paper is one-indexed. Cry.} We have the sum
-\begin{align}
-    \sum_{i = 2}^{\dim_S} \frac{1}{1 + e^{\beta_E \lambda_S(i)}} &= \sum_{i = 2}^{\dim_S} \frac{1}{1 + i^{\beta_E}}
-\end{align}
-Now we need to show that this is monotonically decreasing. 
-\begin{align}
-    \frac{\partial}{\partial x} \frac{1}{1 + x^{\beta_E}} &= \frac{-1}{(1 + x^{\beta_E})^2} \cdot \beta_E x^{\beta_E - 1}.
-\end{align}
-For $x, \beta_E \geq 0$ this is clearly always negative and therefore each term in the summation is monotonically decreasing. Now we use integral bounds to get good stuff. 
-
-\begin{center}
-\textbf{Below is bad}
-\end{center}
-
-Now we assume that $\lambda_S(k) = h \sqrt{k}$ is a well-separated Hamiltonian. Our goal is to bound the sums present in Eq. \eqref{tmp:ugly_sum_1}. We start with the easier one on the negative term for $S_0$. To do so we will linearize the sum about $\beta_E \to \infty$, or in other words as the environment temperature approaches zero. 
-\begin{align}
-    \frac{\partial}{\partial \beta_E^{-1}} \frac{1}{1 + e^{+ \beta_E h \sqrt{i}}} &= \frac{1}{\parens{1 + e^{+ \beta_E h \sqrt{i}}}^2 } \cdot e^{\beta_E h \sqrt{i}} (-1)\beta_E^2 h \sqrt{i}.
-\end{align}
-It is easy to see that as $\beta_E \to \infty$ the denominator containing the $\left(e^{\beta_E h \sqrt{i}}\right)^2$ term will dominate and the overall derivative approaches zero. When is this regime of approximation valid?
-Anyways, this means we \emph{should} be able to use the $\beta_E \to \infty$ behavior as a good approximation. This gives
-\begin{align}
-    S_0 &\approx \sum_{i > 0} p_{\beta}(i) - p_{\beta}(0) \\
-    &= 1 - p_{\beta}(0) - (\dim_S - 1) p_{\beta}(0) \\
-    &= 1 - \dim_S p_{\beta}(0).
-\end{align}
-Unfortunately, this bound is useless for $\beta > 0$. This is because for $\beta > 0$, $p_{\beta}(0) > 1 / \dim_S$, but we already know from before that $S_k > 0$ for all $k$. This means the bound is bad, and if we want to continue we have to analytically compute this sum.
-\newpage
-Now we have to determine the sign of $R_0$. We will not determine the sign of each term exactly, but we will give conditions on when the sign of $R_0$ only changes once. To start off, we remind the reader of that the remainder is written (using the Mean-Value version)
-\begin{align}
-    R_0(\beta, \beta_E, k) &= (\beta - \beta_E) p_{\beta_{\star}}(k) \parens{\parens{\sum_i p_{\beta_{\star}}(i) \lambda_S(i)} - \lambda_S(k)}.
-\end{align}
-Now we know that $\beta_{\star} \in (\beta, \beta_E)$. What we want to do is squeeze this range so small such that the difference in the mean energies $\anglebrackets{H}_{\beta_{\star}} \coloneqq \sum_i p_{\beta_{\star}}(i) \lambda_S(i)$ at $\beta$ and $\beta_E$ are very close. Below, let $\beta_i$ denote the mean value temperature guaranteed for $R_0(\beta, \beta_E, i)$. Also, it will prove sufficient to upper bound the absolute value
-\begin{align}
-    \abs{\anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E}} &= \left| \sum_i (p_{\beta}(i) - p_{\beta_E}(i)) \lambda_S(i) \right| \\
-    &\leq \sum_i \abs{R_0(\beta, \beta_E, i)} \abs{\lambda_S(i)} \\
-    &\leq \norm{H} \sum_i |\beta - \beta_E| p_{\beta_i}(i) \abs{\sum_j p_{\beta_i}(j) \lambda_S(j) - \lambda_S(i)} \\
-    &\leq \norm{H} \delta \sum_i p_{\beta_i}(i) \parens{\sum_{j} p_{\beta_i}(j) \abs{\lambda_S(j)} + \abs{\lambda_S(i)}} \\
-    &\leq 2 \norm{H}^2 \delta \sum_i p_{\beta_i}(i) \\
-    &\leq 2 \dim_S \delta \norm{H}^2.
-\end{align}
-Now we can require $\delta \leq \frac{\Delta_{\min}}{2 \dim_S \norm{H}^2}$ to get $\abs{\anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E}} \leq \Delta_{\min}$.
-
-Our next goal is to show that if some index $k_1$ has a positive zeroth order Boltzmann remainder $R_0(\beta, \beta_E, k_1)$, then every index $k_2 > k_1$ also has a positive zeroth order Boltzmann remainder. Note that $R_0(\beta, \beta_E, j) \geq 0 $ if and only if $\anglebrackets{H}_{\beta_j} - \lambda_S(j) \leq 0$. This means that we only need to show that For below, let $\beta_1$ denote the mean value $\beta$ for $k_1$ and similarly for $\beta_2$
-\begin{align}
-    \anglebrackets{H}_{\beta_2} - \lambda_S(k_2) &= \anglebrackets{H}_{\beta_2} - \anglebrackets{H}_{\beta_1} + \anglebrackets{H}_{\beta_1} - \lambda_S(k_1) + \lambda_S(k_1) - \lambda_S(k_2) \\
-    &\leq \anglebrackets{H}_{\beta_2} - \anglebrackets{H}_{\beta_1} + \lambda_S(k_1) - \lambda_S(k_2) \\
-    &\leq \anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E} - \Delta_{\min} \\
-    &\leq \abs{\anglebrackets{H}_{\beta} - \anglebrackets{H}_{\beta_E}} - \Delta_{\min} \\
-    &\leq 0.
-\end{align}
-This shows that $R_0(\beta, \beta_E, k_2) \geq 0$ if $R_0(\beta, \beta_E, k_1) \geq 0$ and $k_2 > k_1$. This result, combined with the observation that $R_0(\beta, \beta_E, 0) \leq 0$ yields the proposition that there exists a value $\widetilde{k}$ such that $k < \widetilde{k}$ implies $R_0(\beta, \beta_E, k) \leq 0$ and $k \geq \widetilde{k}$ implies $R_0(\beta, \beta_E, k) \geq 0$. Note we do not really care what this particular value of $\widetilde{k}$ is, just that it exists.
-
-Now we can break down our sum into the following two sums
-\begin{align}
-    \sum_k \abs{R_0(\beta, \beta_E, k) + S_k} &= \sum_{k < \widetilde{k}} \abs{R_0(\beta, \beta_E, k) + S_k} + \sum_{k \geq \widetilde{k}} \abs{R_0(\beta, \beta_E, k) + S_k} \\
-    &= \sum_{k < \widetilde{k}} -(R_0(\beta, \beta_E, k) + S_k) + \sum_{k \geq \widetilde{k}} R_0(\beta, \beta_E, k) + S_k \\ 
-    &= \sum_{k < \widetilde{k}} -R_0(\beta, \beta_E, k) + \sum_{k \geq \widetilde{k}} R_0(k) - \sum_{k < \widetilde{k}} S_k + \sum_{k \geq \widetilde{k}} S_k \\
-    &= \sum_k \abs{R_0(k)} - \sum_{k < \widetilde{k}} S_k + \sum_{k \geq \widetilde{k}} S_k
-\end{align}
-This yields
-\begin{align}
-    \norm{\rho_S(\beta_E) - \mathbb{E}_{\gamma} \Phi_{\gamma}(\rho_S(\beta))}_1 &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 + \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \sum_{k \geq \widetilde{k}} S_k - \sum_{k < \widetilde{k}} S_k.
-\end{align}
-
-If our only goal is to show contraction, this reduces our problem to proving the following inequality
-\begin{align}
-    \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 + \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 + \sum_{k \geq \widetilde{k}} S_k - \sum_{k < \widetilde{k}} S_k &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 \\
-    \iff \norm{R_{\Phi}}_1 + \dim_S \parens{\frac{4 \alpha}{\Delta_{\min}}}^2 &\leq \sum_{k < \widetilde{k}} S_k - \sum_{k \geq \widetilde{k}} S_k 
-\end{align}
-To prove this we will produce a lower bound on the RHS, and show that this lower bound is greater than the LHS. Our lower bounds from before give
-\begin{align}
-    \sum_{k < \widetilde{k}} S_k - \sum_{k \geq \widetilde{k}} S_k &\geq \epsilon_{1} \sum_{k < \widetilde{k}} (1 - \dim_S p_{\beta}(k)) - \epsilon_{2} \sum_{k \geq \widetilde{k}} (1 - \dim_S p_{\beta}(k)) \\
-    &= \epsilon_{1}(\widetilde{k} - 1 - \dim_S) + \epsilon_{1} \dim_S \sum_{k \geq \widetilde{k}} p_{\beta}(k) - \epsilon_{2}(\dim_S - \widetilde{k} + 1) + \epsilon_{2} \dim_S \sum_{k \geq \widetilde{k}} p_{\beta}(k) \\
-    &= \parens{\dim_S \sum_{k \geq \widetilde{k}} p_{\beta}(k) - (\dim_S - \widetilde{k} + 1)}(\epsilon_{1} + \epsilon_{2}) \\
-    &= \dim_S (\epsilon_{1} + \epsilon_{2}) \parens{\sum_{k \geq \widetilde{k}} p_{\beta}(k) - \parens{1 - \frac{\widetilde{k} - 1}{\dim_S}}} \\
-    &= \dim_S (\epsilon_{1} + \epsilon_{2}) \parens{\frac{\widetilde{k} - 1}{\dim_S} - \sum_{k < \widetilde{k}} p_{\beta}(k)}.
-\end{align}
-We see right off the bat that this fails for very low temperatures, or when $\widetilde{k} = 2$, as the ground state energy $p_{\beta}(1)$ is always greater than $1 / \dim_S$ where as the positive term is $1 / \dim_S$ exactly. In the other limit, say $\widetilde{k} = \dim_S$, we have that the positive term is $1 - 1 /\dim_S$ and the negative term is $\sum_{k < \dim_S} p_{\beta}(k) = 1 - p_{\beta}(\dim_S)$, yielding a subtraction of $p_{\beta}(\dim_S) - 1 / \dim_S$, which is always negative. Again this lower bound does not work. Could it work somewhere in the middle? Evaluating this sum numerically for a harmonic oscillator (linear spectrum), square root spectrum, and squared spectrum seem to show that this bound is always negative. Intuitively this also makes sense, it says that in order to be positive the low-energy states need have less average probability mass than the infinite temperature limit of $1 / \dim_S$, which does not make sense as the low-energy states is where the probability mass of the thermal states increasingly concentrate as the temperature decreases.
-
-I now need to salvage this project some how. The first option I have is to revisit 
 
 \end{document}
