@@ -365,7 +365,7 @@ However, if we want to compute the effects of the channel on a given input, we h
     0 & 0 \\ 0 & \gamma
 \end{bmatrix}$, where the eigenvectors $\ket{0}$ and $\ket{1}$ have eigenvalues 0 and $\gamma$ respectively. Here, and throughout the rest of the paper, $\gamma$ should be thought of as a user defined parameter that can be adjusted, or chosen probablistically, throughout the cooling procedure. We use a thermal input state $\rho_E(\beta_E)$, as defined in the preliminaries. 
 
-\begin{lemma} \label{lem:t_2_system_only}}
+\begin{lemma} \label{lem:t_2_system_only}
     The second order correction to the channel $\Phi$ with two level environment as described above, differs if the output state $j$ is less than, equal to, or greater than $i$. For $i < j$, meaning we are transitioning the systme from a lower energy state to a higher energy and the environment is losing energy, we have
     \begin{equation}
         \left| \bra{j}T^{(2)}(\ketbra{i}{i})\ket{j} - \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2 \parens{(\Delta_S(i,j) + \gamma) t/ 2} \right| \leq 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}.
@@ -575,7 +575,7 @@ Finally after inserting this into~\eqref{eq:remTaylorBd} we find that the trunca
 \end{equation}
 This gives us that the remainder bound, $\|R_\Phi\|\le \epsilon_R$ for 
 \begin{equation}
-    \alpha t \in O\left(\frac{\epsilon_R^{1/3}}{\sqrt{\log(1/\dim_S)}} \right).
+    \alpha t \in O\left(\frac{\epsilon_R^{1/3}}{\sqrt{\log(\dim_S)}} \right).
 \end{equation}
 \end{proof}
 
@@ -719,28 +719,88 @@ As
 In this section we show thermalization of a truncated Harmonic Oscillator with an environment tuned exactly to the gap of the oscillator. Specifically, the eigenvalues of the system are given by $\lambda_S(i) = i$ and $\gamma = 1$. In order to show thermalization we need to show that the thermal state is a fixed point $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_1 \leq \epsilon_{fix}$ and that there is a range of temperatures in which the channel cools the system $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1$. Showing that the thermal state at the environment temperature is a fixed point is easier and demonstrates the techniques we will use to show cooling, so we start with that.
 
 \subsection{Fixed point}
+\begin{lemma}
+    For a truncated harmonic oscillator with $\dim_S \geq 4$, the thermalizing channel $\Phi$ has an approximate fixed point of temperature $\beta$, assuming an environment qubit at temperature $\beta$ and an environment gap $\gamma = 1$, that is controlled by the coupling constant $\alpha$, or specifically
+    \begin{equation}
+        \norm{\rho_S(\beta) - \Phi(\rho_S(\beta))}_1 \le 12 \dim_S \alpha^2 + \bigo{\alpha^3 t^3 \dim_S \log^{3/2}(\dim_S)}
+    \end{equation}
+    \todo{Need to include units of $1/\omega$ next to $\alpha^2$ from $\Delta_{\min}$}
+\end{lemma}
+\begin{proof}
 Using the Taylor series results from Section \ref{sec:taylor_series_phi}
 \begin{align}
-    \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta_E))}_1 &= \norm{T^{(2)}(\rho_S(\beta_E)) + R_{\Phi}(\rho_S(\beta_E))}_1 \\
-    &\leq \norm{T^{(2)}(\rho_S(\beta_E))}_1 + \norm{R_{\Phi}(\rho_S(\beta_E)}_1 .
+    \norm{\rho_S(\beta) - \Phi(\rho_S(\beta))}_1 &= \norm{T^{(2)}(\rho_S(\beta)) + R_{\Phi}(\rho_S(\beta))}_1 \\
+    &\leq \norm{T^{(2)}(\rho_S(\beta))}_1 + \norm{R_{\Phi}(\rho_S(\beta)}_1 \\
+    &\le \norm{T^{(2)}(\rho_S(\beta))}_1 + \dim_S \norm{R_{\Phi}(\rho_S(\beta)}. \label{eq:fixed_pt_harmonic_osc_1}
 \end{align}
-Now recalling that since $\rho_S(\beta_E)$ is diagonal in the $H_S$ eigenbasis and that $T^{(2)}$ maps diagonal elements to diagonal elements only, we can compute the norm of $T^{(2)}$ by summing the absolute values of the diagonals
+Now recalling that since $\rho_S(\beta)$ is diagonal in the $H_S$ eigenbasis and that $T^{(2)}$ maps diagonal elements to diagonal elements only, we can compute the norm of $T^{(2)}$ by summing the absolute values of the diagonals
 \begin{align}
-    \norm{T^{(2)}(\rho_S(\beta_E))}_1 &= \sum_j \left| \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)} \sum_i \bra{j} T^{(2)}(\ketbra{i}{i}) \ket{j} \right|
+    &\norm{T^{(2)}(\rho_S(\beta))}_1 = \sum_j \left| \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)} \sum_i \bra{j} T^{(2)}(\ketbra{i}{i}) \ket{j} \right| \\
+    &= \left|\sum_{i}  p(i) \bra{1} T^{(2)}(\ketbra{i}{i}) \ket{1}\right| + \sum_{j = 2}^{\dim_S - 1} \left|  \sum_{i} p(i) \bra{j} T^{(2)}(\ketbra{i}{i}) \ket{j}\right| + \left|  \sum_{i} p(i)\bra{\dim_S} T^{(2)}(\ketbra{i}{i}) \ket{\dim_S}\right| \label{eq:fixed_pt_harmonic_osc_2}
 \end{align}
+We split the sum into these three parts because each of these terms will have different nontrivial contributions. We will start with the easiest, the leftmost term. The main tool we will use is Lemma \ref{lem:t_2_system_only}, and to do so we will add and subtract terms that will essentially allow us to substitute in expressions for $\bra{1}T^{(2)}(\ketbra{1}{1})\ket{1}$ that utilize sinc and probabilities. 
+\begin{align}
+    &\left| p(1) \bra{1} T^{(2)}(\ketbra{1}{1})\ket{1} + \sum_{i > 1} p(i) \bra{1} T^{(2)}(\ketbra{i}{i})\ket{1} \right| \\
+    &= \bigg| p(1) \bra{1} T^{(2)}(\ketbra{1}{1})\ket{1} + p(1) \frac{\alpha^2 t^2}{\dim + 1} q(1) \sum_{a > 1} \sinc^2((a  - 2)t/2) - p(1) \frac{\alpha^2 t^2}{\dim + 1} q(1) \sum_{a > 1} \sinc^2((a  - 2)t/2) \nonumber \\ 
+    &~ + \sum_{i > 1} p(i) \bra{1} T^{(2)}(\ketbra{i}{i})\ket{1} \bigg| \\
+    &\le \left|- p(1) \frac{\alpha^2 t^2}{\dim + 1} q(1) \sum_{a > 1} \sinc^2((a  - 2)t/2) + \sum_{i > 1} p(i) \bra{1} T^{(2)}(\ketbra{i}{i})\ket{1} \right| +  4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+    &\le \left|- p(1) \frac{\alpha^2 t^2}{\dim + 1} q(1) \sum_{a > 1} \sinc^2((a  - 2)t/2) + \frac{\alpha^2 t^2}{\dim + 1} \sum_{i > 1} p(i) q(0) \sinc^2((i - 2)t/2) \right| \nonumber \\
+    &~+\sum_{i > 1} p(i) 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+    &\le \left|- p(1) \frac{\alpha^2 t^2}{\dim + 1} q(1) + \frac{\alpha^2 t^2}{\dim + 1}  p(2) q(0) \right| + \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \parens{ \sum_{i > 2} |-p(1) q(1) + p(i) q(0)| + (3 + 4 \dim_S)} \\
+    &= \frac{\alpha^2 t^2}{\dim + 1} \left|- p(1)  q(1) +  p(2) q(0) \right| + \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \parens{ 2(\dim_S - 2) + (3 + 4 \dim_S)} \\
+    &\le \frac{\alpha^2 t^2}{\dim + 1} \parens{\left| -\frac{e^{-\beta}}{\partfun_S(\beta)} \frac{e^{-\beta}}{1 + e^{-\beta}} +\frac{e^{-\beta 2}}{\partfun_S(\beta)} \frac{1}{1 + e^{-\beta}}\right| + \epsilon_{\sinc} 6 \dim_S} \\
+    &= 6 \dim_S \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1} \\
+    &\le 3 \epsilon_{\sinc} \alpha^2 t^2 \\
+    &= 12 \alpha^2.
+\end{align}
+In the second to last step we used the fact that $2 \dim_S = \dim$ and $\dim / (\dim + 1) \le 1$, and in the last step we used the fact that $\epsilon_{\sinc} = \frac{4}{\Delta_{\min}^2 t^2} = \frac{4}{t^2}$ where $\Delta_{\min} = 1$ for the harmonic oscillator. 
 
+Next we can compute the last term where $j = \dim_S$, for this computation we will use $d = \dim_S$ to save space.
+\begin{align}
+    &\left| p(d) \bra{d} T^{(2)}(\ketbra{d}{d})\ket{d} + \sum_{i < d} p(i) \bra{d} T^{(2)}(\ketbra{i}{i})\ket{d} \right| \\
+    &= \bigg| p(d) \bra{d} T^{(2)}(\ketbra{d}{d})\ket{d} + p(d) \frac{\alpha^2 t^2}{\dim + 1} q(0) \sum_{a < d} \sinc^2((d - a  + 1)t/2) - p(d) \frac{\alpha^2 t^2}{\dim + 1} q(0) \sum_{a < d} \sinc^2((d - a + 1)t/2) \nonumber \\ 
+    &~ + \sum_{i < d} p(i) \bra{d} T^{(2)}(\ketbra{i}{i})\ket{d} \bigg| \\
+    &\le \left|- p(d) \frac{\alpha^2 t^2}{\dim + 1} q(0) \sum_{a < d} \sinc^2((d - a + 1)t/2) + \sum_{i < d} p(i) \bra{d} T^{(2)}(\ketbra{i}{i})\ket{d} \right| +  4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+    &\le \frac{\alpha^2 t^2}{\dim + 1}\left|- p(d)  q(0) \sum_{a<d} \sinc^2((d - a + 1)t/2) + \sum_{i < d} p(i) q(1) \sinc^2((d - i + 1)t/2) \right| \nonumber \\
+    &~+\sum_{i < d} p(i) 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} + 4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+    &\le \frac{\alpha^2 t^2}{\dim + 1} \left|- p(d)q(0) +  p(d-1) q(1) \right| +  \epsilon_{\sinc}\frac{\alpha^2 t^2}{\dim + 1} \parens{ \sum_{i < d - 1} |-p(d) q(0) + p(i) q(1)| + (3 + 4 \dim_S)} \\
+    &= \frac{\alpha^2 t^2}{\dim + 1} \left| -\frac{e^{-\beta d}}{\partfun_S(\beta)} \frac{1}{1 + e^{-\beta}} +\frac{e^{-\beta (d - 1)}}{\partfun_S(\beta)} \frac{e^{-\beta}}{1 + e^{-\beta}}\right| + \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \parens{ 2(\dim_S - 2) + (3 + 4 \dim_S)} \\
+    &\le \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} 6 \dim_S \\
+    &\le 12 \alpha^2.
+\end{align}
+Finally we can compute the middle terms for $2 \le j \le \dim_S - 1$. This time we will skip the explicit adding and subtracting of terms and triangle inequalities used to match the results of Lemma \ref{lem:t_2_system_only}
+\begin{align}
+&\left|p(j) \bra{j} T^{(2)}(\ketbra{j}{j})\ket{j} + \sum_{i < j} p(i) \bra{j} T^{(2)}(\ketbra{i}{i})\ket{j} + \sum_{i > j} p(i) \bra{j} T^{(2)}(\ketbra{i}{i})\ket{j} \right| \\
+&\leq \left| p(j) \bra{j} T^{(2)}(\ketbra{j}{j})\ket{j} + \frac{\alpha^2 t^2}{\dim + 1} \left( \sum_{i < j} p(i) q(1) \sinc^2((i - j + 1)t/2) + \sum_{i > j} p(i)q(0) \sinc^2((i - j - 1)t/2) \right) \right| \nonumber \\
+&\quad + 6 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+&\leq \left| p(j) \bra{j} T^{(2)}(\ketbra{j}{j})\ket{j} + \frac{\alpha^2 t^2}{\dim + 1} \left( p(j-1) q(1) + p(j + 1)q(0) \right) \right| + 7 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+&\le \frac{\alpha^2 t^2}{\dim + 1} \left| - p(j) \parens{q(0)\sum_{a < j} \sinc^2((a - j + 1)t/2) + q(1) \sum_{a > j} \sinc^2((a - j - 1)t/2)} +  \left( p(j-1) q(1) + p(j + 1)q(0) \right) \right| \nonumber \\
+&~+ \frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc}\parens{7 + 4 \dim_S} \\
+&\le \frac{\alpha^2 t^2}{\dim + 1} \left| -p(j) (q(0) + q(1)) + p(j-1)q(1) + p(j+1) q(0) \right| +\frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc}\parens{7 + 4 \dim_S + (\dim_S - 3) } \\
+&= \frac{\alpha^2 t^2}{\dim + 1} \left| - \frac{e^{-\beta j}}{\partfun_S(\beta)} + \frac{e^{-\beta (j - 1)}}{\partfun_S(\beta)} \frac{e^{-\beta}}{1 + e^{-\beta}} + \frac{e^{-\beta (j + 1)}}{\partfun_S(\beta)} \frac{1}{1+e^{-\beta}} \right| +\frac{\alpha^2 t^2}{\dim + 1}\epsilon_{\sinc}\parens{7 + 4 \dim_S + (\dim_S - 3) } \\
+&\le 6 \dim_S \frac{\alpha^2 t^2}{\dim +1} \epsilon_{\sinc} \\
+&\le 12 \alpha ^2,
+\end{align}
+where we assumed that $\dim_S \geq 4$ for the second to last substitution.
+
+Now that we have computed every term, we return to Eq. \eqref{eq:fixed_pt_harmonic_osc_2} and use the substitution that each term is less than $12 \alpha^2$ to write
+\begin{equation}
+    \norm{T^{(2)} (\rho_S(\beta))}_1 \leq 12 \dim_S \alpha^2.
+\end{equation}
+which, along with the remainder error bound from Lemma \ref{lem:remainder_bound}, when plugged into Eq. \eqref{eq:fixed_pt_harmonic_osc_1} yields the Lemma statement. 
+\end{proof}
 
 \subsection{Convergence}
 We now want to analyze the converge of this channel for the Harmonic oscillator and environment tuned to the harmonic oscillator gap. We are trying to show
 \begin{equation}
     \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 \leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1
 \end{equation}
-We use $p_{\beta}(k) = \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}$ and $q(i) = \frac{e^{-\beta_E \lambda_E(i)}}{1 + e^{-\beta_E \gamma}}$.
-We do so by expanding
+We use $p_{\beta}(k) = \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)}$ and $q(i) = \frac{e^{-\beta_E \lambda_E(i)}}{1 + e^{-\beta_E \gamma}}$, and due to the fact that the environment is a two level system with eigenvalues 0 and 1 we have $q(0) = \frac{1}{1 + e^{-\beta_E}}$ and $q(1) = \frac{e^{-\beta_E}}{1 + e^{-\beta_E}}$.
+We continue by expanding
 \begin{align}
     \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 &\leq \sum_j \left| p_{\beta_E}(j) - p_{\beta}(j) - \sum_i p_{\beta}(i) \bra{j}T^{(2)}(\ketbra{i}{i})\ket{j} \right| + \norm{R_{\Phi}}_1.
 \end{align}
-Now we first will analyze the $j=1$, or ground state, term. This term will be expanded using the triangle inequality to isolate terms that are of $\bigo{\epsilon_{\sinc}}$ heavily, so we make use of Lemma \ref{lem:t_2_system_only} many times, along with adding and subtracting the same term implicitly,
+What we are going to do is plug in terms to allow us to utilize Lemma \ref{lem:t_2_system_only} and we will do so term by term over $j$, starting with the $j=1$, or ground state, term. The next step is to split the summation on $i$ into two parts, one part where $i = j$ and we have to use the more complicated self-transition expression from Lemma \ref{lem:t_2_system_only} and the other part where $i > j$. These steps are essentially the same as the proof for the fixed point theorem shown above, so we will skip some of the more explicit steps and refer the reader to the above proof for reference.
 \begin{align}
     &\left| p_{\beta_E}(1) - p_{\beta}(1) - p_{\beta}(1) \bra{1} T^{(2)}(\ketbra{1}{1})\ket{1} - \sum_{i > 1} p_{\beta}(i) \bra{1} T^{(2)}(\ketbra{i}{i})\ket{1} \right| \\
     &\leq \left| p_{\beta_E}(1) - p_{\beta}(1) + p_{\beta}(1) \frac{\alpha^2 t^2}{\dim + 1} q(1) \sum_{a > 1} \sinc^2((a  - 2)t/2) - \sum_{i > 1} p_{\beta}(i) \bra{1} T^{(2)}(\ketbra{i}{i})\ket{1} \right| \nonumber \\
@@ -773,6 +833,7 @@ We now compute a similar quantity but for $1 < j < \dim_S$. This time we will no
 &\leq \left| p_{\beta_E}(j) - p_{\beta}(j) + \frac{\alpha^2 t^2}{\dim + 1} \parens{p_{\beta}(j) - p_{\beta}(j-1) q(1) - p_{\beta}(j+1) q(0)} \right| + 9 \dim_S \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1} 
 % &= \left| p_{\beta_E}(j) - p_{\beta}(j) + p_{\beta}(j) \frac{\alpha^2 t^2}{\dim + 1} \parens{1 - \frac{e^{\beta_E - \delta} + e^{\delta}}{e^{\beta_E} + 1}} \right| + 9 \dim_S \epsilon_{\sinc} \frac{\alpha^2 t^2}{\dim + 1}.
 \end{align}
+Lets call the extra correction bits $s_j$. 
 
 Now finally we study the last term, $j = \dim_S$
 \begin{align}
@@ -787,6 +848,8 @@ Now finally we study the last term, $j = \dim_S$
     &\quad + \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} (4 + 7 \dim_S) \\
     &\left| p_{\beta_E}(j) - p_{\beta}(j) + p_{\beta}(j) \frac{\alpha^2 t^2}{\dim + 1}  q(0)(1 - e^{-\delta}) \right| + \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} (4 + 7 \dim_S)
 \end{align}
+
+
 Now we repeat a similar procedure to the first $j = 1$ term where we want to take the contribution of the channel outside of the absolute value. For $j = \dim_S$, we know that cooler temperatures will have smaller overlap with the highest energy state, or in symbols $\beta < \beta_E \implies p_{\beta}(\dim_S) > p_{\beta_E}(\dim_S)$. We can then make $\alpha t$ small enough such that it fits in the difference $p_{\beta}(\dim_S) - p_{\beta_E}(\dim_S)$, giving us
 $$
 p_{\beta}(\dim_S) - p_{\beta_E}(\dim_S) \geq p_{\beta} (\dim_S) q(0) \frac{\alpha^2 t^2}{\dim + 1} (1 - e^{-\delta}),
@@ -795,7 +858,7 @@ as $\alpha t$ is user-controlled it is clear that a small enough value to satisf
 \begin{align}
     &\left| p_{\beta_E}(j) - p_{\beta}(j) + p_{\beta}(j) \frac{\alpha^2 t^2}{\dim + 1}  q(0)(1 - e^{-\delta}) \right| \\
     &= p_{\beta}(\dim_S) - p_{\beta_E}(\dim_S) - p_{\beta}(\dim_S) q(0) \frac{\alpha^2 t^2}{\dim + 1}(1 - e^{-\delta}) \\
-    &= \abs{p_{\beta_E}(\dim_S) - p_{\beta}(\dim_S)} - p_{\beta}(\dim_S) q(0) \frac{\alpha^2 t^2}{\dim + 1}(1 - e^{-\delta})
+    &= \abs{p_{\beta_E}(\dim_S) - p_{\beta}(\dim_S)} - p_{\beta}(\dim_S) q(0) \frac{\alpha^2 t^2}{\dim + 1}(1 - e^{-\delta}) \label{eq:harmonic_osc_s_dim}
 \end{align}
 and take it out of the absolute value
 
@@ -814,64 +877,172 @@ Since we know that the extra term in the absolute value for the intermediate $1 
 
 For the truncated harmonic oscillator the partition function can be computed analytically 
 \begin{equation}
-    \partfun_S(\beta) = e^{-\beta} \frac{1 - e^{-\beta \dim_S}}{1 - e^{-\beta}}.
+    \partfun_S(\beta) = \frac{1 - e^{-\beta \dim_S}}{e^{\beta} - 1}. \label{eq:harmonic_oscillator_partfun}
 \end{equation}
-Now we eventually want to prove $1 < j \implies p_{\beta_E}(j) < p_{\beta}(j)$, so we will start by rearranging the inequality we would like to show
-\begin{align}
-    p_{\beta_E}(j) &< p_{\beta}(j) \\
-    e^{-(\beta_E - \beta)j} &< \frac{\partfun_S(\beta_E)}{\partfun_S(\beta)} \\
-    j &> \frac{1}{\delta} \ln\parens{\frac{\partfun_S(\beta_E)}{\partfun_S(\beta)}}.
+So can the average energy
+ \begin{equation}
+     \anglebrackets{H_S}_{\beta} = \frac{1}{e^{\beta} - 1} - \frac{\dim_S}{e^{\beta \dim_S} - 1},
+ \end{equation}
+ see the appendices for these computations. From the same lemma we see that if $k \leq \anglebrackets{H_S}_{\beta_E}$ then we know $\frac{e^{-\beta_E k}}{\partfun_S(\beta_E)} \geq \frac{e^{-\beta k}}{\partfun_S(\beta)}$.  Now we can use this to break our contributions up into useful and useless parts:
+ \begin{align}
+      &\sum_{j =1}^{\dim_S} \left| p_{\beta_E}(j) - p_{\beta}(j) - \sum_i p_{\beta}(i) \bra{j}T^{(2)}(\ketbra{i}{i})\ket{j} \right| \nonumber \\ 
+      &\leq |p_{\beta_E}(1) - p_{\beta}(1) - s_1| + \sum_{j = 2}^{\dim_S - 1} |p_{\beta_E}(j) - p_{\beta}(j) + s_j| + |p_{\beta_E}(\dim_S) - p_{\beta}(\dim_S) - s_{\dim_S}| + 9 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+      &= |p_{\beta_E}(1) - p_{\beta}(1)| - s_1 + \sum_{j = 2}^{\lfloor \anglebrackets{H_S}_{\beta_E} \rfloor} |p_{\beta_E}(j) - p_{\beta}(j) + s_j| + \sum_{j = \lceil \anglebrackets{H_S}_{\beta_E} \rceil}^{\dim_S - 1} |p_{\beta_E}(j) - p_{\beta}(j) + s_j| \nonumber \\
+      &\quad +|p_{\beta_E}(\dim_S) - p_{\beta}(\dim_S)| - s_{\dim_S} + 9 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+      &=\sum_{j=1}^{\dim_S} |p_{\beta_E}(j) - p_{\beta}(j)| - s_1 - s_{\dim_S} + \sum_{j = 2}^{\lfloor \anglebrackets{H_S}_{\beta_E} \rfloor} s_j - \sum_{j = \lceil \anglebrackets{H_S}_{\beta_E} \rceil}^{\dim_S - 1} s_j + 9 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \label{eq:harmonic_oscillator_4}
 \end{align}
-It is clear that if we can show $\frac{1}{\delta} \ln \parens{\frac{\partfun_S(\beta_E)}{\partfun_S(\beta)}} \leq 1$, then we can string together inequalities $1 < j \implies \frac{1}{\delta}\ln \parens{\frac{\partfun_S(\beta_E)}{\partfun_S(\beta)}} \leq 1 < j \implies p_{\beta_E}(j) < p_{\beta}(j)$.
 
-Now our job is cut out for us, find conditions on $\beta_E$ and $\delta$ such that $\ln \parens{\frac{\partfun_S(\beta_E)}{\partfun_S(\beta)}} \leq \delta$. If we have that $\partfun_S(\beta_E) \leq \partfun_S(\beta)$, then we have $\frac{\partfun_S(\beta_E)}{\partfun_S(\beta)} \leq 1$ which implies $\ln \parens{\frac{\partfun_S(\beta_E)}{\partfun_S(\beta)}} \leq 0$. This means that $0 \leq \delta$ is sufficient for $1 < j \implies p_{\beta_E}(j) < p_{\beta}(j)$. 
-
-In order to do so we need to produce upper and lower bounds on the log of the partition function, or the free energy. 
-
-
-We need to find upper and lower bounds on the free energy $\ln \partfun_S(\beta)$. We can produce the dumb bounds:
+Shifting our attention to the $s_j$ contributions, we will seek to linearize these terms with respect to $\delta$. Ignoring the $\alpha^2 t^2/(\dim + 1)$ prefactor, we write the $s_j$ terms for $1 < j < \dim_S$ as
 \begin{align}
-    \partfun_S(\beta) &= \sum_{i = 1}^{\dim_S} e^{-\beta i} \leq \dim_S e^{-\beta}
+    p_{\beta}(j) - p_{\beta}(j - 1) q(1) - p_{\beta}(j + 1) q(0) &= p_{\beta}(j) \parens{1 - \frac{e^\beta e^{-\beta_E}}{1 + e^{-\beta_E}} - \frac{e^{-\beta}}{1 + e^{-\beta_E}}} \\
+    &= p_{\beta}(j) \parens{1 - \frac{e^{-\delta} + e^{\delta} e^{-\beta_E}}{1 + e^{-\beta_E}}} \\
+    &= p_{\beta}(j) \delta \frac{1 - e^{-\beta_E}}{1 + e^{-\beta_E}} + \bigo{\delta^2} \\
+    &= p_{\beta}(j) \delta \tanh{\beta_E / 2} + \bigo{\delta^2} .
+\end{align}
+Similarly, the $s_1$ term can be expressed as
+\begin{align}
+    s_1 \parens{\frac{\alpha^2 t^2}{\dim + 1}}^{-1} &= p_{\beta}(2) q(0) (1-e^{-\delta}) \\
+    &= p_{\beta}(2) \delta \frac{1}{1 + e^{-\beta_E}} + \bigo{\delta^2}. 
+\end{align}
+The $s_{\dim_S}$ term is given from Eq.\eqref{eq:harmonic_osc_s_dim} and is linearized with respect to $\delta$ as $p_{\beta}(\dim_S) \frac{\delta}{1 + e^{-\beta_E}}$. Plugging these in to Eq. \eqref{eq:harmonic_oscillator_4} yields 
+\begin{align}
+    &\sum_{j=1}^{\dim_S} |p_{\beta_E}(j) - p_{\beta}(j)| - s_1 - s_{\dim_S} + \sum_{j = 2}^{\lfloor \anglebrackets{H_S}_{\beta_E} \rfloor} s_j - \sum_{j = \lceil \anglebrackets{H_S}_{\beta_E} \rceil}^{\dim_S - 1} s_j + 9 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+    &= \sum_{j=1}^{\dim_S} |p_{\beta_E}(j) - p_{\beta}(j)|  + 9 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \nonumber \\
+    &~+ \frac{\alpha^2 t^2}{\dim + 1}  \delta \left( - \frac{p_{\beta}(2) + p_{\beta}(\dim_S)}{1 + e^{-\beta_E}} + \tanh{\beta_E / 2} \sum_{j = 2}^{\lfloor \anglebrackets{H_S}_{\beta_E} \rfloor} p_{\beta}(j) - \tanh{\beta_E / 2} \sum_{j = \lceil \anglebrackets{H_S}_{\beta_E} \rceil}^{\dim_S - 1} p_{\beta}(j) \right)
+    \end{align}
+
+Now we need upper and lower bounds for the $s_j$ parts. For this we bound $s_j$ for $1 < j < \dim_S$ rather straightforwardly:
+\begin{align}
+    \frac{\alpha^2 t^2}{\dim + 1} \parens{p_{\beta}(j) - p_{\beta}(j-1) q(1) - p_{\beta}(j+1) q(0)} &\leq \frac{\alpha^2 t^2}{\dim + 1} p_{\beta} (j) \leq \frac{\alpha^2 t^2}{\dim + 1}
 \end{align}
 and
 \begin{align}
-    \partfun_S(\beta) &= \sum_{i = 1}^{\dim_S} e^{-\beta i} \geq \dim_S e^{-\beta \dim_S}.
+    \frac{\alpha^2 t^2}{\dim + 1} \parens{p_{\beta}(j) - p_{\beta}(j-1) q(1) - p_{\beta}(j+1) q(0)} &\geq - \frac{\alpha^2 t^2}{\dim + 1} (p_{\beta}(j-1) q(1) + p_{\beta}(j+1) q(0) ) \\
+    &\geq - \frac{\alpha^2 t^2}{\dim + 1} (q(0) + q(1)) \\
+    &= - \frac{\alpha^2 t^2}{\dim + 1}.
 \end{align}
-This gives us the bounds
+We leave $s_1$ and $s_{\dim_S}$ exact for now.
+Plugging these simple bounds into Eq. \eqref{eq:harmonic_oscillator_4} yields
 \begin{align}
-    \ln \partfun_S(\beta_E) - \ln \partfun_S(\beta) &\leq -\beta_E + \ln \dim_S - \ln \dim_S + \beta \dim_S \leq \beta_E (\dim_S - 1)
-\end{align}
-and
-\begin{align}
-    \ln \partfun_S(\beta_E) - \ln \partfun_S(\beta) &\geq - \dim_S \beta_E + \ln \dim_S - \ln \dim_S + \beta
+    &\sum_{j=1}^{\dim_S} |p_{\beta_E}(j) - p_{\beta}(j)| - s_1 - s_{\dim_S} + \sum_{j = 2}^{\lfloor \anglebrackets{H_S}_{\beta_E} \rfloor} s_j - \sum_{j = \lceil \anglebrackets{H_S}_{\beta_E} \rceil}^{\dim_S - 1} s_j + 9 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+    &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 - s_1 - s_{\dim_S} - \frac{\alpha^2 t^2}{\dim + 1} \parens{\dim_S - 1 - \ceil{\anglebrackets{H_S}_{\beta_E}} - \lfloor \anglebrackets{H_S}_{\beta_E} \rfloor + 1} + 9 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}
 \end{align}
 
-Now we should be able to find a $\delta$ small enough such that this upper bound is just above 1. Taking a Taylor's Series of the right hand side with respect to delta gives
+One thing I'm curious about is if we can make $s_1 - s_{\dim_S}$ absorb the  $9 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}$ error. So 
+  
+\subsubsection{Below is wrong but may have something useful.}
+Now to tackle the above we want to find conditions on when the last two terms are at most zero, or in symbols
 \begin{align}
-    \frac{1}{\delta} \ln \parens{\frac{\partfun_S(\beta_E)}{\partfun_S(\beta)}} &= - \frac{\dim_S - e^{\beta_E} - \dim_S e^{\beta_E} + e^{\beta_E (\dim_S +  1)}}{(1 - e^{\beta_E})(1 - e^{\beta_E \dim_S})} + \bigo{\delta^2}
+    - \frac{\alpha^2 t^2}{\dim + 1} \parens{\dim_S - \ceil{\anglebrackets{H_S}_{\beta_E}} - \lfloor \anglebrackets{H_S}_{\beta_E} \rfloor} + 9 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} &\leq 0 \\
+    \epsilon_{\sinc} &\leq \frac{\dim_S - \ceil{\anglebrackets{H_S}_{\beta_E}} - \lfloor \anglebrackets{H_S}_{\beta_E} \rfloor}{9 \dim_S^2}. \label{eq:harmonic_osc_epsilon_sinc_bnd}
 \end{align}
-Now we need to set this upper bound to be just less than 2:
-\begin{equation}
-    \delta < 2 \frac{(1 - e^{\beta_E})(1 - e^{\beta_E \dim_S})}{-\dim_S + e^{\beta_E} + \dim_S e^{\beta_E} - e^{\beta_E (\dim_S +  1)}}
-\end{equation}
-If the above inequality is satisfied then we can guarantee that the only $j$ such that $p_{\beta_E}(j) \geq p_{\beta}(j)$ is $j = 1$, which always holds whenever $\beta < \beta_E$.
+Now as a sanity check, the conditions for the RHS of the above expression to be positive are given by
+\begin{align}
+    \dim_S - \ceil{\anglebrackets{H_S}_{\beta_E}} - \lfloor \anglebrackets{H_S}_{\beta_E} \rfloor \geq 0, \label{eq:avg_energy_upper_bound}
+\end{align}
+which we can simplify using the fact that $2\anglebrackets{H_S}_{\beta_E} + 1 \geq \ceil{\anglebrackets{H_S}_{\beta_E}} + \lfloor \anglebrackets{H_S}_{\beta_E} \rfloor $, so Eq. \eqref{eq:avg_energy_upper_bound} is implied by
+\begin{align}
+    \anglebrackets{H_S}_{\beta_E} \leq \frac{\dim_S - 1}{2}.
+\end{align}
+Since the average energy is monotonically decreasing with respect to $\beta$, the sum $\anglebrackets{H_S}_{\beta = 0} = \frac{1}{\dim_S} \sum_{i = 1}^{\dim_S} i = \frac{\dim_S - 1}{2}$ shows that inequality \eqref{eq:avg_energy_upper_bound} is always satisfied. Since we know $1 \leq \anglebrackets{H_S}_{\beta_E} \leq \frac{\dim_S - 1}{2}$ and that $\epsilon_{\sinc} = \frac{4}{t^2 \Delta_{\min}^2} = \frac{4}{t^2}$, we can compute a worst-case lower bound on $t$, such that Eq. \eqref{eq:harmonic_osc_epsilon_sinc_bnd} is always satisfied, as
+\begin{align}
+    \frac{4}{t^2} &\leq \frac{\dim_S - 1 - 2\anglebrackets{H_S}_{\beta_E}}{9 \dim_S^2} \\
+    t &\geq 6 \frac{\dim_S}{\sqrt{\dim_S - 1 - 2 \anglebrackets{H_S}_{\beta_E}}}.
+\end{align}
+% \todo{Need to compute a decent bound on the average energy to get a non-dumbo time bound.}
+
+Now returning to our main task we have the inequality
+\begin{align}
+    \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 &\le \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 - s_1 - s_{\dim_S} - \frac{\alpha^2 t^2}{\dim + 1} \parens{\dim_S - 1 - \ceil{\anglebrackets{H_S}_{\beta_E}} - \lfloor \anglebrackets{H_S}_{\beta_E} \rfloor + 1} + 9 \dim_S^2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}.
+\end{align}
+
+\subsubsection{Attempt \# 4}
+So the above does not work because it appears that the leading order distance reduction comes from the middle term with the factor of $\dim_S$ and $\tilde{\alpha}^2$. So we have to analyze the contribution from this term much more carefully. But first, we want to linearize the contribution from $\delta$ to make the analysis a bit easier. Now we can write the sum of $s_1$ and $s_{\dim_S}$ as
+$$
+s_1 + s_{\dim_S} = \frac{\alpha^2 t^2}{\dim + 1}q(0)(1 - e^{-\delta}) \left( p_{\beta}(2) + p_{\beta}(\dim_S) \right).
+$$
+Our main goal now is to produce a useful lower bound on this quantity and we would like to do so exclusively in terms of $\beta_E$ and $\delta$. The first lower bound we take is that the $p_{\beta}(\dim_S)$ term should be vanishingly negligible in the large $\dim_S$ limit, precisely it is  $\bigo{e^{-\beta \dim_S}}$ so we ignore it. Then we utilize the partition function as computed in Eq. \eqref{eq:harmonic_oscillator_partfun} and convert it to $\beta_E$'s and $\delta$'s. Note that we fully expect $\frac{\delta}{\beta_E}$ to be equal to $1 / L$, where $L \in \bigo{\dim_S}$ in the worst case. 
+\begin{align}
+    q(0) p_{\beta}(2) (1 - e^{-\delta}) &= \frac{1}{1 + e^{-\beta_E}} \frac{e^{-2 \beta_E} e^{2 \delta}}{\parens{\frac{1 - e^{- \beta_E \dim_S} e^{\delta \dim_S}}{e^{\beta_E} e^{-\delta} - 1}}} (1 - e^{-\delta }) \\
+    &= \frac{e^{-2 \beta_E} e^{2 \delta} (e^{\beta_E} e^{-\delta} - 1) ( 1 - e^{-\delta})}{(1 + e^{-\beta_E})(1 - e^{-\beta_E \dim_S} e^{\delta \dim_S})} \\
+    &\geq \frac{e^{- \beta_E} e^{\delta}(1 - e^{-\beta_E} e^{\delta}) (1 - e^{-\delta})}{1 + e^{-\beta_E}}.
+\end{align}
+Now performing an expansion around $\delta = 0$ for the above upper bound shows
+\begin{align}
+    \frac{e^{- \beta_E} e^{\delta}(1 - e^{-\beta_E} e^{\delta}) (1 - e^{-\delta})}{1 + e^{-\beta_E}} &= \delta \frac{e^{-\beta_E}(1 - e^{-\beta_E})}{1 + e^{-\beta_E}} + \bigo{\delta^2} \\
+    &= \delta \frac{1 - e^{-\beta_E}}{1 + e^{\beta_E}} + \bigo{\delta^2}
+\end{align}
+Need to determine what the upper bounds on $\delta$ are for this to be $\epsilon$ accurate.
+
+Now we can 
 
 
-We will find one by doing a $\delta$ expansion of the right hand side, or specifically of $\ln(\partfun_S(\beta + \delta))$.
-\begin{equation}
-    \ln (\partfun_S(\beta + \delta) \bigg|_{\delta = 0} = \ln (\partfun_S(\beta))
-\end{equation}
 
-I want to work out what the partition function is for this system
+\subsubsection{Rambling that I need to correct}
+With an eye toward future needs, we will parametrize $\delta = \frac{\beta_E}{L}$. Now we want to lower bound each of the three terms by an arbitrary $\epsilon$ for now.
 \begin{align}
-    \partfun_S(\beta) &= \sum_{i = 1}^{\dim_S} e^{-\beta i} \\
-    &= \frac{e^{-\beta} (1 - e^{-\beta \dim_S})}{1 - e^{-\beta}}
+    1 - e^{-\delta} &\geq \epsilon_1 \\
+    \frac{\beta_E}{L} &\geq \log \left( \frac{1}{1 - \epsilon_1} \right)
 \end{align}
-Which gives the ratio
+and similarly
 \begin{align}
-    \frac{\partfun_S(\beta_E)}{\partfun_S(\beta)} &= \frac{e^{-\beta_E}(1 - e^{-\beta_E \dim_S})}{1 - e^{-\beta_E}} \frac{1 - e^{-\beta}}{e^{-\beta}(1 - e^{-\beta \dim_S})} \\
-    &= e^{-\delta} \frac{1 - e^{-\beta}}{1 - e^{-\beta_E}} \frac{1 - e^{-\beta_E \dim_S}}{1 - e^{-\beta \dim_S}}
+    1 - e^{-\beta} e^{\delta} &\geq \epsilon_2 \\
+    \beta_E \left( 1 - \frac{1}{L} \right) &\geq \log \parens{\frac{1}{1 - \epsilon_2}}.
 \end{align}
+The last inequality yields an upper bound on $\beta_E$
+\begin{align}
+    \frac{e^{-\beta_E} e^{\delta}}{1 + e^{-\beta_E}} &\geq \frac{1}{2} e^{-\beta_E} e^{\delta} \\
+    \frac{1}{2} e^{-\beta_E} e^{\delta} &\geq \epsilon_3 \\
+    \beta_E \parens{1 - \frac{1}{L}} &\leq \log \parens{\frac{1}{2 \epsilon_3}}.
+\end{align}
+How we divy up these bounds will be our next focus, but since we know that we want $\beta_E \in \Omega(1)$ we can think of $\epsilon_1$ and $\epsilon_2$ as constants.
+
+Returning to our inequality, we would like to show that 
+\begin{align}
+    \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 - \frac{\alpha^2 t^2}{\dim + 1} \epsilon_1 \epsilon_2 \epsilon_3 &\leq 12 \dim_S \alpha^2.
+\end{align}
+Now using the bad upper bound from Lemma \ref{lem:thermal_state_diff_bound} we can reduce this to
+\begin{align}
+    2\dim_S^2 \delta - \frac{\alpha^2 t^2}{\dim + 1} \epsilon_1 \epsilon_2 \epsilon_3 &\leq 12 \dim_S \alpha^2.
+\end{align}
+Now one approach to salvaging something useful from this is to view it as a quadratic in terms of $\dim_S$. We can then use the solutions to quadratics to get the bound
+\begin{align}
+    \dim_S \le \frac{12 \alpha^2}{4 \delta} + \frac{1}{4 \delta}\sqrt{144 \alpha^4 + 8 \delta \frac{\alpha^2 t^2}{\dim+ 1}\epsilon_1 \epsilon_2 \epsilon_3}.
+\end{align}
+Or we can go right of the rip and use
+\begin{align}
+    \delta \le \frac{12 \dim_S \alpha^2 + \alpha^2 t^2 \epsilon_1 \epsilon_2 \epsilon_3 / (\dim+1)}{2 \dim_S^2}
+\end{align}
+Now can we linearize the RHS with respect to $\delta$? $\epsilon_1 = \delta +\bigo{\delta^2}$, $\epsilon_2 = 1 - e^{-\beta_E}( 1 + \delta) + \bigo{\delta^2} $ and lastly $\epsilon_3 = \frac{1}{2} e^{-\beta_E}(1 + \delta) + \bigo{\delta^2}$. Now this gives the product as $$ \epsilon_1 \epsilon_2 \epsilon_3 = \delta \frac{e^{-\beta_E}}{2}(1 - e^{-\beta_E}) + \bigo{\delta^2}. $$ Now substituting this in to the above we get
+$$\delta \le \frac{6 \alpha^2}{\dim_S - \frac{\alpha^2 t^2}{4 (\dim + 1)} (1 - e^{-\beta_E})e^{-\beta_E}}.$$
+
+So now given that this is true, lets see what ranges of temperatures can be prepared with this. 
+
+
+\subsubsection{Improved norm upper bound}
+The next computation we will do is an upper bound on the one norm of the difference in the two thermal states. For this we use Cauchy-Schwartz as shown below
+\begin{align}
+    \norm{\rho_S(\beta_E) - \rho_S(\beta)}_1 &= \sum_{i = 1}^{d} \abs{\frac{e^{-\beta_E i}}{\partfun_S(\beta_E)} - \frac{e^{-\beta i}}{\partfun_S(\beta)}} \\
+    &= \sum_{i = 1}^{d} \abs{\frac{e^{-\beta_E i}}{\partfun_S(\beta_E)} \parens{1 - e^{\delta i } \frac{\partfun_S(\beta_E)}{\partfun_S(\beta)}}} \\
+    &\le \sqrt{\sum_i \parens{\frac{e^{-\beta_E i}}{\partfun_S(\beta_E)}}^2} \sqrt{\sum_i \parens{1 - e^{\delta i } \frac{\partfun_S(\beta_E)}{\partfun_S(\beta)}}^2}.
+\end{align}
+As we would like to consider low-temperature states, the purity of which approaches 1 as $\beta \to \infty$, we can upper bound the left radical with 1. 
+
+
+\subsection{Final convergence}
+This section is going to summarize the results and runtime needed to reach a given thermal state $\beta$. Our approach for this is to show that by taking a cooling schedule with short enough steps we can guarantee that the output will be controllably close to the desired state. For this, we will imagine starting the system off in the maximally mixed state $\beta_0 = 0$ and an environment at temperature $\beta_1 = \frac{\beta}{L}$. With each interaction channel we cool the environment down by $\beta / L$, and we do this $L$ times until we reach an environment of $\beta_L = \beta$. Let $\Phi_i$ denote the channel with environment at inverse temperature $\beta_i$. Our goal is to show
+\begin{align}
+    \norm{\rho_S(\beta) - \Phi_L \circ \Phi_{L-1} \circ \ldots \circ \Phi_{1} (\rho_S(\beta_0))}_1 \leq \epsilon.
+\end{align}
+To do this, we add and subtract terms of the form $\Phi_{L}(\rho_S(\beta_{L-1}))$ and use the fact that the trace norm is non-increasing under the action of channels $\norm{\Psi(X)}_1 \leq \norm{X}_1$. 
+\begin{align}
+    \norm{\rho_S(\beta) - \Phi_L \circ  \ldots \circ \Phi_{1} (\rho_S(\beta_0))}_1 &= \norm{\rho_S(\beta) - \Phi_L(\beta_{L-1}) + \Phi_{L}(\beta_{L - 1}) - \Phi_L \circ  \ldots \circ \Phi_{1} (\rho_S(\beta_0))}_1 \\
+    &\leq \norm{\rho_S(\beta) - \Phi_L(\beta_{L-1})}_1 + \norm{\beta_{L-1} - \Phi_{L-1} \circ \ldots \circ \Phi_{1} (\rho_S(\beta_0))}_1 \\
+    &\le \sum_{i = 1}^{L} \norm{\rho_S(\beta_i) - \Phi_{i}(\rho_S(\beta_{i - 1}))}_1
+\end{align}
+Now using the result we have that $\norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 \le 12 \dim_S \alpha^2 $ we have that 
+$$\norm{\rho_S(\beta) - \Phi_L \circ  \ldots \circ \Phi_{1} (\rho_S(\beta_0))}_1 \le 12 L \dim_S \alpha^2$$
+Now this serves as an upper bound on $L$ as $L \le \frac{\epsilon}{12 \dim_S \alpha^2}$. Now to see if there exists an $L$ that satisfies these two bounds simultaneosly we require
 
 
 \section{Fixed points and convergences}
@@ -1258,7 +1429,37 @@ Let $H_S = U_H \begin{bmatrix} 0 & 0 & 0 \\ 0 & \lambda_A & 0 \\ 0 & 0 & \lambda
         R_0(\beta, \beta_E) \geq \frac{\epsilon_{\rho} \Delta_{\min} \delta^2}{2 \dim_S},
     \end{align}
     which gives the lemma statement. 
-    
+
+    \begin{lemma}
+        Let $H_S$ be the truncated harmonic oscillator Hamiltonian. We will compute a Taylor's series for the Boltzmann distribution at $\beta$ about an environment temperature of $\beta_E$. The difference between these inverse temperatures is denoted $\delta = \beta_E - \beta$
+        \begin{align}
+            \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} &= \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \delta \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} \parens{\trace{H_S \frac{e^{-\beta_E H_S}}{\partfun_S(\beta_E)}} - \lambda_S(k)} + R_{\delta}
+        \end{align}
+        where we bound $|R_{\delta}| \in \bigo{\delta^2 \dim_S^2}$.
+    \end{lemma}
+    now what we need from this lemma is when is this remainder positive or negative. when is
+    \begin{align}
+        \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} - \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} &\geq 0 \\
+        \delta \frac{e^{-\beta_E \lambda_S(k)}}{\partfun_S(\beta_E)} \parens{\trace{H_S \frac{e^{-\beta_E H_S}}{\partfun_S(\beta_E)}} - \lambda_S(k)} &\geq R_{\delta} \\
+        \trace{H_S \frac{e^{-\beta_E H_S}}{\partfun_S(\beta_E)}} - \frac{R_{\delta}}{\delta p_{\beta_E}(k)} &\geq k.
+    \end{align}
+    Now we can plug in for the Harmonic oscillator to solve for the average energy at a given environment temperature $\beta_E$. To do so we need an expression for the partition function, which can be computed analytically for this system:
+    \begin{equation}
+        \partfun_S(\beta) = \trace{e^{-\beta H_S}} = \sum_{i = 1}^{\dim_S} e^{-\beta i} = \frac{e^{-\beta} (1 - e^{-\beta \dim_S})}{1 - e^{-\beta}}.
+    \end{equation}
+    Now we can use this to compute the average energy of a Gibbs state using the derivative of the partition function
+    \begin{align}
+        \trace{H_S e^{-\beta H_S}} &= - \frac{\partial}{\partial \beta} \partfun_S(\beta) \\
+        &= - \frac{\partial}{\partial \beta} \frac{e^{-\beta} (1 - e^{-\beta \dim_S})}{1 - e^{-\beta}} \\
+        &= \frac{1}{(e^{\beta} - 1)^2} - e^{-\beta \dim_S} \parens{\frac{\dim_S}{e^{\beta} - 1} + \frac{1}{(e^{\beta} - 1)^2}}.
+    \end{align}
+    Now dividing by the partition function yields the expected energy
+    \begin{align}
+        \trace{H_S \frac{e^{-\beta H_S}}{\partfun_S(\beta )}} &= \left( \frac{1 - e^{-\beta \dim_S}}{e^{\beta} - 1} \right)^{-1} \parens{\frac{1}{(e^{\beta} - 1)^2} - e^{-\beta \dim_S} \parens{\frac{\dim_S}{e^{\beta} - 1} + \frac{1}{(e^{\beta} - 1)^2}}} \\
+        &= \frac{1}{(e^{\beta} - 1)(1 - e^{-\beta \dim_S} )} - \frac{e^{-\beta \dim_S}}{1 - e^{-\beta \dim_S}} \parens{\dim_S + \frac{1}{e^{\beta} - 1}} \\
+        &= \frac{1}{e^{\beta} - 1} - \frac{\dim_S}{e^{\beta \dim_S} - 1}.
+    \end{align}
+    Now this expression clearly fails in the large $\beta$ limit, as it approaches $e^{-\beta}$ instead of 1, but we might be able to get away with it.
 \end{proof}
 
 
@@ -1329,63 +1530,6 @@ Let $H_S = U_H \begin{bmatrix} 0 & 0 & 0 \\ 0 & \lambda_A & 0 \\ 0 & 0 & \lambda
     \begin{align}
         \abs{\mathbb{E}_{\gamma} \bra{k} T_{\gamma}^{(2)}(\rho_S(\beta)) \ket{k} - \frac{\alpha^2 t^2}{\dim + 1} \frac{2}{\dim_S (\dim_S - 1)} \sum_{i \neq k} \parens{ p(i) \frac{1}{1 + e^{-\beta_E |\Delta_S(i,k)|}}  - p(k) \frac{e^{-\beta_E |\Delta_S(i,k)|}}{1 + e^{-\beta_E |\Delta_S(i,k)|}} }} \leq  \parens{\frac{4 \alpha}{\Delta_{\min}}}^2
     \end{align}
-\end{proof}
-
-\begin{theorem}[Single-Shot capture]
-    Assume that $H_S$ is a well separated Hamiltonian according to Def. \ref{def:separated_hamiltonians}. Our goal is to show that 
-    Need to find $\beta_{UB}$ such that 
-    \begin{equation}
-        \beta_{LB} \leq \beta \leq \beta_{UB} \implies \norm{\rho_S(\beta_E) - \Phi(\rho_S(\beta))}_1 \leq \epsilon_{fix}.
-    \end{equation}
-    Note we should also show this by averaging over the perfect knowledge eigenvalue difference distribution.
-\end{theorem}
-\begin{proof}
-    We first expand the norm as usual, assuming that $\gamma$ is $\Delta_{\sinc}$ close to the eigenvalue difference $\Delta_S(\gamma_U, \gamma_L)$,
-    \begin{align}
-        \norm{\rho_S(\beta_E) - \Phi_\gamma(\rho_S(\beta))}_1 &\leq \norm{\rho_S(\beta_E) - \rho_S(\beta) - T^{(2)}_{\gamma}(\rho_S(\beta))}_1 + \norm{R_[\Phi]}_1.
-    \end{align}
-    Ignoring the channel approximation error term for now, we then expand the one norm to a sum as the matrix is diagonal, letting $p_E(i) = \frac{e^{-\beta_E \lambda_S(i)}}{\partfun_S(\beta_E)}$, $p_{\beta}(i) = \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)}$, and $q(j) = \frac{e^{-\beta_E \lambda_E(j)}}{\partfun_E(\beta_E)}$,
-    \begin{align}
-        &\norm{\rho_S(\beta_E) - \rho_S(\beta) - T^{(2)}_{\gamma}(\rho_S(\beta))}_1 \nonumber \\
-        &= \sum_k \abs{p_E(k) - p_{\beta}(k) - \sum_{i,j,l} p_{\beta}(i) q(j) \tau(i,j | k, l) } \\
-        &= \sum_{k \neq \gamma_U, \gamma_L} \abs{p_E(k) - p_{\beta}(k) - \sum_{i,j,l} p_{\beta}(i) q(j) \tau(i,j | k, l) } \nonumber \\
-        &\quad + \abs{p_E(\gamma_U) - p_{\beta}(\gamma_U) - \sum_{i,j,l} p_{\beta}(i) q(j) \tau(i,j| \gamma_U, l) } \nonumber \\
-        &\quad +\abs{p_E(\gamma_U) - p_{\beta}(\gamma_U) - \sum_{i,j,l} p_{\beta}(i) q(j) \tau(i,j| \gamma_U, l) }.
-    \end{align}
-    The first term is where we take the hit by not averaging over $\gamma$. For now, I will expand the other terms about $\beta \to \beta_E$.
-
-    \begin{align}
-        &\abs{p_E(\gamma_U) - p_{\beta}(\gamma_U) - \sum_{i,j,l} p_{\beta}(i) q(j) \tau(i,j| \gamma_U, l) } \nonumber \\
-        &= \abs{p_E(\gamma_U) - p_{\beta}(\gamma_U) - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(\gamma_L) q(1) + \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(\gamma_L) q(1) - \sum_{i,j,l} p_{\beta}(i) q(j) \tau(i,j| \gamma_U, l) } \\
-        &\leq \abs{p_E(\gamma_U) - p_{\beta}(\gamma_U) - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(\gamma_L) q(1)} + \abs{\frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(\gamma_L) q(1) - \sum_{i,j,l} p_{\beta}(i) q(j) \tau(i,j| \gamma_U, l) } \\
-        &\leq \abs{p_E(\gamma_U) - p_{\beta}(\gamma_U) - \frac{\alpha^2 t^2}{\dim + 1} p_{\beta}(\gamma_L) q(1)} + 16 \frac{\alpha^2}{\Delta_{\min}^2}.
-    \end{align}
-    We have now arrived at the expression we need to expand, 
-    \begin{align}
-        g(\beta) &= p_{\beta}(\gamma_U) + p_{\beta}(\gamma_L) q(1) \frac{\alpha^2 t^2}{\dim + 1} \\
-        &= \frac{e^{-\beta \lambda_S(\gamma_U)}}{\partfun_S(\beta)} + \frac{e^{-\beta \lambda_S(\gamma_L)}}{\partfun_S(\beta)} q(1) \frac{\alpha^2 t^2}{\dim  +1}.
-    \end{align}
-     We compute the zeroth order term as
-    \begin{align}
-        g(\beta_E) = \frac{e^{-\beta_E \lambda_S(\gamma_U)}}{\partfun_S(\beta_E)} + \frac{e^{-\beta_E \lambda_S(\gamma_L)}}{\partfun_S(\beta_E)} q(1) \frac{\alpha^2 t^2}{\dim  +1}.
-    \end{align}
-    In order to compute the derivative we will first compute $\frac{d}{d\beta} \frac{e^{-\beta x}}{\partfun_S(\beta)}$, using the notation $\anglebrackets{H}_{\beta} = \trace{H \rho_S(\beta)}$. First we compute the derivative of the partition function
-    \begin{align}
-        \frac{d}{d\beta} \partfun_S(\beta) &= \frac{d}{d\beta} \sum_i e^{-\beta \lambda_S(i)} \\
-        &= - \sum_i \lambda_S(i) e^{-\beta \lambda_S(i)} \\
-        &= - \trace{H e^{-\beta H}}.
-    \end{align}
-    Then computing the total Boltzmann factor derivative
-    \begin{align}
-        \frac{d}{d \beta} \frac{e^{-\beta x}}{\partfun_S(\beta)} &= - x \frac{e^{-\beta x}}{\partfun_S(\beta)} - \frac{e^{-\beta x}}{\partfun_S(\beta)^2} \frac{d}{d\beta}\partfun_S(\beta) \\
-        &= \frac{e^{-\beta x}}{\partfun_S(\beta)} \parens{\anglebrackets{H} - x}.
-    \end{align}
-    Now we can compute the total first order derivative as
-    \begin{align}
-        \frac{d}{d\beta} g(\beta) &= \frac{d}{d\beta} \frac{e^{-\beta \lambda_S(\gamma_U)}}{\partfun_S(\beta)} + \frac{d}{d\beta} \frac{e^{-\beta \lambda_S(\gamma_L)}}{\partfun_S(\beta)} q(1) \frac{\alpha^2 t^2}{\dim + 1} \\
-        &= \frac{e^{-\beta \lambda_S(\gamma_U)}}{\partfun_S(\beta)}\parens{\anglebrackets{H}_{\beta} - \lambda_S(\gamma_U)} + \frac{e^{-\beta \lambda_S(\gamma_L)}}{\partfun_S(\beta)}\parens{\anglebrackets{H}_{\beta} - \lambda_S(\gamma_L)} q(1) \frac{\alpha^2 t^2}{\dim + 1}
-    \end{align}
-
 \end{proof}
 
 \section{Haar Integral Proofs} \label{sec:haar_integral_appendix}
