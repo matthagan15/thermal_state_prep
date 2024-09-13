@@ -20,8 +20,11 @@ use rayon::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::interaction_generator::{self, RandomInteractionGen};
-use crate::{adjoint, mean_and_std, partial_trace, schatten_2_distance, thermal_state};
+use crate::{adjoint, mean_and_std, partial_trace, thermal_state};
+use crate::{
+    interaction_generator::{self, RandomInteractionGen},
+    trace_distance,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum GammaStrategy {
@@ -176,7 +179,7 @@ impl IteratedChannel {
     pub fn state_distance(&self, beta_1: f64, beta_2: f64) -> f64 {
         let rho_1 = thermal_state(&self.h_sys, beta_1);
         let rho_2 = thermal_state(&self.h_sys, beta_2);
-        schatten_2_distance(&rho_1, &rho_2)
+        trace_distance(&rho_1, &rho_2)
     }
 
     pub fn set_parameters(&mut self, alphas: Vec<f64>, beta_envs: Vec<f64>, times: Vec<f64>) {
@@ -215,7 +218,7 @@ impl IteratedChannel {
         );
         let h_tot = kron(&self.h_sys, &Array2::<c64>::eye(2)) + &h_env;
 
-        let interaction = self.interaction_gen.sample_gue() * alpha;
+        let interaction = self.interaction_gen.sample_iid_interaction() * alpha;
         let tot = (h_tot + interaction) * c64::new(0.0, -1. * time);
         let u = expm(&tot).expect("Could not compute time propagator");
         let total_out = u.dot(&rho_tot.dot(&adjoint(&u)));
@@ -287,7 +290,7 @@ impl IteratedChannel {
                 *state += &rho_sys;
                 drop(avgs);
 
-                let sample_dist = schatten_2_distance(&rho_sys, &rho_ideal);
+                let sample_dist = trace_distance(&rho_sys, &rho_ideal);
                 let mut stat_lock = statistics_locker.lock().expect("could not get stat lock");
                 let v = stat_lock.get_mut(&ix).expect("could not get stats records");
                 v.push(sample_dist);
@@ -303,7 +306,7 @@ impl IteratedChannel {
         for ix in 0..self.parameter_schedule.len() {
             let avg_state = avg_states_lock.get_mut(&ix).expect("no index");
             *avg_state /= c64::from_real(num_samples as f64);
-            let statistic_of_avg = schatten_2_distance(avg_state, &rho_ideal);
+            let statistic_of_avg = trace_distance(avg_state, &rho_ideal);
             let stats = statistics_lock.get(&ix).unwrap();
             let (mean, std) = mean_and_std(stats);
             ret.push((mean, std, statistic_of_avg));

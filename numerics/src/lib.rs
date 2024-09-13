@@ -2,7 +2,7 @@ use core::num;
 use std::sync::{Arc, Mutex};
 
 use ndarray::{Array2, ShapeBuilder};
-use ndarray_linalg::{c64, expm, QRSquare, Scalar, Trace};
+use ndarray_linalg::{c64, expm, EigVals, QRSquare, Scalar, Trace};
 use num_complex::ComplexFloat;
 use rand::{thread_rng, Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
@@ -114,6 +114,14 @@ pub fn schatten_2_distance(a: &Array2<c64>, b: &Array2<c64>) -> f64 {
     ComplexFloat::abs(trace.sqrt())
 }
 
+pub fn trace_distance(a: &Array2<c64>, b: &Array2<c64>) -> f64 {
+    let diff = a - b;
+    let eigs = diff
+        .eigvals()
+        .expect("Could not compute eigenvalues for trace distance.");
+    eigs.into_iter().map(|x| ComplexFloat::abs(x)).sum()
+}
+
 pub fn process_error_data(vals: Vec<f64>) -> (usize, f64, f64) {
     let samples = vals.len();
     let mean = vals.iter().sum::<f64>() / (samples as f64);
@@ -193,12 +201,13 @@ pub fn get_rng_seed() -> u64 {
         .expect("could not parse input parameter for rng_seed as u64")
 }
 
+#[cfg(test)]
 mod test {
-    use ndarray::Array2;
+    use ndarray::{array, Array2};
     use ndarray_linalg::OperationNorm;
     use num_complex::Complex64 as c64;
 
-    use crate::{adjoint, interaction_generator::RandomInteractionGen};
+    use crate::{adjoint, interaction_generator::RandomInteractionGen, trace_distance};
 
     #[test]
     fn test_haar_unitary() {
@@ -210,5 +219,18 @@ mod test {
             "diff magnitude per epsilon: {:}",
             diff.opnorm_one().unwrap() / f64::EPSILON
         );
+    }
+
+    #[test]
+    fn small_trace_dist() {
+        let rho = array![
+            [c64::new(1.0, 0.), c64::new(0.0, 0.0)],
+            [c64::new(0.0, 0.0), c64::new(1.0, 0.0)]
+        ];
+        let sigma = array![
+            [c64::new(0., 0.), c64::new(0.0, 0.0)],
+            [c64::new(0.0, 0.0), c64::new(0.9, 0.0)]
+        ];
+        dbg!(trace_distance(&rho, &sigma));
     }
 }
