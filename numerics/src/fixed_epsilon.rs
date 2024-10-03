@@ -31,6 +31,18 @@ where
     upper
 }
 
+fn linear_search<F>(f: F, epsilon: f64) -> usize
+where
+    F: Fn(usize) -> f64,
+{
+    let mut ret = 1;
+    let loop_cutoff = 100000;
+    while f(ret) > epsilon && ret <= loop_cutoff {
+        ret += 1;
+    }
+    ret
+}
+
 pub fn run(config_file: &Path, results_file: &Path, label: String) -> MultiShotResults {
     let conf = FixedEpsilonConfig::from_file(config_file);
     let alphas = generate_floats(
@@ -94,7 +106,7 @@ pub fn run(config_file: &Path, results_file: &Path, label: String) -> MultiShotR
                         let (mean_dist, std_dist, dist_of_avg) = phi_outputs[phi_outputs.len() - 1];
                         mean_dist
                     };
-                    let interactions_needed = binary_search(interactions_to_epsilon, *epsilon);
+                    let interactions_needed = linear_search(interactions_to_epsilon, *epsilon);
                     println!("needed {interactions_needed} interactions.");
                     // while current_distance > *epsilon {
                     //     println!("num interactions: {:}", num_interactions);

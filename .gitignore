@@ -10,5 +10,6 @@ numerics/tmp/**
 main.dvi
 main.pdf
 main.pdf
+.VSCodeCounter/**
 numerics/target/**
 numerics/cluster_data/**
