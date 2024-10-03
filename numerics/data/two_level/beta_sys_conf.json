@@ -1,0 +1,24 @@
+{
+    "alpha_start": 5e-3,
+    "alpha_stop": 5e-5,
+    "alpha_steps": 4,
+    "alpha_logspace": true,
+    "beta_sys_start": 1e-1,
+    "beta_sys_stop": 1.0,
+    "beta_sys_steps": 50,
+    "beta_sys_logspace": true,
+    "beta_env_start": 1.0,
+    "beta_env_stop": 1.0,
+    "beta_env_steps": 1,
+    "beta_env_logspace": false,
+    "time_start": 200.0,
+    "time_stop": 200.0,
+    "time_steps": 1,
+    "time_logspace": false,
+    "hamiltonian_type": "HarmonicOscillator",
+    "dim_sys": 2,
+    "num_samples": 10000,
+    "gamma_strategy": {
+        "Fixed": 1.0
+    }
+}
