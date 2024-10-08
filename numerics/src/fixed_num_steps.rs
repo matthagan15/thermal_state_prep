@@ -31,6 +31,7 @@ struct FixedNumStepsConfig {
     gamma_strategy: GammaStrategy,
 }
 
+#[allow(dead_code)]
 impl FixedNumStepsConfig {
     fn to_file(&self, path: &Path) {
         let s = serde_json::to_string_pretty(self).expect("Could not serialize parameters.");

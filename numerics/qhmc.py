@@ -3,8 +3,7 @@ from tabnanny import verbose
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import linalg
-from skopt import gbrt_minimize
-from skopt.space import Real
+
 import math
 import time as time_this
 
@@ -13,6 +12,28 @@ BETA_MAX = 1000
 def gue(dimensions):
     raw = np.random.normal(scale = np.sqrt(2)/2, size=(dimensions,dimensions * 2)).view(np.complex128)
     return (raw + raw.T.conj())/ np.sqrt(2)
+
+def haar_sample(dimensions):
+    raw = np.random.normal(scale = np.sqrt(2)/2, size=(dimensions,dimensions * 2)).view(np.complex128)
+    q,r = np.linalg.qr(raw)
+    l = np.zeros_like(q)
+    for ix in range(l.shape[0]):
+        l[ix, ix] = r[ix, ix] / np.abs(r[ix, ix])
+    return q @ l
+
+def my_interaction(dimensions):
+    """Draws a sample of a matrix with Haar random eigenvectors and iid gausian eigenvalues"""
+    u = haar_sample(dimensions)
+    rng = np.random.default_rng()
+    eigvals = rng.normal(0.0, 1.0, size=(dimensions, ))
+    l = np.diag(eigvals)
+    return u @ l @ u.T.conj()
+    # let (q, r) = gauss_array.qr_square().unwrap();
+    #     let mut lambda = Array2::<c64>::zeros((dim, dim).f());
+    #     for ix in 0..dim {
+    #         lambda[[ix, ix]] = r[[ix, ix]] / r[[ix, ix]].norm();
+    #     }
+    #     q.dot(&lambda)
 
 def partrace(mat, d1, d2):
     tensor = mat.reshape([d1,d2,d1,d2])
@@ -29,6 +50,11 @@ def thermal_state(hamiltonian, beta):
         print(e)
         ret = mat * 0
     return ret
+
+def trace_distance(x, y):
+    m = x - y
+    v = np.linalg.eigvals(m)
+    return np.abs(v).sum()
 
 def harmonic_oscillator_hamiltonian(dimensions, gap = 1.0):
     """
@@ -48,26 +74,23 @@ def sqrt_hamiltonian(dimensions):
     diags = [np.sqrt(ix) for ix in range(dimensions)]
     return np.diag(diags)
 
-# returns (beta, fro error)
-def find_best_beta(rho, ham, verbose=False):
-    dims = [Real(0.0, BETA_MAX)]
-    def obj_fun(dim):
-        beta = dim[0]
-        # print("beta:", beta)
-        # print("matrix:")
-        # print(linalg.expm(-beta * ham))
-        guess = thermal_state(ham, beta)
-        return np.linalg.norm(rho - guess)
-    ret = gbrt_minimize(obj_fun, dims, x0=[1.0], verbose=verbose)
-    return (ret.x, ret.fun)
 
-# This class simulates weak interactions with a bath using GUE couplings. The main method is
-# "channel" which simulates the time evolution channel using an average of several samples of
-# interactions with GUE. The specification is you provide a list of environment betas of which
-# to use thermal states for as an expendable resource. The system is iteratively coupled with
-# these environment resources and simulated for the corresponding time and coupling strength
-# alpha. 
+def minimum_interactions(alpha, time, beta_e, epsilon, num_samples=100):
+    """
+    Computes the minimum number of interactions needed to prepare a single qubit state in an 
+    """
+    pass 
+
+ 
 class QHMC:
+    """
+    This class simulates weak interactions with a bath using GUE couplings. The main method is
+"channel" which simulates the time evolution channel using an average of several samples of
+interactions with GUE. The specification is you provide a list of environment betas of which
+to use thermal states for as an expendable resource. The system is iteratively coupled with
+these environment resources and simulated for the corresponding time and coupling strength
+alpha.
+    """
     def __init__(
                 self,
                 env_betas = [1.0],
@@ -128,12 +151,12 @@ class QHMC:
 
     def simulate_interactions(self):
         self.system_state = thermal_state(self.ham_sys, self.sys_start_beta)
-        for ix in range(len(self.betas)):
-            rho_env = thermal_state(self.ham_env_base, self.betas[ix])
-            rho_tot = np.kron(self.system_state, rho_env)
-            new_output = np.zeros((self.system_state.shape[0], self.system_state.shape[1] * 2)).view(np.complex128)
-            for sample in range(self.num_monte_carlo):
-                g = gue(self.ham_sys.shape[0] * self.ham_env_base.shape[0])
+        for sample in range(self.num_monte_carlo):
+            for ix in range(len(self.betas)):
+                rho_env = thermal_state(self.ham_env_base, self.betas[ix])
+                rho_tot = np.kron(self.system_state, rho_env)
+                new_output = np.zeros((self.system_state.shape[0], self.system_state.shape[1] * 2)).view(np.complex128)
+                g = my_interaction(self.ham_sys.shape[0] * self.ham_env_base.shape[0])
                 ham_tot = self.total_hamiltonian + self.alphas[ix] * g
                 u = linalg.expm(1j * ham_tot * self.times[ix])
                 raw = u @ rho_tot @ u.conj().T
@@ -158,7 +181,7 @@ class QHMC:
                 new_output += out.view(np.complex128) / self.num_monte_carlo
             self.system_state = new_output
             diff = system_target_state - self.system_state
-            print("system distance to target: ", np.linalg.norm(diff, ord='fro'))
+            print("system distance to target: ", trace_distance(system_target_state, self.system_state))
 
     def compute_error_with_target_beta(self):
         """
@@ -170,7 +193,7 @@ class QHMC:
         self.simulate_interactions()
         ideal = thermal_state(self.ham_sys, self.betas[-1])
         difference = ideal - self.system_state
-        return np.linalg.norm(difference, ord='fro')
+        return trace_distance(ideal, self.system_state)
     
     def compute_betas_and_errors(self):
         start_time = time_this.time()
@@ -251,7 +274,8 @@ if __name__ == "__main__":
     # test()
     start = time_this.time()
     # test_dimension()
-    test_beta()
+    print(my_interaction(4))
+    # test_beta()
     # qhmc = QHMC(ham_sys = harmonic_oscillator_hamiltonian(20), ham_env_base = harmonic_oscillator_hamiltonian(5), sys_start_beta = 0.5, env_betas = [1.], sim_times = [100.], alphas = [0.001], num_monte_carlo = 500)
     # qhmc.test_distance_with_interactions()
     end = time_this.time()

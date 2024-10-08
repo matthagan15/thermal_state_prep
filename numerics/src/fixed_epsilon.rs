@@ -11,24 +11,42 @@ use crate::{
     generate_floats, harmonic_oscillator_gaps, HamiltonianType,
 };
 
-fn binary_search<F>(f: F, epsilon: f64) -> usize
+const BINARY_SEARCH_UPPER_LIMIT: usize = 2_usize.pow(16);
+/// Returns:
+/// - `None` if the binary search upper limit is exceeded
+/// - `Some((L, s))` where `L` is the minimum number of interactions
+/// needed to reach distance `epsilon` and `s` is the std deviation.
+/// -
+fn binary_search<F>(f: F, epsilon: f64) -> Option<(usize, f64)>
 where
-    F: Fn(usize) -> f64,
+    F: Fn(usize) -> (f64, f64),
 {
-    let mut lower = 1;
+    let mut lower;
     let mut upper = 1;
-    while f(upper) > epsilon {
+    let (mut cur_dist, mut cur_dist_std) = f(upper);
+    while cur_dist > epsilon {
         upper *= 2;
+        if upper >= BINARY_SEARCH_UPPER_LIMIT {
+            println!("[BINARY_SEARCH] upper bound reached");
+            return None;
+        }
+        (cur_dist, cur_dist_std) = f(upper);
     }
+    lower = upper / 2;
     while (upper - lower) > 1 {
         let mid = (lower + upper) / 2;
-        if f(mid) >= epsilon {
+        (cur_dist, cur_dist_std) = f(mid);
+        if cur_dist >= epsilon {
             lower = mid;
         } else {
             upper = mid;
         }
     }
-    upper
+    println!(
+        "[BINARY_SEARCH] min_number_interactions = {:}, distance standard deviation = {:}",
+        upper, cur_dist_std
+    );
+    Some((upper, cur_dist_std))
 }
 
 fn linear_search<F>(f: F, epsilon: f64) -> usize
@@ -75,7 +93,7 @@ pub fn run(config_file: &Path, results_file: &Path, label: String) -> MultiShotR
     let gamma_strat = conf.gamma_strategy;
     let mut inputs = Vec::new();
     let mut outputs = Vec::new();
-    for alpha in alphas.iter() {
+    'outer: for alpha in alphas.iter() {
         for beta_env in beta_envs.iter() {
             for time in times.iter() {
                 for epsilon in epsilons.iter() {
@@ -103,40 +121,23 @@ pub fn run(config_file: &Path, results_file: &Path, label: String) -> MultiShotR
                         if phi_outputs.len() == 0 {
                             panic!("Simulator should have returned at least one data point.");
                         }
-                        let (mean_dist, std_dist, dist_of_avg) = phi_outputs[phi_outputs.len() - 1];
-                        mean_dist
+                        let (mean_dist, std_dist, _dist_of_avg) =
+                            phi_outputs[phi_outputs.len() - 1];
+                        (mean_dist, std_dist)
                     };
-                    let interactions_needed = linear_search(interactions_to_epsilon, *epsilon);
-                    println!("needed {interactions_needed} interactions.");
-                    // while current_distance > *epsilon {
-                    //     println!("num interactions: {:}", num_interactions);
-                    //     println!("current distance: {:}", current_distance);
-                    //     num_interactions += 1;
-                    //     let phi_alphas = vec![*alpha; num_interactions];
-                    //     // let phi_beta_envs = vec![*beta_env; num_interactions];
-                    //     let phi_beta_envs = ndarray::Array::linspace(
-                    //         beta_env / num_interactions as f64,
-                    //         *beta_env,
-                    //         num_interactions,
-                    //     )
-                    //     .to_vec();
-                    //     let phi_times = vec![*time; num_interactions];
-                    //     let phi = IteratedChannel::new(
-                    //         h_sys.clone(),
-                    //         phi_alphas,
-                    //         phi_beta_envs,
-                    //         phi_times,
-                    //         gamma_strat.clone(),
-                    //     );
-                    //     let phi_outputs = phi.simulate(0.0, *beta_env, conf.num_samples);
-                    //     if phi_outputs.len() == 0 {
-                    //         panic!("Simulator should have returned at least one data point.");
-                    //     }
-                    //     (mean_dist, std_dist, dist_of_avg) = phi_outputs[phi_outputs.len() - 1];
-                    //     current_distance = mean_dist;
-                    // }
+                    let interactions_needed = binary_search(interactions_to_epsilon, *epsilon);
+                    println!("needed {:?} interactions.", interactions_needed);
+                    if interactions_needed.is_none() {
+                        // don't save data, bail on remaining beta_e
+                        break 'outer;
+                    }
                     inputs.push((*alpha, *beta_env, *epsilon, *time));
-                    outputs.push((interactions_needed, mean_dist, std_dist, dist_of_avg))
+                    outputs.push((
+                        interactions_needed.unwrap().0,
+                        mean_dist,
+                        interactions_needed.unwrap().1,
+                        dist_of_avg,
+                    ))
                 }
             }
         }

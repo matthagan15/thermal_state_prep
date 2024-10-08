@@ -283,6 +283,14 @@ impl IteratedChannel {
                         rho_sys = rho_out;
                     }
                 }
+                for ix in 0..rho_sys.nrows() {
+                    for jx in 0..rho_sys.ncols() {
+                        if ix == jx {
+                            continue;
+                        }
+                        rho_sys[[ix, jx]] = c64::new(0.0, 0.0);
+                    }
+                }
                 let mut avgs = avg_states_locker
                     .lock()
                     .expect("Could not get average state map");

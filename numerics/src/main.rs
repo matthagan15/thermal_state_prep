@@ -55,16 +55,17 @@ fn main() {
     println!("took this many millis: {:}", duration.as_millis());
 }
 
+#[cfg(test)]
 mod tests {
-    use crate::{adjoint, i, interaction_generator::RandomInteractionGen, partial_trace, zero};
+    use crate::{adjoint, interaction_generator::RandomInteractionGen, partial_trace};
     use ndarray::{linalg::kron, prelude::*};
-    use ndarray_linalg::{expm::expm, random_hermite, OperationNorm, Trace};
-    use num_complex::{Complex64 as c64, ComplexFloat};
+    use ndarray_linalg::{random_hermite, OperationNorm, Trace};
+    use num_complex::Complex64 as c64;
 
     #[test]
     fn test_random_interaction_gen() {
-        let mut gen1 = RandomInteractionGen::new(1, 2);
-        let mut gen2 = RandomInteractionGen::new(1, 2);
+        let gen1 = RandomInteractionGen::new(1, 2);
+        let gen2 = RandomInteractionGen::new(1, 2);
         assert_eq!(gen1.sample_gue(), gen2.sample_gue());
     }
 
