@@ -2,16 +2,11 @@ extern crate blas_src;
 extern crate ndarray;
 extern crate num_complex;
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::time::Instant;
 
 use clap::{Parser, Subcommand};
 
-use ndarray::prelude::*;
-
-use ndarray_linalg::Scalar;
-
-use numerics::channel::*;
 use numerics::*;
 
 #[derive(Subcommand)]

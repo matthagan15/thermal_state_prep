@@ -8,34 +8,35 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     channel::{GammaStrategy, IteratedChannel},
-    generate_floats, harmonic_oscillator_gaps, HamiltonianType,
+    generate_floats, HamiltonianType,
 };
 
-const BINARY_SEARCH_UPPER_LIMIT: usize = 2_usize.pow(16);
+const BINARY_SEARCH_UPPER_LIMIT: usize = 2_usize.pow(18);
 /// Returns:
 /// - `None` if the binary search upper limit is exceeded
 /// - `Some((L, s))` where `L` is the minimum number of interactions
 /// needed to reach distance `epsilon` and `s` is the std deviation.
 /// -
-fn binary_search<F>(f: F, epsilon: f64) -> Option<(usize, f64)>
+fn binary_search<F>(f: F, epsilon: f64) -> Option<(usize, f64, f64, f64)>
 where
-    F: Fn(usize) -> (f64, f64),
+    F: Fn(usize) -> (f64, f64, f64),
 {
     let mut lower;
     let mut upper = 1;
-    let (mut cur_dist, mut cur_dist_std) = f(upper);
+    let (mut cur_dist, mut cur_dist_std, mut dist_of_avg) = f(upper);
     while cur_dist > epsilon {
         upper *= 2;
         if upper >= BINARY_SEARCH_UPPER_LIMIT {
-            println!("[BINARY_SEARCH] upper bound reached");
+            println!("[BINARY_SEARCH] upper limit reached.");
             return None;
         }
-        (cur_dist, cur_dist_std) = f(upper);
+        (cur_dist, cur_dist_std, dist_of_avg) = f(upper);
     }
     lower = upper / 2;
+    println!("[BINARY_SEARCH] searching in range [{lower}, {upper}].");
     while (upper - lower) > 1 {
         let mid = (lower + upper) / 2;
-        (cur_dist, cur_dist_std) = f(mid);
+        (cur_dist, cur_dist_std, dist_of_avg) = f(mid);
         if cur_dist >= epsilon {
             lower = mid;
         } else {
@@ -43,10 +44,10 @@ where
         }
     }
     println!(
-        "[BINARY_SEARCH] min_number_interactions = {:}, distance standard deviation = {:}",
-        upper, cur_dist_std
+        "[BINARY_SEARCH] min_number_interactions = {:}, distances: {:} +- {:}; dist_of_avg = {:}",
+        upper, cur_dist, cur_dist_std, dist_of_avg
     );
-    Some((upper, cur_dist_std))
+    Some((upper, cur_dist, cur_dist_std, dist_of_avg))
 }
 
 fn linear_search<F>(f: F, epsilon: f64) -> usize
@@ -54,8 +55,7 @@ where
     F: Fn(usize) -> f64,
 {
     let mut ret = 1;
-    let loop_cutoff = 100000;
-    while f(ret) > epsilon && ret <= loop_cutoff {
+    while f(ret) > epsilon && ret <= BINARY_SEARCH_UPPER_LIMIT {
         ret += 1;
     }
     ret
@@ -93,13 +93,12 @@ pub fn run(config_file: &Path, results_file: &Path, label: String) -> MultiShotR
     let gamma_strat = conf.gamma_strategy;
     let mut inputs = Vec::new();
     let mut outputs = Vec::new();
-    'outer: for alpha in alphas.iter() {
-        for beta_env in beta_envs.iter() {
+    for alpha in alphas.iter() {
+        for epsilon in epsilons.iter() {
             for time in times.iter() {
-                for epsilon in epsilons.iter() {
+                for beta_env in beta_envs.iter() {
                     println!("{:}", "*".repeat(50));
                     println!("inputs: {:}, {:}, {:}, {:}", alpha, beta_env, epsilon, time);
-                    let (mut mean_dist, mut std_dist, mut dist_of_avg) = (0.0, 0.0, 0.0);
                     let interactions_to_epsilon = |num_interactions: usize| {
                         let phi_alphas = vec![*alpha; num_interactions];
                         // let phi_beta_envs = vec![*beta_env; num_interactions];
@@ -118,25 +117,24 @@ pub fn run(config_file: &Path, results_file: &Path, label: String) -> MultiShotR
                             gamma_strat.clone(),
                         );
                         let phi_outputs = phi.simulate(0.0, *beta_env, conf.num_samples);
+
                         if phi_outputs.len() == 0 {
                             panic!("Simulator should have returned at least one data point.");
                         }
-                        let (mean_dist, std_dist, _dist_of_avg) =
-                            phi_outputs[phi_outputs.len() - 1];
-                        (mean_dist, std_dist)
+                        let (mean_dist, std_dist, dist_of_avg) = phi_outputs[phi_outputs.len() - 1];
+                        (mean_dist, std_dist, dist_of_avg)
                     };
                     let interactions_needed = binary_search(interactions_to_epsilon, *epsilon);
-                    println!("needed {:?} interactions.", interactions_needed);
                     if interactions_needed.is_none() {
                         // don't save data, bail on remaining beta_e
-                        break 'outer;
+                        continue;
                     }
                     inputs.push((*alpha, *beta_env, *epsilon, *time));
                     outputs.push((
                         interactions_needed.unwrap().0,
-                        mean_dist,
                         interactions_needed.unwrap().1,
-                        dist_of_avg,
+                        interactions_needed.unwrap().2,
+                        interactions_needed.unwrap().3,
                     ))
                 }
             }

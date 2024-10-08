@@ -246,7 +246,7 @@ impl IteratedChannel {
         }
         let avg_states_locker = Arc::new(Mutex::new(avg_states));
         let statistics_locker = Arc::new(Mutex::new(stat_map));
-        let gamma_std_locker = Arc::new(Mutex::new(gamma_std_map));
+        let _gamma_std_locker = Arc::new(Mutex::new(gamma_std_map));
 
         let rho_ideal = thermal_state(&self.h_sys, target_beta);
 
