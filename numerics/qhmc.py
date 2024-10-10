@@ -74,12 +74,51 @@ def sqrt_hamiltonian(dimensions):
     diags = [np.sqrt(ix) for ix in range(dimensions)]
     return np.diag(diags)
 
+BINARY_SEARCH_UPPER_LIMIT = 2 ** 18
+
+def binary_search(f , epsilon):
+    """Returns:
+- `None` if the binary search upper limit is exceeded
+- `Some((L, s))` where `L` is the minimum number of interactions
+needed to reach distance `epsilon` and `s` is the std deviation.
+ -
+ """
+    upper = 1
+    cur_dist = f(upper)
+    while cur_dist > epsilon:
+        upper *= 2
+        if upper >= BINARY_SEARCH_UPPER_LIMIT:
+            print("[BINARY_SEARCH] upper limit reached.")
+            return None
+        cur_dist = f(upper)
+    lower = upper / 2
+    print(f"[BINARY_SEARCH] searching in range [{lower}, {upper}].")
+    while (upper - lower) > 1:
+        mid = int(np.floor((lower + upper) / 2.))
+        cur_dist = f(mid)
+        if cur_dist >= epsilon:
+            lower = mid
+        else:
+            upper = mid
+    print(
+        f"[BINARY_SEARCH] min_number_interactions = {upper}, distances: {cur_dist}")
+    return (upper, cur_dist)
 
 def minimum_interactions(alpha, time, beta_e, epsilon, num_samples=100):
     """
     Computes the minimum number of interactions needed to prepare a single qubit state in an 
     """
-    pass 
+    def f(n):
+        phi = QHMC(env_betas=[beta_e] * n, sys_start_beta=0.0, sim_times=[time] * n, alphas=[alpha] * n, num_monte_carlo=100)
+        return phi.simulate_interactions()
+    x = binary_search(f, epsilon)
+    print("x: ", x)
+    if type(x) == type(None):
+        print("upper bound reached, returning none.")
+        return None
+    
+    (interactions, dist ) = x
+    return interactions
 
  
 class QHMC:
@@ -97,8 +136,8 @@ alpha.
                 sys_start_beta = 0.0,
                 sim_times = [1],
                 alphas = [0.01],
-                ham_sys=np.zeros((2,2)),
-                ham_env_base=np.diag([0.5, 1.5]),
+                ham_sys=np.diag([0.0, 1.0]),
+                ham_env_base=np.diag([0.0, 1.0]),
                 num_monte_carlo=500,
                 verbose=False
                 ):
@@ -150,38 +189,23 @@ alpha.
         return avg_out
 
     def simulate_interactions(self):
-        self.system_state = thermal_state(self.ham_sys, self.sys_start_beta)
+        """Returns the trace distance to the target thermal state after all interactions are 
+        simulated."""
+        output = np.zeros((self.system_state.shape[0], self.system_state.shape[1] * 2)).view(np.complex128) 
         for sample in range(self.num_monte_carlo):
+            sample_state = thermal_state(self.ham_sys, self.sys_start_beta)
             for ix in range(len(self.betas)):
                 rho_env = thermal_state(self.ham_env_base, self.betas[ix])
-                rho_tot = np.kron(self.system_state, rho_env)
-                new_output = np.zeros((self.system_state.shape[0], self.system_state.shape[1] * 2)).view(np.complex128)
+                rho_tot = np.kron(sample_state, rho_env)
                 g = my_interaction(self.ham_sys.shape[0] * self.ham_env_base.shape[0])
                 ham_tot = self.total_hamiltonian + self.alphas[ix] * g
                 u = linalg.expm(1j * ham_tot * self.times[ix])
                 raw = u @ rho_tot @ u.conj().T
-                out = partrace(raw, self.ham_sys.shape[0], self.ham_env_base.shape[0])
-                new_output += out.view(np.complex128) / self.num_monte_carlo
-            self.system_state = new_output
-
-    def test_distance_with_interactions(self):
-        self.system_state = thermal_state(self.ham_sys, self.sys_start_beta);
-        system_target_state = thermal_state(self.ham_sys, self.betas[0])
-        for ix in range(500):
-            print("interaction number: ", ix)
-            rho_env = thermal_state(self.ham_env_base, self.betas[0])
-            rho_tot = np.kron(self.system_state, rho_env)
-            new_output = np.zeros((self.system_state.shape[0], self.system_state.shape[1] * 2)).view(np.complex128)
-            for sample in range(self.num_monte_carlo):
-                g = gue(self.ham_sys.shape[0] * self.ham_env_base.shape[0])
-                ham_tot = self.total_hamiltonian + self.alphas[0] * g
-                u = linalg.expm(1j * ham_tot * self.times[0])
-                raw = u @ rho_tot @ u.conj().T
-                out = partrace(raw, self.ham_sys.shape[0], self.ham_env_base.shape[0])
-                new_output += out.view(np.complex128) / self.num_monte_carlo
-            self.system_state = new_output
-            diff = system_target_state - self.system_state
-            print("system distance to target: ", trace_distance(system_target_state, self.system_state))
+                sample_state = partrace(raw, self.ham_sys.shape[0], self.ham_env_base.shape[0])
+            output += sample_state
+        self.system_state = output / self.num_monte_carlo
+        dist = trace_distance(self.system_state, thermal_state(self.ham_sys, self.betas[-1]))
+        return dist
 
     def compute_error_with_target_beta(self):
         """
@@ -274,9 +298,26 @@ if __name__ == "__main__":
     # test()
     start = time_this.time()
     # test_dimension()
-    print(my_interaction(4))
+    alpha = 0.001
+    time = 100.
+    epsilon = 0.05
+    x = []
+    y = []
+    for ix in range(20):
+        beta_e = 0.0 + 0.3 * ix
+        print("computing beta_e = ", beta_e)
+        res = minimum_interactions(alpha, time, beta_e, epsilon)
+        if res == None:
+            continue
+        x.append(beta_e)
+        y.append(res)
+    end = time_this.time()
+    print("took this many seconds: ", end - start)
+    print("x: ", x)
+    print("y: ", y)
+    plt.plot(x, y)
+    plt.show()
     # test_beta()
     # qhmc = QHMC(ham_sys = harmonic_oscillator_hamiltonian(20), ham_env_base = harmonic_oscillator_hamiltonian(5), sys_start_beta = 0.5, env_betas = [1.], sim_times = [100.], alphas = [0.001], num_monte_carlo = 500)
     # qhmc.test_distance_with_interactions()
-    end = time_this.time()
-    print("took this many seconds: ", end - start)
+    

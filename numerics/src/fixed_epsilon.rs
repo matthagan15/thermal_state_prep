@@ -126,8 +126,8 @@ pub fn run(config_file: &Path, results_file: &Path, label: String) -> MultiShotR
                     };
                     let interactions_needed = binary_search(interactions_to_epsilon, *epsilon);
                     if interactions_needed.is_none() {
-                        // don't save data, bail on remaining beta_e
-                        continue;
+                        // don't save data any data and bail on the remaining beta_e
+                        break;
                     }
                     inputs.push((*alpha, *beta_env, *epsilon, *time));
                     outputs.push((
