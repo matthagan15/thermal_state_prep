@@ -309,6 +309,10 @@ However, if we want to compute the effects of the channel on a given input, we h
     0 & 0 \\ 0 & \gamma
 \end{bmatrix}$, where the eigenvectors $\ket{0}$ and $\ket{1}$ have eigenvalues 0 and $\gamma$ respectively. Here, and throughout the rest of the paper, $\gamma$ should be thought of as a user defined parameter that can be adjusted, or chosen probablistically, throughout the cooling procedure. We use a thermal input state $\rho_E(\beta_E)$, as defined in the preliminaries. 
 
+\begin{lemma} \label{lem:on_and_off_resonance}
+Let $\mathcal{T}$ denote the second order correction to the thermalizing channel $\Phi$. 
+\end{lemma}
+
 \begin{lemma} \label{lem:t_2_system_only}
     The second order correction to the channel $\Phi$ with two level environment as described above, differs if the output state $j$ is less than, equal to, or greater than $i$. For $i < j$, meaning we are transitioning the systme from a lower energy state to a higher energy and the environment is losing energy, we have
     \begin{equation}
@@ -493,6 +497,19 @@ We used the inductive step to compute the $\identity$ term and we now have to br
 Substituting this into Eq. \eqref{eq:matrix_reloaded1} yields $e_j^T (I + T)^{L-1} e_i$. The stochasticity of $I + T$ comes from the fact that $\trace{\mathcal{T}(\ketbra{i}{i})} = 0$, along with the fact that the self-transition terms for $\mathcal{T}$ are negative which correspond to diagonal elements of T. Adding in $I$ makes the sum a stochastic matrix.
 \end{proof}
 
+Since we will be effectively reducing our quantum dynamics to classical dynamics over the eigenbasis for $H_S$ we will need bounds on the convergence of Markov chains. This is a very deep area of research, with many decades of results, so we will not attempt to provide even a summary of the current understanding. The standard textbook on the mixing times of Markov chains by Levin and Peres \cite{levin2017markov} from 2017 has almost 5000 citations at the time of writing. Instead, as we will be dealing with non-reversible Markov chains we only need the following theorem due to Jerison.
+\begin{theorem}(Markov Relaxation Time) \label{thm:markov_chain_bound}
+    Let $M : \mathbb{R}^{N} \to  \mathbb{R}^{N}$ be a Markov transition matrix acting on an $N$ dimensional state space with absolute spectral gap $\lambda_{\star} \coloneqq 1 - \max_{i > 1} |\lambda_i(M)|$, where the eigenvalues of $M$ are ordered $1 = \lambda_1 \ge \lambda_2 \ge \ldots \ge \lambda_N \geq -1$. Given this gap, if the number of steps $t$ in the Markov chain satisfies the following bound
+    \begin{align}
+        \frac{N}{\lambda_{\star}} \left( 2\log \frac{1}{\lambda_{\star}} + 4(1 + \log 2)\right) + \frac{1}{\lambda_{\star}} \left(2 \log \left( \frac{1}{\epsilon} \right) - 1\right) \le L,
+    \end{align}
+    then we can guarantee that the resulting state is $\epsilon$ close to the fixed point
+    \begin{equation}
+        \forall \vec{x} \text{ s.t. } x_i \ge 0 \text{ and } \sum_i x_i = 1, \quad \norm{\vec{\pi} - M^L \vec{x}}_1 \le \epsilon,
+    \end{equation}
+    where $\vec{\pi}$ is the unique eigenvector of eigenvalue 1 for $M$.
+\end{theorem}
+
 
 \subsection{Remainder Bound}
 We now aim to bound the spectral norm of the remainder term $R_{\Phi}$. This is rather tedious, as even to third order in $\alpha$ we have 24 terms to bound. For example, looking first at the $(A)$ term resulting from the second order derivative in Eq. \eqref{eq:second_order_deriv_intermediate_a} we have 4 multiplicative factors involving $\alpha$, leading to 4 terms from this single term of the second order derivative. As there are six terms in total, this yields 24 terms. We can profit from the fact though that the expressions for the second order derivatives do simplify and the final expression only has 3 terms, as two of the derivatives act similarly. We first will analyze the single term from Eq. \eqref{eq:second_order_deriv_intermediate_a} in detail. 
@@ -621,17 +638,52 @@ This gives us that the remainder bound, $\|R_\Phi\|\le \epsilon_R$ for
 \end{proof}
 
 \section{Single Qubit}
-% Now that we have all the tools we need to study thermalization we will tackle a single qubit first. Studying a single qubit will allow us to streamline the arguments for thermalization and make the analysis for more general systems easier. To start we take an arbitrary two-level Hamiltonian $H_S = U_H \diag(\lambda, \lambda + \Delta) U_H^\dagger$ with $0 < \Delta$. For simplicity we will set our environment gap to match this exactly, $\gamma = \Delta$,  and we will use $\gamma$ to help the reader identify which factors appear from the ancilla qubit versus the system. 
+Now that we have all the tools we need to study thermalization we will tackle a single qubit first. Studying a single qubit will allow us to streamline the arguments for thermalization and make the analysis for more general systems easier. To start we take an arbitrary two-level Hamiltonian $H_S = U_H \begin{bmatrix} \lambda & 0 \\0 & \lambda + \Delta \end{bmatrix} U_H^\dagger$, where the eigenvectors are any arbitrary basis for the space and $0 < \Delta$. For simplicity we will set our environment gap to match this exactly, $\gamma = \Delta$, and we will use $\gamma$ to help the reader identify which factors appear from the ancilla qubit versus the system. Our initial state will be the maximally mixed state $\frac{1 }{2} \identity$ and the environment qubits will be prepared in the state $\frac{e^{-\beta H_E}}{1 + e^{-\beta}}$, note that the subscript of $E$ has been dropped from the inverse temperature as there is only one temperature at play. Our goal for this section will be to show that the thermal state $\rho_S(\beta)$ is the fixed point of the dynamics and to bound the rate of convergence to this state.
 
-We will jump straight into the repeated interactions. Our setup is we feed in qubits at a temperature $\beta$ and start off with our system at temperature $0$, or the maximally mixed state $\rho_S(0) = \frac{\identity}{2}$. We repeat this $L$ times and would like to know when the resulting state is $\epsilon$ close in trace distance to the target. 
+We will jump straight into the repeated interactions with our first step being to isolate the Markovian dynamics. We will remove the off-resonance terms from the 
 \begin{align}
-    \norm{\rho_S(\beta) - \Phi^{\circ L}(\rho_S(0))}_1 &\leq \norm{\rho_S(\beta) - (\identity + \mathcal{T})^{\circ L}(\rho_S(0))}_1 + L \norm{R_{\Phi}}_1 \\
-    &= \sum_{k} \left| p_{\beta}(k) - \bra{k} (\identity + \mathcal{T})^{\circ L}(\rho_S(0)) \ket{k} \right| + L \norm{R_{\Phi}}_1 \\
-    &= \sum_k \left| p_{\beta}(k) - \sum_i \frac{1}{\dim_S} e_k^T (I + T)^L e_i \right| + L \norm{R_{\Phi}}_1. 
+    \norm{\rho_S(\beta) - \Phi^{\circ L}(\rho_S(0))}_1 &\le \norm{\rho_S(\beta) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho_S(0))}_1 + \norm{(\identity + \mathcal{T}_{\on})^{\circ L}(\rho_S(0)) - \Phi^{\circ L}(\rho_S(0)) }_1 \\
+    &\le \norm{\rho_S(\beta) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho_S(0))}_1 + L \left(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1 \right) \\
+    &= \norm{\vec{p}_{\beta} - (I + T)^L \vec{e} / 2}_1 + L \left(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1 \right),
 \end{align}
+where $\vec{e}$ is the all ones vector and corresponds to the non-normalized maximally mixed state. In order to show that the overall distance is less than $\epsilon$ we will divide our error budget into $\epsilon / 2$ for the Markov chain error and $\epsilon / 2$ for the remainder and off-resonance terms. As bounding the contributions of the remainder and off-resonance terms depends on a specific value for $L$ we will approach the Markov chain distance first.
 
-\subsection{Attempt to get rid of perturbation theory}
-Would I be able to break my second order map into off-resonance and on-resonance terms? AKA
+To compute the bound on $L$ we first need to compute the on-resonance terms $\mathcal{T}_{\on}$ so that we can compute the stochastic matrix $I + T$. For our two-level system the on-resonance terms are given by
+\begin{align}
+    \bra{0} \mathcal{T}_{\on}(\ketbra{0}{0}) \ket{0} &= - \widetilde{\alpha}^2 \frac{e^{-\beta}}{1 + e^{-\beta}} \\
+    \bra{1} \mathcal{T}_{\on}(\ketbra{0}{0}) \ket{1} &=  \widetilde{\alpha}^2 \frac{e^{-\beta}}{1 + e^{-\beta}} \\
+    \bra{0} \mathcal{T}_{\on}(\ketbra{1}{1}) \ket{0} &=  \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta}} \\
+    \bra{1} \mathcal{T}_{\on}(\ketbra{1}{1}) \ket{1} &= - \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta}}.
+\end{align}
+This allows us to compute the Markov transition matrix as
+\begin{align}
+    I + T &= \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} + \frac{\widetilde{\alpha}^2}{1 + e^{-\beta}} \begin{bmatrix} -e^{-\beta} & 1 \\ e^{-\beta} & - 1 \end{bmatrix}.
+\end{align}
+We first want to show that the thermal state is indeed the fixed point of the process. To do so note that if $(I + T) \vec{\pi} = \vec{\pi}$ then $T \vec{\pi} = 0$, so we just need to show that the thermal state is in the kernel of $T$. 
+\begin{align}
+\frac{\widetilde{\alpha}^2}{1 + e^{-\beta}} \begin{bmatrix} -e^{-\beta} & 1 \\ e^{-\beta} & - 1 \end{bmatrix} \begin{bmatrix}
+    1/(1 + e^{-\beta}) \\ e^{-\beta} / (1 + e^{-\beta}) 
+\end{bmatrix} = 0,
+\end{align}
+which is easily verifiable. The eigenvalues are also fairly straightforward to compute as $1$ and $1 - \widetilde{\alpha}^2$, leading to a gap of $\widetilde{\alpha}^2$. Plugging this into Theorem \ref{thm:markov_chain_bound} yields a lower bound on $L$ as 
+\begin{equation}
+    L \ge \frac{2}{\widetilde{\alpha}^2} \left( 2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right).
+\end{equation}
+Now as $L$ needs to be an integer we could use the ceiling of the RHS of the above and that would be sufficient, we will ignore these rounding issues in the rest of the analysis as it does not affect the asymptotics. 
+
+Now that we have a bound on $L$ we can use this to bound the remaider and off-resonance error terms. We will further divide our error-budget for these terms as $\epsilon / 4$ for the two respectively. The off-resonance terms are given as 
+\begin{align}
+    \norm{\mathcal{T}_{\off}(\rho_S(0))}_1 &=  \frac{1}{2} \left| \bra{0} \mathcal{T}_{\off}(\identity) \ket{0} \right| + \frac{1}{2} \left| \bra{1} \mathcal{T}_{\off}(\identity) \ket{1} \right| \\
+    &= \widetilde{\alpha}^2 (q(0) - q(1)) \sinc^2( \Delta t ) \\
+    &\le \widetilde{\alpha}^2 \epsilon_{\sinc} \\
+    &\le \frac{4}{5} \frac{\alpha^2}{\Delta^2},
+\end{align}
+where we used Lemma ? to compute the specific matrix elements of $\mathcal{T}_{\off}(\identity)$. In order to have the total off-resonance error meet our budget we require
+\begin{align}
+    L \norm{\mathcal{T}_{\off}}_1 \le \frac{4}{5} \frac{\alpha^2}{\Delta^2} \left(\frac{2}{\widetilde{\alpha}^2}\left(  2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right) + 1 \right) &\le \epsilon / 4 \\
+    \frac{16}{5} \frac{1}{\Delta^2 \epsilon} \left(  2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right) + \frac{4}{5} \frac{\alpha^2}{\Delta^2} \le t^2.
+\end{align}
+Now we note that this is not a proper inequality, as $\widetilde{\alpha}^2$ depends on $t$ and we cannot treat it as independent of $t$ due to the presence of $\alpha^2 / \Delta^2$.  
 \begin{align}
     \mathcal{T}(X) &= \mathcal{T}_{\on}(X) + \mathcal{T}_{\off}(X) \\
     \bra{j}\mathcal{T}_{\on}(\ketbra{i}{i}) \ket{j} &= \begin{cases}
@@ -646,34 +698,16 @@ Would I be able to break my second order map into off-resonance and on-resonance
     \end{cases},
 \end{align}
 where we note that all of the off-diagonal contributions require that $|\Delta_S(i,j) - \gamma | \ge \Delta_{\min}$ and $|\Delta_S(k,j) - \gamma | \ge \Delta_{\min}$, we just ran out of space to impose the condition inline. Now what we can do is remove the $\mathcal{T}_{\off}$ terms from the distance upper bound by including them with the remainder term. 
-\begin{align}
-    \norm{\rho_S(\beta) - \Phi^{\circ L}(\rho_S(0))}_1 &\le \norm{\rho_S(\beta) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho_S(0))}_1 + \norm{(\identity + \mathcal{T}_{\on})^{\circ L}(\rho_S(0)) - \Phi^{\circ L}(\rho_S(0)) }_1 \\
-    &\le \norm{\rho_S(\beta) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho_S(0))}_1 + L \left(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1 \right).
-\end{align}
+
 
 Now we can use the matrix distance Lemma to argue that $\norm{\rho_S(\beta) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho_S(0))}_1 = \norm{p_{\beta} - (I + T_{\on})^L e}_1$. Then by showing that $I + T_{\on}$ is a stochastic matrix and that $p_{\beta}$ is the unique fixed point all we need to do is bound the number of interactions $L$ to be above the relaxation time of the Markov chain to upper bound the distance. Computing the relaxtion time requires a lower bound on the spectral gap of $I + T_{\on}$, which is easily computed as $1 - (1 - \widetilde{\alpha}^2) = \widetilde{\alpha}^2$ for the $2 \times 2$ case. Then it will be sufficient for us to use a Theorem on relaxation times of irreducible, aperiodic markov chains:
-\begin{theorem}(Jerison Markov Relaxation Time) \label{thm:markov_chain_bound}
-    Let $M : \mathbb{R}^{N} \to  \mathbb{R}^{N}$ be a Markov transition matrix acting on an $N$ dimensional state space with absolute spectral gap $\lambda_{\star} \coloneqq 1 - \max_{i > 1} |\lambda_i(M)|$, where the eigenvalues of $M$ are ordered $1 = \lambda_1 \ge \lambda_2 \ge \ldots \ge \lambda_N \geq -1$. Given this gap, if the number of steps $t$ in the Markov chain satisfies the following bound
-    \begin{align}
-        \frac{N}{\lambda_{\star}} \left( 2\log \frac{1}{\lambda_{\star}} + 4(1 + \log 2)\right) + \frac{1}{\lambda_{\star}} \left(2 \log \left( \frac{1}{\epsilon} \right) - 1\right) \le L,
-    \end{align}
-    then we can guarantee that the resulting state is $\epsilon$ close to the fixed point
-    \begin{equation}
-        \forall \vec{x} \text{ s.t. } x_i \ge 0 \text{ and } \sum_i x_i = 1, \quad \norm{\vec{\pi} - M^L \vec{x}}_1 \le \epsilon,
-    \end{equation}
-    where $\vec{\pi}$ is the unique eigenvector of eigenvalue 1 for $M$.
-\end{theorem}
+
 
 Now we can construct a pattern for proving convergences. We use the reduction of the channel distance to the Markov chain distance and the remainder contributions (with off-resonance terms). Then we can show that the remainder distance is made small enough by taking $\alpha^2 t^2$ small enough and $\alpha$ as well. Then we bound the Markov chain distance by using the relaxation time argument above. Then once we have a computation or lower bound on the spectral gap of the Markov chain we can give a lower bound on the number of iterations needed and the only remaining work to be done is making sure the lower bound on $L$ is consistent with the bounds on the remainder error.
 
 \subsubsection{For single qubit}
 Now I'm going to do the above theorem for a single qubit channel. The first computation is for the off-resonance terms:
-\begin{align}
-    \norm{\mathcal{T}_{\off}(\rho_S(0))}_1 &=  \frac{1}{2} \left| \bra{0} \mathcal{T}_{\off}(\identity) \ket{0} \right| + \frac{1}{2} \left| \bra{1} \mathcal{T}_{\off}(\identity) \ket{1} \right| \\
-    &= \widetilde{\alpha}^2 (q(0) - q(1)) \sinc^2( \Delta t ) \\
-    &\le \widetilde{\alpha}^2 \epsilon_{\sinc} \\
-    &\le \frac{4}{5} \frac{\alpha^2}{\Delta^2}.
-\end{align}
+
 Now the remainder term is a bit of a hassle because its all in asymptotic notation so we can't get exact bounds with the current proof. It might be nice to be able to extend the above proof to work regardless of system so that way we don't have to replicate it.
 
 Now we have to analyze the Markov chain. For the $2 \times 2$ case we have
@@ -686,9 +720,7 @@ Now we have to analyze the Markov chain. For the $2 \times 2$ case we have
     \end{bmatrix}.
 \end{align}
 We can then solve for the eigenvalue gap of $I + T$ straightforwardly as $\widetilde{\alpha}^2$. This matrix can be seen to have a stationary state of $q(0) e_0 + q(1) e_1$, which is the thermal state as we expect. This allows us to solve for the minimum number of interactions, using Theorem \ref{thm:markov_chain_bound},
-\begin{equation}
-    L \ge \frac{2}{\widetilde{\alpha}^2} \left( 2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right).
-\end{equation}
+
 This allows us to argue that $\norm{\rho_S(\beta) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho_S(0)) }_1 \le \frac{\epsilon}{2}$. By setting $L$ to the ceiling of the above bound we can then compute the bounds necessary for the remainder terms. We split the remaining $\epsilon / 2$ error into half for the off-resonance term and the remainder term. For the off-resonance term we need the following inequality satisfied 
 \begin{align}
     L \norm{\mathcal{T}_{\off}}_1 \le \frac{4}{5} \frac{\alpha^2}{\Delta^2}\frac{2}{\widetilde{\alpha}^2}\left(  2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right) &\le \epsilon / 4 \\
@@ -739,7 +771,7 @@ where $I + T - J = S \Lambda S^{-1}$ is the diagonalization of the ideal dynamic
 \section{Approximate Detailed Balance}
 In classical dynamics thermalization can usually be shown through a Markov chain approach, where the state of a system is shown to be governed by a Markov chain and then a condition known as Detailed Balance allows one to argue that the chain eventually converges to a steady state. Fixed point theorems, such as the Perron-Frobenius theorem, are then used to show when the fixed point is unique and spectral gap bounds on the walk operator of the Markov chain show rates of convergence to this fixed point. For the case of our quantum system we are not dealing with probability distributions exactly, but our quantum states are well approximated by thermal state density matrices, which are probability distributions over the quantum eigenstates of the system Hamiltonian. We show that for the thermalizing channel we have studied the probability distribution over eigenstates satisfies detailed balance in the appropriate limits, indicating that given enough interactions with fresh environment ancillas the state converges to the target thermal state $\rho_S(\beta_E)$.
 
-The conditions for Detailed Balance are straightforwrd, we assume a Markov chain $\prob{i \to j }$ and assume a distribuion $\prob{i}$. Detailed Balance is said to hold if the following equality holds
+The conditions for Detailed Balance are straightforward, we assume a Markov chain $\prob{i \to j }$ and assume a distribuion $\prob{i}$. Detailed Balance is said to hold if the following equality holds
 \begin{equation}
     \prob{i \to j} \prob{i} = \prob{j \to i} \prob{j}.
 \end{equation}
