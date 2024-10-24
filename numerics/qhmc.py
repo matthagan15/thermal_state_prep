@@ -7,6 +7,8 @@ from scipy import linalg
 import math
 import time as time_this
 
+from joblib import Parallel, delayed
+
 BETA_MAX = 1000
 
 def gue(dimensions):
@@ -76,7 +78,7 @@ def sqrt_hamiltonian(dimensions):
 
 BINARY_SEARCH_UPPER_LIMIT = 2 ** 18
 
-def binary_search(f , epsilon):
+def binary_search(f , epsilon, threadpool):
     """Returns:
 - `None` if the binary search upper limit is exceeded
 - `Some((L, s))` where `L` is the minimum number of interactions
@@ -84,18 +86,19 @@ needed to reach distance `epsilon` and `s` is the std deviation.
  -
  """
     upper = 1
-    cur_dist = f(upper)
+    cur_dist = f(upper, threadpool)
     while cur_dist > epsilon:
         upper *= 2
         if upper >= BINARY_SEARCH_UPPER_LIMIT:
             print("[BINARY_SEARCH] upper limit reached.")
             return None
-        cur_dist = f(upper)
+        print("upper: ", upper)
+        cur_dist = f(upper, threadpool)
     lower = upper / 2
     print(f"[BINARY_SEARCH] searching in range [{lower}, {upper}].")
     while (upper - lower) > 1:
         mid = int(np.floor((lower + upper) / 2.))
-        cur_dist = f(mid)
+        cur_dist = f(mid, threadpool)
         if cur_dist >= epsilon:
             lower = mid
         else:
@@ -108,11 +111,13 @@ def minimum_interactions(alpha, time, beta_e, epsilon, num_samples=100):
     """
     Computes the minimum number of interactions needed to prepare a single qubit state in an 
     """
-    def f(n):
-        phi = QHMC(env_betas=[beta_e] * n, sys_start_beta=0.0, sim_times=[time] * n, alphas=[alpha] * n, num_monte_carlo=100)
-        return phi.simulate_interactions()
-    x = binary_search(f, epsilon)
-    print("x: ", x)
+
+    def f(n, threadpool):
+        phi = QHMC(ham_sys=harmonic_oscillator_hamiltonian(5), env_betas=[beta_e] * n, sys_start_beta=0.0, sim_times=[time] * n, alphas=[alpha] * n, num_monte_carlo=100)
+        return phi.simulate_interactions(threadpool)
+    with Parallel(n_jobs=8) as threadpool:
+        x = binary_search(f, epsilon, threadpool)
+        print("x: ", x)
     if type(x) == type(None):
         print("upper bound reached, returning none.")
         return None
@@ -188,11 +193,11 @@ alpha.
         # return (avg_out, b, e)
         return avg_out
 
-    def simulate_interactions(self):
+    def simulate_interactions(self, threadpool):
         """Returns the trace distance to the target thermal state after all interactions are 
         simulated."""
         output = np.zeros((self.system_state.shape[0], self.system_state.shape[1] * 2)).view(np.complex128) 
-        for sample in range(self.num_monte_carlo):
+        def sampler():
             sample_state = thermal_state(self.ham_sys, self.sys_start_beta)
             for ix in range(len(self.betas)):
                 rho_env = thermal_state(self.ham_env_base, self.betas[ix])
@@ -202,10 +207,25 @@ alpha.
                 u = linalg.expm(1j * ham_tot * self.times[ix])
                 raw = u @ rho_tot @ u.conj().T
                 sample_state = partrace(raw, self.ham_sys.shape[0], self.ham_env_base.shape[0])
-            output += sample_state
+            return sample_state
+        samples = threadpool(delayed(sampler)() for i in range(self.num_monte_carlo))
+        for sample in samples:
+            output += sample
         self.system_state = output / self.num_monte_carlo
         dist = trace_distance(self.system_state, thermal_state(self.ham_sys, self.betas[-1]))
         return dist
+        # for sample in range(self.num_monte_carlo):
+        #     sample_state = thermal_state(self.ham_sys, self.sys_start_beta)
+        #     for ix in range(len(self.betas)):
+        #         rho_env = thermal_state(self.ham_env_base, self.betas[ix])
+        #         rho_tot = np.kron(sample_state, rho_env)
+        #         g = my_interaction(self.ham_sys.shape[0] * self.ham_env_base.shape[0])
+        #         ham_tot = self.total_hamiltonian + self.alphas[ix] * g
+        #         u = linalg.expm(1j * ham_tot * self.times[ix])
+        #         raw = u @ rho_tot @ u.conj().T
+        #         sample_state = partrace(raw, self.ham_sys.shape[0], self.ham_env_base.shape[0])
+        #     output += sample_state
+        
 
     def compute_error_with_target_beta(self):
         """
@@ -303,7 +323,7 @@ if __name__ == "__main__":
     epsilon = 0.05
     x = []
     y = []
-    for ix in range(20):
+    for ix in range(4):
         beta_e = 0.0 + 0.3 * ix
         print("computing beta_e = ", beta_e)
         res = minimum_interactions(alpha, time, beta_e, epsilon)
