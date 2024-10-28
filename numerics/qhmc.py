@@ -1,4 +1,5 @@
 from cProfile import label
+import pickle
 from tabnanny import verbose
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,6 +11,25 @@ import time as time_this
 from joblib import Parallel, delayed
 
 BETA_MAX = 1000
+
+
+def sample_gammas(mean, upper, num_samples):
+    """Samples from a gaussian with provided mean and spectral norm of the system hamiltonian."""
+    rng = np.random.default_rng()
+    samples = rng.normal(mean.real, 1.5 * np.abs(upper - mean), size=(num_samples, 1))
+    samples = np.abs(samples)
+    return np.minimum(samples, upper)
+
+def load_h_chain():
+    with open('/Users/matt/scratch/hamiltonians/h_chain_2.pickle', 'rb') as openfile:
+        h_list = list(pickle.load(openfile))
+        dims = h_list.pop()
+        h = np.zeros(dims, dtype=np.complex128)
+        for h_term in h_list:
+            h_term = np.array(h_term)
+            # h += h_term / np.max([1.0, np.linalg.norm(h_term, 2)])
+            h += h_term 
+        return h
 
 def gue(dimensions):
     raw = np.random.normal(scale = np.sqrt(2)/2, size=(dimensions,dimensions * 2)).view(np.complex128)
@@ -113,7 +133,7 @@ def minimum_interactions(alpha, time, beta_e, epsilon, num_samples=100):
     """
 
     def f(n, threadpool):
-        phi = QHMC(ham_sys=harmonic_oscillator_hamiltonian(5), env_betas=[beta_e] * n, sys_start_beta=0.0, sim_times=[time] * n, alphas=[alpha] * n, num_monte_carlo=100)
+        phi = QHMC(ham_sys=harmonic_oscillator_hamiltonian(5), env_betas=[beta_e] * n, sys_start_beta=0.0, sim_times=[time] * n, alphas=[alpha] * n, num_monte_carlo=num_samples)
         return phi.simulate_interactions(threadpool)
     with Parallel(n_jobs=8) as threadpool:
         x = binary_search(f, epsilon, threadpool)
@@ -125,6 +145,12 @@ def minimum_interactions(alpha, time, beta_e, epsilon, num_samples=100):
     (interactions, dist ) = x
     return interactions
 
+def fixed_number_interactions(alpha, time, beta_e, num_interactions, num_samples = 100):
+    """Attempts to track the distance to the target thermal state as a function of the interactions used. """
+    h_sys = load_h_chain()
+    phi = QHMC(ham_sys=h_sys, env_betas=[beta_e] * num_interactions, sys_start_beta=0.0, sim_times=[time] * num_interactions, alphas=[alpha] * num_interactions, num_monte_carlo=num_samples)
+    threadpool = Parallel(n_jobs=8)
+    return  phi.simulate_with_random_env(threadpool)
  
 class QHMC:
     """
@@ -170,29 +196,6 @@ alpha.
         print("num_monte_carlo:", self.num_monte_carlo)
         print("verbose:", self.verbose)
 
-    # TODO: Fix this to just return avg_out and add other helpers, need to eliminate find_best_beta
-    def channel(self, rho_sys, env_beta, alpha, time):
-        if rho_sys.shape != self.ham_sys.shape:
-            if self.verbose:
-                print("[QHMC.channel] rho.shape, self.ham_sys.shape", rho_sys.shape, ",", self.ham_sys.shape)
-            return None
-        dim1, dim2 = self.ham_sys.shape[0], self.ham_env_base.shape[0] 
-        rho_env = thermal_state(self.ham_env_base, env_beta)
-        rho_tot = np.kron(rho_sys, rho_env)
-        avg_out = np.zeros((rho_sys.shape[0], rho_sys.shape[1] * 2)).view(np.complex128)
-        h = np.kron(self.ham_sys, np.identity(dim2 )) + np.kron(np.identity(dim1), self.ham_env_base)
-        for sample in range(self.num_monte_carlo):
-            g = gue(dim1 * dim2)
-            ham_tot = h + alpha * g
-            u = linalg.expm(1j * ham_tot * time)
-            raw = u @ rho_tot @ u.conj().T
-            out = partrace(raw, dim1, dim2)
-            avg_out += out.view(np.complex128) / self.num_monte_carlo
-        # b, e = find_best_beta(avg_out, self.ham_sys)
-        # print("b,e:", b, ", ", e)
-        # return (avg_out, b, e)
-        return avg_out
-
     def simulate_interactions(self, threadpool):
         """Returns the trace distance to the target thermal state after all interactions are 
         simulated."""
@@ -214,74 +217,38 @@ alpha.
         self.system_state = output / self.num_monte_carlo
         dist = trace_distance(self.system_state, thermal_state(self.ham_sys, self.betas[-1]))
         return dist
-        # for sample in range(self.num_monte_carlo):
-        #     sample_state = thermal_state(self.ham_sys, self.sys_start_beta)
-        #     for ix in range(len(self.betas)):
-        #         rho_env = thermal_state(self.ham_env_base, self.betas[ix])
-        #         rho_tot = np.kron(sample_state, rho_env)
-        #         g = my_interaction(self.ham_sys.shape[0] * self.ham_env_base.shape[0])
-        #         ham_tot = self.total_hamiltonian + self.alphas[ix] * g
-        #         u = linalg.expm(1j * ham_tot * self.times[ix])
-        #         raw = u @ rho_tot @ u.conj().T
-        #         sample_state = partrace(raw, self.ham_sys.shape[0], self.ham_env_base.shape[0])
-        #     output += sample_state
+
+    def simulate_with_random_env(self, threadpool):
+        avg = np.trace(self.ham_sys) / self.ham_sys.shape[0]
+        h_norm = 2*np.linalg.norm(self.ham_sys, ord = 2)
+        output = np.zeros((self.system_state.shape[0], self.system_state.shape[1] * 2)).view(np.complex128) 
+        target_state = thermal_state(self.ham_sys, self.betas[-1])
+        def sampler():
+            sample_state = thermal_state(self.ham_sys, self.sys_start_beta)
+            gammas = sample_gammas(avg, h_norm, 50)
+            dists = []
+            for ix in range(len(self.betas)):
+                output = 0.0 * sample_state
+                for gamma in gammas:
+                    rho_env = thermal_state(gamma * self.ham_env_base, self.betas[ix])
+                    rho_tot = np.kron(sample_state, rho_env)
+                    g = my_interaction(self.ham_sys.shape[0] * self.ham_env_base.shape[0])
+                    ham_tot = self.total_hamiltonian + self.alphas[ix] * g
+                    u = linalg.expm(1j * ham_tot * self.times[ix])
+                    raw = u @ rho_tot @ u.conj().T
+                    output += partrace(raw, self.ham_sys.shape[0], self.ham_env_base.shape[0])
+                sample_state = output / (len(gammas) * 1.0)
+                dists.append(trace_distance(sample_state, target_state))
+            return (sample_state, dists)
+        parallel_rets = threadpool(delayed(sampler)() for i in range(self.num_monte_carlo))
+        avg_dists = np.zeros((1, len(self.betas)))
+        for (sample, dists) in parallel_rets:
+            output += sample
+            avg_dists += np.array(dists).reshape((1, len(self.betas)))
+        avg_dists /= self.num_monte_carlo
+        self.system_state = output / self.num_monte_carlo
+        return avg_dists
         
-
-    def compute_error_with_target_beta(self):
-        """
-        Simulate the interactions and give the frobenius norm distance between
-        the output system state and the ideal system state. The ideal system
-        state is defined to be the thermal state at the temperature of the
-        last provided beta for the environment.
-        """
-        self.simulate_interactions()
-        ideal = thermal_state(self.ham_sys, self.betas[-1])
-        difference = ideal - self.system_state
-        return trace_distance(ideal, self.system_state)
-    
-    def compute_betas_and_errors(self):
-        start_time = time_this.time()
-        if self.verbose:
-            
-            print("#"*75)
-            print("[compute_betas_and_errors] start time:", start_time)
-        rho = thermal_state(self.ham_sys, self.sys_start_beta)
-        ideal_output = thermal_state(self.ham_sys, self.betas[-1])
-        ret_betas, ret_errors = [], []
-        rho_diags = []
-        sys_fro_errors = []
-        for ix in range(len(self.betas)):
-            print("percent done:", float(ix) / len(self.betas))
-            rho = self.channel(rho, self.betas[ix], self.alphas[ix], self.times[ix])
-            # ret_betas.append(out_beta)
-            # ret_errors.append(error)
-            rho_diags.append(np.abs(np.diagonal(rho)))
-            sys_fro_errors.append(np.linalg.norm(rho - ideal_output))
-        # print("fro error w/ ideal:", np.linalg.norm(rho - thermal_state(self.ham_sys, self.betas[0]), ord='fro'))
-        print("final frobenius error compared to ideal:", sys_fro_errors[-1])
-        print("done. total time:", time_this.time() - start_time)
-        if self.verbose:
-            for ix in range(len(rho_diags)):
-                print("ix:", ix)
-                # print("ret_beta:", ret_betas[ix])
-                print("ret_error:", sys_fro_errors[ix])
-                print("params: alpha=", self.alphas[ix], ", env_beta=", self.betas[ix], ", sim_time=", self.times[ix])
-                print("Ground state prob:", rho_diags[ix][0])
-                l = "#refreshes=" + str(ix) + ", err: {:4.2f}".format(sys_fro_errors[ix])
-                # We want to plot five points equally spaced.
-                plot_ix_length = math.ceil(len(rho_diags) / 5.)
-                if ix % 40 == 39:
-                    plt.plot(rho_diags[ix], label=l)
-            avg_env_state = thermal_state(self.ham_env_base, np.mean(self.betas))
-            plt.plot(np.abs(np.diagonal(ideal_output)), '-.', label="ideal output")
-            # plt.plot(np.diagonal(self.ham_sys), '+', label="hamiltonian")
-            plt.title("Thermalization of sqrt(x) w/ single qubit")
-            plt.xlabel("Eigenvector Number")
-            plt.ylabel("State Overlap")
-            # plt.plot(range(rho_diags[ix].shape[0]), true, "--", label="error:" + str(ret_errors[ix]))
-
-            plt.legend()
-            plt.show()
 
 def test_hamiltonian_gap():
     # h1 = harmonic_oscillator_hamiltonian(10)
@@ -315,29 +282,33 @@ def test_beta():
         print("output error: ", qhmc.compute_error_with_target_beta())
 
 if __name__ == "__main__":
-    # test()
+    load_h_chain()
     start = time_this.time()
-    # test_dimension()
     alpha = 0.001
     time = 100.
     epsilon = 0.05
-    x = []
-    y = []
-    for ix in range(4):
-        beta_e = 0.0 + 0.3 * ix
-        print("computing beta_e = ", beta_e)
-        res = minimum_interactions(alpha, time, beta_e, epsilon)
-        if res == None:
-            continue
-        x.append(beta_e)
-        y.append(res)
+    n = 1000
+    out = fixed_number_interactions(alpha, time, 1.0, n)
     end = time_this.time()
     print("took this many seconds: ", end - start)
-    print("x: ", x)
-    print("y: ", y)
-    plt.plot(x, y)
+    out = out.flatten().reshape((n,))
+    print(out)
+    plt.plot(range(n), out)
     plt.show()
-    # test_beta()
-    # qhmc = QHMC(ham_sys = harmonic_oscillator_hamiltonian(20), ham_env_base = harmonic_oscillator_hamiltonian(5), sys_start_beta = 0.5, env_betas = [1.], sim_times = [100.], alphas = [0.001], num_monte_carlo = 500)
-    # qhmc.test_distance_with_interactions()
+    # x = []
+    # y = []
+    # for ix in range(0):
+    #     beta_e = 0.0 + 0.3 * ix
+    #     print("computing beta_e = ", beta_e)
+    #     res = minimum_interactions(alpha, time, beta_e, epsilon)
+    #     if res == None:
+    #         continue
+    #     x.append(beta_e)
+    #     y.append(res)
+
+    # print("x: ", x)
+    # print("y: ", y)
+    # plt.plot(x, y)
+    # plt.show() 
+
     
