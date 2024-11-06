@@ -3,6 +3,10 @@ import pickle
 from tabnanny import verbose
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
+
+plt.rcParams['text.usetex'] = True
+
 from scipy import linalg
 
 import math
@@ -12,6 +16,65 @@ from joblib import Parallel, delayed
 
 BETA_MAX = 1000
 
+def prob_dist_trace_norm(p, q):
+    return np.sum(np.abs(p - q))
+
+def min_interactions_sho_markov_chain(beta, alpha, time, epsilon, dim):
+    """Computes the minimum number of steps needed for the associated markov chain for the
+    given parameters to reach the stationary distribution."""
+    print("MARKOV SEARCH")
+    target_state = np.exp(- beta * np.linspace(0.0, (dim - 1) * 1.0, dim)) / np.sum(np.exp(- beta * np.linspace(0.0, (dim - 1) * 1.0, dim)))
+    target_state_nonnormal = [np.exp(- beta * ix) for ix in range(dim)]
+    partfun = np.sum(target_state_nonnormal)
+    target_state = np.array(target_state_nonnormal) / partfun
+    target_state = np.reshape(target_state, (dim, 1))
+    initial_state = (1. / dim) * np.ones((dim, 1))
+    markov_operator = compute_sho_markov_chain(alpha, beta, time, dim)
+    # print(markov_operator)
+    # print("target state")
+    # print(target_state)
+    # print("initial state")
+    # print(initial_state)
+    
+    def f(n, threadpool):
+        out = np.linalg.matrix_power(markov_operator, n) @ initial_state
+        out = np.reshape(out, (dim, 1))
+        # print(out)
+        ret = prob_dist_trace_norm(target_state, out)
+        # print("[markov] n = ", n, ", dist: ", ret)
+        return ret
+    # print("output")
+    # f(2, None)
+    # return None
+    x = binary_search(f, epsilon, None)
+    if type(x) == type(None):
+        print("upper bound reached, returning none.")
+        return None
+    
+    (interactions, dist ) = x
+    return interactions
+
+def compute_sho_markov_chain(alpha, beta, time, dim):
+    t_mat = np.zeros((dim, dim))
+    q0 = 1.0 / (1.0 + np.exp(- beta))
+    q1 = 1.0 - q0
+    for row_ix in range(dim):
+        for col_ix in range(dim):
+            if row_ix == col_ix:
+                if row_ix == 0:
+                    t_mat[row_ix, col_ix] = - q1
+                elif row_ix == dim - 1:
+                    t_mat[row_ix, col_ix] = - q0
+                else:
+                    t_mat[row_ix, col_ix] = - 1.
+            elif row_ix == col_ix + 1:
+                t_mat[row_ix, col_ix] = q1
+            elif row_ix == col_ix - 1:
+                t_mat[row_ix, col_ix] =  q0
+            else:
+                continue
+    ret = np.identity(dim) + (((alpha * time) ** 2) / (2 * dim + 1.)) * t_mat
+    return ret
 
 def sample_gammas(mean, upper, num_samples):
     """Samples from a gaussian with provided mean and spectral norm of the system hamiltonian."""
@@ -21,14 +84,16 @@ def sample_gammas(mean, upper, num_samples):
     return np.minimum(samples, upper)
 
 def load_h_chain():
-    with open('/Users/matt/scratch/hamiltonians/h_chain_2.pickle', 'rb') as openfile:
+    with open('/Users/matt/scratch/hamiltonians/h_chain_3.pickle', 'rb') as openfile:
         h_list = list(pickle.load(openfile))
         dims = h_list.pop()
         h = np.zeros(dims, dtype=np.complex128)
+        num_terms = len(h_list)
         for h_term in h_list:
             h_term = np.array(h_term)
             # h += h_term / np.max([1.0, np.linalg.norm(h_term, 2)])
             h += h_term 
+        print("loaded hamiltonian with shape: ", h.shape, " and ", num_terms, " terms.")
         return h
 
 def gue(dimensions):
@@ -112,7 +177,7 @@ needed to reach distance `epsilon` and `s` is the std deviation.
         if upper >= BINARY_SEARCH_UPPER_LIMIT:
             print("[BINARY_SEARCH] upper limit reached.")
             return None
-        print("upper: ", upper)
+        # print("upper: ", upper)
         cur_dist = f(upper, threadpool)
     lower = upper / 2
     print(f"[BINARY_SEARCH] searching in range [{lower}, {upper}].")
@@ -127,13 +192,13 @@ needed to reach distance `epsilon` and `s` is the std deviation.
         f"[BINARY_SEARCH] min_number_interactions = {upper}, distances: {cur_dist}")
     return (upper, cur_dist)
 
-def minimum_interactions(alpha, time, beta_e, epsilon, num_samples=100):
+def minimum_interactions(alpha, time, beta_e, epsilon, dim, num_samples=100):
     """
     Computes the minimum number of interactions needed to prepare a single qubit state in an 
     """
-
+    print("SIMULATED SEARCH")
     def f(n, threadpool):
-        phi = QHMC(ham_sys=harmonic_oscillator_hamiltonian(5), env_betas=[beta_e] * n, sys_start_beta=0.0, sim_times=[time] * n, alphas=[alpha] * n, num_monte_carlo=num_samples)
+        phi = QHMC(ham_sys=harmonic_oscillator_hamiltonian(dim), env_betas=[beta_e] * n, sys_start_beta=0.0, sim_times=[time] * n, alphas=[alpha] * n, num_monte_carlo=num_samples)
         return phi.simulate_interactions(threadpool)
     with Parallel(n_jobs=8) as threadpool:
         x = binary_search(f, epsilon, threadpool)
@@ -243,6 +308,7 @@ alpha.
         parallel_rets = threadpool(delayed(sampler)() for i in range(self.num_monte_carlo))
         avg_dists = np.zeros((1, len(self.betas)))
         for (sample, dists) in parallel_rets:
+            print('ground state prob:', sample[0,0])
             output += sample
             avg_dists += np.array(dists).reshape((1, len(self.betas)))
         avg_dists /= self.num_monte_carlo
@@ -282,33 +348,43 @@ def test_beta():
         print("output error: ", qhmc.compute_error_with_target_beta())
 
 if __name__ == "__main__":
-    load_h_chain()
+    # load_h_chain()
     start = time_this.time()
-    alpha = 0.001
+    alpha = 0.005
     time = 100.
     epsilon = 0.05
-    n = 1000
-    out = fixed_number_interactions(alpha, time, 1.0, n)
-    end = time_this.time()
-    print("took this many seconds: ", end - start)
-    out = out.flatten().reshape((n,))
-    print(out)
-    plt.plot(range(n), out)
-    plt.show()
-    # x = []
-    # y = []
-    # for ix in range(0):
-    #     beta_e = 0.0 + 0.3 * ix
-    #     print("computing beta_e = ", beta_e)
-    #     res = minimum_interactions(alpha, time, beta_e, epsilon)
-    #     if res == None:
-    #         continue
-    #     x.append(beta_e)
-    #     y.append(res)
+    dim = 4
+    n = 200
+    # out = fixed_number_interactions(alpha, time, 3.0, n)
+    # out = minimum_interactions(alpha, time, 5.0, epsilon)
+    # end = time_this.time()
+    # print("took this many seconds: ", end - start)
+    # out = out.flatten().reshape((n,))
+    # print(out)
+    # plt.plot(, out)
+    # plt.show()
+    x = []
+    y = []
+    markov_pred = []
+    for beta_e in np.logspace(np.log10(1e-1), np.log10(5), 30,base=10.):
+        # beta_e = 0.0 + 0.3 * ix
+        print("computing beta_e = ", beta_e)
+        res = minimum_interactions(alpha, time, beta_e, epsilon, dim)
+        if res == None:
+            continue
+        x.append(beta_e)
+        y.append(res)
+        markov_pred.append(min_interactions_sho_markov_chain(beta_e, alpha, time, epsilon, dim))
 
-    # print("x: ", x)
-    # print("y: ", y)
-    # plt.plot(x, y)
-    # plt.show() 
+    print("x: ", x)
+    print("y: ", y)
+    print('markov: ', markov_pred)
+    plt.plot(x, y, label="Simulated")
+    plt.plot(x, markov_pred, label="Markov Pred.")
+    plt.legend(loc='lower right')
+    plt.ylabel("Num. Interactions")
+    plt.xlabel("Beta")
+    plt.title(r'Minimum Num. of interactions for $|| \rho(\beta) - \Phi^L (\rho(0)) || \le 0.05 $  W/ dim=4 SHO, $\alpha = 0.005, t = 100.$')
+    plt.show() 
 
     
