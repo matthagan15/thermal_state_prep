@@ -211,7 +211,10 @@ def minimum_interactions(alpha, time, beta_e, epsilon, dim, num_samples=100):
     return interactions
 
 def fixed_number_interactions(alpha, time, beta_e, num_interactions, num_samples = 100):
-    """Attempts to track the distance to the target thermal state as a function of the interactions used. """
+    """Attempts to track the distance to the target thermal state as a function of the interactions used. 
+    # Returns
+    A pair of numpy arrays, the first being the average distance to the target and the second the std of the dist.
+    """
     h_sys = load_h_chain()
     phi = QHMC(ham_sys=h_sys, env_betas=[beta_e] * num_interactions, sys_start_beta=0.0, sim_times=[time] * num_interactions, alphas=[alpha] * num_interactions, num_monte_carlo=num_samples)
     threadpool = Parallel(n_jobs=8)
@@ -324,18 +327,12 @@ alpha.
             return (sample_state, dists)
         parallel_rets = threadpool(delayed(sampler2)() for i in range(self.num_monte_carlo))
         avg_dists = np.zeros((1, len(self.betas)))
-        # dist_matrix = np.zeros((len(parallel_rets), len(self.betas)))
-        # for ix in range(len(parallel_rets)):
-        #     sampled_dists = np.array(dists).reshape((1, len(self.betas)))
-        #     dist_matrix[ix, : ] = sampled_dists
-        print(np.mean(dist_matrix, ))
-        for (sample, dists) in parallel_rets:
-            # print('ground state prob:', sample[0,0])
-            output += sample
-            avg_dists += np.array(dists).reshape((1, len(self.betas)))
-        avg_dists /= self.num_monte_carlo
-        self.system_state = output / self.num_monte_carlo
-        return avg_dists
+        dist_matrix = np.zeros((len(parallel_rets), len(self.betas)))
+        for ix in range(len(parallel_rets)):
+            (sample_state, dists) = parallel_rets[ix]
+            sampled_dists = np.array(dists).reshape((1, len(self.betas)))
+            dist_matrix[ix, : ] = sampled_dists
+        return (np.mean(dist_matrix, axis=0), np.std(dist_matrix, axis=0))
         
 
 def test_hamiltonian_gap():
@@ -376,14 +373,14 @@ if __name__ == "__main__":
     time = 100.
     epsilon = 0.05
     dim = 4
-    n = 2000
-    out = fixed_number_interactions(alpha, time, 3.0, n)
+    n = 200
+    (dist_means, dist_stds) = fixed_number_interactions(alpha, time, 3.0, n, num_samples=200)
     # out = minimum_interactions(alpha, time, 5.0, epsilon)
     end = time_this.time()
     print("took this many seconds: ", end - start)
-    out = out.flatten().reshape((n,))
-    print(out)
-    plt.plot([ix for ix in range(1, n + 1)], out)
+    for ix in range(len(dist_means)):
+        print(dist_means[ix], " +- ", dist_stds[ix])
+    plt.errorbar([ix for ix in range(1, n + 1)], dist_means, dist_stds)
     plt.xlabel("Num. Interactions")
     plt.ylabel(r"$|| \rho(\beta) - \Phi^L(\rho(0))||$")
     plt.title("Error vs. number of interactions For Hydrogen 3 chain. ")
