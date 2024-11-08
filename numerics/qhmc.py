@@ -297,6 +297,10 @@ alpha.
             gammas = sample_gammas(avg, h_norm, len(self.betas))
             dists = []
             for ix in range(len(self.betas)):
+                if ix % 1000 == 0:
+                    percent_done = ix * 100.0/len(self.betas)
+                    print(percent_done, "% done")
+                    # print(ix)
                 rho_env = thermal_state(gammas[ix] * self.ham_env_base, self.betas[ix])
                 rho_tot = np.kron(sample_state, rho_env)
                 g = my_interaction(self.ham_sys.shape[0] * self.ham_env_base.shape[0])
@@ -313,6 +317,8 @@ alpha.
             gammas = sample_gammas(avg, h_norm, len(self.betas))
             dists = []
             for ix in range(len(self.betas)):
+                if ix % 1000 == 0:
+                    print(f"{ix / len(self.betas)}% done")
                 output = 0.0 * sample_state
                 for gamma in gammas:
                     rho_env = thermal_state(gamma * self.ham_env_base, self.betas[ix])
@@ -367,24 +373,39 @@ def test_beta():
         print("output error: ", qhmc.compute_error_with_target_beta())
 
 if __name__ == "__main__":
-    # load_h_chain()
     start = time_this.time()
-    alpha = 0.005
-    time = 100.
+    alphas = np.linspace(0.0005, 2 * 0.0005, 2)
+    time = 1000.
     epsilon = 0.05
+    n = 2000
+    beta = 3.0
+    for alpha in alphas:
+        print('alpha = ', alpha)
+        (dist_means, dist_stds) = fixed_number_interactions(alpha, time, beta, n, num_samples=2)
+        end = time_this.time()
+        
+        print("took this many seconds: ", end - start)
+        plt.errorbar([ix for ix in range(1, n + 1)], dist_means, dist_stds, label="alpha=" + str(alpha))
+    alpha = 0.0005
+ 
     dim = 4
-    n = 200
-    (dist_means, dist_stds) = fixed_number_interactions(alpha, time, 3.0, n, num_samples=200)
-    # out = minimum_interactions(alpha, time, 5.0, epsilon)
-    end = time_this.time()
-    print("took this many seconds: ", end - start)
-    for ix in range(len(dist_means)):
-        print(dist_means[ix], " +- ", dist_stds[ix])
-    plt.errorbar([ix for ix in range(1, n + 1)], dist_means, dist_stds)
+    s = r"Error vs. number of interactions For Hydrogen 3 chain. $t = $"
+    s += str(time)
+    # (dist_means, dist_stds) = fixed_number_interactions(alpha, time, 3.0, n, num_samples=2)
+    # # out = minimum_interactions(alpha, time, 5.0, epsilon)
+    # end = time_this.time()
+    # s = r"Error vs. number of interactions For Hydrogen 3 chain. $\alpha = $"
+    # s += str(alpha)
+    # print("took this many seconds: ", end - start)
+    # # for ix in range(len(dist_means)):
+    #     # print(dist_means[ix], " +- ", dist_stds[ix])
+    # plt.errorbar([ix for ix in range(1, n + 1)], dist_means, dist_stds)
     plt.xlabel("Num. Interactions")
     plt.ylabel(r"$|| \rho(\beta) - \Phi^L(\rho(0))||$")
-    plt.title("Error vs. number of interactions For Hydrogen 3 chain. ")
-    plt.show()
+    plt.title(s)
+    plt.legend(loc="upper right")
+    # plt.show()
+    plt.savefig('/u/hagan/h3_chain_4')
     # x = []
     # y = []
     # markov_pred = []
