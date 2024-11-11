@@ -397,58 +397,51 @@ def test_beta():
         print("beta: ", beta)
         print("output error: ", qhmc.compute_error_with_target_beta())
 
-if __name__ == "__main__":
-    start = time_this.time()
-    alphas = np.linspace(0.0005, 2 * 0.0005, 2)
+def plot_sho_error_v_interaction():
+    
     time = 100.
-    epsilon = 0.05
-    n_int = 100
+    n_int = 300
     beta = 3.0
-    alpha = 0.01
+    alpha = 0.005
     dim = 4
-    # for alpha in alphas:
-    #     print('alpha = ', alpha)
-    #     (dist_means, dist_stds) = fixed_number_interactions(alpha, time, beta, n, num_samples=2)
-    #     end = time_this.time()
-        
-    #     print("took this many seconds: ", end - start)
-    #     plt.errorbar([ix for ix in range(1, n + 1)], dist_means, dist_stds, label="alpha=" + str(alpha))
-
-    # s = r"Error vs. number of interactions For Hydrogen 3 chain. $t = $"
-    # s += str(time)
-    # plt.xlabel("Num. Interactions")
-    # plt.ylabel(r"$|| \rho(\beta) - \Phi^L(\rho(0))||$")
-    # plt.title(s)
-    # plt.legend(loc="upper right")
-    # plt.savefig('/u/hagan/h3_chain_4')
-
     x = [ix for ix in range(n_int)]
-    y, yerr = fixed_number_interactions(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, n_int, num_samples=8, gamma_strategy='fixed')
+    y, yerr = fixed_number_interactions(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, n_int, num_samples=100, gamma_strategy='fixed')
     markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
-
-    # print("x: ", x)
-    # print("y +- yerr: ", y, yerr)
-    # print('markov: ', markov_pred)
     plt.errorbar(x, y, yerr, label="Simulated")
     plt.plot(x, markov_pred, label="Markov Pred.")
     plt.legend(loc='upper right')
-    plt.ylabel(r"Dist. to $e^{-\beta H} / \mathcal{Z}$")
-    plt.xlabel("Num. Interactions")
-    plt.title(r'$|| \rho(\beta) - \Phi^L (\rho(0)) || $ as a function of L W/ dim=4 SHO, $\alpha = 0.01, t = 100.$')
+    plt.ylabel(r"$|| \rho(\beta) - \Phi^L (\rho(0)) ||$")
+    plt.xlabel(r"$L$")
+    plt.title(r'$|| \rho(\beta) - \Phi^L (\rho(0)) || $ as a function of L W/ dim=4 SHO, $\alpha = 0.005, t = 100.$')
     plt.show() 
+    return
 
-    # for beta_e in np.logspace(np.log10(1e-1), np.log10(5), 30,base=10.):
-    #     # beta_e = 0.0 + 0.3 * ix
-    #     print("computing beta_e = ", beta_e)
-    #     res = minimum_interactions(alpha, time, beta_e, epsilon, dim)
-    #     if res == None:
-    #         continue
-    #     x.append(beta_e)
-    #     y.append(res)
-    #     markov_pred.append(min_interactions_sho_markov_chain(beta_e, alpha, time, epsilon, dim))
+def plot_sho_interaction_v_beta():
+    alpha = 0.005
+    time = 100.
+    epsilon = 0.05
+    dim = 4
+    x = []
+    y = []
+    markov_pred = []
+    for beta_e in np.logspace(np.log10(1e-1), np.log10(dim), 30,base=10.):
+        # beta_e = 0.0 + 0.3 * ix
+        print("computing beta_e = ", beta_e)
+        res = minimum_interactions(alpha, time, beta_e, epsilon, dim)
+        if res == None:
+            continue
+        x.append(beta_e)
+        y.append(res)
+        markov_pred.append(min_interactions_sho_markov_chain(beta_e, alpha, time, epsilon, dim))
+    plt.plot(x, y, label="Simulated")
+    plt.plot(x, markov_pred, label="Markov Pred.")
+    plt.xlabel(r"$\beta$")
+    plt.ylabel("Num. Interactions")
+    plt.title(r"Minimum interactions needed for $|| \rho(\beta) - \Phi^L (\rho(0)) || < 0.05 $, $\alpha = 0.005, t = 100.0$")
+    plt.legend(loc="lower right")
+    plt.show()
+    return
 
-    
-
-    
-
-    
+if __name__ == "__main__":
+    start = time_this.time()
+    plot_sho_error_v_interaction()
