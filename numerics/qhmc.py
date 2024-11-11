@@ -30,11 +30,7 @@ def min_interactions_sho_markov_chain(beta, alpha, time, epsilon, dim):
     target_state = np.reshape(target_state, (dim, 1))
     initial_state = (1. / dim) * np.ones((dim, 1))
     markov_operator = compute_sho_markov_chain(alpha, beta, time, dim)
-    # print(markov_operator)
-    # print("target state")
-    # print(target_state)
-    # print("initial state")
-    # print(initial_state)
+
     
     def f(n, threadpool):
         out = np.linalg.matrix_power(markov_operator, n) @ initial_state
@@ -210,16 +206,33 @@ def minimum_interactions(alpha, time, beta_e, epsilon, dim, num_samples=100):
     (interactions, dist ) = x
     return interactions
 
-def fixed_number_interactions(alpha, time, beta_e, num_interactions, num_samples = 100):
+def fixed_number_interactions(h_sys, alpha, time, beta_e, num_interactions, num_samples = 100, gamma_strategy = 'fixed'):
     """Attempts to track the distance to the target thermal state as a function of the interactions used. 
     # Returns
     A pair of numpy arrays, the first being the average distance to the target and the second the std of the dist.
     """
-    h_sys = load_h_chain()
     phi = QHMC(ham_sys=h_sys, env_betas=[beta_e] * num_interactions, sys_start_beta=0.0, sim_times=[time] * num_interactions, alphas=[alpha] * num_interactions, num_monte_carlo=num_samples)
     threadpool = Parallel(n_jobs=8)
-    return  phi.simulate_with_random_env(threadpool)
+    return  phi.simulate_with_random_env(threadpool, gamma_strategy=gamma_strategy)
  
+
+def fixed_num_interactions_markov(dim, alpha, time, beta, num_interactions):
+    markov_op = compute_sho_markov_chain(alpha, beta, time, dim)
+    target_state = np.exp(- beta * np.linspace(0.0, (dim - 1) * 1.0, dim)) / np.sum(np.exp(- beta * np.linspace(0.0, (dim - 1) * 1.0, dim)))
+    target_state_nonnormal = [np.exp(- beta * ix) for ix in range(dim)]
+    partfun = np.sum(target_state_nonnormal)
+    target_state = np.array(target_state_nonnormal) / partfun
+    target_state = np.reshape(target_state, (dim, 1))
+    initial_state = (1. / dim) * np.ones((dim, 1))
+    ret = []
+    for n in range(num_interactions):
+        out = np.linalg.matrix_power(markov_op, n) @ initial_state
+        out = np.reshape(out, (dim, 1))
+        dist = prob_dist_trace_norm(target_state, out)
+        ret.append(dist)
+    return ret
+
+
 class QHMC:
     """
     This class simulates weak interactions with a bath using GUE couplings. The main method is
@@ -268,6 +281,7 @@ alpha.
         """Returns the trace distance to the target thermal state after all interactions are 
         simulated."""
         output = np.zeros((self.system_state.shape[0], self.system_state.shape[1] * 2)).view(np.complex128) 
+        target_state = thermal_state(self.ham_sys, self.betas[-1])
         def sampler():
             sample_state = thermal_state(self.ham_sys, self.sys_start_beta)
             for ix in range(len(self.betas)):
@@ -286,7 +300,7 @@ alpha.
         dist = trace_distance(self.system_state, thermal_state(self.ham_sys, self.betas[-1]))
         return dist
 
-    def simulate_with_random_env(self, threadpool):
+    def simulate_with_random_env(self, threadpool, gamma_strategy = "random"):
         avg = np.trace(self.ham_sys) / self.ham_sys.shape[0]
         h_norm = 2*np.linalg.norm(self.ham_sys, ord = 2)
         output = np.zeros((self.system_state.shape[0], self.system_state.shape[1] * 2)).view(np.complex128) 
@@ -294,7 +308,15 @@ alpha.
 
         def sampler2():
             sample_state = thermal_state(self.ham_sys, self.sys_start_beta)
-            gammas = sample_gammas(avg, h_norm, len(self.betas))
+            if gamma_strategy == 'random':
+                gammas = sample_gammas(avg, h_norm, len(self.betas))
+            elif gamma_strategy == 'fixed':
+                print("fixed gamma strat.")
+                gammas = [1.0] * len(self.betas)
+            else:
+                print("Unsupported gamma strategy. Use 'random' or 'fixed'.")
+                raise Exception
+
             dists = []
             for ix in range(len(self.betas)):
                 if ix % 1000 == 0:
@@ -334,10 +356,13 @@ alpha.
         parallel_rets = threadpool(delayed(sampler2)() for i in range(self.num_monte_carlo))
         avg_dists = np.zeros((1, len(self.betas)))
         dist_matrix = np.zeros((len(parallel_rets), len(self.betas)))
+        ground_state_prob = 0.0
         for ix in range(len(parallel_rets)):
             (sample_state, dists) = parallel_rets[ix]
+            ground_state_prob += np.abs(sample_state[0,0])
             sampled_dists = np.array(dists).reshape((1, len(self.betas)))
             dist_matrix[ix, : ] = sampled_dists
+        print('avg ground state prob: ', ground_state_prob / len(parallel_rets))
         return (np.mean(dist_matrix, axis=0), np.std(dist_matrix, axis=0))
         
 
@@ -375,40 +400,43 @@ def test_beta():
 if __name__ == "__main__":
     start = time_this.time()
     alphas = np.linspace(0.0005, 2 * 0.0005, 2)
-    time = 1000.
+    time = 100.
     epsilon = 0.05
-    n = 2000
+    n_int = 100
     beta = 3.0
-    for alpha in alphas:
-        print('alpha = ', alpha)
-        (dist_means, dist_stds) = fixed_number_interactions(alpha, time, beta, n, num_samples=2)
-        end = time_this.time()
-        
-        print("took this many seconds: ", end - start)
-        plt.errorbar([ix for ix in range(1, n + 1)], dist_means, dist_stds, label="alpha=" + str(alpha))
-    alpha = 0.0005
- 
+    alpha = 0.01
     dim = 4
-    s = r"Error vs. number of interactions For Hydrogen 3 chain. $t = $"
-    s += str(time)
-    # (dist_means, dist_stds) = fixed_number_interactions(alpha, time, 3.0, n, num_samples=2)
-    # # out = minimum_interactions(alpha, time, 5.0, epsilon)
-    # end = time_this.time()
-    # s = r"Error vs. number of interactions For Hydrogen 3 chain. $\alpha = $"
-    # s += str(alpha)
-    # print("took this many seconds: ", end - start)
-    # # for ix in range(len(dist_means)):
-    #     # print(dist_means[ix], " +- ", dist_stds[ix])
-    # plt.errorbar([ix for ix in range(1, n + 1)], dist_means, dist_stds)
+    # for alpha in alphas:
+    #     print('alpha = ', alpha)
+    #     (dist_means, dist_stds) = fixed_number_interactions(alpha, time, beta, n, num_samples=2)
+    #     end = time_this.time()
+        
+    #     print("took this many seconds: ", end - start)
+    #     plt.errorbar([ix for ix in range(1, n + 1)], dist_means, dist_stds, label="alpha=" + str(alpha))
+
+    # s = r"Error vs. number of interactions For Hydrogen 3 chain. $t = $"
+    # s += str(time)
+    # plt.xlabel("Num. Interactions")
+    # plt.ylabel(r"$|| \rho(\beta) - \Phi^L(\rho(0))||$")
+    # plt.title(s)
+    # plt.legend(loc="upper right")
+    # plt.savefig('/u/hagan/h3_chain_4')
+
+    x = [ix for ix in range(n_int)]
+    y, yerr = fixed_number_interactions(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, n_int, num_samples=8, gamma_strategy='fixed')
+    markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
+
+    # print("x: ", x)
+    # print("y +- yerr: ", y, yerr)
+    # print('markov: ', markov_pred)
+    plt.errorbar(x, y, yerr, label="Simulated")
+    plt.plot(x, markov_pred, label="Markov Pred.")
+    plt.legend(loc='upper right')
+    plt.ylabel(r"Dist. to $e^{-\beta H} / \mathcal{Z}$")
     plt.xlabel("Num. Interactions")
-    plt.ylabel(r"$|| \rho(\beta) - \Phi^L(\rho(0))||$")
-    plt.title(s)
-    plt.legend(loc="upper right")
-    # plt.show()
-    plt.savefig('/u/hagan/h3_chain_4')
-    # x = []
-    # y = []
-    # markov_pred = []
+    plt.title(r'$|| \rho(\beta) - \Phi^L (\rho(0)) || $ as a function of L W/ dim=4 SHO, $\alpha = 0.01, t = 100.$')
+    plt.show() 
+
     # for beta_e in np.logspace(np.log10(1e-1), np.log10(5), 30,base=10.):
     #     # beta_e = 0.0 + 0.3 * ix
     #     print("computing beta_e = ", beta_e)
@@ -419,15 +447,8 @@ if __name__ == "__main__":
     #     y.append(res)
     #     markov_pred.append(min_interactions_sho_markov_chain(beta_e, alpha, time, epsilon, dim))
 
-    # print("x: ", x)
-    # print("y: ", y)
-    # print('markov: ', markov_pred)
-    # plt.plot(x, y, label="Simulated")
-    # plt.plot(x, markov_pred, label="Markov Pred.")
-    # plt.legend(loc='lower right')
-    # plt.ylabel("Num. Interactions")
-    # plt.xlabel("Beta")
-    # plt.title(r'Minimum Num. of interactions for $|| \rho(\beta) - \Phi^L (\rho(0)) || \le 0.05 $  W/ dim=4 SHO, $\alpha = 0.005, t = 100.$')
-    # plt.show() 
+    
+
+    
 
     
