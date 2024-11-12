@@ -761,7 +761,13 @@ Although we now have proof that the thermal state is a fixed point of the dynami
 \subsection{Numeric Results}
 As there are no closed form expressions for the resulting spectral gaps we have to turn to numerics to understand the convergence times of the algorithm. We will start the analysis with very small examples, such as $\dim_S = 4$, which will be sufficient to show some of the more complex behavior of the algorithm. We will first see how the distance to the target state behaves as a function of the number of interactions, as well as $\alpha$ and $t$ . Once we have determined that a certain distance from the target can be reached we will study the convergence time to meet a fixed error threshold, typically $\epsilon = 0.05$, changes as we vary $\beta$. 
 
-Starting with safe parameter choices of $\Delta = \gamma = 1$, $\alpha = 0.001$, $t = 100.0$, and $\beta = 3.0$ we show how a harmonic oscillator truncated to the $4$ lowest energy levels thermalizes. 
+Starting with safe parameter choices of $\Delta = \gamma = 1$, $\alpha = 0.01$, $t = 100.0$, and $\beta = 3.0$ we show how a harmonic oscillator truncated to the $4$ lowest energy levels thermalizes. Below is a plot for how this error behaves, we have taken only 8 samples
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{numerics/data/sho_error_vs_l.png}
+    \caption{Trace distance to target as a function of interaction number, simulation compared to Markov chain behavior. The Hilbert-Schmidt overlap with the ground state $\anglebrackets{\Phi^L(\rho(0)), \ketbra{0}{0}}$ is 0.950 at $L = 100$.}
+    \label{fig:enter-label}
+\end{figure}
 
 
 \section{General Systems}
