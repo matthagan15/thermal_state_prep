@@ -157,7 +157,7 @@ def sqrt_hamiltonian(dimensions):
     diags = [np.sqrt(ix) for ix in range(dimensions)]
     return np.diag(diags)
 
-BINARY_SEARCH_UPPER_LIMIT = 2 ** 18
+BINARY_SEARCH_UPPER_LIMIT = 2 ** 16
 
 def binary_search(f , epsilon, threadpool):
     """Returns:
@@ -176,7 +176,7 @@ needed to reach distance `epsilon` and `s` is the std deviation.
         # print("upper: ", upper)
         cur_dist = f(upper, threadpool)
     lower = upper / 2
-    print(f"[BINARY_SEARCH] searching in range [{lower}, {upper}].")
+    # print(f"[BINARY_SEARCH] searching in range [{lower}, {upper}].")
     while (upper - lower) > 1:
         mid = int(np.floor((lower + upper) / 2.))
         cur_dist = f(mid, threadpool)
@@ -184,15 +184,15 @@ needed to reach distance `epsilon` and `s` is the std deviation.
             lower = mid
         else:
             upper = mid
-    print(
-        f"[BINARY_SEARCH] min_number_interactions = {upper}, distances: {cur_dist}")
+    # print(
+        # f"[BINARY_SEARCH] min_number_interactions = {upper}, distances: {cur_dist}")
     return (upper, cur_dist)
 
 def minimum_interactions(alpha, time, beta_e, epsilon, dim, num_samples=100):
     """
     Computes the minimum number of interactions needed to prepare a single qubit state in an 
     """
-    print("SIMULATED SEARCH")
+    # print("SIMULATED SEARCH")
     def f(n, threadpool):
         phi = QHMC(ham_sys=harmonic_oscillator_hamiltonian(dim), env_betas=[beta_e] * n, sys_start_beta=0.0, sim_times=[time] * n, alphas=[alpha] * n, num_monte_carlo=num_samples)
         return phi.simulate_interactions(threadpool)
@@ -416,32 +416,92 @@ def plot_sho_error_v_interaction():
     plt.show() 
     return
 
-def plot_sho_interaction_v_beta():
-    alpha = 0.005
-    time = 100.
+def plot_sho_tot_time_vs_time():
+    alphas = np.linspace(0.01, 0.001, 5)
+    times = np.logspace(np.log10(10), np.log10(1000.), 20)
     epsilon = 0.05
     dim = 4
-    x = []
+    betas = np.logspace(np.log10(1e-1), np.log10(dim), 10, base=10)
+    beta = 4.0
     y = []
-    markov_pred = []
-    for beta_e in np.logspace(np.log10(1e-1), np.log10(dim), 30,base=10.):
-        # beta_e = 0.0 + 0.3 * ix
-        print("computing beta_e = ", beta_e)
-        res = minimum_interactions(alpha, time, beta_e, epsilon, dim)
-        if res == None:
-            continue
-        x.append(beta_e)
-        y.append(res)
-        markov_pred.append(min_interactions_sho_markov_chain(beta_e, alpha, time, epsilon, dim))
-    plt.plot(x, y, label="Simulated")
-    plt.plot(x, markov_pred, label="Markov Pred.")
+    # markov_pred = []
+    results = {}
+
+    for alpha in alphas:
+        for time in times:
+            print("alpha, time: ", alpha, time)
+            ret = minimum_interactions(alpha, time, beta, epsilon, dim, num_samples=8)
+            if ret is None:
+                results_full = False
+                continue
+            data = results.get(alpha, [])
+            data.append((time, ret * time))
+            results[alpha] = data
+    
+    for k,v in results.items():
+        print("alpha: ", k)
+        print("results: ", v)
+        x, y = zip(*v)
+        plt.plot(x, y, label='a = {:.4}'.format(k))
+    plt.yscale('log')
+    plt.xscale('log')
+    plt.xlabel(r"$t$")
+    plt.title("Total simulation time for dim = 4 Harmonic Oscillator to cool to beta = 4 vs time per interaction")
+    plt.ylabel("Total Sim Time")
+    plt.legend(loc="upper right")
+    plt.show()
+
+def plot_sho_interaction_v_beta():
+    # alphas = np.logspace(np.log10(0.0001), np.log10(0.001), 4)
+    alphas = [0.01]
+    times = np.logspace(np.log10(10), np.log10(1000.), 10)
+    epsilon = 0.05
+    dim = 4
+    betas = np.logspace(np.log10(1e-1), np.log10(dim), 10, base=10)
+    y = []
+    # markov_pred = []
+    results = {}
+
+    for alpha in alphas:
+        for time in times:
+            print("alpha, time: ", alpha, time)
+            y = []
+            results_full = True
+            for beta in betas:
+                ret = minimum_interactions(alpha, time, beta, epsilon, dim, num_samples=8)
+                if ret is None:
+                    results_full = False
+                    break
+                y.append(ret * time)
+            if results_full:
+                results[(alpha, time)] = y
+    for k,v in results.items():
+        print("alpha, t: ", k)
+        print("results: ", v)
+        plt.plot(betas, v, label='a = {:.4}, t={:1.4}'.format(k[0], k[1]))
+    plt.yscale('log')
     plt.xlabel(r"$\beta$")
-    plt.ylabel("Num. Interactions")
-    plt.title(r"Minimum interactions needed for $|| \rho(\beta) - \Phi^L (\rho(0)) || < 0.05 $, $\alpha = 0.005, t = 100.0$")
+    plt.title("Total time of simulation vs. beta for varying single interaction times.")
+    plt.ylabel("Total Sim Time")
     plt.legend(loc="lower right")
     plt.show()
+    # for beta_e in np.logspace(np.log10(1e-1), np.log10(4.0), 10,base=10.):
+    #     # beta_e = 0.0 + 0.3 * ix
+    #     print("computing beta_e = ", beta_e)
+    #     res = minimum_interactions(alpha, time, beta_e, epsilon, dim, num_samples=2)
+    #     if res == None:
+    #         continue
+    #     x.append(beta_e)
+        # y.append(res)
+        # markov_pred.append(min_interactions_sho_markov_chain(beta_e, alpha, time, epsilon, dim))
+    # plt.plot(x, y, label="Simulated")
+    # plt.plot(x, markov_pred, label="Markov Pred.")
+
+    # plt.title(r"Minimum interactions needed for $|| \rho(\beta) - \Phi^L (\rho(0)) || < 0.05 $, $\alpha = 0.005, t = 100.0$")
+    # plt.legend(loc="lower right")
+    # plt.show()
     return
 
 if __name__ == "__main__":
     start = time_this.time()
-    plot_sho_error_v_interaction()
+    plot_sho_tot_time_vs_time()
