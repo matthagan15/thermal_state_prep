@@ -761,14 +761,26 @@ Although we now have proof that the thermal state is a fixed point of the dynami
 \subsection{Numeric Results}
 As there are no closed form expressions for the resulting spectral gaps we have to turn to numerics to understand the convergence times of the algorithm. We will start the analysis with very small examples, such as $\dim_S = 4$, which will be sufficient to show some of the more complex behavior of the algorithm. We will first see how the distance to the target state behaves as a function of the number of interactions, as well as $\alpha$ and $t$ . Once we have determined that a certain distance from the target can be reached we will study the convergence time to meet a fixed error threshold, typically $\epsilon = 0.05$, changes as we vary $\beta$. 
 
-Starting with safe parameter choices of $\Delta = \gamma = 1$, $\alpha = 0.01$, $t = 100.0$, and $\beta = 3.0$ we show how a harmonic oscillator truncated to the $4$ lowest energy levels thermalizes. Below is a plot for how this error behaves, we have taken only 8 samples
+Starting with safe parameter choices of $\Delta = \gamma = 1$, $\alpha = 0.005$, $t = 100.0$, and $\beta = 3.0$ we show how a harmonic oscillator truncated to the $4$ lowest energy levels thermalizes. We can see in the plot for Fig. \ref{fig:enter-label} that the error of the simulated channel almost exactly matches the error from the Markov chain prediction. The Markov chain prediction is the distance from a uniform starting distribution and performs an update via the Markov chain matrix $I + T$, it does not perform any time evolution or attempt to simulate the total system-environment channel. Since we have reasonable confidence with this plot that the channel is mostly tracking the Markov chain prediction we can then move on to the more interesting data: how many interactions are needed to meet a fixed error. This data can be found in Fig. \ref{fig:enter-label} as well. 
 \begin{figure}
     \centering
-    \includegraphics[width=0.75\linewidth]{numerics/data/sho_error_vs_l.png}
-    \caption{Trace distance to target as a function of interaction number, simulation compared to Markov chain behavior. The Hilbert-Schmidt overlap with the ground state $\anglebrackets{\Phi^L(\rho(0)), \ketbra{0}{0}}$ is 0.950 at $L = 100$.}
+    \includegraphics[width=0.45\linewidth]{numerics/data/sho_error_vs_l.png}
+    \includegraphics[width=0.45\linewidth]{numerics/data/sho_l_vs_beta.png} \\
+    \includegraphics[width=0.5\linewidth]{numerics/data/spec_gap_dim_4.pdf}
+    \caption{TODO: Improve. Trace distance to target as a function of interaction number, simulation compared to Markov chain behavior. The Hilbert-Schmidt overlap with the ground state $\anglebrackets{\Phi^L(\rho(0)), \ketbra{0}{0}}$ is 0.940 at $L = 300$. }
     \label{fig:enter-label}
 \end{figure}
 
+The behavior of the fixed $\epsilon$ plot reveals a very interesting phenomenon where the number of interactions, and therefore total thermalization time, needed to reach the thermal state goes \emph{down} after a peak at about $\beta = 1.0$. This means colder temperatures can be reached quicker than some intermediate temperatures, assuming a starting state of the maximally mixed state. Our rationale for this behavior is that the spectral gap of the resulting Markov chain must increase with $\beta$ faster than the distance from $\rho(0)$ to $\rho(\beta)$ grows with $\beta$. This bears out when we plot the spectral gap as a function of $\beta$ for the truncated harmonic oscillator, seen in Fig. \ref{fig:enter-label}.
+
+Once we have determined how the thermalization process behaves for a given $\alpha$ and $t$, we can then sweep these parameters to determine how they effect thermalization. From our analysis of the single qubit case we would expect that the distance to the Markov chain can be made arbitrarily close as we both reduce the off-resonant terms by making $\alpha$ smaller and reducing the norm of the remainder terms by making $\widetilde{\alpha}$ smaller. As $t$ is not set we can choose which one to reduce by also varying $t$. As $t$ dictates the simulation time for the system dynamics we would like to reduce it as much as possible. The plot povided in Fig [TODO] shows that the total simulation time 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{num}
+    \caption{Caption}
+    \label{fig:enter-label}
+\end{figure}
 
 \section{General Systems}
  Now that we have studied a single qubit and the harmonic oscillator in as much detail as possible, in this section we explore the behavior of our algorithm for some more generic systems. As we have shown the dynamics of the thermalizing channel boils down to a Markov chain over the eigenstates, meaning that without (or even with) special structure it is nearly impossible to provide runtime bounds 
