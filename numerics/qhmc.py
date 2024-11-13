@@ -430,7 +430,7 @@ def plot_sho_tot_time_vs_time():
     for alpha in alphas:
         for time in times:
             print("alpha, time: ", alpha, time)
-            ret = minimum_interactions(alpha, time, beta, epsilon, dim, num_samples=8)
+            ret = minimum_interactions(alpha, time, beta, epsilon, dim, num_samples=80)
             if ret is None:
                 results_full = False
                 continue
@@ -446,8 +446,8 @@ def plot_sho_tot_time_vs_time():
     plt.yscale('log')
     plt.xscale('log')
     plt.xlabel(r"$t$")
-    plt.title("Total simulation time for dim = 4 Harmonic Oscillator to cool to beta = 4 vs time per interaction")
-    plt.ylabel("Total Sim Time")
+    # plt.title("Total simulation time for dim = 4 Harmonic Oscillator to cool to beta = 4 vs time per interaction")
+    plt.ylabel("Total Sim Time $L t$")
     plt.legend(loc="upper right")
     plt.show()
 
