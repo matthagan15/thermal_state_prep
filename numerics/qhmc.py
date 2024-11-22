@@ -111,12 +111,6 @@ def my_interaction(dimensions):
     eigvals = rng.normal(0.0, 1.0, size=(dimensions, ))
     l = np.diag(eigvals)
     return u @ l @ u.T.conj()
-    # let (q, r) = gauss_array.qr_square().unwrap();
-    #     let mut lambda = Array2::<c64>::zeros((dim, dim).f());
-    #     for ix in 0..dim {
-    #         lambda[[ix, ix]] = r[[ix, ix]] / r[[ix, ix]].norm();
-    #     }
-    #     q.dot(&lambda)
 
 def partrace(mat, d1, d2):
     tensor = mat.reshape([d1,d2,d1,d2])
