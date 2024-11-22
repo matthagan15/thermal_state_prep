@@ -773,13 +773,13 @@ Starting with safe parameter choices of $\Delta = \gamma = 1$, $\alpha = 0.005$,
 
 The behavior of the fixed $\epsilon$ plot reveals a very interesting phenomenon where the number of interactions, and therefore total thermalization time, needed to reach the thermal state goes \emph{down} after a peak at about $\beta = 1.0$. This means colder temperatures can be reached quicker than some intermediate temperatures, assuming a starting state of the maximally mixed state. Our rationale for this behavior is that the spectral gap of the resulting Markov chain must increase with $\beta$ faster than the distance from $\rho(0)$ to $\rho(\beta)$ grows with $\beta$. This bears out when we plot the spectral gap as a function of $\beta$ for the truncated harmonic oscillator, seen in Fig. \ref{fig:enter-label}.
 
-Once we have determined how the thermalization process behaves for a given $\alpha$ and $t$, we can then sweep these parameters to determine how they effect thermalization. From our analysis of the single qubit case we would expect that the distance to the Markov chain can be made arbitrarily close as we both reduce the off-resonant terms by making $\alpha$ smaller and reducing the norm of the remainder terms by making $\widetilde{\alpha}$ smaller. As $t$ is not set we can choose which one to reduce by also varying $t$. As $t$ dictates the simulation time for the system dynamics we would like to reduce it as much as possible. The plot povided in Fig [TODO] shows that the total simulation time 
+Once we have determined how the thermalization process behaves for a given $\alpha$ and $t$, we can then sweep these parameters to determine how they effect thermalization. From our analysis of the single qubit case we would expect that the distance to the Markov chain can be made arbitrarily close as we both reduce the off-resonant terms by making $\alpha$ smaller and reducing the norm of the remainder terms by making $\widetilde{\alpha}$ smaller. As $t$ is not set we can choose which one to reduce by also varying $t$. As $t$ dictates the simulation time for the system dynamics we would like to reduce it as much as possible. The plot povided in Fig \ref{fig:total_time_vs_time} shows that the total simulation time tends to decrease as $t$ increases until some threshold is met. Finding this optimum value analytically would be intractable for arbitrary dimension harmonic oscillators. One other main takeaway is that as $\alpha$ increases the total simulation time also tends to decrease for a significant range of $t$. This is due to the fact that the probability mass that can be moved by the Markov chain increases with $\alpha$. We did not take this to the extreme and study a strong-coupling, short-time interaction channel and leave these questions for future research. 
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\linewidth]{num}
-    \caption{Caption}
-    \label{fig:enter-label}
+    \includegraphics[width=0.75\linewidth]{numerics/data/total_time_vs_time.png}
+    \caption{Total simulation time as a function of per-interaction simulation time $t$.}
+    \label{fig:total_time_vs_time}
 \end{figure}
 
 \section{General Systems}
@@ -862,30 +862,33 @@ where the 0 follows the exact same algebra as the unique eigenvalue differences 
 \section{Sinc Function}
 
 \begin{lemma}[Sinc Function Bounds] \label{lem:sinc_poly_approx}
-    The following implications hold 
+    For $\sinc^2\left( \frac{x t}{2} \right)$ and $\delta_{\min} \coloneqq \min_{\Delta(i,j) \neq \Delta(k,l)} \left| \Delta(i,j) - \Delta(k, l) \right|$, we will make significant use of the following bounds:
     \begin{align}
-        |x| \leq \sqrt{10 \epsilon_{\sinc}/7} &\implies \sinc^2(x) \geq 1 - \epsilon_{\sinc} \label{eq:sinc_lower_bound}\\
-        |x| \geq 1 / \sqrt{\epsilon_{\sinc}} &\implies \sinc^2(x) \leq \epsilon_{\sinc}. \label{eq:sinc_upper_bound}
-    \end{align}
-    % The constant approximation $f(x) = 1$ has error $|f(x) - 1| \leq \widetilde{\epsilon}_{\sinc}$ if $|x| \leq \sqrt{2 \widetilde{\epsilon}_{\sinc}}$. This leads to the observation that $\widetilde{\epsilon}_{\sinc}$ acts as a lower bound for $f(x)$, as $|x| \leq \sqrt{2 \widetilde{\epsilon}_{\sinc}}$ implies $f(x) \geq 1 - \widetilde{\epsilon}_{\sinc}$. We denote this upper bound with $\Delta_{\sinc} \coloneqq \sqrt{2 \widetilde{\epsilon}_{\sinc}}$. 
-    % We also require a lower bound $\epsilon_{\sinc}$, such that $|x| \geq \Delta_{\min} \implies f(x) \leq \epsilon_{\sinc}$. Setting $\Delta_{\min} = 1 / \sqrt{\epsilon_{\sinc}}$ guarantees this to hold. 
+        |x| \ge \delta_{\min} &\implies \sinc^2 \left( \frac{x t}{2} \right) \le \frac{4}{\delta_{\min}^2 t^2} \label{eq:sinc_upper_bound} \\
+        |x| \le \sqrt{\frac{10}{7}} \frac{2}{\delta_{\min} t} &\implies \sinc^2\left(\frac{x t}{2} \right) \ge 1 - \frac{4}{\delta_{\min}^2 t^2}. \label{eq:sinc_lower_bound}
+\end{align}
+
 \end{lemma}
 \begin{proof}
-    We start with a Taylor Series for $\sinc^2$, which we compute using the expression of $\sinc$ as $\sinc(x) = \frac{\sin x}{x} = \int_0^1 \cos(sx) ds$. We compute the first two derivatives as
+    The first inequality is rather trivial
     \begin{align}
-        \frac{d \sinc^2(x)}{dx} &= -2 \int_0^1 \sin(sx) s ds \int_0^1 \cos(sx) ds \\
-        \frac{d^2 \sinc^2(x)}{dx^2} &= -2 \int_0^1 \cos(sx)s^2 ds \int_0^1 \cos(sx) ds + 2\int_0^1 \sin(sx) s ~ds \int_0^1 \sin(sx) s ~ds.
+        \sinc^2 \left( \frac{x t}{2} \right) &= \frac{\sin^2 (x t /2)}{(x t / 2)^2} \le \frac{4}{x^2 t^2} \le \frac{4}{\delta_{\min}^2 t^2}.
+    \end{align}
+    The second involves a Taylor Series for $\sinc^2$, which we compute using the expression of $\sinc$ as $\sinc(x t/ 2) = \frac{\sin xt /2}{xt/2} = \int_0^1 \cos(sxt/2) ds$.  The first two derivatives can then be computed straightforwardly by noting that the derivative can be pulled into the integral by the Liebniz integral rule
+    \begin{align}
+        \frac{d \sinc^2(x t /2)}{dx} &= - t \int_0^1 \sin(sx) s ds \int_0^1 \cos(sx) ds \\
+        \frac{d^2 \sinc^2(x t /2)}{dx^2} &= -t^2 / 2 \int_0^1 \cos(sx)s^2 ds \int_0^1 \cos(sx) ds + t^2 / 2 \int_0^1 \sin(sx) s ~ds \int_0^1 \sin(sx) s ~ds.
     \end{align}
     We can evaluate each of these derivatives about the origin using continuity of the derivatives along with the limits $\lim_{x \to 0} \cos(sx) = 1$ and $\lim_{x \to 0} \sin(sx) = 0$. We can now compute the Maclaurin Series for some $x_{\star} \in [0,1]$ as
     \begin{align}
-        f(x) &= f(0) + x \frac{df}{dx}\bigg|_{x = 0} + \frac{x^2}{2!} \frac{d^2f}{dx^2}\bigg|_{x = x_{\star}}.
+        \sinc^2 \left(\frac{x t}{2} \right) &= \sinc^2(0) + x \frac{d}{dx} \sinc^2 \left(\frac{x t}{2} \right) \bigg|_{x = 0} + \frac{x^2}{2!} \frac{d^2}{dx^2} \sinc^2 \left(\frac{x t}{2} \right) \bigg|_{x = x_{\star}}.
     \end{align}
-    Plugging in $\sinc^2(0) = 1$ and $\frac{d\sinc^2(x)}{dx}\big|_{x = 0} = 0$ then yields $|\sinc^2(x) - 1| = \frac{|x|^2}{2} \abs{\frac{d^2\sinc^2(x)}{dx^2}(x_{\star})}$. We make use of the rather simplistic bound
+    Plugging in $\sinc^2(0) = 1$ and $\frac{d\sinc^2(x t /2)}{dx}\big|_{x = 0} = 0$ then yields $|\sinc^2(xt/2) - 1| = \frac{|x|^2}{2} \abs{\frac{d^2\sinc^2(x t / 2)}{dx^2}(x_{\star})}$. We make use of the rather simplistic bound
     \begin{align}
-        \abs{\frac{d^2\sinc^2(x)}{dx^2}(x_{\star})} &\leq 2 \abs{\int_0^1 \cos(sx) s^2 ds \int_0^1 \cos(sx) ds} + 2\abs{\int_0^1 \sin(sx) s ds \int_0^1 \sin(sx) s ds} \\
-        &\leq 2 \int_0^1 \abs{\cos(sx)} s^2 ds \int_0^1 \abs{\cos(sx)} ds + 2\parens{\int_0^1 \abs{\sin(sx)} |s| ds}^2 \\
-        &\leq 2 \int_0^1 s^2 ds + 2\parens{\int_0^1 s ds}^2 \\
-        &\leq 2/3 + 1/2 = 7/6.
+        \abs{\frac{d^2\sinc^2(x)}{dx^2}(x_{\star})} &\leq t^2 / 2 \abs{\int_0^1 \cos(sx_{\star} t/ 2) s^2 ds \int_0^1 \cos(sx_{\star} t/ 2) ds} + t^2 /2 \abs{\int_0^1 \sin(sx_{\star} t/ 2) s ds \int_0^1 \sin(sx_{\star} t/ 2) s ds} \\
+        &\leq t^2 / 2 \int_0^1 \abs{\cos(sx_{\star} t/2)} s^2 ds \int_0^1 \abs{\cos(sx_{\star} t /2 )} ds + t^2 / 2 \parens{\int_0^1 \abs{\sin(sx_{\star} t /2)} |s| ds}^2 \\
+        &\leq t^2 / 2 \int_0^1 s^2 ds + t^2 / 2 \parens{\int_0^1 s ds}^2 \\
+        &\leq t^2.
     \end{align}
     This yields the final inequality $|\sinc^2(x) - 1| \leq \frac{7|x|^2}{10}$. We then see that $|x| \leq \sqrt{10 \widetilde{\epsilon}_{\sinc}/7}$ implies $|f(x) - 1| \leq \widetilde{\epsilon}_{\sinc}$. 
 
