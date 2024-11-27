@@ -275,7 +275,23 @@ where we note that all of the $i \neq j$ contributions for the off-resonance ter
         &= - \widetilde{\alpha}^2 \sum_{k \neq i} \bra{k} \left( \mathcal{T}_{\on}(\ketbra{i}{i}) + \mathcal{T}_{\off}(\ketbra{i}{i}) \right) \ket{k} \\
         &\eqqcolon  \bra{i} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{i} + \bra{i} \mathcal{T}_{\off}(\ketbra{i}{i}) \ket{i}.
     \end{align}
-    By plugging in Eqs. \eqref{eq:on_resonance_i_geq_j} and \eqref{eq:on_resonance_i_leq_j} we arrive at the statement of the lemma. 
+    By plugging in Eqs. \eqref{eq:on_resonance_i_geq_j} and \eqref{eq:on_resonance_i_leq_j} we are done with the self-transition terms. The last expression needing proof is the bound on the trace norm of the off-resonance map. For this we will assume a worst-case scenario in which $\gamma$ forces all 3 terms in Eq. \eqref{eq:t_2_intermediate_1} to be off-resonant. Then using Lemma \ref{lem:sinc_poly_approx} to bound the $\sinc$ factors gives us
+    \begin{align}
+        i \neq j \implies \abs{\bra{j}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{j}} &\le \widetilde{\alpha}^2\frac{4}{\delta_{\min}^2 t^2} \left( 1 + q(0) + q(1)\right) = \frac{8 \alpha^2}{\delta_{\min}(\dim + 1)}.
+    \end{align}
+    This allows us to bound the off-resonance self-transition term
+    \begin{align}
+        \abs{\bra{i}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{i}} &= \abs{- \sum_{j \neq i} \bra{j} \mathcal{T}_{\off}(\ketbra{i}{i}) \ket{j}} \le (\dim_S - 1) \frac{8 \alpha^2}{\delta_{\min} (\dim + 1)} \le \frac{4 \alpha^2}{\delta_{\min}}.
+    \end{align}
+    Now we can use this, along with our no off-diagonal output elements of $\mathcal{T}$, to compute the trace norm of the off-resonance map
+    \begin{align}
+        \norm{\mathcal{T}_{\off}(\rho)}_1 &= \sum_{j} \abs{\bra{j} \mathcal{T}_{\off}(\rho) \ket{j}} \\
+        &\le \sum_{i, j} \rho_{i,i} \abs{\bra{j}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{j}} \\
+        &= \sum_{i} \rho_{i,i} \left(\sum_{j \neq i} |\bra{j} \mathcal{T}_{\off}(\ketbra{i}{i}) \ket{j}| + |\bra{i} \mathcal{T}_{\off}(\ketbra{i}{i})\ket{i}| \right) \\
+        &\le \sum_{i} \rho_{i,i} \left( (\dim_S - 1) \frac{8 \alpha^2}{\delta_{\min}(\dim + 1)} + \frac{4 \alpha^2}{\delta_{\min}} \right) \\
+        &\le \frac{8 \alpha^2}{\delta_{\min}}.
+    \end{align}
+    Which completes the proof.
 \end{proof}
 
 Now that we have fully characterized the diagonal-to-diagonal of the transition matrix we turn our attention to the off-diagonal elements. We show that off-diagonal elements are not introduced by the channel to this order of approximation, meaning if the input state is diagonal then the output state is also diagonal to $\bigo{\alpha^2 t^2}$. Further, any nonzero off-diagonal elements remain in place and don't transfer to other off-diagonal elements. The following corollary can be seen by direct substitution into Eq. \eqref{eq:el_gigante} from Lemma \ref{lem:big_one} so we state it without proof.
@@ -406,69 +422,118 @@ Now that we have all the tools we need to study thermalization we will tackle a 
 
 To start, we take an arbitrary two-level Hamiltonian $H_S = U_S \begin{bmatrix} \lambda & 0 \\0 & \lambda + \Delta \end{bmatrix} U_S^\dagger$ where the eigenvectors $U_S$ are any arbitrary basis for the space and $0 < \Delta$. For simplicity we will set our environment gap to match this exactly, $\gamma = \Delta$, and we will use $\gamma$ to help the reader identify which factors appear from the ancilla qubit versus the system. Our initial state will be the maximally mixed state $\frac{1 }{2} \identity$ and the environment qubits will be prepared in the state $\frac{e^{-\beta H_E}}{1 + e^{-\beta}}$, note that the subscript of $E$ has been dropped from the inverse temperature as there is only one temperature at play. Our goal for this section will be to show that the thermal state $\rho_S(\beta)$ is the fixed point of the dynamics and to bound the rate of convergence to this state.
 
-We will jump straight into the repeated interactions with our first step being to isolate the Markovian dynamics. We will remove the off-resonance terms from the 
-\begin{align}
-    \norm{\rho_S(\beta) - \Phi^{\circ L}(\rho_S(0))}_1 &\le \norm{\rho_S(\beta) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho_S(0))}_1 + \norm{(\identity + \mathcal{T}_{\on})^{\circ L}(\rho_S(0)) - \Phi^{\circ L}(\rho_S(0)) }_1 \\
-    &\le \norm{\rho_S(\beta) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho_S(0))}_1 + L \left(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1 \right) \\
-    &= \norm{\vec{p}_{\beta} - (I + T)^L \vec{e} / 2}_1 + L \left(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1 \right),
-\end{align}
-where $\vec{e}$ is the all ones vector and corresponds to the non-normalized maximally mixed state. In order to show that the overall distance is less than $\epsilon$ we will divide our error budget into $\epsilon / 2$ for the Markov chain error and $\epsilon / 2$ for the remainder and off-resonance terms. As bounding the contributions of the remainder and off-resonance terms depends on a specific value for $L$ we will approach the Markov chain distance first.
+\begin{theorem} \label{thm:single_qubit}
+    Let $H_S$ be an arbitrary single qubit Hamiltonian with eigenvalue gap $\Delta$ and $\rho$ any input state diagonal in the $H_S$ basis, $[\rho, H_S] = 0$. After $L$ interactions with $\alpha$ and $t$ satisfying the following bounds the state of the system will be $\epsilon$ close in trace distance to the thermal state at temperature $\beta$
+    \begin{align}
+        \norm{\rho_S(\beta) - \Phi^{\circ L}(\rho)}_1 \in \bigotilde{\epsilon}.
+    \end{align}
+    The lower bound for $L$ is
+    \begin{equation}
+        L \ge \frac{2}{\widetilde{\alpha}^2} \left( 2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right)
+    \end{equation}
+    or $L \in \widetilde{\Omega}\left( \frac{1}{\widetilde{\alpha}^2} \right)$. We can then set $\alpha = 1 / (\Delta^2 t^3)$ and require $t \in \widetilde{\Omega}\left( \frac{\sqrt{\dim}}{\Delta \sqrt{\epsilon}} \right)$ in order for the error to be in $\widetilde{O}(\epsilon)$. The bound properly carried through to $L$ is $L \in \widetilde{\Theta}\left(\frac{\dim^3}{\epsilon^2} \right)$. Therefore the total simulation time required scales like $\widetilde{\Theta}\left( \frac{\dim^{7/2}}{\Delta \epsilon^{5/2}} \right)$. \matt{This is garbage, but is correct garbage. Can possibly be improved through the error analysis. Instead of setting $\alpha = 1/\Delta^2 t^3$ to pull out the same asymptotic parameters we could do something a bit smarter.}
+\end{theorem}
+\begin{proof}
+    We start off by isolating the Markovian dynamics hidden in the first two terms of the small $\alpha$ expansion of $\Phi$
+    \begin{align}
+    \norm{\rho_S(\beta) - \Phi^{\circ L}(\rho)}_1 &\le \norm{\rho_S(\beta) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho)}_1 + \norm{(\identity + \mathcal{T}_{\on})^{\circ L}(\rho) - \Phi^{\circ L}(\rho) }_1 \\
+    &\le \norm{\rho_S(\beta) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho)}_1 + L \left(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1 \right) \\
+    &= \norm{\vec{p}_{\beta} - (I + T)^L \vec{p}}_1 + L \left(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1 \right),
+    \end{align}
+    where $\vec{p}$ is a vector consisting of the diagonal entries of $\rho$. To proceed we will first analyze the Markov chain dynamics and then we will bound the overall error $L(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\phi}}_1)$.
 
-To compute the bound on $L$ we first need to compute the on-resonance terms $\mathcal{T}_{\on}$ so that we can compute the stochastic matrix $I + T$. For our two-level system the on-resonance terms are given by
-\begin{align}
-    \bra{0} \mathcal{T}_{\on}(\ketbra{0}{0}) \ket{0} &= - \widetilde{\alpha}^2 \frac{e^{-\beta}}{1 + e^{-\beta}} \sinc^2 \left( \frac{(-\Delta + \gamma)t}{2}\right) \\
-    \bra{1} \mathcal{T}_{\on}(\ketbra{0}{0}) \ket{1} &=  \widetilde{\alpha}^2 \frac{e^{-\beta}}{1 + e^{-\beta}} \sinc^2 \left( \frac{(-\Delta + \gamma)t}{2}\right) \\
-    \bra{0} \mathcal{T}_{\on}(\ketbra{1}{1}) \ket{0} &=  \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta}} \sinc^2 \left( \frac{(\Delta - \gamma)t}{2}\right)\\
-    \bra{1} \mathcal{T}_{\on}(\ketbra{1}{1}) \ket{1} &= - \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta}} \sinc^2 \left( \frac{(\Delta - \gamma)t}{2}\right),
-\end{align}
-where for now we let $\gamma = \Delta$ which sets the $\sinc$ factors to 1. This allows us to compute the Markov transition matrix as
-\begin{align}
-    I + T &= \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} + \frac{\widetilde{\alpha}^2}{1 + e^{-\beta}} \begin{bmatrix} -e^{-\beta} & 1 \\ e^{-\beta} & - 1 \end{bmatrix}.
-\end{align}
-We first want to show that the thermal state is indeed the fixed point of the process. To do so note that if $(I + T) \vec{\pi} = \vec{\pi}$ then $T \vec{\pi} = 0$, so we just need to show that the thermal state is in the kernel of $T$. 
-\begin{align}
-\frac{\widetilde{\alpha}^2}{1 + e^{-\beta}} \begin{bmatrix} -e^{-\beta} & 1 \\ e^{-\beta} & - 1 \end{bmatrix} \begin{bmatrix}
-    1/(1 + e^{-\beta}) \\ e^{-\beta} / (1 + e^{-\beta}) 
-\end{bmatrix} = 0,
-\end{align}
-which is easily verifiable. The eigenvalues are also fairly straightforward to compute as $1$ and $1 - \widetilde{\alpha}^2$, leading to a gap of $\widetilde{\alpha}^2$. Plugging this into Theorem \ref{thm:markov_chain_bound} yields a lower bound on $L$ as 
-\begin{equation}
+    We first need to compute the entries of $T$, which are given by the on-resonance terms. As there are only 2 states for the system $T$ is a $2 \times 2$ matrix. Using Theorem \ref{thm:on_and_off_resonance} these 4 entries are given as
+    \begin{align}
+        \vec{e}_0^T T \vec{e}_0 = \bra{0} \mathcal{T}_{\on}(\ketbra{0}{0}) \ket{0} &= - \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(-\Delta + \gamma)t}{2}\right) \label{eq:single_qubit_markov_1}\\
+        \vec{e}_1^T T \vec{e}_0 = \bra{1} \mathcal{T}_{\on}(\ketbra{0}{0}) \ket{1} &=  \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(-\Delta + \gamma)t}{2}\right) \\
+        \vec{e}_0^T T \vec{e}_1 = \bra{0} \mathcal{T}_{\on}(\ketbra{1}{1}) \ket{0} &=  \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(\Delta - \gamma)t}{2}\right)\\
+        \vec{e}_1^T T \vec{e}_1 = \bra{1} \mathcal{T}_{\on}(\ketbra{1}{1}) \ket{1} &= - \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(\Delta - \gamma)t}{2}\right), \label{eq:single_qubit_markov_4}
+    \end{align}
+    where we will set $\gamma = \Delta$ for the rest of this analysis. To proceed with the proof we need two pieces of information: the unique fixed point of the Markov chain and the Markov chain's spectral gap. It is easy enough to see that the fixed point is the thermal state
+    \begin{align}
+        (I + T)\vec{p}_{\beta} &= \vec{p}_{\beta} + \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \Delta}}\begin{bmatrix}
+            -e^{-\beta \Delta} & 1 \\ e^{-\beta \Delta} & -1
+        \end{bmatrix} \begin{bmatrix}
+            1 / (1 + e^{-\beta \Delta}) \\ e^{-\beta \Delta} / ( 1 + e^{-\beta \Delta})
+        \end{bmatrix}\\
+        &= \vec{p}_{\beta}.
+    \end{align}
+    The spectral gap of this $2 \times 2$ matrix is also easy to compute and it works out to be $\widetilde{\alpha}^2$. 
+
+    To complete the proof we will use Theorem \ref{thm:markov_chain_bound} to get a bound on the number of interactions $L$ needed in order for the input state $\rho$ to be $\epsilon/2$ close to the fixed point $\rho(\beta)$. Once this bound on $L$ is determined we will use it to bound the error terms $L(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1)$. The lower bound on $L$ is easy enough
+    \begin{equation}
     L \ge \frac{2}{\widetilde{\alpha}^2} \left( 2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right).
-\end{equation}
-Now as $L$ needs to be an integer we could use the ceiling of the RHS of the above and that would be sufficient, we will ignore these rounding issues in the rest of the analysis as it does not affect the asymptotics. 
+    \end{equation} 
+    Now we will use twice this expression for an upper bound on $L$, which allows us to bound the error terms
+    \begin{align}
+        L \left( \norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1\right) &\le \frac{4}{\widetilde{\alpha}^2} \left( 2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right) \left( \frac{8 \alpha^2}{\delta_{\min}^2} + 16 \sqrt{\frac{2}{\pi}} \dim_S (\alpha t)^3 \right) \\
+        &= 32(\dim + 1) \left( 2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right) \left( \frac{1}{\Delta^2 t^2} + 2 \sqrt{\frac{2}{\pi}} \dim_S (\alpha t) \right).
+    \end{align}
+    Now we could do something dumb and set $\alpha = \frac{1}{\Delta^2 t^3}$, which allows us to simplify the rightmost factor. Then we can require $t \in \widetilde{\Omega}\left( \frac{\sqrt{\dim}}{\Delta \sqrt{\epsilon}} \right)$ which gives the error term in $\widetilde{O}(\epsilon)$. Works for now but can probably do better. \matt{improved analysis mentioned before goes here.} 
+\end{proof}
 
-Now that we have a bound on $L$ we can use this to bound the remaider and off-resonance error terms. We will further divide our error-budget for these terms as $\epsilon / 4$ for the two respectively. The off-resonance terms are given as 
-\begin{align}
-    \norm{\mathcal{T}_{\off}(\rho_S(0))}_1 &=  \frac{1}{2} \left| \bra{0} \mathcal{T}_{\off}(\identity) \ket{0} \right| + \frac{1}{2} \left| \bra{1} \mathcal{T}_{\off}(\identity) \ket{1} \right| \\
-    &= \widetilde{\alpha}^2 (q(0) - q(1)) \sinc^2( \Delta t ) \\
-    &\le \widetilde{\alpha}^2 \epsilon_{\sinc} \\
-    &\le \frac{4}{5} \frac{\alpha^2}{\Delta^2},
-\end{align}
-where we used Theorem \ref{thm:on_and_off_resonance} to compute the specific matrix elements of $\mathcal{T}_{\off}(\identity)$. In order to have the total off-resonance error meet our budget we require
-\begin{align}
-    L \norm{\mathcal{T}_{\off}}_1 \le \frac{4}{5} \frac{\alpha^2}{\Delta^2} \left(\frac{2}{\widetilde{\alpha}^2}\left(  2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right) + 1 \right) &\le \epsilon / 4 \\
-    \frac{16}{5} \frac{1}{\Delta^2 \epsilon} \left(  2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right) + \frac{4}{5} \frac{\alpha^2}{\Delta^2} \le t^2.
-\end{align}
-Now we note that this is not a proper inequality, as $\widetilde{\alpha}^2$ depends on $t$ and we cannot treat it as independent of $t$ due to the presence of $\alpha^2 / \Delta^2$. However, we can make a precise asymptotic statement that $t \in \widetilde{\Omega} \left( \frac{1}{\Delta} \sqrt{ \frac{1}{\epsilon} + \alpha^2} \right)$.
+% We will jump straight into the repeated interactions with our first step being to isolate the Markovian dynamics. We will remove the off-resonance terms from the 
+%  In order to show that the overall distance is less than $\epsilon$ we will divide our error budget into $\epsilon / 2$ for the Markov chain error and $\epsilon / 2$ for the remainder and off-resonance terms. As bounding the contributions of the remainder and off-resonance terms depends on a specific value for $L$ we will approach the Markov chain distance first.
 
-Or we can take $\alpha^2 = \frac{1}{\epsilon}$, which then gives us $t \in \Omega \left(\frac{1}{\Delta \sqrt{\epsilon}} \right)$. 
+% To compute the bound on $L$ we first need to compute the on-resonance terms $\mathcal{T}_{\on}$ so that we can compute the stochastic matrix $I + T$. For our two-level system the on-resonance terms are given by
 
-\subsection{Misaligned Gaps}
-Now that we have studied in detail the fixed point and convergence rate for a single qubit when we can exactly match the gap and set $\gamma = \Delta$, we now want to characterize how our output changes as $\gamma$ deviates from $\Delta$. We will consider $\gamma$ a stochastic variable and characterize the results probabilistically. To go about this we will reintroduce the factors of $\sinc$ into the on-resonance terms from the previous analysis and then propagate these factors through to the eigenvalues. Once we know the eigenvalues we can use a brief analysis of $\sinc$ to provide bounds on the gap with a known probability.
+% where for now we let $\gamma = \Delta$ which sets the $\sinc$ factors to 1. This allows us to compute the Markov transition matrix as
+% \begin{align}
+%     I + T &= \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} + \frac{\widetilde{\alpha}^2}{1 + e^{-\beta}} \begin{bmatrix} -e^{-\beta} & 1 \\ e^{-\beta} & - 1 \end{bmatrix}.
+% \end{align}
+% We first want to show that the thermal state is indeed the fixed point of the process. To do so note that if $(I + T) \vec{\pi} = \vec{\pi}$ then $T \vec{\pi} = 0$, so we just need to show that the thermal state is in the kernel of $T$. 
+% \begin{align}
+% \frac{\widetilde{\alpha}^2}{1 + e^{-\beta}} \begin{bmatrix} -e^{-\beta} & 1 \\ e^{-\beta} & - 1 \end{bmatrix} \begin{bmatrix}
+%     1/(1 + e^{-\beta}) \\ e^{-\beta} / (1 + e^{-\beta}) 
+% \end{bmatrix} = 0,
+% \end{align}
+% which is easily verifiable. The eigenvalues are also fairly straightforward to compute as $1$ and $1 - \widetilde{\alpha}^2$, leading to a gap of $\widetilde{\alpha}^2$. Plugging this into Theorem \ref{thm:markov_chain_bound} yields a lower bound on $L$ as 
+% \begin{equation}
+%     L \ge \frac{2}{\widetilde{\alpha}^2} \left( 2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right).
+% \end{equation}
+% Now as $L$ needs to be an integer we could use the ceiling of the RHS of the above and that would be sufficient, we will ignore these rounding issues in the rest of the analysis as it does not affect the asymptotics. 
 
-Bringing back in the $\sinc$ factors our expression for $I + T$ becomes
+% Now that we have a bound on $L$ we can use this to bound the remaider and off-resonance error terms. We will further divide our error-budget for these terms as $\epsilon / 4$ for the two respectively. The off-resonance terms are given as 
+% \begin{align}
+%     \norm{\mathcal{T}_{\off}(\rho_S(0))}_1 &=  \frac{1}{2} \left| \bra{0} \mathcal{T}_{\off}(\identity) \ket{0} \right| + \frac{1}{2} \left| \bra{1} \mathcal{T}_{\off}(\identity) \ket{1} \right| \\
+%     &= \widetilde{\alpha}^2 (q(0) - q(1)) \sinc^2( \Delta t ) \\
+%     &\le \widetilde{\alpha}^2 \epsilon_{\sinc} \\
+%     &\le \frac{4}{5} \frac{\alpha^2}{\Delta^2},
+% \end{align}
+% where we used Theorem \ref{thm:on_and_off_resonance} to compute the specific matrix elements of $\mathcal{T}_{\off}(\identity)$. In order to have the total off-resonance error meet our budget we require
+% \begin{align}
+%     L \norm{\mathcal{T}_{\off}}_1 \le \frac{4}{5} \frac{\alpha^2}{\Delta^2} \left(\frac{2}{\widetilde{\alpha}^2}\left(  2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right) + 1 \right) &\le \epsilon / 4 \\
+%     \frac{16}{5} \frac{1}{\Delta^2 \epsilon} \left(  2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right) + \frac{4}{5} \frac{\alpha^2}{\Delta^2} \le t^2.
+% \end{align}
+% Now we note that this is not a proper inequality, as $\widetilde{\alpha}^2$ depends on $t$ and we cannot treat it as independent of $t$ due to the presence of $\alpha^2 / \Delta^2$. However, we can make a precise asymptotic statement that $t \in \widetilde{\Omega} \left( \frac{1}{\Delta} \sqrt{ \frac{1}{\epsilon} + \alpha^2} \right)$.
+
+% Or we can take $\alpha^2 = \frac{1}{\epsilon}$, which then gives us $t \in \Omega \left(\frac{1}{\Delta \sqrt{\epsilon}} \right)$. 
+
+Now that we have the fixed point and convergence rate for a single qubit by precisely tuning our environment $\gamma = \Delta$ we would like to know if this result is robust to deviations of $\gamma$ about $\Delta$. We will consider $\gamma$ a stochastic variable with probability $1 - \delta$ of being within a window about $\Delta$ of width \matt{Fill in window width}. We MAY also need that $\gamma$ is an unbiased estimator to the mean, or $\mathbb{E}[\gamma] = \Delta$, but not clear right now. To go about this we will reintroduce the factors of $\sinc$ into the on-resonance terms from the previous analysis and then propagate these factors through to the eigenvalues. Once we know the eigenvalues we can use a brief analysis of $\sinc$ to provide bounds on the gap with a known probability. 
+
+We can write the Markov transition matrix for stochastic $\gamma$ by reintroducing the $\sinc$ terms in Eqs. \eqref{eq:single_qubit_markov_1} - \eqref{eq:single_qubit_markov_4} and noting they all have the same argument. This allows us to write the transition matrix as
 \begin{align}
     I + T &= \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} + \widetilde{\alpha}^2 \sinc^2 \left(\frac{(\Delta - \gamma)t}{2} \right) \frac{1}{1 + e^{-\beta \gamma}}\begin{bmatrix} -e^{-\beta \gamma} & 1 \\ e^{-\beta \gamma} & -1\end{bmatrix}. \label{eq:markov_matrix_single_qubit_gamma}
 \end{align}
-The first observation is that every matrix element of $T$ is affected the same by the $\sinc$ factor, so we can pull it in front of the matrix. More over, the structure of the matrix is the same so the fixed point has not changed and is still $[\frac{1}{1 + e^{-\beta \gamma}}, \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}}]^T$. Notice however that since $\gamma \neq \Delta$ this is indeed \emph{not} a thermal state of the system Hamiltonian at temperature $\beta$. We can view it as a thermal state of the system Hamiltonian if we shift the temperature though to $\beta' = \beta \frac{\gamma}{\Delta}$. The difference between our ideal thermal state and the target is straightforward to compute
-\begin{align}
-    \left| \frac{1}{1 + e^{-\beta \Delta}} - \frac{1}{1 + e^{-\beta \gamma}}\right| &= 
-\end{align}
-Or we can use the general purpose Boltzmann distribution lemma and use $\norm{\rho_S(\beta') - \rho_S(\beta)}_1 \le 2 |\beta' - \beta| \dim_S \norm{H}$. For our case $\norm{H} = \Delta$ and $\dim_S = 2$. We can further compute $|\beta' - \beta| = \beta \left| 1 - \frac{\gamma}{\Delta}\right|$. So if we want to bound the difference between these two distributions as $\epsilon_{\beta'}$ then we require 
+ The fixed point is now a function of $\gamma$ which is rather easy to compute as $[\frac{1}{1 + e^{-\beta \gamma}}, \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}}]^T$. Since $\gamma \neq \Delta$ this is \emph{not} the thermal state at temperature $\beta$, instead what we will do is find a window for $\gamma$ about $\Delta$ which will be $\epsilon$ close to the thermal state. 
+ 
+ We find this window by computing a Taylor Series of $1 / (1 + e^{-\beta \gamma})$ about $\gamma$. For our single qubit state the trace distance can be computed
+ \begin{align}
+     \norm{\rho_S(\beta, \gamma) - \rho_S(\beta, \Delta)}_1 &= \abs{\bra{1} \rho_S(\beta, \gamma) \ket{1} - \bra{1}\rho_S(\beta, \Delta)\ket{1}} + \abs{\bra{2} \rho_S(\beta, \gamma) \ket{2} - \bra{2}\rho_S(\beta, \Delta)\ket{2}} \\
+     &= \abs{\bra{1} \rho_S(\beta, \gamma) \ket{1} - \bra{1}\rho_S(\beta, \Delta)\ket{1}} + \abs{1 - \bra{1} \rho_S(\beta, \gamma) \ket{1} -1 + \bra{1}\rho_S(\beta, \Delta)\ket{1}} \\
+     &= 2 \abs{\bra{1} \rho_S(\beta, \gamma) \ket{1} - \bra{1}\rho_S(\beta, \Delta)\ket{1}}.
+ \end{align}
+    Now we expand this about $\gamma = \Delta$
+    \begin{align}
+    \frac{1}{1 + e^{-\beta \gamma}} &= \frac{1}{1 + e^{-\beta \Delta}} + (\gamma - \Delta) \beta \frac{1}{1 + e^{-\beta \gamma_{\star}}} \frac{e^{-\beta \gamma_{\star}}}{1 + e^{-\beta \gamma_{\star}}},
+    \end{align}
+ which leads to the distance as $\norm{\rho_S(\beta, \gamma) - \rho_S(\beta, \Delta)}_1 \le 2 \beta |\Delta - \gamma|$.
+If we want our distance to be less than $\epsilon$ we require 
 \begin{equation}
-    \abs{\gamma - \Delta} \le \frac{\epsilon_{\beta}}{4\beta}.
+    \abs{\gamma - \Delta} \le \frac{\epsilon}{2 \beta}. \label{eq:single_qubit_ineq_1}
 \end{equation}
-This linear scaling of the deviation of $\gamma$ from $\Delta$ is a byproduct of linearizing the difference in Boltzmann distributions and it is unclear if this could be improved specifically for the single qubit case. 
+
+Now we move on to bounding the number of interactions needed to reach the fixed point of the Markov chain. As seen in the proof of Theorem \ref{thm:single_qubit}
 
 So our distance has become:
 \begin{align}
@@ -698,9 +763,14 @@ This completes the proof that $\rho_S(\beta)$ is a fixed point of $\identity + \
 If $i = j$ the result is on the order of $1 - \Theta(\widetilde{\alpha}^2 \frac{2}{\dim_S (\dim_S - 1)})$, which approaches 1 as $\widetilde{\alpha} \to 0$, and is clearly greater than zero. If $i < j$ the result is $\frac{2 \widetilde{\alpha}^2}{\dim_S (\dim_S - 1)} q(1; i,j) \chi(i,j)$ which is positive. If $i > j$ the result is $\frac{2 \widetilde{\alpha}^2}{\dim_S (\dim_S - 1)} q(0; i,j) \chi(i,j)$ which again is positive. These three results show that for all $i$ and $j$ there is a nonzero probability of transitioning from $i$ to $j$ within a single interaction, thereby showing ergodicity. As $\norm{\mathcal{T}_{\off}}_1 \le \frac{4 \alpha^2}{\delta_{\min}^2}$ and $\norm{R_{\Phi}}_1 \in \bigo{\alpha^3 t^3}$ there exists a small enough value of $\alpha$ such that $L_{\star}(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1) \le \epsilon / 2$. The Markov Relaxation Theorem \ref{thm:markov_chain_bound} tells us that taking $L_{\star}$ sufficiently large yields $\norm{\rho_S(\beta) + (\identity + \mathbb{E}_{\gamma} \mathcal{T}_{\on})^{\circ L_{\star}}(\rho)}_1 \le \epsilon /2$. This completes the proof.
 \end{proof}
 
-One of the main drawbacks to our results thus far has been that the runtime depends on the spectral gap of a Markov chain, which in turn varies based on our knowledge of the eigenvalue differences $\Delta_S(i,j)$. Although characterizing this dependency analytically seems incredibly difficult, it is rather straightforward to test how well it works numerically on small, classically simulable systems. We did just this for two Hydrogen chain systems, H2 and H3, which are a standard benchmark system in computational chemistry. For each interaction we sample a value of $\gamma$ from a Gaussian distribution with mean $\trace{H_S}$ and variance $\frac{|\norm{H_S} - \trace{H_S}}{2}$, the trace is relatively easy to compute and $\norm{H_S}$ can typically be upper bounded. We then tracked the distance of the system state with each interaction and see a decrease in the error as the number of interactions proceeds. We observe that this rather oblivious distribution of $\gamma$ leads to surprisingly good results for conservative values of $\alpha = 10^{-3}$ and $t = 10^2$; we achieve a trace distance of 0.06 to the thermal state for $\beta = 3$ for H2 and $0.1$ for H3. 
-
- We report on numeric investigations on the performance of this algorithm for simple Hydrogen chain systems, a common benchmarking system for the performance of quantum chemistry algorithms. We will run a basic implementation of this algorithm, using exact matrix exponentiation to implement the time evolution operators $e^{\pm i (H_S + H_E + \alpha G)t}$ and measure the trace distance to the exact thermal state, also computed using matrix exponentiation. We will use rather conservative choices of $\alpha = 0.001$ and $t = 100.0$ for all hydrogen chains. To choose $\gamma$ we will sample a value randomly from a Gaussian random variable centered at the average eigenvalue of $H_S$, computed using the trace identity $\trace{H_S} = \sum \lambda(i)$ and divide by the dimension of the Hilbert space. 
+One of the main drawbacks to our results thus far has been that the runtime depends on the spectral gap of a Markov chain, which in turn varies based on our knowledge of the eigenvalue differences $\Delta_S(i,j)$. Although characterizing this dependency analytically seems incredibly difficult, it is rather straightforward to test how well it works numerically on small, classically simulable systems. We did just this for two Hydrogen chain systems, H2 and H3, which are a standard benchmark system in computational chemistry. For each interaction we sample a value of $\gamma$ from a Gaussian distribution with mean $\trace{H_S}$ and variance $\frac{|\norm{H_S} - \trace{H_S}}{2}$, the trace is relatively easy to compute and $\norm{H_S}$ can typically be upper bounded. We then tracked the distance of the system state with each interaction and see a decrease in the error as the number of interactions proceeds. We observe that this rather oblivious distribution of $\gamma$ leads to surprisingly good results for conservative values of $\alpha = 10^{-3}$ and $t = 10^2$; we achieve a trace distance of 0.06 to the thermal state for $\beta = 3$ for H2 and $0.1$ for H3. See Fig. \ref{fig:h_chain_error} for results.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.45\linewidth]{numerics/data/h2_chain_2.png}
+    \includegraphics[width = 0.45\linewidth]{numerics/data/h3_chain_7.png}
+    \caption{Hydrogen-2 and Hydrogen-3 chain distance to thermal state vs number of interactions. YES THIS IS A BAD PLOT IT NEEDS TO BE RERAN WITH LABELS.}
+    \label{fig:h_chain_error}
+\end{figure}
 
 \bibliographystyle{unsrt}
 \bibliography{bib}
