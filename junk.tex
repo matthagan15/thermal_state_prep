@@ -2801,5 +2801,78 @@ This gives us that the remainder bound, $\|R_\Phi\|\le \epsilon_R$ for
 Is there a way we can simplify this proof by using the one norm? I bet it becomes a lot simpler. 
 
 
+% \begin{proof}
+%     We start off by isolating the Markovian dynamics hidden in the first two terms of the small $\alpha$ expansion of $\Phi$
+%     \begin{align}
+%     \norm{\rho_S(\beta) - \Phi^{\circ L}(\rho)}_1 &\le \norm{\rho_S(\beta) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho)}_1 + \norm{(\identity + \mathcal{T}_{\on})^{\circ L}(\rho) - \Phi^{\circ L}(\rho) }_1 \\
+%     &\le \norm{\rho_S(\beta) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho)}_1 + L \left(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1 \right) \\
+%     &= \norm{\vec{p}_{\beta} - (I + T)^L \vec{p}}_1 + L \left(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1 \right),
+%     \end{align}
+%     where $\vec{p}$ is a vector consisting of the diagonal entries of $\rho$. To proceed we will first analyze the Markov chain dynamics and then we will bound the overall error $L(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\phi}}_1)$.
+
+%     We first need to compute the entries of $T$, which are given by the on-resonance terms. As there are only 2 states for the system $T$ is a $2 \times 2$ matrix. Using Theorem \ref{thm:second_order_transition} these 4 entries are given as
+%     \begin{align}
+%         \vec{e}_0^T T \vec{e}_0 = \bra{0} \mathcal{T}_{\on}(\ketbra{0}{0}) \ket{0} &= - \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(-\Delta + \gamma)t}{2}\right) \label{eq:single_qubit_markov_1}\\
+%         \vec{e}_1^T T \vec{e}_0 = \bra{1} \mathcal{T}_{\on}(\ketbra{0}{0}) \ket{1} &=  \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(-\Delta + \gamma)t}{2}\right) \\
+%         \vec{e}_0^T T \vec{e}_1 = \bra{0} \mathcal{T}_{\on}(\ketbra{1}{1}) \ket{0} &=  \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(\Delta - \gamma)t}{2}\right)\\
+%         \vec{e}_1^T T \vec{e}_1 = \bra{1} \mathcal{T}_{\on}(\ketbra{1}{1}) \ket{1} &= - \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(\Delta - \gamma)t}{2}\right), \label{eq:single_qubit_markov_4}
+%     \end{align}
+%     where we will set $\gamma = \Delta$ for the rest of this analysis. To proceed with the proof we need two pieces of information: the unique fixed point of the Markov chain and the Markov chain's spectral gap. It is easy enough to see that the fixed point is the thermal state
+%     \begin{align}
+%         (I + T)\vec{p}_{\beta} &= \vec{p}_{\beta} + \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \Delta}}\begin{bmatrix}
+%             -e^{-\beta \Delta} & 1 \\ e^{-\beta \Delta} & -1
+%         \end{bmatrix} \begin{bmatrix}
+%             1 / (1 + e^{-\beta \Delta}) \\ e^{-\beta \Delta} / ( 1 + e^{-\beta \Delta})
+%         \end{bmatrix}\\
+%         &= \vec{p}_{\beta}.
+%     \end{align}
+%     The spectral gap of this $2 \times 2$ matrix is also easy to compute and it works out to be $\widetilde{\alpha}^2$. 
+
+%     To complete the proof we will use Theorem \ref{thm:markov_chain_bound} to get a bound on the number of interactions $L$ needed in order for the input state $\rho$ to be $\epsilon/2$ close to the fixed point $\rho(\beta)$. Once this bound on $L$ is determined we will use it to bound the error terms $L(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1)$. The lower bound on $L$ is easy enough
+%     \begin{equation}
+%     L \ge \frac{2}{\widetilde{\alpha}^2} \left( 2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right).
+%     \end{equation} 
+%     Now we will use twice this expression for an upper bound on $L$, which allows us to bound the error terms
+%     \begin{align}
+%         L \left( \norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1\right) &\le \frac{4}{\widetilde{\alpha}^2} \left( 2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right) \left( \frac{8 \alpha^2}{\delta_{\min}^2} + 16 \sqrt{\frac{2}{\pi}} \dim_S (\alpha t)^3 \right) \\
+%         &= 32(\dim + 1) \left( 2 \log \frac{1}{\widetilde{\alpha}^2} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right) \left( \frac{1}{\Delta^2 t^2} + 2 \sqrt{\frac{2}{\pi}} \dim_S (\alpha t) \right).
+%     \end{align}
+%     Now we could do something dumb and set $\alpha = \frac{1}{\Delta^2 t^3}$, which allows us to simplify the rightmost factor. Then we can require $t \in \widetilde{\Omega}\left( \frac{\sqrt{\dim}}{\Delta \sqrt{\epsilon}} \right)$ which gives the error term in $\widetilde{O}(\epsilon)$. Works for now but can probably do better. \matt{improved analysis mentioned before goes here.} 
+% \end{proof}
+
+% Now that we have the fixed point and convergence rate for a single qubit by precisely tuning our environment $\gamma = \Delta$ we would like to know if this result is robust to deviations of $\gamma$ about $\Delta$. We will consider $\gamma$ a stochastic variable with probability $1 - \delta$ of being within a window about $\Delta$ of width $\sigma$. To go about this we will reintroduce the factors of $\sinc$ into the on-resonance terms from the previous analysis and then propagate these factors through to the eigenvalues. Once we know the eigenvalues we can use a brief analysis of $\sinc$ to provide bounds on the gap with a known probability. We will proceed by breaking our distance into three parts: one of the distance of the thermal state to the fixed point of the Markov chain, one of distance of our state to the fixed point, and then our error
+% \begin{align}
+%     \norm{\rho_S(\beta) - \Phi^{\circ L}(\identity / 2)}_1 &\le 4 \beta \abs{\gamma - \Delta} + \norm{p_{\beta'} - (I + T)^L \vec{e} / 2}_1 + L (\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1).
+% \end{align}
+
+% We can write the Markov transition matrix for stochastic $\gamma$ by reintroducing the $\sinc$ terms in Eqs. \eqref{eq:single_qubit_markov_1} - \eqref{eq:single_qubit_markov_4} and noting they all have the same argument. This allows us to write the transition matrix as
+
+%  The fixed point is now a function of $\gamma$ which is rather easy to compute as $[\frac{1}{1 + e^{-\beta \gamma}}, \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}}]^T$. Since $\gamma \neq \Delta$ this is \emph{not} the thermal state at temperature $\beta$, instead what we will do is find a window for $\gamma$ about $\Delta$ which will be $\epsilon$ close to the thermal state. 
+ 
+ 
+
+% Now we move on to bounding the number of interactions needed to reach the fixed point of the Markov chain. As seen in the proof of Theorem \ref{thm:single_qubit} this essentially boils down to the spectral gap, which can be computed from Eq. \eqref{eq:markov_matrix_single_qubit_gamma} as $\lambda_{\star} = \widetilde{\alpha}^2 \sinc^2 \left( \frac{|\Delta - \gamma| t}{2} \right)$. This implies that we need to take 
+% \begin{align}
+%     L \ge \frac{\dim_S}{\lambda_{\star}} (junk) = \frac{10}{\alpha^2 t^2 \sinc^2(|\Delta - \gamma| t /2)} (junk)
+% \end{align}
+% To prove this we will use a bound on $1 / \lambda_{\star}$. From Lemma \ref{lem:sinc_poly_approx} we know that 
+% \begin{equation}
+%     \sinc^2 \left( \frac{|\Delta - \gamma| t}{2} \right) \ge 1 - \frac{|\Delta - \gamma|^2 t^2}{2},
+% \end{equation}
+% which with probability $1 - \delta$ is in turn greater than $1 - \frac{\sigma^2 t^2}{2}$. So if we take a choice of $L$ to be the ceiling of $\frac{\dim_S(\dim + 1)}{\alpha^2 t^2(1 - \sigma^2 t^2 / 2)}(junk)$ then we will have chosen an appropriate $L$ with probability $1 - \delta$.
+
+% Our last term we need to bound is the error bound which we repeat using a similar procedure as before:
+% \begin{align}
+%     L(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1) &\le 2 \frac{\dim}{\alpha^2 t^2(1 - \frac{\sigma^2 t^2}{ 2})}(junk)\left(\frac{8 \alpha^2}{\Delta^2} + 16 \sqrt{\frac{2}{\pi}} \dim_S (\alpha t)^3 \right) \\
+%     &= \frac{2 \dim}{1 - \frac{\sigma^2 t^2}{2 }} (junk) \left( \frac{8}{\Delta^2 t^2} + 16 \sqrt{\frac{2}{\pi}} \dim_S (\alpha t) \right). 
+% \end{align}
+% Again we can require $\alpha t = 1 / (\Delta^2 t^2)$ to make the two terms on the right hand side asymptotically equivalent. The main drivers then of the inequality will become
+% \begin{align}
+%     \frac{1}{\Delta^2 t^2} \frac{1}{1 - \frac{\sigma^2 t^2}{2 }} (\widetilde{junk}) \le \epsilon
+% \end{align}
+% This is tricky because we would like to get a bound on the time $t$ we require to simulate, but by taking $t$ too large we risk making our inequality from the $\sinc$ function to be bogus. So we need $1 - \sigma^2 t^2 / 2 \ge 0$ or $t \le \frac{\sqrt{2}}{ \sigma}$. We can stick $t^2$ to be the maximum of the parabola below, which is $t = \frac{1}{\sqrt{2} \sigma}$. The next question becomes what happens if this maxima of the parabola in the denominator is not sufficiently large to reach our goal? The value of the max is $\frac{1}{2 \sigma^2}(1 - 1/4)$, so we asymptotically need $\sigma \in \bigo{\sqrt{\epsilon} \Delta}$, up to logarithmic factors. This gives a $t$ value of $t \in \widetilde{\Theta}\left(\frac{1}{\sqrt{\epsilon} \Delta} \right)$.
+
+% So to summarize, we need $\beta \le \frac{\epsilon}{2 \sigma}$, $L \in \widetilde{\Omega} \left( \frac{\Delta^2}{\sigma^2} \right)$, and $\sigma \in \bigotilde{\sqrt{\epsilon} \Delta}$ in order for this all to work out. We can most likely improve this most by improving the fixed point to thermal state argument, we could compute what the average fixed point is of the random matrix. But that involves generating functions so I'm not too sure I want to mess with that. \matt{This part is structurally complete, but needs to be reworded and put into an appropriate theorem? I'm just not sure what the best way of going about this is, it might even be fine to leave this part as a discussion as opposed to a theorem.}
+
 
 \end{document}
