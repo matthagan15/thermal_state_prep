@@ -1,4 +1,5 @@
 from cProfile import label
+import json
 import pickle
 from tabnanny import verbose
 import numpy as np
@@ -414,7 +415,7 @@ def plot_sho_tot_time_vs_time():
     alphas = np.linspace(0.01, 0.001, 5)
     times = np.logspace(np.log10(10), np.log10(1000.), 20)
     epsilon = 0.05
-    dim = 4
+    dim = 2
     betas = np.logspace(np.log10(1e-1), np.log10(dim), 10, base=10)
     beta = 4.0
     y = []
@@ -424,14 +425,16 @@ def plot_sho_tot_time_vs_time():
     for alpha in alphas:
         for time in times:
             print("alpha, time: ", alpha, time)
-            ret = minimum_interactions(alpha, time, beta, epsilon, dim, num_samples=80)
+            ret = minimum_interactions(alpha, time, beta, epsilon, dim, num_samples=20)
             if ret is None:
                 results_full = False
                 continue
             data = results.get(alpha, [])
             data.append((time, ret * time))
             results[alpha] = data
-    
+    with open('/Users/matt/repos/thermal_state_prep/numerics/data/t_vs_tot_time.json', 'w') as f:
+        json.dump(results, f)
+        
     for k,v in results.items():
         print("alpha: ", k)
         print("results: ", v)
@@ -444,6 +447,8 @@ def plot_sho_tot_time_vs_time():
     plt.ylabel("Total Sim Time $L t$")
     plt.legend(loc="upper right")
     plt.show()
+    with open('/Users/matt/repos/thermal_state_prep/numerics/data/t_vs_tot_time.json', 'w') as f:
+        json.dump(results, f)
 
 def plot_sho_interaction_v_beta():
     # alphas = np.logspace(np.log10(0.0001), np.log10(0.001), 4)
