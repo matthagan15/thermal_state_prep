@@ -2573,4 +2573,233 @@ A similar proof works for the other summation
 
 
 
+
+\begin{lemma} \label{lem:t_2_system_only}
+    The second order correction to the channel $\Phi$ with two level environment as described above, differs if the output state $j$ is less than, equal to, or greater than $i$. For $i < j$, meaning we are transitioning the systme from a lower energy state to a higher energy and the environment is losing energy, we have
+    \begin{equation}
+        \left| \bra{j}\mathcal{T}^{(2)}(\ketbra{i}{i})\ket{j} - \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2 \parens{(\Delta_S(i,j) + \gamma) t/ 2} \right| \leq 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}.
+    \end{equation}
+    For $i > j$, meaning we are transitioning the system from a high energy state to a lower energy state, we have
+    \begin{equation}
+        \left| \bra{j}\mathcal{T}^{(2)}(\ketbra{i}{i})\ket{j} - \frac{\alpha^2 t^2}{\dim + 1} \frac{1}{1 + e^{-\beta_E \gamma}} \sinc^2 \parens{(\Delta_S(i,j) - \gamma) t/ 2} \right| \leq 3 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}.
+    \end{equation}
+    For $i = j$, where the state does not gain or lose energy, we get contributions from all other system states that are weighted based on the gain or loss of energy and is given by
+    \begin{align}
+        &\left| \bra{i} \mathcal{T}^{(2)}(\ketbra{i}{i}) \ket{i} + \frac{\alpha^2 t^2}{\dim + 1} \parens{\frac{1}{1 + e^{-\beta_E \gamma}} \sum_{a < i} \sinc^2 ((\Delta_S(a, i) + \gamma) t/ 2) + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sum_{a > i} \sinc^2((\Delta_S(a, i) - \gamma)t/ 2)} \right| \nonumber \\
+        &\leq 4 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc},
+    \end{align}
+    where we point out the difference in sign for the $i = j$ terms and the $i \neq j $ terms.
+\end{lemma}
+\begin{proof}
+    For $i < j$ we use Eq. \eqref{eq:second_order_transitions_final_final} straightforwardly
+    
+    From this expression, we see that since $i < j \implies \Delta_S(i,j) < 0$ we have that $\sinc^2(\Delta_S(i,j)t/2) \leq \epsilon_{\sinc}$ and $\sinc^2((\Delta_S(i,j) - \gamma)t/2) \le \epsilon_{\sinc}$. We can then isolate the only non-negligible term, which leads to the difference
+    \begin{align}
+        i < j \implies \left| \bra{j}\mathcal{T}^{(2)}(\ketbra{i}{i})\ket{j} - \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2 \parens{(\Delta_S(i,j) + \gamma) t/ 2} \right| &\le 2 \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc} \\
+        &= \frac{8 \alpha^2}{\Delta_{\min}^2 (\dim + 1)}.
+    \end{align}
+    For $i > j$ we can start from Eq. \ref{eq:t_2_intermediate_1} and the only difference is that the sinc term with $\Delta_S(i,j) - \gamma$ is the non-negligible term so we get
+    \begin{align}
+    i > j \implies \left| \bra{j}\mathcal{T}^{(2)}(\ketbra{i}{i})\ket{j} - \frac{\alpha^2 t^2}{\dim + 1} \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sinc^2 \parens{(\Delta_S(i,j) - \gamma) t/ 2} \right| &\le \frac{8 \alpha^2}{\Delta_{\min}^2 (\dim + 1)}.
+        \end{align}
+     
+    For the $i = j$ calculation we have
+    \begin{align}
+        \bra{i} \mathcal{T}^{(2)}(\ketbra{i}{i}) \ket{i} &= \frac{1}{1 + e^{-\beta_E \gamma}} \int \bra{i, 0} \mathcal{T}^{(2)}_G (\ketbra{i, 0}{i, 0}) \ket{i, 0} dG + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \int \bra{i, 0} \mathcal{T}^{(2)}_G (\ketbra{i, 1}{i, 1}) \ket{i, 0} dG \nonumber \\
+        &~+ \frac{1}{1 + e^{-\beta_E \gamma}} \int \bra{i, 1} \mathcal{T}^{(2)}_G (\ketbra{i, 0}{i, 0}) \ket{i, 1} dG + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \int \bra{i, 1} \mathcal{T}^{(2)}_G (\ketbra{i, 1}{i, 1}) \ket{i, 1} dG . \label{eq:same_state_transition_with_env}
+    \end{align}
+    In this expression there are two terms that are same-state transitions of $\ket{i, 0} \to \ket{i, 0}$ and $\ket{i, 1} \to \ket{i,1}$ and the other two terms are negligible. We start by upper bounding the negligible terms and then analyze the same-state transitions.
+    \begin{align}
+        \int \bra{i, 0} \mathcal{T}^{(2)}_G (\ketbra{i, 1}{i, 1}) \ket{i, 0} dG &= \frac{\alpha^2 t^2}{\dim + 1} \sinc^2(\gamma t/ 2)
+    \end{align}
+    and 
+    \begin{align}
+        \int \bra{i, 1} \mathcal{T}^{(2)}_G (\ketbra{i, 0}{i, 0}) \ket{i, 1} dG &= \frac{\alpha^2 t^2}{\dim + 1} \sinc^2(-\gamma t/ 2),
+    \end{align}
+    however this is the same as the prior negligible term as $\sinc^2(x) = \sinc^2(-x)$. Adding these two terms, along with their respective coefficients yields
+    \begin{align}
+        &\frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \int \bra{i, 0} \mathcal{T}^{(2)}_G (\ketbra{i, 1}{i, 1}) \ket{i, 0} dG + \frac{1}{1 + e^{-\beta_E \gamma}} \int \bra{i, 1} \mathcal{T}^{(2)}_G (\ketbra{i, 0}{i, 0}) \ket{i, 1} dG \\
+        &= \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \frac{\alpha^2 t^2}{\dim + 1} \sinc^2(\gamma t/ 2 + \frac{1}{1 + e^{-\beta_E \gamma}}\frac{\alpha^2 t^2}{\dim + 1} \sinc^2(\gamma t/ 2) \\
+        &= \frac{\alpha^2 t^2}{\dim + 1} \sinc^2(\gamma t/ 2). \label{eq:t_2_same_state_1}
+    \end{align}
+    We will keep this term as is for now. 
+
+    Moving on to the same state transitions we start with the $\ket{i, 0} \to \ket{i, 0}$ term
+    \begin{align}
+        &\int \bra{i,0} \mathcal{T}^{(2)}_G (\ketbra{i, 0}{i, 0}) \ket{i,0} dG \nonumber \\
+        &= -\frac{\alpha^2 t^2}{\dim + 1} \sum_{(a,b) \neq (i, 0)} \sinc^2 \parens{\Delta_S(a, b | i, 0) t / 2} \\ 
+        &= - \frac{\alpha^2 t^2}{\dim  + 1} \parens{\sinc^2 (\gamma t / 2) + \sum_{a \neq i} \sum_{b = 0, 1} \sinc^2\parens{\frac{(\Delta_S(a, i) + \Delta_E(b, 0))t}{2}} } \\
+        % &=- \frac{\alpha^2 t^2}{\dim  + 1} \parens{\sinc^2 (\gamma t / 2) + \sum_{a < i} \sum_{b = 0, 1} \sinc^2\parens{\frac{(\Delta_S(a, i) + \Delta_E(b, 0))t}{2}} + \sum_{a > i} \sum_{b = 0, 1} \sinc^2\parens{\frac{(\Delta_S(a, i) + \Delta_E(b, 0))t}{2}} } \\
+        &=- \frac{\alpha^2 t^2}{\dim  + 1} \parens{\sinc^2 (\gamma t / 2) + \sum_{a \neq i} \sinc^2 \left( \frac{\Delta_S(a, i) t}{2} \right) + \sum_{a \neq i} \sinc^2\parens{\frac{(\Delta_S(a, i) +\gamma)t}{2}} }
+        % &= - \frac{\alpha^2 t^2}{\dim + 1} \sinc^2 (\gamma t / 2) \nonumber \\
+        % &~ - \frac{\alpha^2 t^2}{\dim + 1} \sum_{a > i} \sum_{b = 0, 1} \sinc^2 \parens{\frac{(\Delta_S(a, i) + \Delta_E(b, 0))t}{2}} \nonumber \\
+        % &~ -\frac{\alpha^2 t^2}{\dim + 1} \parens{\sum_{a < i} \sinc^2 \parens{\frac{\Delta_S(a, i) t}{2}} + \sum_{a < i} \sinc^2 \parens{\frac{(\Delta_S(a, i) + \gamma)t}{2}} }. \label{eq:same_state_transition_1}
+    \end{align}
+    The other same state transition contribution is computed similarly as
+        \begin{align}
+        &\int \bra{i,1} \mathcal{T}^{(2)}_G (\ketbra{i, 1}{i, 1}) \ket{i,1} dG \nonumber \\
+        &= -\frac{\alpha^2 t^2}{\dim + 1} \sum_{(a,b) \neq (i, 1)} \sinc^2 \parens{\Delta_S(a, b | i, 1) t / 2} \\ 
+        &= - \frac{\alpha^2 t^2}{\dim  + 1} \parens{\sinc^2 (\gamma t / 2) + \sum_{a \neq i} \sum_{b = 0, 1} \sinc^2\parens{\frac{(\Delta_S(a, i) + \Delta_E(b, 1))t}{2}} } \\
+        % &=- \frac{\alpha^2 t^2}{\dim  + 1} \parens{\sinc^2 (\gamma t / 2) + \sum_{a < i} \sum_{b = 0, 1} \sinc^2\parens{\frac{(\Delta_S(a, i) + \Delta_E(b, 0))t}{2}} + \sum_{a > i} \sum_{b = 0, 1} \sinc^2\parens{\frac{(\Delta_S(a, i) + \Delta_E(b, 0))t}{2}} } \\
+        &=- \frac{\alpha^2 t^2}{\dim  + 1} \parens{\sinc^2 (\gamma t / 2) + \sum_{a \neq i} \sinc^2 \left( \frac{\Delta_S(a, i) t}{2} \right) + \sum_{a \neq i} \sinc^2\parens{\frac{(\Delta_S(a, i) - \gamma)t}{2}} }
+        % &= - \frac{\alpha^2 t^2}{\dim + 1} \sinc^2 (\gamma t / 2) \nonumber \\
+        % &~ - \frac{\alpha^2 t^2}{\dim + 1} \sum_{a > i} \sum_{b = 0, 1} \sinc^2 \parens{\frac{(\Delta_S(a, i) + \Delta_E(b, 0))t}{2}} \nonumber \\
+        % &~ -\frac{\alpha^2 t^2}{\dim + 1} \parens{\sum_{a < i} \sinc^2 \parens{\frac{\Delta_S(a, i) t}{2}} + \sum_{a < i} \sinc^2 \parens{\frac{(\Delta_S(a, i) + \gamma)t}{2}} }. \label{eq:same_state_transition_1}
+    \end{align}
+    Adding these together with their respective coefficients results in
+    \begin{align}
+        &\frac{1}{1 + e^{-\beta_E \gamma}} \int \bra{i, 0} \mathcal{T}^{(2)}_G (\ketbra{i, 0}{i, 0}) \ket{i, 0} dG + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \int \bra{i, 1} \mathcal{T}^{(2)}_G (\ketbra{i, 1}{i, 1}) \ket{i, 1} dG \\
+        &= - \frac{\alpha^2 t^2}{\dim + 1} \left( \sinc^2\parens{\frac{\gamma t}{2}} + \sum_{a \neq i} \sinc^2\parens{\frac{\Delta_S(a,i)t}{2}} \right) \nonumber \\
+        &~ - \frac{\alpha^2 t^2}{\dim + 1} \left( \frac{1}{1 + e^{-\beta_E \gamma}}\sum_{a \neq i} \sinc^2\parens{\frac{(\Delta_S(a, i) +\gamma)t}{2}}  + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}}\sum_{a \neq i} \sinc^2\parens{\frac{(\Delta_S(a, i) -\gamma)t}{2}} \right).
+    \end{align}
+    Now when combining with the previously two computed terms from Eq. \eqref{eq:t_2_same_state_1} we get a cancellation of the $\sinc^2(\gamma t/ 2)$ term with the final result
+    \begin{align}
+        &\bra{i} \mathcal{T}^{(2)}(\ketbra{i}{i})\ket{i} = - \frac{\alpha^2 t^2}{\dim + 1} \left(\sum_{a \neq i} \sinc^2\parens{\frac{\Delta_S(a,i)t}{2}}  \right) \nonumber \\
+        &~ - \frac{\alpha^2 t^2}{\dim + 1} \left( \frac{1}{1 + e^{-\beta_E \gamma}}\sum_{a \neq i} \sinc^2\parens{\frac{(\Delta_S(a, i) +\gamma)t}{2}}  + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}}\sum_{a \neq i} \sinc^2\parens{\frac{(\Delta_S(a, i) -\gamma)t}{2}} \right) \\
+        &\bra{i} \mathcal{T}^{(2)}(\ketbra{i}{i})\ket{i} + \frac{\alpha^2 t^2}{\dim + 1} \left( \frac{1}{1 + e^{-\beta_E \gamma}}\sum_{a < i} \sinc^2\parens{\frac{(\Delta_S(a, i) +\gamma)t}{2}}  + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}}\sum_{a > i} \sinc^2\parens{\frac{(\Delta_S(a, i) -\gamma)t}{2}} \right) = \nonumber \\
+        &- \frac{\alpha^2 t^2}{\dim + 1} \left( \sum_{a \neq i} \sinc^2\parens{\frac{\Delta_S(a,i)t}{2}} + \frac{1}{1 + e^{-\beta_E \gamma}}\sum_{a > i} \sinc^2\parens{\frac{(\Delta_S(a, i) +\gamma)t}{2}}  + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}}\sum_{a < i} \sinc^2\parens{\frac{(\Delta_S(a, i) -\gamma)t}{2}} \right)  \label{eq:t_2_same_state_2}
+    \end{align}
+    Now by taking absolute values of the right hand side, along with obvious triangle inequalities, we see that each term is upper bounded by $\epsilon_{\sinc}$. We make the following upper bounds
+    \begin{align}
+        \left| \sum_{a \neq i}\sinc^2\parens{\frac{\Delta_S(a,i)t}{2}} \right| &\le \dim_S\epsilon_{\sinc} \\
+        \left|\frac{1}{1 + e^{-\beta_E \gamma}}\sum_{a > i} \sinc^2\parens{\frac{(\Delta_S(a, i) +\gamma)t}{2}} \right| &\le \dim_S \epsilon_{\sinc} \\
+        \left| \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}}\sum_{a < i} \sinc^2\parens{\frac{(\Delta_S(a, i) -\gamma)t}{2}} \right| &\le \dim_S \epsilon_{\sinc},
+    \end{align}
+    where we make simple bounds (such as $\dim_S - i \le \dim_S$) because they preserve the asymptotic behavior and are much easier to work with. Putting these into Eq. \eqref{eq:t_2_same_state_2} yields
+    \begin{align}
+        &\left| \bra{i} \mathcal{T}^{(2)}(\ketbra{i}{i}) \ket{i} + \frac{\alpha^2 t^2}{\dim + 1} \parens{\frac{1}{1 + e^{-\beta_E \gamma}} \sum_{a < i} \sinc^2 ((\Delta_S(a, i) + \gamma) t/ 2) + \frac{e^{-\beta_E \gamma}}{1 + e^{-\beta_E \gamma}} \sum_{a > i} \sinc^2((\Delta_S(a, i) - \gamma)t/ 2)} \right| \nonumber \\
+        &\leq 3 \dim_S \frac{\alpha^2 t^2}{\dim + 1} \epsilon_{\sinc}.
+    \end{align}
+    Plugging in the value for $\epsilon_{\sinc}$ yields the lemma statement. 
+ \end{proof}
+\subsection{Remainder Bound}
+We now aim to bound the spectral norm of the remainder term $R_{\Phi}$. This is rather tedious, as even to third order in $\alpha$ we have 24 terms to bound. For example, looking first at the $(A)$ term resulting from the second order derivative in Eq. \eqref{eq:second_order_deriv_intermediate_a} we have 4 multiplicative factors involving $\alpha$, leading to 4 terms from this single term of the second order derivative. As there are six terms in total, this yields 24 terms. We can profit from the fact though that the expressions for the second order derivatives do simplify and the final expression only has 3 terms, as two of the derivatives act similarly. We first will analyze the single term from Eq. \eqref{eq:second_order_deriv_intermediate_a} in detail. 
+
+
+\begin{lemma} \label{lem:remainder_bound}
+    Let $\Phi(\rho)$ be the thermalizing channel as defined in Def. \eqref{eq:phi_g_definition} and $R_{\Phi}$ the remainder term 
+    \begin{equation}
+        R_{\Phi}(\rho, \alpha) = \Phi(\rho, \alpha) - \rho - \frac{\alpha}{1!} \frac{\partial}{\partial \alpha} \Phi(\rho)\bigg|_{\alpha = 0} - \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho) \bigg|_{\alpha = 0}.
+    \end{equation}
+    Then we have that $\norm{R_{\Phi}} \leq \epsilon_R$ for a simulation duration of
+    \begin{equation}
+        \alpha t \in O\parens{\frac{\epsilon_R^{1/3}}{ \sqrt{\log(\dim_S)}}}.
+    \end{equation}
+\end{lemma}
+\begin{proof}
+What we are essentially trying to do is bound the matrix entries:
+\begin{equation}
+    \Phi(\rho) = \rho + \frac{\alpha}{1} \frac{\partial}{\partial \alpha} \Phi(\rho) \bigg|_{\alpha = 0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho) \bigg|_{\alpha = 0} + \frac{\alpha^3}{3!} \frac{\partial^3}{\partial \alpha^3} \Phi(\rho) \bigg|_{\alpha = \alpha^\star},\label{eq:remExpress}
+\end{equation}
+where $\alpha^\star \in [0, \alpha]$. Our goal is then to bound the spectral norm of the remainder term for all such $\alpha^\star$.
+
+% \begin{align}
+%     &\norm{\frac{\partial}{\partial \alpha} (it)^2 \int_0^1 \parens{\int_0^1 e^{i s_1 s_2 (H+\alpha G)t} s_1 G e^{i s_1 (1-s_2) (H+\alpha G)t} ds_2} G e^{i(1-s_1) (H+\alpha G)t} ds_1 \rho e^{-i(H+\alpha G) t}} \\
+%     &=t^3 \norm{\int_0^1 \int_0^1 \int_0^1 e^{i s_1 s_2 s_3(H + \alpha G)t} G e^{i s_1 s_2 (1 - s_3)} ds_3 G e^{i s_1 (1-s_2)(H + \alpha G)t} ds_2 G e^{i(1-s_1)(H + \alpha G)t} ds_1 \rho e^{-i(H + \alpha G)t} }  + t^3 \norm{\ldots}\\
+%     &\leq t^3 \norm{G}^3 + t^3 \norm{\ldots} \\
+%     &\leq 4 t^3 \norm{G}^3,
+% \end{align}
+% where we used smoothness of the integrand to bring the norm inside the integral via the triangle inequality and submultiplicativity of the operator norm to simply break the norm of the product into the product of each of the norms. The operator norm of the unitary operators and the density matrix are each 1, and the resulting integrals yield only fractional values, which are upper bounded by 1. Now here we see the final simplification that can be made, each term $(B), (C)$, etc., will yield at most a cubic power of $\norm{G}$, so we can upper bound each term in the final sum as $t^3 \norm{G}^3$. In reality we would have terms such as $\norm{G} \norm{G^3}$ and all other polynomials, but we don't care.
+
+% Now as $G$ is a random matrix, we can only bound it's operator norm with a probabilistic guarantee. 
+
+\begin{align}
+    \|\partial_\alpha^3 \rho(\alpha) \| &= \left\| \frac{\partial^3}{\partial \alpha^3} {\rm Tr}_{H_E} \int e^{i(H+\alpha G)t} \rho_S \otimes \rho_E e^{-i(H+\alpha G)t} dG\right\|\nonumber\\
+    &= \left\| \frac{\partial^3}{\partial \alpha^3} {\rm Tr}_{H_E} \int e^{i(H+\alpha G)t} \rho_S \otimes \rho_E e^{-i(H+\alpha G)t} dG\right\|\nonumber\\
+    &\le    \int \left\|{\rm Tr}_{H_E}\frac{\partial^3}{\partial \alpha^3}\left( e^{i(H+\alpha G)t} \rho_S \otimes \rho_E e^{-i(H+\alpha G)t}\right) \right\| dG\label{eq:3derivBd}
+\end{align}
+Next we can apply Duhamel's formula to see that
+\begin{align}
+    \partial_\alpha \left( e^{i(H+\alpha G)t} \rho_S \otimes \rho_E e^{-i(H+\alpha G)t}\right) &=\int_0^1 e^{i(H+\alpha G)ts} (iGt)e^{i(H+\alpha G)t(1-s)}  \rho_S \otimes \rho_E e^{-i(H+\alpha G)ts}  ds\nonumber\\
+    &\quad+\int_0^1  e^{i(H+\alpha G)t}\rho_S \otimes \rho_Ee^{-i(H+\alpha G)ts} (-iGt)e^{-i(H+\alpha G)t(1-s)}  ds
+\end{align}
+We can recurse this two more times and observe that because $G$ is independent of $\alpha$
+that $12$ terms each appear in the derivative depending on the particular locations where the derivatives land from the use of the product rule.  As an example,
+consider the first such example that appears in our norm bound which for unitary matrix valued functions $U_1,U_2,U_3 : \mathbb{R}^3 \mapsto L(\hilb_S \otimes \hilb_E)$
+\begin{align}
+    &\| {\rm Tr_{H_E}} \int_0^1\int_0^{s}\int_0^{s'} U_1(s,s',s'')(iGt)U_2(s,s',s'') (iGt) U_3(s,s',s'') (iGt) U_4(s,s',s'') d^3s\|\nonumber\\
+    &\le \int_0^1 \int_0^s \int_0^{s'} \|{\rm Tr_{\hilb_E}}U_1(s,s',s'')(iGt)U_2(s,s',s'') (iGt) U_3(s,s',s'') (iGt) U_4(s,s',s'')\| d^3s
+\end{align}
+Next we use the fact from Proposition 1 of~\cite{rastegin2012relations} that for any normal operator $A$ acting on a finite dimensional Hilbert space $\hilb_S\otimes \hilb_E$ that the spectral norm obeys
+\begin{equation}
+    \|{\rm Tr}_{\hilb_E} A\| \le \|A\|.
+\end{equation}
+Thus from the unitary invariance of the norm and its sub-multiplicative property
+\begin{equation}
+    \int_0^1 \int_0^s \int_0^{s'} \|{\rm Tr_{\hilb_E}}U_1(s,s',s'')(iGt)U_2(s,s',s'') (iGt) U_3(s,s',s'') (iGt) U_4(s,s',s'')\| d^3s \le (\|G\|t)^3.\label{eq:t3error}
+\end{equation}
+Next as there are $12$ such terms that need to be considered we find by combining~\eqref{eq:3derivBd} and~\eqref{eq:t3error}
+\begin{equation}
+    \|\partial_\alpha^3 \phi(\rho) \| \le 12t^3\int \|G\|^3 dG
+\end{equation}
+Then an application of~\eqref{eq:remExpress} yields
+\begin{equation}
+    \norm{\Phi(\rho) - \left(\rho + {\alpha} \frac{\partial}{\partial \alpha} \Phi(\rho) \bigg|_{\alpha = 0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho) \bigg|_{\alpha = 0} \right)} \leq 12 \alpha^3 t^3 \int \norm{G}^3 dG.\label{eq:remTaylorBd}
+\end{equation}
+
+At this stage an interesting statistical problem emerges.  The spectral norm is the largest singular value of a matrix but here the matrix $G$ is a random matrix with Gaussian eigenvalues distributed as a standard normal distribution.  The correct property to look at is the largest and smallest order statistic for the eigenvalues cubed of $G$.  The average value of this quantity will correspond to the norm.  Specifically we can use the theory of order statistics to write this average as
+\begin{align}
+    \int \max_j \lambda_j(G)^3 dG &= \dim_S\int_{-\infty}^{\infty}  \lambda^3 \frac{\sqrt{2}e^{-\lambda^2/2}}{\sqrt{\pi}} \left({\rm Pr}(x\le \lambda)\right)^{\dim_S -1} d\lambda\\
+    &= \dim_S\int_{-\infty}^{\infty}  \lambda^3 \frac{\sqrt{2}e^{-\lambda^2/2}}{\sqrt{\pi}} \left(1-\frac{{\rm erfc}(\lambda/\sqrt{2})}{2} \right)^{\dim_S-1} d\lambda.\\
+    &=-\dim_S\int_{-\infty}^{\infty}  \lambda^3 \frac{\sqrt{2}e^{-\lambda^2/2}}{\sqrt{\pi}} \sum_{k=1}^{\dim_S-1} \binom{\dim_S-1}{k}\frac{{\rm erfc}(\lambda/\sqrt{2})^{k}}{2^{k}} d\lambda
+\end{align}
+Note that because the complementary error function approximates a step function about zero and $\lambda^3$ is an odd function, the above integral is positive despite the overall negative sign.
+Now let us define a cutoff on the integral of $\Lambda\ge 1$ and aim to set the value of $\Lambda$ such that the integral beyond this cutoff is at most $\epsilon$ large.  Specifically we aim to find $\Lambda$ such that
+\begin{equation}
+    0\le -\dim_S\int_{\Lambda}^{\infty}  \lambda^3 \frac{\sqrt{2}e^{-\lambda^2/2}}{\sqrt{\pi}} \sum_{k=0}^{\lfloor \dim_S/2-1\rfloor} \binom{\dim_S-1}{2k+1}\frac{{\rm erfc}(\lambda/\sqrt{2})^{2k+1}}{2^{2k+1}} d\lambda \le \epsilon
+\end{equation}
+The complementary error function is a rapidly decaying function of $\lambda$ for $\lambda>0$.  Thus in order to simplify the sum to allow only the first order term in the expansion to dominate we wish to take $\Lambda$ large enough so that the total error is at most $\epsilon/2$ which is implied by taking
+\begin{equation}
+    \frac{{\rm erfc}(\Lambda/\sqrt{2})}{2} \le \frac{\epsilon}{4\dim_S \Lambda^3}.
+\end{equation}
+The complementary error function has the following asymptotic expansion
+\begin{equation}
+    {\rm erfc}(\lambda/\sqrt{2}) = \frac{\sqrt{2}e^{-\lambda^2/2}}{\lambda \sqrt{\pi}}\left( 1 + O(\lambda^{-2}) \right)
+\end{equation}
+Thus using the fact that here $\lambda\ge \Lambda$, $\Lambda \ge 1$ an $e^{-\Lambda^2/2}\Lambda^2 \le 1$ it suffices to take
+\begin{equation}
+    \Lambda \in O\left(\sqrt{\log(\dim_S/\epsilon)} \right)
+\end{equation}
+Next we wish to show that the leading order term in the integral is also small we have that
+\begin{align}
+    -\dim_S^2\int_{\Lambda}^{\infty}  \lambda^3 \frac{\sqrt{2}e^{-\lambda^2/2}}{\sqrt{\pi}} \frac{{\rm erfc}(\sqrt{2}\lambda)}{2} d\lambda&\le \dim_S^2\sqrt{\int_{-\infty}^\infty \lambda^6 \frac{e^{-\lambda^2/2}}{\sqrt{2\pi}}  d\lambda}\sqrt{\int_\Lambda^\infty\left(\frac{{\rm erfc}^2(\sqrt{2}\lambda)}{4}\right)\frac{e^{-\lambda^2/2}}{\sqrt{2\pi}}  d\lambda }\nonumber\\
+    &=\sqrt{15} \dim_S^2 \sqrt{\int_\Lambda^\infty\left(\frac{{\rm erfc}^2(\sqrt{2}\lambda)}{4}\right)\frac{e^{-\lambda^2/2}}{\sqrt{2\pi}}  d\lambda }\nonumber\\
+    &\le \sqrt{\frac{15}{4}} \dim_S^2 {\rm erfc}(\sqrt{2}\Lambda) \le 4 \dim_S^2 \left(\frac{e^{-2\Lambda^2}}{\Lambda \sqrt{2\pi}} \right) (1+O(\Lambda^{-2})).
+\end{align}
+As before using $\Lambda \ge 1$ and isolating for $\Lambda$ we see for this term as well that we can make the error at most $\epsilon/2$ for a value of $\Lambda$ that scales as
+\begin{equation}
+    \Lambda \in O\left(\sqrt{\log(\dim_S/\epsilon)} \right).
+\end{equation}
+We then have that the remaining integral can be bounded by
+\begin{align}
+    -\dim_S\int_{-\infty}^{\Lambda}  \lambda^3 \frac{e^{-\lambda^2/2}}{\sqrt{2\pi}} \sum_{k=0}^{\lfloor \dim_S/2-1\rfloor} \binom{\dim_S-1}{2k+1}\frac{{\rm erfc}(\lambda/\sqrt{2})^{2k+1}}{2^{2k+1}} d\lambda&=  \int_{-\infty}^\Lambda \lambda^3 {\rm Pr}(\lambda_{max}(G) = \lambda) d\lambda \nonumber\\
+    &\le \Lambda
+\end{align}
+The value of $\Lambda$ is shown above to be logarithmic in the system dimension, so we can choose $\epsilon \in \Theta(1)$ and not significantly change the value of the integral and hence
+\begin{equation}
+    \int_{-\infty}^\infty \lambda^3 {\rm Pr}(\lambda_{max}(G) = \lambda) d\lambda \in O(\log^{3/2}(\dim_S)).
+\end{equation}
+From the fact that the probability distribution for the eigenvalues is symmetric about $0$ we have that
+\begin{equation}
+    \int_{-\infty}^\infty \lambda^3 {\rm Pr}(\lambda_{\min}(G) = \lambda) d\lambda = - \int_{-\infty}^\infty \lambda^3 {\rm Pr}(\lambda_{\max}(G) = \lambda) d\lambda
+\end{equation}
+Thus we have 
+\begin{align}
+    \int_{-\infty}^\infty \|G\|^3 dG &\le \left|\int_{-\infty}^\infty \lambda^3 {\rm Pr}(\lambda_{\min}(G) = \lambda) d\lambda \right| + \left|\int_{-\infty}^\infty \lambda^3 {\rm Pr}(\lambda_{\max}(G) = \lambda) d\lambda \right|\nonumber\\
+    &\in O\left(\log^{3/2}(\dim_S) \right)
+\end{align}
+Finally after inserting this into~\eqref{eq:remTaylorBd} we find that the truncation error for the channel at second order in $\alpha$ is
+\begin{equation}
+    \norm{\Phi(\rho) - \left(\rho + {\alpha} \frac{\partial}{\partial \alpha} \Phi(\rho) \bigg|_{\alpha = 0} + \frac{\alpha^2}{2!} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho) \bigg|_{\alpha = 0} \right)} \in O(\alpha^3 t^3 \log^{3/2}({\rm dim}_S)).
+\end{equation}
+This gives us that the remainder bound, $\|R_\Phi\|\le \epsilon_R$ for 
+\begin{equation}
+    \alpha t \in O\left(\frac{\epsilon_R^{1/3}}{\sqrt{\log(\dim_S)}} \right).
+\end{equation}
+\end{proof}
+
+Is there a way we can simplify this proof by using the one norm? I bet it becomes a lot simpler. 
+
+
+
 \end{document}
