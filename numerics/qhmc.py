@@ -503,4 +503,19 @@ def plot_sho_interaction_v_beta():
 
 if __name__ == "__main__":
     start = time_this.time()
-    plot_sho_tot_time_vs_time()
+    # plot_sho_tot_time_vs_time()
+    with open('/Users/matt/repos/thermal_state_prep/numerics/data/t_vs_tot_time.json', 'r') as f:
+        results = json.load(f)
+        
+    for k,v in results.items():
+        print("alpha: ", k)
+        print("results: ", v)
+        x, y = zip(*v)
+        plt.plot(x, y, label='a = {:.5}'.format(k))
+    plt.yscale('log')
+    plt.xscale('log')
+    plt.xlabel(r"$t$")
+    # plt.title("Total simulation time for dim = 4 Harmonic Oscillator to cool to beta = 4 vs time per interaction")
+    plt.ylabel("Total Sim Time $L t$")
+    plt.legend(loc="upper right")
+    plt.show()
