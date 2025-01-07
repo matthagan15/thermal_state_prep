@@ -552,6 +552,12 @@ However as $\sigma$ is more of a problem defined value and $t$ a user defined va
 Noting that $J$ consists only of constant and log factors we get the asymptotic expressions in the statement of the proof.
 \end{proof}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{numerics/data/total_time_vs_time.png}
+    \caption{Total simulation time as a function of per-interaction simulation time $t$.}
+    \label{fig:total_time_vs_time}
+\end{figure}
 
 \section{Harmonic Oscillator}
 Now that we have explored the thermalization algorithm from every angle for the single qubit case we turn our attention to a more complicated system: a truncated harmonic oscillator. To give a bound on the number of interactions and the necessary simulation time per interaction we will assume that we know the spectral gap of the oscillator and use this to compute the transition matrix $T$. This involves computing the on-resonance terms, which now are different if the state of interest is in the ``bulk" of the spectrum or is an extremal eigenvector. 
@@ -664,12 +670,7 @@ The behavior of the fixed $\epsilon$ plot reveals a very interesting phenomenon 
 
 Once we have determined how the thermalization process behaves for a given $\alpha$ and $t$, we can then sweep these parameters to determine how they effect thermalization. From our analysis of the single qubit case we would expect that the distance to the Markov chain can be made arbitrarily close as we both reduce the off-resonant terms by making $\alpha$ smaller and reducing the norm of the remainder terms by making $\widetilde{\alpha}$ smaller. As $t$ is not set we can choose which one to reduce by also varying $t$. As $t$ dictates the simulation time for the system dynamics we would like to reduce it as much as possible. The plot povided in Fig \ref{fig:total_time_vs_time} shows that the total simulation time tends to decrease as $t$ increases until some threshold is met. Finding this optimum value analytically would be intractable for arbitrary dimension harmonic oscillators. One other main takeaway is that as $\alpha$ increases the total simulation time also tends to decrease for a significant range of $t$. This is due to the fact that the probability mass that can be moved by the Markov chain increases with $\alpha$. We did not take this to the extreme and study a strong-coupling, short-time interaction channel and leave these questions for future research. 
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.75\linewidth]{numerics/data/total_time_vs_time.png}
-    \caption{Total simulation time as a function of per-interaction simulation time $t$.}
-    \label{fig:total_time_vs_time}
-\end{figure}
+
 
 \matt{Should we include some kind of dimension dependent behavior for oscillator numerics? What would be a good candidate to plot?}
 
