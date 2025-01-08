@@ -452,15 +452,23 @@ Now that we have developed all the tools we need to study thermalization we will
 % To start, we take an arbitrary two-level Hamiltonian $H_S = U_S \begin{bmatrix} \lambda & 0 \\0 & \lambda + \Delta \end{bmatrix} U_S^\dagger$ where the eigenvectors $U_S$ are any arbitrary basis for the space and $0 < \Delta$. For simplicity we will set our environment gap to match this exactly, $\gamma = \Delta$, and we will use $\gamma$ to help the reader identify which factors appear from the ancilla qubit versus the system. Our initial state will be the maximally mixed state $\frac{1 }{2} \identity$ and the environment qubits will be prepared in the state $\frac{e^{-\beta H_E}}{1 + e^{-\beta}}$, note that the subscript of $E$ has been dropped from the inverse temperature as there is only one temperature at play. Our goal for this section will be to show that the thermal state $\rho_S(\beta)$ is the fixed point of the dynamics and to bound the rate of convergence to this state.
 
 \begin{theorem} \label{thm:single_qubit}
-    Let $H_S$ be an arbitrary single qubit Hamiltonian with unknown eigenvalue gap $\Delta$, $\rho$ any input state diagonal in the $H_S$ basis, $[\rho, H_S] = 0$, and $L$ the number of interactions simulated. Given a window of width $2 \sigma$ that is promised to contain $\Delta$ the following parameter choices leads to a thermalizing channel. By setting $\alpha = \frac{1}{\Delta^2 t^3}$, if $L$ and $t$ satisfy the following lower bounds
-    \begin{equation}
-        L \in \widetilde{\Omega} \left(\frac{1}{\epsilon^2} \right) \text{ and } t \in \widetilde{\Omega} \left(\frac{1}{\Delta \sqrt{\epsilon}} \right),
-    \end{equation}
-    then the sytem will be $\epsilon$ close to the thermal state
-    \begin{equation}
-        \norm{\rho_S(\beta) - \Phi^{\circ L}(\rho)}_1 \in \bigotilde{\epsilon}.
-    \end{equation}
-    The total simulation resources needed will scale in the worst case as $Lt \in \widetilde{\Theta}\left( \frac{1}{\Delta \epsilon^{5/2}} \right)$. 
+    Let $H_S$ be an arbitrary single qubit Hamiltonian with unknown eigenvalue gap $\Delta$, $\rho$ any input state diagonal in the $H_S$ basis, $[\rho, H_S] = 0$, and $L$ the number of interactions simulated. Given a window of width $2 \sigma$ that is promised to contain $\Delta$, the following parameter choices
+    \begin{align}
+    L &\ge \frac{10}{\alpha^2 t^2(1 - \sigma^2 t^2 / 2)} J, \\
+    \alpha &= \frac{1}{t^3(\Delta + \sigma)^2}, \\
+    t &= \frac{1}{\sigma}, \\
+    \sigma &\le \min \set{\frac{\epsilon}{2 \beta}, \Delta \sqrt{\frac{\epsilon}{2}}}, 
+    \end{align}
+    lead to a thermalizing channel $\norm{\rho_S(\beta) - \Phi^{\circ L}(\rho)}_1 \in \bigotilde{\epsilon}$. 
+    % . By setting $\alpha = \frac{1}{\Delta^2 t^3}$, if $L$ and $t$ satisfy the following lower bounds
+    % \begin{equation}
+    %     L \in \widetilde{\Omega} \left(\frac{1}{\epsilon^2} \right) \text{ and } t \in \widetilde{\Omega} \left(\frac{1}{\Delta \sqrt{\epsilon}} \right),
+    % \end{equation}
+    % then the sytem will be $\epsilon$ close to the thermal state
+    % \begin{equation}
+    %     \norm{\rho_S(\beta) - \Phi^{\circ L}(\rho)}_1 \in \bigotilde{\epsilon}.
+    % \end{equation}
+    % The total simulation resources needed will scale in the worst case as $Lt \in \widetilde{\Theta}\left( \frac{1}{\Delta \epsilon^{5/2}} \right)$. 
 \end{theorem}
 \begin{proof}
     The proof will be structured into three parts. First, we will need a bound on how close the fixed point of the Markov chain is to the thermal state, because only when $\gamma = \Delta$ exactly is the fixed point exactly the thermal state and our window of width $\sigma$ needs to be sufficiently small given our error budget. Second, once we have these bounds we then need to determine the number of interactions $L$ that will be necessary to reach the fixed point within trace distance $\epsilon$. Lastly, we use this value of $L$ to bound the accumulative error from the off-resonance mapping $\mathcal{T}_{\off}$ and remainder term $R_{\Phi}$.
@@ -470,7 +478,7 @@ Now that we have developed all the tools we need to study thermalization we will
         &\norm{\rho_S(\beta; \Delta) - \Phi^{\circ L}(\rho)}_1 \nonumber \\
         &\le \norm{\rho_S(\beta; \Delta) - \rho_S(\beta; \gamma)}_1 + \norm{\rho_S(\beta; \gamma) - \Phi^{\circ L}(\rho)}_1 \\
         &\le \norm{\rho_S(\beta; \Delta) - \rho_S(\beta; \gamma)}_1 + \norm{\rho_S(\beta; \gamma) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho)}_1 + \norm{(\identity + \mathcal{T}_{\on})^{\circ L} - \Phi^{\circ L}}_1 \\
-        &\le \norm{\rho_S(\beta; \Delta) - \rho_S(\beta; \gamma)}_1 + \norm{\rho_S(\beta; \gamma) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho)}_1 +  L \left(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1 \right). 
+        &\le \norm{\rho_S(\beta; \Delta) - \rho_S(\beta; \gamma)}_1 + \norm{\rho_S(\beta; \gamma) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho)}_1 +  L \left(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1 \right). \label{eq:single_qubit_three_errors}
     \end{align}
     We proceed with the leftmost term first. For our single qubit state the trace distance can be computed explicitly
  \begin{align}
@@ -521,46 +529,68 @@ This gives us the total Markov chain matrix as
      L(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1) &\le \frac{20}{t^2(1 - \sigma^2 t^2 / 2)}J \left( \frac{8}{\Delta^2} + 32 \sqrt{\frac{2}{\pi}} \alpha t^3 \right) \\
     &\le \frac{20}{t^2 \Delta^2 (1 - \sigma^2 t^2 / 2)}J \left( 8 + 32 \sqrt{\frac{2}{\pi}}\right).
  \end{align}
- The last inequality
- 
- 
- For this we need them to satisfy
- \begin{align}
-     L (\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1) &\le \frac{\epsilon}{3} \\
-     \frac{20}{\alpha^2 t^2 (1 - \sigma^2 t^2 /2)} J \left( \frac{8 \alpha^2}{\Delta^2} + 32 \sqrt{\frac{2}{\pi}} (\alpha t)^3 \right) & \le \frac{\epsilon}{3} \\
-     \frac{20}{t^2 (1 - \sigma^2 t^2 /2)} J \left( \frac{8}{\Delta^2} + 32 \sqrt{\frac{2}{\pi}} \alpha t^3 \right) & \le \frac{\epsilon}{3}.
- \end{align}
- \matt{The above logic is pretty poorly illustrated, we repeatedly bound $L(T_{\off} + R)$ and then the last upper bound we would like to be less than $\epsilon$.} To proceed, we would like for the two rightmost terms to be asymptotically equivalent, which can be done by requiring $\alpha t^3 \le \frac{1}{\Delta^2}$. As we do not know the value of $\Delta$ we will replace this with our upper bound on our window $\alpha t^3 = \frac{1}{(\Delta + \sigma)^2} \le \frac{1}{\Delta^2}$. We will use this as a sandwich for our previous inequality 
- \begin{align}
-     \frac{20}{t^2 (1 - \sigma^2 t^2 /2)} J \left( \frac{8}{\Delta^2} + 32 \sqrt{\frac{2}{\pi}} \frac{1}{(\Delta + \sigma)^2} \right) \le \frac{20}{\Delta^2 t^2 (1 - \sigma^2 t^2 /2)} J \left(8 + 32 \sqrt{\frac{2}{\pi}}  \right) & \le \frac{\epsilon}{3}.
- \end{align}
-Now in order to proceed we need to show that there exists a range of $t$ such that the above expression can be satisfied, or we need to solve for $\sigma$. Solving for $\sigma$ yields
+The last step is then to upper bound the above by $\bigotilde{\epsilon}$. As $J$ contains only log factors, it is sufficient to show that there exists a $t$ such that $\frac{1}{t^2(1 - \sigma^2 t^2 / 2)} \le \epsilon$. Rearranging yields a quadratic in $t^2$ that must satisfy the following
 \begin{equation}
-    \sigma^2 \le \frac{2}{t^2} \left( 1 - \frac{1}{\Delta^2 t^2 \epsilon}\right).
+    \Delta^2 t^2 \left(1 - \frac{\sigma^2 t^2}{2}\right) \ge \frac{1}{\epsilon}.
 \end{equation}
-However as $\sigma$ is more of a problem defined value and $t$ a user defined value, we would instead like to have limits on $t$ based on $\sigma$. To do this we note that the RHS of the above inequality is quadratic in $\frac{1}{t^2}$, so we can then set $t$ to be whatever puts this quadratic at it's optimum and then require the optima be greater than $\sigma^2$. For now, let $x = 1/t^2$, giving us $2x(1- x/\Delta^2 \epsilon) \ge \sigma^2$. These roots are $x = 0$ and $x = \Delta^2 \epsilon$. The optima is then at $x = \frac{\Delta^2 \epsilon}{2}$, which gives $t = \frac{2}{\Delta \sqrt{\epsilon}}$, with a value of $\frac{2}{\Delta^2 \epsilon}$, which we then require to satisfy our inequality and we have a bound on $\sigma$ in terms of $\Delta$ and $\epsilon$:
-\begin{equation}
-    \sigma \le \frac{2}{\Delta \sqrt{\epsilon}}.
-\end{equation}
- Combining this with our choice of $L$ yields
- \begin{align}
-     \sigma & \le \frac{2}{\Delta \sqrt{\epsilon}} \\
-     t &= \frac{2}{\Delta \sqrt{\epsilon}} \\
-     \alpha &\le \frac{\Delta \epsilon^{3/2}}{8} \\
-     L &\ge \frac{160}{\epsilon^2( 1 - 2 \sigma^2 / \Delta^2 \epsilon)} J = \frac{40}{\epsilon(\epsilon - 2 (\sigma / \Delta)^2)} J.
-\end{align}
-Noting that $J$ consists only of constant and log factors we get the asymptotic expressions in the statement of the proof.
-\end{proof}
+The zeros of the LHS are $t^2 = 0$ and $t^2 = \frac{2}{\sigma^2}$. As the quadratic is concave we set $t^2 = \frac{1}{\sigma^2}$ which makes the quadratic achieve the maximum value of $\frac{\Delta^2}{2 \sigma^2}$. The previous inequality is then satisfied provided $\sigma \le \Delta \sqrt{\frac{\epsilon}{2}}$, which gives a bound on $t \ge \frac{2}{\Delta \sqrt{\epsilon}}$.
 
-\begin{figure}
+While we now have shown the requirements for each of our three errors in Eq. \eqref{eq:single_qubit_three_errors} to each be of order $\bigotilde{\epsilon}$, we will collect and simplify them here to conclude the proof
+\begin{align}
+    \sigma &\le \frac{\epsilon}{2 \beta}, \\
+    L &\ge \frac{10}{\alpha^2 t^2(1 - \sigma^2 t^2 / 2)} J, \\
+    \alpha &= \frac{1}{t^3(\Delta + \sigma)^2}, \\
+    t &= \frac{1}{\sigma}, \\
+    \sigma &\le \Delta \sqrt{\frac{\epsilon}{2}}.
+\end{align}
+The first issue we have to address is the last inequality above, as we do not know the value of $\Delta$. The second is that we have two inequalities for $\sigma$. Plugging in $\alpha, t$ to $L$ yields $ L \ge \left( 1 + \frac{\Delta}{\sigma}\right)^4 20 J$. This is then enough to complete the proof.
+ \end{proof}
+
+ Although the above theorem provides rigorous runtime guarantees needed to reach thermalization, they are based on Markov chain bounds which are exceptionally loose. In Table (?) we show three values: first the total simulation time needed for numerically evaluating the channel exactly, second we provide the simulation time of just the Markov chain, ignoring the higher order terms, and lastly we provide the theoretic upper bound on the simulation time for the given parameters. 
+ 
+ Further, Theorem \ref{thm:single_qubit} only provides a single prescribed value for $\alpha$ and $t$ to use, but numerically we observe that a much wider range of parameters are capable of achieving thermalization. To give an illustration of this flexibility in Fig. \ref{fig:tot_time_vs_single_time} we show how the total simulation time varies as a function of the single interaction time $t$ for various choices of $\alpha$. We find that the general goal when choosing values for $\alpha$ and $t$ should be to increase \emph{both}. The rationale is that the product $\alpha t$ dictates the strength of the interaction term $G$ and by increasing both we improve the chances of the system interacting with the environment. This increased interaction rate then leads to quicker thermalization, up to a point where the number of interactions needed starts to approach $1$ and the dynamics seem to reach some saturation point as all values of $\alpha$ require the same total simulation time.
+
+ 
+ % For this we need them to satisfy
+ % \begin{align}
+ %     L (\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1) &\le \frac{\epsilon}{3} \\
+ %     \frac{20}{\alpha^2 t^2 (1 - \sigma^2 t^2 /2)} J \left( \frac{8 \alpha^2}{\Delta^2} + 32 \sqrt{\frac{2}{\pi}} (\alpha t)^3 \right) & \le \frac{\epsilon}{3} \\
+ %     \frac{20}{t^2 (1 - \sigma^2 t^2 /2)} J \left( \frac{8}{\Delta^2} + 32 \sqrt{\frac{2}{\pi}} \alpha t^3 \right) & \le \frac{\epsilon}{3}.
+ % \end{align}
+% To proceed, we would like for the two rightmost terms to be asymptotically equivalent, which can be done by requiring $\alpha t^3 \le \frac{1}{\Delta^2}$. As we do not know the value of $\Delta$ we will replace this with our upper bound on our window $\alpha t^3 = \frac{1}{(\Delta + \sigma)^2} \le \frac{1}{\Delta^2}$. We will use this as a sandwich for our previous inequality 
+%  \begin{align}
+%      \frac{20}{t^2 (1 - \sigma^2 t^2 /2)} J \left( \frac{8}{\Delta^2} + 32 \sqrt{\frac{2}{\pi}} \frac{1}{(\Delta + \sigma)^2} \right) \le \frac{20}{\Delta^2 t^2 (1 - \sigma^2 t^2 /2)} J \left(8 + 32 \sqrt{\frac{2}{\pi}}  \right) & \le \frac{\epsilon}{3}.
+%  \end{align}
+% Now in order to proceed we need to show that there exists a range of $t$ such that the above expression can be satisfied, or we need to solve for $\sigma$. Solving for $\sigma$ yields
+% \begin{equation}
+%     \sigma^2 \le \frac{2}{t^2} \left( 1 - \frac{1}{\Delta^2 t^2 \epsilon}\right).
+% \end{equation}
+% However as $\sigma$ is more of a problem defined value and $t$ a user defined value, we would instead like to have limits on $t$ based on $\sigma$. To do this we note that the RHS of the above inequality is quadratic in $\frac{1}{t^2}$, so we can then set $t$ to be whatever puts this quadratic at it's optimum and then require the optima be greater than $\sigma^2$. For now, let $x = 1/t^2$, giving us $2x(1- x/\Delta^2 \epsilon) \ge \sigma^2$. These roots are $x = 0$ and $x = \Delta^2 \epsilon$. The optima is then at $x = \frac{\Delta^2 \epsilon}{2}$, which gives $t = \frac{2}{\Delta \sqrt{\epsilon}}$, with a value of $\frac{2}{\Delta^2 \epsilon}$, which we then require to satisfy our inequality and we have a bound on $\sigma$ in terms of $\Delta$ and $\epsilon$:
+% \begin{equation}
+%     \sigma \le \frac{2}{\Delta \sqrt{\epsilon}}.
+% \end{equation}
+%  Combining this with our choice of $L$ yields
+%  \begin{align}
+%      \sigma & \le \frac{2}{\Delta \sqrt{\epsilon}} \\
+%      t &= \frac{2}{\Delta \sqrt{\epsilon}} \\
+%      \alpha &\le \frac{\Delta \epsilon^{3/2}}{8} \\
+%      L &\ge \frac{160}{\epsilon^2( 1 - 2 \sigma^2 / \Delta^2 \epsilon)} J = \frac{40}{\epsilon(\epsilon - 2 (\sigma / \Delta)^2)} J.
+% \end{align}
+% Noting that $J$ consists only of constant and log factors we get the asymptotic expressions in the statement of the proof.
+% \end{proof}
+
+\begin{figure} 
     \centering
     \includegraphics[width=0.75\linewidth]{numerics/data/total_time_vs_time.png}
-    \caption{Total simulation time as a function of per-interaction simulation time $t$.}
-    \label{fig:total_time_vs_time}
+    \caption{Total simulation time for a single qubit system to reach $\beta = \dim = 4$ as a function of per-interaction simulation time $t$. Since the total probability mass being moved at a single step is proportional to $(\alpha t)^2$, we see that increasing $\alpha$ and $t$ tend to decrease the overall cost.}\label{fig:tot_time_vs_single_time}
 \end{figure}
 
 \section{Harmonic Oscillator}
-Now that we have explored the thermalization algorithm from every angle for the single qubit case we turn our attention to a more complicated system: a truncated harmonic oscillator. To give a bound on the number of interactions and the necessary simulation time per interaction we will assume that we know the spectral gap of the oscillator and use this to compute the transition matrix $T$. This involves computing the on-resonance terms, which now are different if the state of interest is in the ``bulk" of the spectrum or is an extremal eigenvector. 
+Now that we have explored the thermalization algorithm completely for the single qubit case we turn our attention to a more complicated system: a truncated harmonic oscillator. For this scenario we will assume that the oscillator gap, $\Delta$, is known. This assumption is necessary because in order to show that the thermal state is the unique fixed point we need that the underlying Markov chain is ergodic, meaning any initial state has a finite expected hitting time to reach any target state. Assuming knowledge of $\Delta$ allows for us to show ergodicity straightforwardly.
+
+Once we have shown correctness of our algorithm, namely that the thermal state is the unique fixed point, our next goal is to bound the runtime. This is unfortunately impossible for all inverse temperatures $\beta$, as it requires the computation of a spectral gap that does not have a closed form expression for arbitrary truncation of the oscillator. However, we are able to bound the runtime for preparing the ground state, or $\beta \to \infty$ limit, as the Markov transition matrix takes on a Jordan Normal form and the eigenvalues become apparent.  
+
+% To give a bound on the number of interactions and the necessary simulation time per interaction we will assume that we know the spectral gap of the oscillator and use this to compute the transition matrix $T$. This involves computing the on-resonance terms, which now are different if the state of interest is in the ``bulk" of the spectrum or is an extremal eigenvector. 
 
 
 \begin{theorem}\label{thm:harmonic_oscillator}
@@ -651,10 +681,11 @@ giving a total simulation time of
 \end{equation}
 \end{proof}
 
-The proof above is helpful for giving an idea of the runtime for very low temperature states, but we cannot extend it to intermediate temperature regimes due to the ad-hoc computation of the spectral gap. For generic $\beta$ the structure of the transition matrix is tridiagonal, but it is not quite Toeplitz as the main diagonals deviate in the upper left and bottom right corners. We could try to pull these deviations into a separate matrix and treat them as perturbations, but these deviations are on the order of $\widetilde{\alpha}^2 q(0)$ and $\widetilde{\alpha}^2 q(1)$, which are comparable to the eigenvalues of the resulting Toeplitz matrix. This means perturbation theory would not work. Analytically computing the spectral gap for $\dim = 3$ reveals a hyperbolic cosecant structure, but these calculations do not scale to higher dimension. Computing the temperature dependence of the spectral gap numerically for $\dim = 4$ reveals a more complicated temperature dependence, as seen in Fig. \ref{fig:enter-label}. 
+The proof above is helpful for giving an idea of the runtime for very low temperature states, but we cannot extend it to finite $\beta$ due to the ad-hoc computation of the spectral gap. For generic $\beta$ the structure of the transition matrix is tridiagonal, but it is not quite Toeplitz as the main diagonals deviate in the upper left and bottom right corners. We could try to pull these deviations into a separate matrix and treat them as perturbations to a fully Toeplitz matrix, but these deviations are on the order of $\widetilde{\alpha}^2 q(0)$ and $\widetilde{\alpha}^2 q(1)$, which are comparable to the eigenvalues of the resulting Toeplitz matrix. This means the resulting ``perturbation" is actually on the same scale as the unperturbed matrix. Analytically computing the spectral gap for $\dim = 3$ reveals a hyperbolic cosecant structure, but these calculations do not scale easily to higher dimension. It seems that we are restricted to probing the runtime for higher dimensions and finite $\beta$ numerically.
 
+Our first goal to explore numerically will be to study how close our Markov chain approximation is to the real dynamics of the channel. To do this we will track the distance to the target thermal state $\norm{\rho(\beta) - \Phi^{\circ L}(\rho(0))}_1$ as a function of $L$ as well as the theoretically computed Markov chain $\norm{\vec{p}_{\beta} - (I + T)^L \vec{p}_0}_1 $. This is done to confirm the validity of the weak-coupling expansion and to verify that the dynamics do converge to the fixed point. As our remainder error is controlled by $\alpha t$ and our off-resonance error by $1/t$ we expect that making $\alpha$ small and $t$ large should lead to our dynamics converging to the Markov chain. 
 
-As there are no closed form expressions for the resulting spectral gaps we have to turn to numerics to understand the convergence times of the algorithm. We will start the analysis with very small examples, such as $\dim_S = 4$, which will be sufficient to show some of the more complex behavior of the algorithm. We will first see how the distance to the target state behaves as a function of the number of interactions, as well as $\alpha$ and $t$ . Once we have determined that a certain distance from the target can be reached we will study the convergence time to meet a fixed error threshold, typically $\epsilon = 0.05$, changes as we vary $\beta$. 
+We will start the analysis with very small examples, such as $\dim_S = 4$, which will be sufficient to show some of the more complex behavior of the algorithm. We will first see how the distance to the target state behaves as a function of the number of interactions, as well as $\alpha$ and $t$ . Once we have determined that a certain distance from the target can be reached we will study the convergence time to meet a fixed error threshold, typically $\epsilon = 0.05$, changes as we vary $\beta$. 
 
 Starting with safe parameter choices of $\Delta = \gamma = 1$, $\alpha = 0.005$, $t = 100.0$, and $\beta = 3.0$ we show how a harmonic oscillator truncated to the $4$ lowest energy levels thermalizes. We can see in the plot for Fig. \ref{fig:enter-label} that the error of the simulated channel almost exactly matches the error from the Markov chain prediction. The Markov chain prediction is the distance from a uniform starting distribution and performs an update via the Markov chain matrix $I + T$, it does not perform any time evolution or attempt to simulate the total system-environment channel. Since we have reasonable confidence with this plot that the channel is mostly tracking the Markov chain prediction we can then move on to the more interesting data: how many interactions are needed to meet a fixed error. This data can be found in Fig. \ref{fig:enter-label} as well. 
 \begin{figure}
@@ -668,11 +699,8 @@ Starting with safe parameter choices of $\Delta = \gamma = 1$, $\alpha = 0.005$,
 
 The behavior of the fixed $\epsilon$ plot reveals a very interesting phenomenon where the number of interactions, and therefore total thermalization time, needed to reach the thermal state goes \emph{down} after a peak at about $\beta = 1.0$. This means colder temperatures can be reached quicker than some intermediate temperatures, assuming a starting state of the maximally mixed state. Our rationale for this behavior is that the spectral gap of the resulting Markov chain must increase with $\beta$ faster than the distance from $\rho(0)$ to $\rho(\beta)$ grows with $\beta$. This bears out when we plot the spectral gap as a function of $\beta$ for the truncated harmonic oscillator, seen in Fig. \ref{fig:enter-label}.
 
-Once we have determined how the thermalization process behaves for a given $\alpha$ and $t$, we can then sweep these parameters to determine how they effect thermalization. From our analysis of the single qubit case we would expect that the distance to the Markov chain can be made arbitrarily close as we both reduce the off-resonant terms by making $\alpha$ smaller and reducing the norm of the remainder terms by making $\widetilde{\alpha}$ smaller. As $t$ is not set we can choose which one to reduce by also varying $t$. As $t$ dictates the simulation time for the system dynamics we would like to reduce it as much as possible. The plot povided in Fig \ref{fig:total_time_vs_time} shows that the total simulation time tends to decrease as $t$ increases until some threshold is met. Finding this optimum value analytically would be intractable for arbitrary dimension harmonic oscillators. One other main takeaway is that as $\alpha$ increases the total simulation time also tends to decrease for a significant range of $t$. This is due to the fact that the probability mass that can be moved by the Markov chain increases with $\alpha$. We did not take this to the extreme and study a strong-coupling, short-time interaction channel and leave these questions for future research. 
+Once we have determined how the thermalization process behaves for a given $\alpha$ and $t$, we can then sweep these parameters to determine how they effect thermalization. From our analysis of the single qubit case we would expect that the distance to the Markov chain can be made arbitrarily close as we both reduce the off-resonant terms by making $\alpha$ smaller and reducing the norm of the remainder terms by making $\widetilde{\alpha}$ smaller. As $t$ is not set we can choose which one to reduce by also varying $t$. As $t$ dictates the simulation time for the system dynamics we would like to reduce it as much as possible. The plot povided in Fig \ref{fig:tot_time_vs_single_time} shows that the total simulation time tends to decrease as $t$ increases until some threshold is met. Finding this optimum value analytically would be intractable for arbitrary dimension harmonic oscillators. One other main takeaway is that as $\alpha$ increases the total simulation time also tends to decrease for a significant range of $t$. This is due to the fact that the probability mass that can be moved by the Markov chain increases with $\alpha$. We did not take this to the extreme and study a strong-coupling, short-time interaction channel and leave these questions for future research. 
 
-
-
-\matt{Should we include some kind of dimension dependent behavior for oscillator numerics? What would be a good candidate to plot?}
 
 \section{General Systems}
  Now that we have studied a single qubit and the harmonic oscillator in as much detail as possible, in this section we explore the behavior of our algorithm for some more generic systems. As our algorithm ultimately boils down to a Markov chain over the eigenstates of the Hamiltonian we are unable to make any runtime claims, as that would require bounding the spectral gap of a Markov chain that depends on knowledge of the Hamiltonian eigenvalues. What we do show in this section is three-fold: we first demonstrate that if the environment temperature approaches 0 ($\beta \to \infty$), then the ground state of the system is \emph{a} fixed point, second that if the eigenvalue differences $\lambda(i) - \lambda(j)$ can be sampled from exactly then we show that by taking $t$ sufficiently large the thermal state is the unique fixed point, and lastly we demonstrate that knowledge of eigenvalue gaps is largely an artifact of theory by preparing low temperature thermal states for Hydrogen chains without any a-priori knowledge.
