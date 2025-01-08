@@ -396,8 +396,9 @@ def plot_sho_error_v_interaction():
     n_int = 300
     beta = 4.0
     dim = 4
-    alphas = [0.03, 0.0075,0.003, 0.001]
-    times = np.linspace(100., 100., 1)
+    # alphas = [0.03, 0.0075,0.003, 0.001]
+    alphas = [0.005]
+    times = [50., 100.0, 150., 200.]
     results = {}
     x = [ix for ix in range(n_int)]
     for alpha in alphas:
@@ -418,7 +419,7 @@ def plot_sho_error_v_interaction():
     plt.xlabel(r"$L$")
     plt.show() 
 
-    with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction", 'w') as f:
+    with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_fixed_time", 'w') as f:
         json.dump(results, f)
     # y, yerr = fixed_number_interactions(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, n_int, num_samples=100, gamma_strategy='fixed')
     # markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
