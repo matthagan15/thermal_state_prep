@@ -393,22 +393,42 @@ def test_beta():
         print("output error: ", qhmc.compute_error_with_target_beta())
 
 def plot_sho_error_v_interaction():
-    
-    time = 100.
     n_int = 300
-    beta = 3.0
-    alpha = 0.005
+    beta = 4.0
     dim = 4
+    alphas = [0.03, 0.0075,0.003, 0.001]
+    times = np.linspace(100., 100., 1)
+    results = {}
     x = [ix for ix in range(n_int)]
-    y, yerr = fixed_number_interactions(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, n_int, num_samples=100, gamma_strategy='fixed')
-    markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
-    plt.errorbar(x, y, yerr, label="Simulated")
-    plt.plot(x, markov_pred, label="Markov Pred.")
+    for alpha in alphas:
+        for time in times:
+            y, yerr = fixed_number_interactions(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, n_int, num_samples=100, gamma_strategy='fixed')
+            markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
+            results["{:},{:}".format(alpha, time)] = list(zip(x, y, yerr, markov_pred))
+    for alpha_time_string in results.keys():
+        split = alpha_time_string.split(',')
+        alpha = float(split[0].replace('(', ""))
+        time = float(split[1].replace(')', ""))
+        x, y, yerr, markov = zip(*results[alpha_time_string])
+        plt.errorbar(x, y, yerr, label="sim. a={:.5},t={:.3}".format(alpha, time))
+        plt.plot(x, markov, label="markov. a={:.5},t={:.3}".format(alpha, time), linestyle='dashed')
+    # plt.xscale('log')
     plt.legend(loc='upper right')
     plt.ylabel(r"$|| \rho(\beta) - \Phi^L (\rho(0)) ||$")
     plt.xlabel(r"$L$")
-    plt.title(r'$|| \rho(\beta) - \Phi^L (\rho(0)) || $ as a function of L W/ dim=4 SHO, $\alpha = 0.005, t = 100.$')
     plt.show() 
+
+    with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction", 'w') as f:
+        json.dump(results, f)
+    # y, yerr = fixed_number_interactions(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, n_int, num_samples=100, gamma_strategy='fixed')
+    # markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
+    # plt.errorbar(x, y, yerr, label="Simulated")
+    # plt.plot(x, markov_pred, label="Markov Pred.")
+    # plt.legend(loc='upper right')
+    # plt.ylabel(r"$|| \rho(\beta) - \Phi^L (\rho(0)) ||$")
+    # plt.xlabel(r"$L$")
+    # plt.title(r'$|| \rho(\beta) - \Phi^L (\rho(0)) || $ as a function of L W/ dim=4 SHO, $\alpha = 0.005, t = 100.$')
+    # plt.show() 
     return
 
 def plot_sho_tot_time_vs_time():
@@ -504,18 +524,4 @@ def plot_sho_interaction_v_beta():
 if __name__ == "__main__":
     start = time_this.time()
     # plot_sho_tot_time_vs_time()
-    with open('/Users/matt/repos/thermal_state_prep/numerics/data/t_vs_tot_time.json', 'r') as f:
-        results = json.load(f)
-        
-    for k,v in results.items():
-        print("alpha: ", k)
-        print("results: ", v)
-        x, y = zip(*v)
-        plt.plot(x, y, label='a = {:.5}'.format(k))
-    plt.yscale('log')
-    plt.xscale('log')
-    plt.xlabel(r"$t$")
-    # plt.title("Total simulation time for dim = 4 Harmonic Oscillator to cool to beta = 4 vs time per interaction")
-    plt.ylabel("Total Sim Time $L t$")
-    plt.legend(loc="upper right")
-    plt.show()
+    plot_sho_error_v_interaction()
