@@ -193,7 +193,7 @@ def minimum_interactions(alpha, time, beta_e, epsilon, dim, num_samples=100):
         return phi.simulate_interactions(threadpool)
     with Parallel(n_jobs=8) as threadpool:
         x = binary_search(f, epsilon, threadpool)
-        print("x: ", x)
+        # print("x: ", x)
     if type(x) == type(None):
         print("upper bound reached, returning none.")
         return None
@@ -474,10 +474,10 @@ def plot_sho_tot_time_vs_time():
 def plot_sho_interaction_v_beta():
     # alphas = np.logspace(np.log10(0.0001), np.log10(0.001), 4)
     alphas = [0.01]
-    times = np.logspace(np.log10(10), np.log10(1000.), 10)
+    times = np.logspace(np.log10(50), np.log10(1000.), 5)
     epsilon = 0.05
     dim = 4
-    betas = np.logspace(np.log10(1e-1), np.log10(dim), 10, base=10)
+    betas = np.logspace(np.log10(1e-1), np.log10(dim), 40, base=10)
     y = []
     # markov_pred = []
     results = {}
@@ -488,7 +488,7 @@ def plot_sho_interaction_v_beta():
             y = []
             results_full = True
             for beta in betas:
-                ret = minimum_interactions(alpha, time, beta, epsilon, dim, num_samples=8)
+                ret = minimum_interactions(alpha, time, beta, epsilon, dim, num_samples=100)
                 if ret is None:
                     results_full = False
                     break
@@ -525,4 +525,5 @@ def plot_sho_interaction_v_beta():
 if __name__ == "__main__":
     start = time_this.time()
     # plot_sho_tot_time_vs_time()
-    plot_sho_error_v_interaction()
+    # plot_sho_error_v_interaction()
+    plot_sho_interaction_v_beta()
