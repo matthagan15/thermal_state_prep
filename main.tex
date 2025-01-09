@@ -683,15 +683,23 @@ giving a total simulation time of
 
 The proof above is helpful for giving an idea of the runtime for very low temperature states, but we cannot extend it to finite $\beta$ due to the ad-hoc computation of the spectral gap. For generic $\beta$ the structure of the transition matrix is tridiagonal, but it is not quite Toeplitz as the main diagonals deviate in the upper left and bottom right corners. We could try to pull these deviations into a separate matrix and treat them as perturbations to a fully Toeplitz matrix, but these deviations are on the order of $\widetilde{\alpha}^2 q(0)$ and $\widetilde{\alpha}^2 q(1)$, which are comparable to the eigenvalues of the resulting Toeplitz matrix. This means the resulting ``perturbation" is actually on the same scale as the unperturbed matrix. Analytically computing the spectral gap for $\dim = 3$ reveals a hyperbolic cosecant structure, but these calculations do not scale easily to higher dimension. It seems that we are restricted to probing the runtime for higher dimensions and finite $\beta$ numerically.
 
-Our first goal to explore numerically will be to study how close our Markov chain approximation is to the real dynamics of the channel. To do this we will track the distance to the target thermal state $\norm{\rho(\beta) - \Phi^{\circ L}(\rho(0))}_1$ as a function of $L$ as well as the theoretically computed Markov chain $\norm{\vec{p}_{\beta} - (I + T)^L \vec{p}_0}_1 $. This is done to confirm the validity of the weak-coupling expansion and to verify that the dynamics do converge to the fixed point. As our remainder error is controlled by $\alpha t$ and our off-resonance error by $1/t$ we expect that making $\alpha$ small and $t$ large should lead to our dynamics converging to the Markov chain. 
+Our first goal to explore numerically will be to study how close our Markov chain approximation is to the real dynamics of the channel. To do this we will track the distance to the target thermal state $\norm{\rho(\beta) - \Phi^{\circ L}(\rho(0))}_1$ as a function of $L$ as well as the theoretically computed Markov chain $\norm{\vec{p}_{\beta} - (I + T)^L \vec{p}_0}_1 $. This is done to confirm the validity of the weak-coupling expansion and to verify that the dynamics do converge to the fixed point. As our remainder error is controlled by $\alpha t$ and our off-resonance error by $1/t$ we expect that making $\alpha$ small and $t$ large should lead to our dynamics converging to the Markov chain. In Fig. \ref{fig:sho_error_vs_interactions} we explore how varying $\alpha$ and $t$ can affect the convergence of the dynamics. We find that increasing $\alpha$ for a fixed $t$ will increase the convergence rate at the cost of a higher variance in the error as well as a further deviation from the Markov chain fixed point. For fixed $\alpha$, we observe .
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{numerics/data/sho_error_vs_l.png}
+    \caption{Caption}
+    \label{fig:enter-label}
+\end{figure}
 
 We will start the analysis with very small examples, such as $\dim_S = 4$, which will be sufficient to show some of the more complex behavior of the algorithm. We will first see how the distance to the target state behaves as a function of the number of interactions, as well as $\alpha$ and $t$ . Once we have determined that a certain distance from the target can be reached we will study the convergence time to meet a fixed error threshold, typically $\epsilon = 0.05$, changes as we vary $\beta$. 
 
 Starting with safe parameter choices of $\Delta = \gamma = 1$, $\alpha = 0.005$, $t = 100.0$, and $\beta = 3.0$ we show how a harmonic oscillator truncated to the $4$ lowest energy levels thermalizes. We can see in the plot for Fig. \ref{fig:enter-label} that the error of the simulated channel almost exactly matches the error from the Markov chain prediction. The Markov chain prediction is the distance from a uniform starting distribution and performs an update via the Markov chain matrix $I + T$, it does not perform any time evolution or attempt to simulate the total system-environment channel. Since we have reasonable confidence with this plot that the channel is mostly tracking the Markov chain prediction we can then move on to the more interesting data: how many interactions are needed to meet a fixed error. This data can be found in Fig. \ref{fig:enter-label} as well. 
+
+
 \begin{figure}
     \centering
-    \includegraphics[width=0.45\linewidth]{numerics/data/sho_error_vs_l.png}
-    \includegraphics[width=0.45\linewidth]{numerics/data/sho_l_vs_beta.png} \\
+    \includegraphics[width=0.45\linewidth]{numerics/data/sho_l_vs_beta.png}
     \includegraphics[width=0.5\linewidth]{numerics/data/spec_gap_dim_4.pdf}
     \caption{TODO: Improve. Trace distance to target as a function of interaction number, simulation compared to Markov chain behavior. The Hilbert-Schmidt overlap with the ground state $\anglebrackets{\Phi^L(\rho(0)), \ketbra{0}{0}}$ is 0.940 at $L = 300$. }
     \label{fig:enter-label}
