@@ -80,8 +80,25 @@ def sample_gammas(mean, upper, num_samples):
     samples = np.abs(samples)
     return np.minimum(samples, upper)
 
+def sample_gammas_with_noise(spectra, noise, num_samples):
+    rng = np.random.default_rng()
+    samples = []
+    spectral_norm = np.max(spectra)
+    for _ in range(num_samples):
+        lambda1 = np.random.choice(spectra)
+        lambda2 = np.random.choice(spectra)
+        while lambda1 == lambda2:
+            lambda2 = np.random.choice(spectra)
+        sample = np.random.normal(np.abs(lambda1 - lambda2), noise)
+        if sample < 0.0:
+            sample += spectral_norm
+        while sample > spectral_norm:
+            sample -= spectral_norm
+        samples.append(sample)
+    return samples 
+
 def load_h_chain():
-    with open('/Users/matt/scratch/hamiltonians/h_chain_3.pickle', 'rb') as openfile:
+    with open('/Users/matt/scratch/hamiltonians/h_chain_2.pickle', 'rb') as openfile:
         h_list = list(pickle.load(openfile))
         dims = h_list.pop()
         h = np.zeros(dims, dtype=np.complex128)
@@ -211,6 +228,29 @@ def fixed_number_interactions(h_sys, alpha, time, beta_e, num_interactions, num_
     return  phi.simulate_with_random_env(threadpool, gamma_strategy=gamma_strategy)
  
 
+def minimum_interactions_with_random_gamma(hamiltonian, alpha, time, beta_e, epsilon, gamma_strategy, num_samples = 100):
+    """
+    Computes the minimum number of interactions needed to prepare given hamiltonian
+    in thermal state with provided gamma strategy.
+
+    Uses hydrogen chain right now.
+    """
+    # print("SIMULATED SEARCH")
+    def f(n, threadpool):
+        phi = QHMC(ham_sys=hamiltonian, env_betas=[beta_e] * n, sys_start_beta=0.0, sim_times=[time] * n, alphas=[alpha] * n, num_monte_carlo=num_samples)
+        return phi.simulate_with_random_env(threadpool, gamma_strategy)[0][-1]
+    with Parallel(n_jobs=8) as threadpool:
+        x = binary_search(f, epsilon, threadpool)
+        # print("x: ", x)
+    if type(x) == type(None):
+        print("upper bound reached, returning none.")
+        return None
+    
+    (interactions, dist ) = x
+    return interactions
+
+
+
 def fixed_num_interactions_markov(dim, alpha, time, beta, num_interactions):
     markov_op = compute_sho_markov_chain(alpha, beta, time, dim)
     target_state = np.exp(- beta * np.linspace(0.0, (dim - 1) * 1.0, dim)) / np.sum(np.exp(- beta * np.linspace(0.0, (dim - 1) * 1.0, dim)))
@@ -300,7 +340,11 @@ alpha.
         h_norm = 2*np.linalg.norm(self.ham_sys, ord = 2)
         output = np.zeros((self.system_state.shape[0], self.system_state.shape[1] * 2)).view(np.complex128) 
         target_state = thermal_state(self.ham_sys, self.betas[-1])
-
+        if gamma_strategy.startswith("spectra_with_noise"):
+            splitted = gamma_strategy.split('=')
+            gamma_strategy = splitted[0]
+            noise = float(splitted[1])
+            spectra = np.linalg.eigvals(self.ham_sys)
         def sampler2():
             sample_state = thermal_state(self.ham_sys, self.sys_start_beta)
             if gamma_strategy == 'random':
@@ -308,15 +352,17 @@ alpha.
             elif gamma_strategy == 'fixed':
                 print("fixed gamma strat.")
                 gammas = [1.0] * len(self.betas)
+            elif gamma_strategy == 'spectra_with_noise':
+                gammas = sample_gammas_with_noise(spectra, noise, len(self.betas))
             else:
                 print("Unsupported gamma strategy. Use 'random' or 'fixed'.")
                 raise Exception
 
             dists = []
             for ix in range(len(self.betas)):
-                if ix % 1000 == 0:
-                    percent_done = ix * 100.0/len(self.betas)
-                    print(percent_done, "% done")
+                # if ix % 1000 == 0:
+                #     percent_done = ix * 100.0/len(self.betas)
+                #     print(percent_done, "% done")
                     # print(ix)
                 rho_env = thermal_state(gammas[ix] * self.ham_env_base, self.betas[ix])
                 rho_tot = np.kron(sample_state, rho_env)
@@ -329,36 +375,37 @@ alpha.
                 dists.append(trace_distance(sample_state, target_state))
             return (sample_state, dists)
 
-        def sampler():
-            sample_state = thermal_state(self.ham_sys, self.sys_start_beta)
-            gammas = sample_gammas(avg, h_norm, len(self.betas))
-            dists = []
-            for ix in range(len(self.betas)):
-                if ix % 1000 == 0:
-                    print(f"{ix / len(self.betas)}% done")
-                output = 0.0 * sample_state
-                for gamma in gammas:
-                    rho_env = thermal_state(gamma * self.ham_env_base, self.betas[ix])
-                    rho_tot = np.kron(sample_state, rho_env)
-                    g = my_interaction(self.ham_sys.shape[0] * self.ham_env_base.shape[0])
-                    ham_tot = self.total_hamiltonian + self.alphas[ix] * g
-                    u = linalg.expm(1j * ham_tot * self.times[ix])
-                    raw = u @ rho_tot @ u.conj().T
-                    output += partrace(raw, self.ham_sys.shape[0], self.ham_env_base.shape[0])
-                sample_state = output / (len(gammas) * 1.0)
-                dists.append(trace_distance(sample_state, target_state))
-            return (sample_state, dists)
+        # def sampler():
+        #     sample_state = thermal_state(self.ham_sys, self.sys_start_beta)
+        #     gammas = sample_gammas(avg, h_norm, len(self.betas))
+        #     dists = []
+        #     for ix in range(len(self.betas)):
+        #         if ix % 1000 == 0:
+        #             print(f"{ix / len(self.betas)}% done")
+        #         output = 0.0 * sample_state
+        #         for gamma in gammas:
+        #             rho_env = thermal_state(gamma * self.ham_env_base, self.betas[ix])
+        #             rho_tot = np.kron(sample_state, rho_env)
+        #             g = my_interaction(self.ham_sys.shape[0] * self.ham_env_base.shape[0])
+        #             ham_tot = self.total_hamiltonian + self.alphas[ix] * g
+        #             u = linalg.expm(1j * ham_tot * self.times[ix])
+        #             raw = u @ rho_tot @ u.conj().T
+        #             output += partrace(raw, self.ham_sys.shape[0], self.ham_env_base.shape[0])
+        #         sample_state = output / (len(gammas) * 1.0)
+        #         dists.append(trace_distance(sample_state, target_state))
+        #     return (sample_state, dists)
         parallel_rets = threadpool(delayed(sampler2)() for i in range(self.num_monte_carlo))
-        avg_dists = np.zeros((1, len(self.betas)))
         dist_matrix = np.zeros((len(parallel_rets), len(self.betas)))
         ground_state_prob = 0.0
         for ix in range(len(parallel_rets)):
             (sample_state, dists) = parallel_rets[ix]
-            ground_state_prob += np.abs(sample_state[0,0])
+            ground_state_prob += np.max(np.abs(sample_state.diagonal()))
             sampled_dists = np.array(dists).reshape((1, len(self.betas)))
             dist_matrix[ix, : ] = sampled_dists
-        print('avg ground state prob: ', ground_state_prob / len(parallel_rets))
-        return (np.mean(dist_matrix, axis=0), np.std(dist_matrix, axis=0))
+        # print('avg ground state prob: ', ground_state_prob / len(parallel_rets))
+        ret = (np.mean(dist_matrix, axis=0), np.std(dist_matrix, axis=0))
+        # print("distance of last interaction: ", ret[0][-1], " +- ", ret[1][-1])
+        return ret
         
 
 def test_hamiltonian_gap():
@@ -391,6 +438,31 @@ def test_beta():
         qhmc = QHMC(ham_sys = harmonic_oscillator_hamiltonian(sys_dim), env_betas=[1.], sim_times=[100.], alphas = [0.01], ham_env_base = env_hamiltonian, num_monte_carlo=500, sys_start_beta=beta)
         print("beta: ", beta)
         print("output error: ", qhmc.compute_error_with_target_beta())
+
+
+def h_chain_time_vs_beta():
+    h_chain = load_h_chain()
+    spectral_norm = np.max(np.abs(np.linalg.eigvals(h_chain)))
+    print('spectral_norm: ', spectral_norm)
+    alpha = 0.01
+    time = 150.
+    num_samples = 100
+    epsilon = 0.10
+    beta = 1.0
+    # noises = [0.0, 0.01, 0.05, 0.1]
+    noises = np.linspace(0.0, 2.5 * spectral_norm, 16)
+    results = []
+    for noise in noises:
+        x = minimum_interactions_with_random_gamma(h_chain, alpha, time, beta, epsilon=epsilon, gamma_strategy="spectra_with_noise=" + str(noise), num_samples=num_samples)
+        results.append(x)
+        print('noise: ', noise)
+        print("result: ", x)
+    plt.plot(noises, results)
+    plt.show()
+    json_dump = {"noises": list(noises), "results": list(results), "alpha": alpha, "time": time, "num_samples": num_samples, "epsilon": epsilon, "beta": beta, "hamiltonian": "h_chain"}
+    with open('/Users/matt/repos/thermal_state_prep/numerics/data/h_chain_with_noise_2', 'w') as f:
+        json.dump(json_dump, f)
+
 
 def plot_sho_error_v_interaction():
     n_int = 300
@@ -531,4 +603,5 @@ if __name__ == "__main__":
     start = time_this.time()
     # plot_sho_tot_time_vs_time()
     # plot_sho_error_v_interaction()
-    plot_sho_interaction_v_beta()
+    # plot_sho_interaction_v_beta()
+    h_chain_time_vs_beta()
