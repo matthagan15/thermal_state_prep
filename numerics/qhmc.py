@@ -99,7 +99,7 @@ def sample_gammas_with_noise(spectra, noise, num_samples):
     return samples 
 
 def load_h_chain():
-    with open('/Users/matt/scratch/hamiltonians/h_chain_2.pickle', 'rb') as openfile:
+    with open('/Users/matt/scratch/hamiltonians/h_chain_3.pickle', 'rb') as openfile:
         h_list = list(pickle.load(openfile))
         dims = h_list.pop()
         h = np.zeros(dims, dtype=np.complex128)
@@ -442,21 +442,22 @@ def test_beta():
 
 
 def h_chain_time_vs_beta():
-    h_chain = load_h_chain()
-    eigs = np.linalg.eigvals(h_chain)
+    ham = load_h_chain()
+    # ham = harmonic_oscillator_hamiltonian(5)
+    eigs = np.linalg.eigvals(ham)
     spectral_norm = np.max(np.abs(eigs))
     max_difference = np.abs(np.max(eigs) - np.min(eigs))
     print('spectral_norm: ', spectral_norm, ", max_difference: ", max_difference)
     alpha = 0.01
-    time = 150.
-    num_samples = 300
+    time = 200.
+    num_samples = 32
     epsilon = 0.10
     beta = 1.0
     # noises = [0.0, 0.01, 0.05, 0.1]
-    noises = np.linspace(0.0, max_difference, 32)
+    noises = np.linspace(0.0, max_difference, 10)
     results = []
     for noise in noises:
-        x = minimum_interactions_with_random_gamma(h_chain, alpha, time, beta, epsilon=epsilon, gamma_strategy="spectra_with_noise=" + str(noise), num_samples=num_samples)
+        x = minimum_interactions_with_random_gamma(ham, alpha, time, beta, epsilon=epsilon, gamma_strategy="spectra_with_noise=" + str(noise), num_samples=num_samples)
         results.append(x)
         print('noise: ', noise)
         print("result: ", x)
@@ -464,8 +465,8 @@ def h_chain_time_vs_beta():
     plt.ylabel("L: Interactions Needed")
     plt.plot(noises, results)
     plt.show()
-    json_dump = {"noises": list(noises), "results": list(results), "alpha": alpha, "time": time, "num_samples": num_samples, "epsilon": epsilon, "beta": beta, "hamiltonian": "h_chain"}
-    with open('/Users/matt/repos/thermal_state_prep/numerics/data/h_chain_with_noise_3', 'w') as f:
+    json_dump = {"noises": list(noises), "results": list(results), "alpha": alpha, "time": time, "num_samples": num_samples, "epsilon": epsilon, "beta": beta, "hamiltonian": "h_chain_3"}
+    with open('/Users/matt/repos/thermal_state_prep/numerics/data/h_chain_3_with_noise_2', 'w') as f:
         json.dump(json_dump, f)
 
 
