@@ -84,6 +84,7 @@ def sample_gammas_with_noise(spectra, noise, num_samples):
     rng = np.random.default_rng()
     samples = []
     spectral_norm = np.max(spectra)
+    largest_difference = np.abs(np.max(spectra) - np.min(spectra))
     for _ in range(num_samples):
         lambda1 = np.random.choice(spectra)
         lambda2 = np.random.choice(spectra)
@@ -91,9 +92,9 @@ def sample_gammas_with_noise(spectra, noise, num_samples):
             lambda2 = np.random.choice(spectra)
         sample = np.random.normal(np.abs(lambda1 - lambda2), noise)
         if sample < 0.0:
-            sample += spectral_norm
-        while sample > spectral_norm:
-            sample -= spectral_norm
+            sample = np.abs(sample)
+        while sample > largest_difference:
+            sample -= largest_difference
         samples.append(sample)
     return samples 
 
@@ -442,25 +443,29 @@ def test_beta():
 
 def h_chain_time_vs_beta():
     h_chain = load_h_chain()
-    spectral_norm = np.max(np.abs(np.linalg.eigvals(h_chain)))
-    print('spectral_norm: ', spectral_norm)
+    eigs = np.linalg.eigvals(h_chain)
+    spectral_norm = np.max(np.abs(eigs))
+    max_difference = np.abs(np.max(eigs) - np.min(eigs))
+    print('spectral_norm: ', spectral_norm, ", max_difference: ", max_difference)
     alpha = 0.01
     time = 150.
-    num_samples = 100
+    num_samples = 300
     epsilon = 0.10
     beta = 1.0
     # noises = [0.0, 0.01, 0.05, 0.1]
-    noises = np.linspace(0.0, 2.5 * spectral_norm, 16)
+    noises = np.linspace(0.0, max_difference, 32)
     results = []
     for noise in noises:
         x = minimum_interactions_with_random_gamma(h_chain, alpha, time, beta, epsilon=epsilon, gamma_strategy="spectra_with_noise=" + str(noise), num_samples=num_samples)
         results.append(x)
         print('noise: ', noise)
         print("result: ", x)
+    plt.xlabel("Gaussian Noise Width")
+    plt.ylabel("L: Interactions Needed")
     plt.plot(noises, results)
     plt.show()
     json_dump = {"noises": list(noises), "results": list(results), "alpha": alpha, "time": time, "num_samples": num_samples, "epsilon": epsilon, "beta": beta, "hamiltonian": "h_chain"}
-    with open('/Users/matt/repos/thermal_state_prep/numerics/data/h_chain_with_noise_2', 'w') as f:
+    with open('/Users/matt/repos/thermal_state_prep/numerics/data/h_chain_with_noise_3', 'w') as f:
         json.dump(json_dump, f)
 
 
