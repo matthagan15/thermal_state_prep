@@ -99,7 +99,7 @@ def sample_gammas_with_noise(spectra, noise, num_samples):
     return samples 
 
 def load_h_chain():
-    with open('/Users/matt/scratch/hamiltonians/h_chain_3.pickle', 'rb') as openfile:
+    with open('/Users/matt/scratch/hamiltonians/h_chain_2.pickle', 'rb') as openfile:
         h_list = list(pickle.load(openfile))
         dims = h_list.pop()
         h = np.zeros(dims, dtype=np.complex128)
@@ -346,6 +346,9 @@ alpha.
             gamma_strategy = splitted[0]
             noise = float(splitted[1])
             spectra = np.linalg.eigvals(self.ham_sys)
+        if gamma_strategy == "uniform":
+            spectra = np.linalg.eigvals(self.ham_sys)
+            spectral_width = np.abs(np.max(spectra) - np.min(spectra))
         def sampler2():
             sample_state = thermal_state(self.ham_sys, self.sys_start_beta)
             if gamma_strategy == 'random':
@@ -355,6 +358,9 @@ alpha.
                 gammas = [1.0] * len(self.betas)
             elif gamma_strategy == 'spectra_with_noise':
                 gammas = sample_gammas_with_noise(spectra, noise, len(self.betas))
+            elif gamma_strategy == "uniform":
+                rng = np.random.default_rng()
+                gammas = rng.uniform(0.0, spectral_width, len(self.betas))
             else:
                 print("Unsupported gamma strategy. Use 'random' or 'fixed'.")
                 raise Exception
@@ -440,15 +446,30 @@ def test_beta():
         print("beta: ", beta)
         print("output error: ", qhmc.compute_error_with_target_beta())
 
-
 def h_chain_time_vs_beta():
+    ham = load_h_chain()
+    alpha = 0.001
+    time = 800.
+    num_samples = 64
+    betas = np.linspace(0.2, 4.0, 6)
+    epsilon = 0.05
+    results = []
+    gs = "uniform"
+    for beta in betas:
+        x = minimum_interactions_with_random_gamma(ham, alpha, time, beta, epsilon, gs, num_samples)
+        results.append(x)
+        print(beta, ', ',  x)
+    plt.plot(betas, results)
+    plt.show()
+
+def h_chain_time_vs_noise():
     ham = load_h_chain()
     # ham = harmonic_oscillator_hamiltonian(5)
     eigs = np.linalg.eigvals(ham)
     spectral_norm = np.max(np.abs(eigs))
     max_difference = np.abs(np.max(eigs) - np.min(eigs))
     print('spectral_norm: ', spectral_norm, ", max_difference: ", max_difference)
-    alpha = 0.01
+    alpha = 0.005
     time = 200.
     num_samples = 32
     epsilon = 0.10
@@ -610,4 +631,5 @@ if __name__ == "__main__":
     # plot_sho_tot_time_vs_time()
     # plot_sho_error_v_interaction()
     # plot_sho_interaction_v_beta()
+    # h_chain_time_vs_noise()
     h_chain_time_vs_beta()
