@@ -16,6 +16,7 @@ import time as time_this
 from joblib import Parallel, delayed
 
 BETA_MAX = 1000
+BINARY_SEARCH_UPPER_LIMIT = 2 ** 18
 
 def prob_dist_trace_norm(p, q):
     return np.sum(np.abs(p - q))
@@ -170,7 +171,7 @@ def sqrt_hamiltonian(dimensions):
     diags = [np.sqrt(ix) for ix in range(dimensions)]
     return np.diag(diags)
 
-BINARY_SEARCH_UPPER_LIMIT = 2 ** 16
+
 
 def binary_search(f , epsilon, threadpool):
     """Returns:
@@ -201,7 +202,7 @@ needed to reach distance `epsilon` and `s` is the std deviation.
         # f"[BINARY_SEARCH] min_number_interactions = {upper}, distances: {cur_dist}")
     return (upper, cur_dist)
 
-def minimum_interactions(alpha, time, beta_e, epsilon, dim, num_samples=100):
+def minimum_interactions_sho(alpha, time, beta_e, epsilon, dim, num_samples=100):
     """
     Computes the minimum number of interactions needed to prepare a single qubit state in an 
     """
@@ -446,6 +447,40 @@ def test_beta():
         print("beta: ", beta)
         print("output error: ", qhmc.compute_error_with_target_beta())
 
+def test_tot_time_vs_epsilon():
+    dim = 4
+    ham = harmonic_oscillator_hamiltonian(dim)
+    beta = float(dim)
+    time_ep = lambda ep: (dim ** 2 / ep)
+    alpha_ep = lambda ep: 1. / (dim * time_ep(ep)**3)
+    alpha = 0.002
+    time = 400.0
+    num_samples = 32
+    ep_start = np.log10(5e-1)
+    ep_end = np.log10(5e-3)
+    epsilons = np.logspace(ep_start, ep_end, 10)
+    print("epsilons: ", epsilons)
+    results = []
+    x_fit_vals = []
+    for epsilon in epsilons:
+        # x = minimum_interactions_with_random_gamma(ham, alpha, time, beta, epsilon, "uniform", num_samples=num_samples)
+        a = 2e4 * alpha_ep(epsilon)
+        print("a = ", a)
+        t = time_ep(epsilon)
+        print("t = ", t)
+        x = minimum_interactions_sho(a, t, beta, epsilon, dim, num_samples=num_samples)
+        results.append(x)
+        x_fit_vals.append(np.log10(1. / epsilon))
+        print("ep: {:}, time: {:}".format(epsilon, x))
+    print(x_fit_vals)
+    print(results)
+    # poly_fit = np.polynomial.Polynomial.fit(x_fit_vals, results)
+    # print("linear slope: ", poly_fit.convert().coeffs[1])
+    plt.plot(epsilons, results)
+    plt.xscale("log")
+    plt.show()
+    
+
 def h_chain_time_vs_beta():
     ham = load_h_chain()
     alpha = 0.001
@@ -545,7 +580,7 @@ def plot_sho_tot_time_vs_time():
     for alpha in alphas:
         for time in times:
             print("alpha, time: ", alpha, time)
-            ret = minimum_interactions(alpha, time, beta, epsilon, dim, num_samples=20)
+            ret = minimum_interactions_sho(alpha, time, beta, epsilon, dim, num_samples=20)
             if ret is None:
                 results_full = False
                 continue
@@ -590,7 +625,7 @@ def plot_sho_interaction_v_beta():
             results_full = True
             for beta in betas:
                 print("beta: ", beta)
-                ret = minimum_interactions(alpha, time, beta, epsilon, dim, num_samples=16)
+                ret = minimum_interactions_sho(alpha, time, beta, epsilon, dim, num_samples=16)
                 if ret is None:
                     results_full = False
                     break
@@ -632,4 +667,5 @@ if __name__ == "__main__":
     # plot_sho_error_v_interaction()
     # plot_sho_interaction_v_beta()
     # h_chain_time_vs_noise()
-    h_chain_time_vs_beta()
+    # h_chain_time_vs_beta()
+    test_tot_time_vs_epsilon()
