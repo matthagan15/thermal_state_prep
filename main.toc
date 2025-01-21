@@ -1,0 +1,12 @@
+\@ifundefined {etoctocstyle}{\let \etoc@startlocaltoc \@gobble \let \etoc@settocdepth \@gobble \let \etoc@depthtag \@gobble \let \etoc@setlocaltop \@gobble }{}
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Main Results}{4}{subsection.1.1}%
+\contentsline {section}{\numberline {2}Preliminaries}{4}{section.2}%
+\contentsline {section}{\numberline {3}Weak Interaction Expansion for $\Phi $}{5}{section.3}%
+\contentsline {section}{\numberline {4}Single Qubit}{12}{section.4}%
+\contentsline {section}{\numberline {5}Harmonic Oscillator}{15}{section.5}%
+\contentsline {section}{\numberline {6}General Systems}{22}{section.6}%
+\contentsline {section}{\numberline {7}Conclusion}{32}{section.7}%
+\contentsline {section}{\numberline {A}Sinc Function}{32}{appendix.A}%
+\contentsline {section}{\numberline {B}Haar Integral Proofs}{33}{appendix.B}%
+\contentsline {subsection}{\numberline {B.1}Weak-Coupling Remainder Bound}{41}{subsection.B.1}%

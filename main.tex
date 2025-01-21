@@ -865,7 +865,7 @@ which completes our calculation for the diagonal elements of $\EE_\gamma \lim_{\
 \begin{align}
     p_T(x) &= \det(x I - \EE_\gamma T_\gamma) \\
     &= e_1^T(x I - \EE_\gamma T_\gamma)e_1 \prod_{i = 2}^{\dim_S} e_i^T (x I - \EE_\gamma T_\gamma) e_i \\
-    &= x \prod_{i = 2}^{\dim_S} \left( x + \frac{\widetilde{\alpha}^2 (i - 1)}{t(\gamma_U - \gamma_L)} I_{\sinc}(t)\right).
+    &= x \prod_{i = 2}^{\dim_S} \left( x + \frac{\widetilde{\alpha}^2 (i - 1)}{t(\gamma_U - \gamma_L)} I_{\sinc}(t)\right). \label{eq:ground_state_characteristic_poly}
 \end{align}
 Given that this polynomial is clearly factored the roots are $x = 0$ and $x = -(i - 1) \frac{\widetilde{\alpha}^2 I_{\sinc}(t)}{t(\gamma_U - \gamma_L)}$ giving a gap of 
 \begin{equation}
@@ -920,6 +920,59 @@ I should turn this into some kind of bound. do I need an upper or lower on $I_{\
 
 \end{proof}
 \matt{TODO need to bound the $I_{\sinc}(t)$ contribution, I'm very certain it is constant but it needs to be proven nonetheless.}
+
+
+Now we show how perfect knowledge of the eigenvalue differences with the ground state can affect the runtime. We now choose a distribution of $\gamma$ that reflects this knowledge. Let 
+\begin{equation}
+    S_{\Delta} \coloneqq \set{\Delta_S(i, j) : i > j},
+\end{equation}
+and we sample from this set while reflecting the degeneracy of each eigenvalue difference. This reflects on $\gamma$ as 
+\begin{equation}
+    \prob{\gamma = \Delta_S(i,j)} = \frac{\eta(i,j)}{\dim_S(\dim_S - 1)},
+\end{equation}
+this can be thought of as randomly choosing a pair of eigenvectors and setting $\gamma$ to be their 
+eigenvalue difference. 
+
+This allows us to compute the spectral gap of the resulting Markov chain analogously to the proof of Theorem \ref{thm:ground_state} but now the expectation value of the diagonal on-resonance transitions is different. The proof that $\EE_\gamma T_\gamma$ is upper triangular still holds and the proof that the ground state is a fixed point also goes through without modification. Now we can compute the diagonal entries starting from Eq. \eqref{eq:ground_state_tmp_1}
+\begin{align}
+    e_i^T \EE_\gamma T_\gamma e_i &= -   \sum_{j < i} \widetilde{\alpha}^2 \EE_\gamma \mathbf{I}[|\Delta_S(i,j) - \gamma| \le \delta_{\min}] \sinc^2 \left( \frac{(\Delta_S(i, j) - \gamma) t}{2} \right) \\
+    &= - \widetilde{\alpha}^2 \sum_{j < i} \sum_{k, l} \prob{\gamma = \Delta_S(k,l)} \mathbf{I}[|\Delta_S(i,j) - \Delta_S(k,l)| \le \delta_{\min}] \sinc^2 \left( \frac{(\Delta_S(i, j) - \Delta_S(k,l)) t}{2} \right) \\
+    &= - \widetilde{\alpha}^2 \sum_{j < i} \prob{\gamma = \Delta_S(i, j)} \\
+    &= - \widetilde{\alpha}^2 \sum_{j < i} \frac{\eta(i,j)}{\dim_S (\dim_S - 1)}. \label{eq:ground_state_perfect_knowledge_diagonals}
+\end{align}
+Now we can then compute the spectrum of the Markov chain straightforwardly, as seen in Eq. \eqref{eq:ground_state_characteristic_poly}. Each eigenvalue corresponds to a diagonal entry in $\EE_\gamma T_\gamma$, so the spectral gap is then
+\begin{equation}
+\lambda_\star = - \max_{i > 1} e_i^T \EE_\gamma T_\gamma e_i.
+\end{equation}
+Using Eq. \eqref{eq:ground_state_perfect_knowledge_diagonals}, due to the fact that $\eta(i, j) \ge 1$ and the fact that adding to the sum only makes the entry more negative we see that the smallest this can be is $\lambda_\star \ge \frac{\widetilde{\alpha}^2}{\dim_S(\dim_S - 1)}$. This leads to a bound on the number of interactions needed as 
+\begin{align}
+    \frac{1}{\lambda_\star} &\le \frac{\dim_S (\dim_S - 1)}{\widetilde{\alpha}^2} \\
+    \frac{\dim_s}{\lambda_\star} &\le \frac{\dim_S^3 (1 - 1/\dim_S)}{\widetilde{\alpha}^2}.
+\end{align}
+By plugging this into Theorem \ref{thm:markov_chain_bound} and taking tilde asymptotics we get
+\begin{align}
+    L \in \widetilde{\Omega} \parens{\frac{\dim_S^4}{\alpha^2 t^2}}
+\end{align}
+is sufficient to guarantee that the output of the channel is sufficiently close to the fixed point of the markov chain, which is the fixed point. Repeating the arguments from before we require 
+\begin{equation}
+    \alpha = \frac{1}{\dim_S t^3 \delta_{\min}^2}
+\end{equation}
+in order for the off-resonance and remainder terms to contribute equally asymptotically. This then gives that 
+\begin{align}
+    L(\norm{\TT_{\off}}_1 + \norm{R_{\Phi}}_1) &\in \widetilde{\Theta} \parens{\frac{\dim_S^4}{\alpha^2 t^2} \frac{\alpha^2}{\delta_{\min}^2}} \\
+    &= \widetilde{\Theta} \parens{\frac{\dim_S^4}{t^2 \delta_{\min}^2}}.
+\end{align}
+We would like this to be $\widetilde{\Theta}(\epsilon)$, which can be guaranteed provided
+\begin{equation}
+    t \in \widetilde{\Theta} \parens{\frac{\dim_S^2}{\delta_{\min} \sqrt{\epsilon}}}.
+\end{equation}
+This gives a final runtime of 
+\begin{align}
+    L t &\in \widetilde{\Theta} \parens{\frac{\dim_S^4}{\alpha^2 t}} \\
+    &= \widetilde{\Theta} \parens{\dim_S^5 t \delta_{\min}^2} \\
+    &= \widetilde{\Theta} \parens{\frac{\dim_S^7 \delta_{\min}}{\sqrt{\epsilon}}}.
+\end{align}
+This is a drastic reduction in the runtime of the algorithm compared to the minimal knowledge proof.
 
 Now we move on to study a scenario when finite $\beta$ thermal states are the unique fixed point of the Markov dynamics. For this we assume sample access to the eigenvalue differences $\Delta(i,j) = \lambda(i) - \lambda(j)$, meaning if there are $\chi(i,j)$ pairs of eigenvalues with positive differences $\Delta(k,l) = \Delta(i,j) \ge 0$ then the probability we receive $\Delta(i,j)$ is $\prob{\gamma = \Delta(i,j)} = \chi(i,j) \frac{2}{\dim_S(\dim_S - 1)}$. One simplifying assumption we will make (I'm not sure this is necessary?) is that there are no degeneracies in the Hamiltonian and for all $i,j$ we have $\Delta(i,j) > 0$. By taking $t$ larger than the smallest difference between eigenvalue differences we can ensure that the probability of an on-resonance transition occurring between states $i$ and $j$ is $\chi(i,j) \frac{2}{\dim_S(\dim_S - 1)}$. More formally, we use the definition of $\delta_{\min}$ from Eq. \eqref{eq:delta_min_def} and take $t \ge 1/ \delta_{\min}$ so that we can use Lemma \ref{lem:sinc_poly_approx} to argue that the only contribution to $\bra{j} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{j}$ is from $\gamma = \Delta(i,j)$. As $\gamma$ is a random variable this makes the transition coefficient a random variable as well. 
 
