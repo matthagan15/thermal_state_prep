@@ -14,6 +14,17 @@
 \usepackage{thm-restate}
 \usepackage{hyperref}
 
+\usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    linkcolor={black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+
+\usepackage{caption}
+\usepackage{subcaption}
 \usepackage{etoc}
 
 %%%%%%%%    THEOREM DEFINITIONS AND RESTATABLE
@@ -41,7 +52,7 @@
 \newcommand{\parens}[1]{\left( #1 \right)}
 \newcommand{\brackets}[1]{\left[ #1 \right]}
 \newcommand{\abs}[1]{\left| #1 \right|}
-\newcommand{\norm}[1]{\left| \left| #1 \right| \right|}
+\newcommand{\norm}[1]{\| #1 \|}
 \newcommand{\diamondnorm}[1]{\left| \left| #1 \right| \right|_\diamond}
 \newcommand{\anglebrackets}[1]{\left< #1 \right>}
 \newcommand{\overlap}[2]{\anglebrackets{#1 , #2 }}
@@ -49,11 +60,15 @@
 \newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
 \newcommand{\openone}{\mathds{1}}
 \newcommand{\expect}[1]{\mathbb{E}\brackets{#1}}
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\TT}{\mathcal{T}}
+
 \newcommand{\variance}[1]{\textit{Var} \brackets{ #1 }}
 \newcommand{\prob}[1]{\text{Pr}\left[ #1 \right]}
 \newcommand{\bigo}[1]{O\left(#1\right)}
 \newcommand{\bigotilde}[1]{\widetilde{O} \left( #1 \right)}
 \newcommand{\ts}{\textsuperscript}
+\newcommand{\deltaM}{\Delta_{\text{M}}}
 
 \DeclareMathOperator{\Tr}{Tr}
 \newcommand{\trace}[1]{\Tr \brackets{ #1 }}
@@ -72,7 +87,8 @@
 \newcommand{\herm}[1]{\hermMathOp\parens{#1}}
 
 
-\title{Quantum Thermal State Preparation via Repeated Interactions}
+% \title{Ground and Thermal State Preparation with One Ancilla Qubit}
+\title{Single Ancilla Thermal State Preparation via Repeated Interactions}
 \author{Matthew Hagan, Nathan Wiebe}
 \date{May 2022}
 
@@ -92,19 +108,32 @@
 \abstract{
 The simulation of quantum systems remains the most promising application for future digital quantum computers after decades of theoretic exploration. Most research has gone into developing better algorithms for simulating the time dynamics, with initial state preparation posing the most challenging open problem. In this paper we propose a quantum algorithm for the preparation of quantum thermal states $e^{-\beta H} / \partfun$ based on a synthesis of ideas from the Repeated Interactions framework in the open quantum systems literature and Hamiltonian Monte Carlo techniques from machine learning. Our algorithm works by preparing the ancilla in a thermal state, coupling the ancilla and system with a random matrix with Haar distributed eigenvectors and I.I.D Gaussian eigenvalues, and then simulating the time dynamics of the now coupled system-ancilla before removing the ancilla. We show that the quantum dynamics of this channel is arbitrarily close to a classical Markov chain over the eigenstates of $H$ which, when tuned properly, has the thermal state as it's fixed point. This Markov chain crucially avoids any complicated rejection or unwinding steps present in most previous quantum Metropolis-Hastings inspired algorithms, which significantly simplifies the implementation. The runtime of our algorithm scales like the inverse of the spectral gap of the resulting Markov chain, which is to be expected. We provide detailed analysis for the harmonic oscillator, which displays a surprisingly complicated Mpemba phenomenon, and we show that low temperature thermal states of small hydrogen chains can be prepared by choosing random energy gaps for the ancilla hamiltonian. 
 }
-% \tableofcontents
+\tableofcontents
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-Qubits are the single most important resource in current quantum devices. Current devices have on the order of 100 noisy qubits and very short coherence times. It is widely expected that intensive error correction will be needed to realize utility scale, fault-tolerant devices, making the overhead for each logical qubit much larger than just a single qubit. To make the most use of the hardware that will be available in the early fault-tolerant regime, it is therefore critical that algorithms have as low an ancilla qubit overhead as possible. To this end, we have developed a new algorithm for thermal state preparation, a key subroutine in the simulation of quantum systems, that utilizes only a single ancilla qubit, which is the smallest amount necessary for the problem. Our algorithm relies solely on time evolution operators and random Clifford circuits and has an incredibly simple circuit, making it ideal for early quantum computing practitioners to implement. 
+% After decades of study and exploration, the simulation of quantum materials remains the most promising application for future fault tolerant digital quantum computers. This application has many stages, from classical preprocessing to prepare the material's Hamiltonian in ways accessible by the quantum computer to the measurement of observables of interest. 
 
-The problem of thermal state preparation is to take computational access to a Hamiltonian of the system of interest $H_S$, say through provided time evolution circuits or a block-encoding, along with an inverse temperature $\beta$ and prepare a quantum register with the state $\rho_S(\beta) = \frac{e^{-\beta H_S}}{\trace{e^{-\beta H_S}}}$. This is an incredibly difficult problem for arbitrary Hamiltonians, even preparing $\rho_S(\beta)$ for constant locality Hamiltonians is QMA-Hard, indicating that polynomial time algorithms are not expected for this problem in general. Typically thermal states are not very useful themselves and instead they usually serve as crucial inputs to simulations. Given a thermal state as an input, one can then measure a Heisenberg evolved operator to get the output of a physical experiment. This points the way to the appropriate classical analog of this problem. Taking our quantum Hamiltonian operator $H_S$, the appropriate classical analog is a Hamiltonian function $H(q, p)$ of position and momentum. Thermal states $\frac{e^{-\beta H(q,p)}}{\partfun}$ are then sampled from to estimate expectation values, typically in a Monte Carlo algorithm. 
+Qubits are the single most important resource in both near term and early fault tolerant quantum computers, with current devices having around 100 with short coherence times. It is widely expected that error correction routines will be needed to combine many noisy qubits, on the order of hundreds to a couple thousand, to produce a single ``logical" qubit with much less noise. To make the most use of the hardware that will be available early on in the transition towards utility scale quantum devices, it is therefore critical that algorithms have as low an ancilla qubit overhead as possible, as this could save on the order of thousands of physical qubits needed to realize a quantum algorithm. This makes general purpose algorithms with only single ancilla qubit overheads, such as Quantum Signal Processing (QSP) for block-encoding transformations and Qubitization for general time-independent quantum simulation, very attractive to quantum algorithms developers beyond their circuit depths. 
 
-Existing algorithms for preparing quantum thermal states have seen rapid development in the last few years. At a high level, there exists methods based on phase estimation to work in the energy eigenbasis of $H_S$, those that use Fourier-evolved Linbladian operators, and those that use quantum walks with rejection sampling. Rather than provide a detailed overview of the various runtimes and complexities of these algorithms, along with many others, we instead point the reader to (blank) and (blank) for a very thorough overview of the state-of-the-art. Rather, we will spend our time here providing a very thorough overview of the classical algorithms that inspired our quantum algorithm. 
+One problem that has remained open is if there exist algorithms for preparing quantum thermal states that explicitly utilize only a single ancilla qubit. There exist very good algorithms for preparing ground states utilizing a single ancilla qubit \cite{ding2024single} and some that solve thermal state preparation using a logarithmic number of ancillas \cite{chen_fast_2022} or rely on weak measurements that could potentially utilize only a single ancilla \cite{zhang2023dissipative}, but none that explicitly use only one. We resolve this problem by introducing a quantum algorithm that solves this problem with an incredibly simple routine. We prepare our single ancilla in a thermal state of the desired temperature $\beta$, couple it to our system Hamiltonian with a randomly chosen interaction term, and then time evolve the interacting system-ancilla pair. By repeating this process and refreshing the ancilla state the system will converge to the thermal state. Although the idea of using dissipative dynamics to produce ground and thermal states has been explored in the past, see \cite{shtanko2023preparingthermalstatesnoiseless}, \cite{cubitt2023dissipativegroundstatepreparation}, \cite{zhang2023dissipative}, \cite{ding2024single}, and \cite{gilyen2024quantumgeneralizationsglaubermetropolis}, the major difference between these approaches is how the ``jump" operators are created or how the interaction terms are chosen. Shtanko and Movassagh in \cite{shtanko2023preparingthermalstatesnoiseless} use $k$-local Pauli terms, Zhang and Cubitt in \cite{zhang2023dissipative} use tuned weak measurements, and both Ding et al. \cite{ding2024single} and Gilyen et al. \cite{gilyen2024quantumgeneralizationsglaubermetropolis} use coherently weighted sums of jump operators, of which there are many options. See \cite{dalzell2023quantumalgorithmssurveyapplications} and \cite{chen2023quantumthermalstatepreparation} for more thorough overviews of the existing techniques.
 
+Although the basic framework for our algorithm, evolving a system with an environment, is not novel, our interaction model is new and allows for us to provide novel analysis of the algorithm. Our breakdown of the channel by explicitly computing the output matrix elements allows for us to get away with a single ancilla qubit. This allows for several improvements over existing algorithms. First, to implement our algorithm the circuits would only require time-independent Hamiltonian simulation, a 2-design, and random $Z$ rotations. Previous algorithms that work for arbitrary Hamiltonians require either complicated accept-reject-resample filtering techniques or Fourier weighted coherent sums of controlled time evolutions, of which our algorithm requires neither. One downside of our algorithm is that in order to provide any analytic guarantees of the output we require sample access to the eigenvalue differences $|\lambda_S(i) - \lambda_S(j)|$. However, this is not an issue at all experimentally, and in fact we can quantify the effects of added noise to these samples. See Figure \ref{fig:h_chain_with_noise} to see the effects of added noise for small Hydrogen systems. This also proves to be a crucial entry point for heuristics into our algorithm that other algorithms do not have, if one has some knowledge of the eigenvalue spectrum of the Hamiltonian this can be used to speed up the algorithm.
 
+The inspiration from our algorithm stems primarily from relatively recent developments in classical Markov Chain Monte Carlo (MCMC) techniques, specifically the Hamiltonian Monte Carlo algorithm. Hamiltonian Monte Carlo was developed in the 1990's and is an update on the original Metropolis-Hastings algorithm for MCMC, a simple algorithm for sampling from a probability distribution which works as follows. First one takes an initial random state and creates a proposed new state through a simple update rule, such as taking a random step in space of flipping a randomly chosen spin. This proposed state is accepted with probability $\min \set{1, \prob{\text{new}} / \prob{\text{old}}}$, which is known as the Metropolis filter. If the sample is accepted, we add it to our list of samples and if it is rejected we return to our initial state and start over. This restarting procedure has made quantum analogs of the Metropolis-Hastings algorithms vastly more complicated in comparison, the first known method for implementing restarting was addressed by Temme et al. \cite{temme2011} using techniques developed by Marriott and Watrous in \cite{marriott2005quantum}. Hamiltonian
+Monte Carlo avoids this filtering technique by introducing two key additions. First, they add momentum to the state of our samples, which is chosen according to a mean zero Gaussian. Second, they utilize this momentum in the transition step of the Metropolis-Hastings algorithm. Instead of randomly transitioning to nearby states, in Hamiltonian Monte Carlo the state of the sample is updated by simulating the resulting Hamiltonian time dynamics for a set amount of time (an early implementation simulated time evolution until the particle attempts to make a U-Turn \cite{hoffman2011nouturnsampleradaptivelysetting}). Interpreting the energy of the sample as probability according to the Gibbs distribution, the Metropolis filter probability is then $\frac{\prob{\text{new}}}{\prob{\text{old}}} = \frac{e^{-\beta H(x_{\text{new}}, p_{\text{new}}) }}{e^{-\beta H(x_{\text{old}}, p_{\text{old}}) }}$, and since Hamiltonian dynamics conserve energy this is 1, meaning every sample gets accepted.
+
+Our original motivation for this paper was to develop a quantum variant of Hamiltonian Monte Carlo. In fact, the first algorithm we explored involved a continuous space quantum system and involved the channel $\int e^{- p^2} e^{i p \hat{x}} e^{-i H t} \ketbra{\psi}{\psi} e^{+ i H t} e^{-i p \hat{x}} dp$, which is time-evolution followed by Gaussian random momentum shifts. We soon came to observe that this does not lead to thermalization and that the random momentum shifts obliterate the quantum state, leaving only the maximally mixed state remaining. To fix this issue we realized that the classical Hamiltonian Monte Carlo updated the momentum for each sample to a new random Gaussian value at each step. The high level interpretation is that the classical Gibbs distribution factors $e^{-\beta H(x, p)} = e^{-\beta (p^2 + V(x))} = e^{-\beta p^2} e^{-\beta V(x)}$, so by setting the entropy of the momentum contributions properly the time dynamics will ``shift" that entropy from momentum to position. Imagine a zero entropy momentum, which would always result in zero momentum. The sample would roll ``downhill" according to Hamilton dynamics and then eventually it's momentum would be reset to 0. Repeating this, the sample will eventually converge to the local minima from its starting position. To interpret this in the quantum setting we realized we need to introduce an extra state space that allows us to set the entropy or temperature of the system, the simplest being a single ancilla qubit.
+
+Once we had determined that we needed one ancilla qubit and wanted to use time evolution to allow the states to mix, we needed to determine an interaction term. As algorithms developers, we wanted to treat the given Hamiltonian as a black box. Something that we only had access to via a time evolution oracle. This led us to randomized interaction terms; initially we had investigated the Gaussian Unitary Ensemble (GUE) because of its universal properties. For technical reasons we had to change the eigenvalues to be independent from each other, leading to our choice of I.I.D Gaussians, but we kept the Haar distributed eigenvectors. Once this simple channel was set up, the remaining task was the analysis for computing the output. After computing the output for a weakly interacting channel, the key insight that was made was the realization that our weak-coupling expansion displayed Markovian dynamics over the system's eigenvectors. This turned out to be a double edged sword, as on the one hand it allowed us to compute fixed points and convergence rates of the channel, but on the other it reduced our problem of thermalization to the equally difficult problem of computing properties of transition matrices. Further, the transition matrix depends highly on the chosen values of $\gamma$ for the energy gap of the ancilla and for analytic purposes it appears that $\gamma$ should be tuned to be fairly close to an eigenvalue difference of the system Hamiltonian. Numerically, these issues are non-existant. Sampling from a uniform distribution across the spectral width of the system Hamiltonian is sufficient even for small Hydrogen chains. It is an important open problem to demonstrate analytically that knowledge of the eigenvalue differences is not needed for thermalization. 
+
+Now that we have walked through our algorithm and its similarities to existing algorithms we would like to highlight some key differences. Although our algorithm was initially inspired by classical Monte Carlo techniques the end result is strikingly similar to the Repeated Interactions (RI) framework developed in the open quantum systems literature. This framework thermalizes a system by coupling to small bath, typically a single qubit or spin, and then refreshes the small bath periodically. The key difference between our work and existing RI literature is two-fold: one is that the open quantum systems community is typically concerned with thermodynamic limits, meaning what happens in infinite time with infinite interactions, and secondly existing RI research tends to focus on specific systems and interactions, which are usually physically motivated. Our work is more algorithmic in focus, we do not assume any structure to the input Hamiltonian and are primarily concerned with bounding correctness and bounding the runtime with asymptotic limits. The closest existing prior literature for fault-tolerant quantum algorithms would be that by Shtanko and Movassagh \cite{shtanko2023preparingthermalstatesnoiseless}, as they employ qubit ancillas and randomized interactions. Their work provides two quantum algorithms, one that utilizes random local interactions and only works for Hamiltonians conjectured to obey the Eigenstate Thermalization Hypothesis (ETH) and the second utilizes random time evolutions for each Hamiltonian term but works for arbitrary Hamiltonians. The convergence guarantees for their generic algorithm are strictly worse than the first and allows for a small probability of failure. More importantly, this second algorithm relies on an accept-reject process for failed samples, vastly complicating the simple nature of their first algorithm. This can be overcome with amplitude amplification at a cost of increased circuit depth. In comparison, our algorithm is proven correct for generic Hamiltonians at the cost of a runtime that depends on an unknown spectral gap and requires knowledge of eigenvalue differences of the Hamiltonian. An important characteristic of our analysis is that because we have computed the output of the channel on a matrix element basis, once we have a given Hamiltonian we can explicitly compute the transition matrix. This would allow for numeric estimates of the required runtime on a per-system basis. 
+
+\subsection{Main Results}
+
+% The problem of thermal state preparation is to take computational access to a Hamiltonian of the system of interest $H_S$, say through provided time evolution circuits or a block-encoding, along with an inverse temperature $\beta$ and prepare a quantum register with the state $\rho_S(\beta) = \frac{e^{-\beta H_S}}{\trace{e^{-\beta H_S}}}$. This is an incredibly difficult problem for arbitrary Hamiltonians, even preparing $\rho_S(\beta)$ for constant locality Hamiltonians is QMA-Hard, indicating that polynomial time algorithms are not expected for this problem in general. Typically thermal states are not very useful themselves and instead they usually serve as crucial inputs to simulations. Given a thermal state as an input, one can then measure a Heisenberg evolved operator to get the output of a physical experiment. This points the way to the appropriate classical analog of this problem. Taking our quantum Hamiltonian operator $H_S$, the appropriate classical analog is a Hamiltonian function $H(q, p)$ of position and momentum. Thermal states $\frac{e^{-\beta H(q,p)}}{\partfun}$ are then sampled from to estimate expectation values, typically in a Monte Carlo algorithm. 
 
 % Quantum computers are expected to provide exponential computational advantages in modeling various physical systems, such as chemistry, molecular dynamics, and condensed matter. This is due to the fact that a quantum computer operates with the same underlying physics that governs our best theories for these areas. The basic template for modeling quantum systems on digital, fault-tolerant quantum computers is to first compute a discrete Hamiltonian $H$ that models the system of interest, prepare an initial state of the system (which is typically the ground state or close to it), simulate the time dynamics $e^{i H t}$, and then measure observables of interest. The most difficult of these problems, particularly for applications such as quantum chemistry, is the initial state preparation as it is in general a QMA-Hard problem, a quantum analog of the complexity class NP. This means for generic Hamiltonians it is impossible to prepare a good initial state in polynomial time. As a result there are not many algorithms for solving the ground state problem, and it's closely related sibling thermal state preparation, for generic systems. In this paper we provide a new quantum algorithm based on ideas from the repeated interactions model in open quantum systems literature and Hamiltonian Monte Carlo techniques in machine learning. Our algorithm uses only a single additional ancilla qubit, in fact our analysis relies on this, and works for any Hamiltonian with no filtering or rejection steps present in previous Metropolis-Hastings inspired algorithms. 
 
@@ -223,8 +252,24 @@ Next we will compute the effects of the channel on just the system alone. In ord
 \begin{equation}
     \rho_E(\beta) = \frac{e^{-\beta H_E}}{\partfun_E(\beta)} = \frac{1}{1 + e^{-\beta \gamma}} \ketbra{0}{0} + \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \ketbra{1}{1} \eqqcolon q(0) \ketbra{0}{0} + q(1) \ketbra{1}{1} \label{eq:env_state_def},
 \end{equation}
-where we will use the environment qubit probabilities $q(0)$ and $q(1)$ in calculations for brevity. It will turn out that the value chosen for $\gamma$ is highly critical to the convergence of our algorithm, tuning it to match eigenvalue \emph{differences} of the system $H_S$ will allow us to analyze the convergence of the algorithm. As we can see in Eq. \eqref{eq:el_gigante} there will be a lot of $\sinc$ functions used, we will characterize a $\sinc$ function as being on-resonance or off-resonance if the inputs are sufficiently close to zero (the max for sinc). As for how close ``sufficiently close" actually is will depend on various parameters, such as $t, \alpha, \epsilon$, and the spectral properties of $H_S$. 
-
+where we will use the environment qubit probabilities $q(0)$ and $q(1)$ in calculations for brevity. It will turn out that the value chosen for $\gamma$ is highly critical to the convergence of our algorithm, tuning it to match eigenvalue \emph{differences} of the system $H_S$ will allow us to analyze the convergence of the algorithm. As we can see in Eq. \eqref{eq:el_gigante} there will be a lot of $\sinc$ functions used, we will characterize a $\sinc$ function as being on-resonance or off-resonance if the inputs are sufficiently close to zero (the max for sinc). As for how close ``sufficiently close" actually is will depend on various parameters, such as $t, \alpha, \epsilon$, and the spectral properties of $H_S$.   Before proceeding with the theorem, let us first introduce a categorization of the transitions that we will see.
+\begin{definition}[On- and Off-Resonant terms]\label{def:resonance}
+The individual terms in $\bra{j}\mathcal{T}(\ketbra{i}{i})\ket{j}$ can be divided into two groups which we call ``on-resonant" and ``off-resonant", denoted $\mathcal{T}(\rho) = \mathcal{T}_{\on}(\rho) + \mathcal{T}_{\off}(\rho)$.  for $\delta_{\min}$ given in Eq. \eqref{eq:delta_min_def}, this decomposition is 
+\begin{enumerate}
+\item If $i > j$, which implies $\Delta_S(i,j) > 0$, and $|\Delta_S(i,j) - \gamma| \le \delta_{\min}$,
+\begin{align}
+    \bra{j}\mathcal{T}_{\on}(\ketbra{i}{i})\ket{j} &:= \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} \sinc^2\left( \frac{(\Delta_S(i,j) - \gamma)t}{2} \right), \\
+    \bra{j}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{j} &:= \widetilde{\alpha}^2 \sinc^2 \left( \frac{\Delta_S(i,j)t}{2} \right) + \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(\Delta_S(i,j) + \gamma)t}{2} \right).
+\end{align}
+\matt{In the definition of $\TT_{\on}$ and $\TT_{\off}$ we should use indicator variables. This would make it much clearer and easier to use in the randomized $\gamma$ arguments.}
+\item If $i < j$ and $|\Delta_S(i,j) + \gamma| \le \delta_{\min}$ then the decomposition is
+\begin{align}
+    \bra{j}\mathcal{T}_{\on}(\ketbra{i}{i})\ket{j} &:=  \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(\Delta_S(i,j) + \gamma)t}{2} \right), \\
+    \bra{j}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{j} &:= \widetilde{\alpha}^2 \sinc^2 \left( \frac{\Delta_S(i,j)t}{2} \right) + \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} \sinc^2\left( \frac{(\Delta_S(i,j) - \gamma)t}{2} \right).
+\end{align}
+\end{enumerate}
+\end{definition}
+We then use this categorization to aid in the proof of the following theorem which gives the repeated interaction channel's transitions to second order.
 \begin{theorem}[Second-Order Expansion Term $\mathcal{T}$] \label{thm:second_order_transition}
 Let $\mathcal{T}$ denote the second-order correction for a weak coupling expansion for a thermalizing channel $\Phi$ with a single qubit environment. Let 0 and $\gamma$ be the eigenvalues of the environment hamiltonian $H_E$ and the state of the environment be given by $\rho_E(\beta) = e^{-\beta H_E} / \partfun_E(\beta)$. The following properties hold for the second order correction terms.
 \begin{enumerate}
@@ -239,25 +284,15 @@ The transition element from system state $\ketbra{i}{i}$ to $\ketbra{j}{j}$, for
     \bra{i}\mathcal{T}(\ketbra{i}{i})\ket{i} = - \sum_{j \neq i} \bra{j} \mathcal{T}(\ketbra{i}{i}) \ket{j},
 \end{equation}
 which shows that $\Tr \mathcal{T}(\rho) = 0$. 
-\item There are no coherences, or off-diagonal density matrix elements, introduced to the system at this order in $\alpha$
+\item There are no coherences, or off-diagonal density matrix elements, introduced to the system up to second order in $\alpha$
 \begin{equation}
     j \neq k \implies \bra{j} \mathcal{T}(\ketbra{i}{i}) \ket{k} = 0.
 \end{equation}
-\item The individual terms in $\bra{j}\mathcal{T}(\ketbra{i}{i})\ket{j}$ can be divided into those that are on-resonance and those that are off-resonance, denoted $\mathcal{T}(\rho) = \mathcal{T}_{\on}(\rho) + \mathcal{T}_{\off}(\rho)$. If $i > j$, which implies $\Delta_S(i,j) > 0$, and $|\Delta_S(i,j) - \gamma| \le \delta_{\min}$, for $\delta_{\min}$ given in Eq. \eqref{eq:delta_min_def}, this decomposition is
-\begin{align}
-    \bra{j}\mathcal{T}_{\on}(\ketbra{i}{i})\ket{j} &= \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} \sinc^2\left( \frac{(\Delta_S(i,j) - \gamma)t}{2} \right), \\
-    \bra{j}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{j} &= \widetilde{\alpha}^2 \sinc^2 \left( \frac{\Delta_S(i,j)t}{2} \right) + \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(\Delta_S(i,j) + \gamma)t}{2} \right).
-\end{align}
-\item If $i < j$ and $|\Delta_S(i,j) + \gamma| \le \delta_{\min}$ then the decomposition is
-\begin{align}
-    \bra{j}\mathcal{T}_{\on}(\ketbra{i}{i})\ket{j} &=  \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(\Delta_S(i,j) + \gamma)t}{2} \right), \\
-    \bra{j}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{j} &= \widetilde{\alpha}^2 \sinc^2 \left( \frac{\Delta_S(i,j)t}{2} \right) + \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} \sinc^2\left( \frac{(\Delta_S(i,j) - \gamma)t}{2} \right).
-\end{align}
+\item If $|\Delta_S(i, j) \pm \gamma| \geq \delta_{\min}$ then $\bra{j}\mathcal{T}_{\on}(\ketbra{i}{i}) \ket{j} = 0$ and $\bra{j}\mathcal{T}(\ketbra{i}{i})\ket{j} = \bra{j}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{j}$.
 \item The same state transitions $\ketbra{i}{i}$ to $\ketbra{i}{i}$ are then the negative sum of the other transitions,
 \begin{equation}
-    \bra{i} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{i} = - \sum_{j \neq i} \bra{j} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{j} \text{ and } \bra{i} \mathcal{T}_{\off}(\ketbra{i}{i}) \ket{i} = - \sum_{j \neq i} \bra{j} \mathcal{T}_{\off}(\ketbra{i}{i}) \ket{j}.
+    \bra{i} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{i} := - \sum_{j \neq i} \bra{j} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{j} \text{ and } \bra{i} \mathcal{T}_{\off}(\ketbra{i}{i}) \ket{i} := - \sum_{j \neq i} \bra{j} \mathcal{T}_{\off}(\ketbra{i}{i}) \ket{j}.
 \end{equation} 
-\item If $|\Delta_S(i, j) \pm \gamma| \geq \delta_{\min}$ then $\bra{j}\mathcal{T}_{\on}(\ketbra{i}{i}) \ket{j} = 0$ and $\bra{j}\mathcal{T}(\ketbra{i}{i})\ket{j} = \bra{j}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{j}$.
 \end{enumerate}
 \end{theorem}
 \begin{proof}
@@ -274,7 +309,7 @@ which shows that $\Tr \mathcal{T}(\rho) = 0$.
     \begin{equation}
         \frac{\alpha^2}{2}\bra{k, l} \mathbb{E}_G \left[ \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{i, j}{i,j}) \big|_{\alpha = 0} \right] \ket{k, l} = \widetilde{\alpha}^2 \sinc^2 \left( \frac{\Delta(i,j | k, l) t}{2} \right). 
     \end{equation}
-    Now because all the operations present in the above expression are linear we can compute this map for the initial environment state $\rho_E(\beta)$ straightforwardly. Taking the output of this linear combination and computing the trace over the environment then gives us the expression for $\mathcal{T}$ using the assumption that the environment is a single qubit
+    Now because all the operations present in the above expression are linear we can compute this map for the initial environment state $\rho_E(\beta)$ straightforwardly. Taking the output of this linear combination and computing the trace over the environment then gives us the expression for $\mathcal{T}$ using the assumption that the environment is a single qubit we find using the definition of $\gamma$ and $\Delta_S$ in~\eqref{eq:delta_def}
     \begin{align}
         \bra{j} \mathcal{T}(\ketbra{i}{i}) \ket{j} &= \sum_{k, l} q(k) \frac{\alpha^2}{2}\bra{j, l} \mathbb{E}_G \left[ \frac{\partial^2}{\partial \alpha^2} \Phi_G(\ketbra{i, k}{i,k}) \big|_{\alpha = 0} \right] \ket{j, l} \\
         &= \widetilde{\alpha}^2 \sum_{k, l} q(k) \sinc^2 \left(\frac{\Delta(i, k | j , l) t}{2} \right) \\
@@ -284,8 +319,9 @@ which shows that $\Tr \mathcal{T}(\rho) = 0$.
         & + \widetilde{\alpha}^2 \left(q(1) \sinc^2 \left(\frac{(\Delta_S(i, j) + \gamma) t}{2} \right) + q(1) \sinc^2 \left(\frac{\Delta_S(i,j) t}{2} \right) \right),
     \end{align}
     where we see that combining the terms with $\sinc^2 \left(\frac{\Delta_S(i,j) t}{2} \right)$, as $q(0) + q(1) = 1$, we immediately get Eq. \eqref{eq:transition_terms_total}. 
+
     
-    Now we have three terms to classify as either on-resonance or off-resonance, we refer to each term by their argument to the $\sinc$ function. The first we can categorically declare as being off-resonance is the $\Delta_S(i,j)$ term. By Lemma \ref{lem:sinc_poly_approx} we know $\sinc^2(\Delta_S(i,j) t/ 2) \le 4 / (\delta_{\min}^2 t^2)$, which we will make arbitrarily small in later sections. The other two can only be classified as on or off resonance depending if $\Delta_S(i,j)$ is positive or negative. If $i > j$ then we know that $\Delta_S(i,j) \ge 0$ and therefore the $\Delta_S(i,j) - \gamma$ term can be close to 1, which also shows the $\Delta_S(i,j) + \gamma$ term is off-resonance for all $\gamma$. We say that the $\Delta_S(i,j) - \gamma$ term in this scenario is on-resonance if $|\Delta_S(i,j) - \gamma| \le \delta_{\min}$. This classification is best described symbolically as
+    Now we have three terms to classify as either on-resonance or off-resonance, we refer to each term by their argument to the $\sinc$ function. The first we can categorically declare as being off-resonance is the $\Delta_S(i,j)$ term. By Lemma \ref{lem:sinc_poly_approx} we know $\sinc^2(\Delta_S(i,j) t/ 2) \le 4 / (\delta_{\min}^2 t^2)$, which we will make arbitrarily small in later sections. The other two can only be classified as on or off resonance depending if $\Delta_S(i,j)$ is positive or negative. If $i > j$ then we know that $\Delta_S(i,j) \ge 0$ and therefore $\sinc^2((\Delta_S(i,j) - \gamma)t/2)$ term can be close to 1 if $\gamma \approx \Delta_{S}(i,j)$, which also shows the $\Delta_S(i,j) + \gamma$ term is off-resonance for all $\gamma$. We say that the $\Delta_S(i,j) - \gamma$ term in this scenario is on-resonance if $|\Delta_S(i,j) - \gamma| \le \delta_{\min}$. This classification is best described symbolically as
     \begin{equation}
     i > j \text{ and } |\Delta(i,j) - \gamma| \le \delta_{\min} \implies  \bra{j} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{j} = \widetilde{\alpha}^2 q(0) \sinc^2 \left( \frac{(\Delta_S(i,j) - \gamma)t}{2} \right).\label{eq:on_resonance_i_geq_j}
     \end{equation}
@@ -315,18 +351,18 @@ which shows that $\Tr \mathcal{T}(\rho) = 0$.
 
 Using the decomposition from Theorem \ref{thm:second_order_transition} and intermediate expressions in its proof we can now show why the off-resonance map $\mathcal{T}_{\off}$ is named ``off-resonance"; even in the worst case scenario of choosing a bad value of $\gamma$ such that all terms in $\mathcal{T}$ end up in $\mathcal{T}_{\off}$ the trace norm of it's output is always controllably small via $\alpha$.
 \begin{corollary} \label{cor:t_off_norm}
-    The induced trace norm of the off-resonance map $\mathcal{T}_{\off}(\rho)$, for all density matrices $\rho$ such that $[\rho, H_S] = 0$, is upper bounded for all choices of the environment Hamiltonian $\gamma$ by
+    The induced trace norm of the off-resonance map $\mathcal{T}_{\off}(\rho)$, for all density matrices $\rho$ such that $[\rho, H_S] = 0$ and $\rm{dim}\ge 2$, is upper bounded for all choices of the environment Hamiltonian $\gamma$ by
     \begin{align}
         \norm{\mathcal{T}_{\off}(\rho)}_1 \le \frac{8 \alpha^2}{\delta_{\min}^2}
     \end{align}
 \end{corollary}
 \begin{proof}
 %For this we will assume a worst-case scenario in which $\gamma$ forces all 3 terms in Eq. \eqref{eq:t_2_intermediate_1} to be off-resonant. 
-Using the bounds on the sinc function given in the Appendix as Lemma \ref{lem:sinc_poly_approx} can be used to bound the $\sinc$ factors in the off resonant terms for the case where $i\ne j$ gives us from the observation that $q(0)+q(1) =1$
+Using the bounds on the sinc function given in the Appendix as Lemma \ref{lem:sinc_poly_approx} can be used to bound the $\sinc$ factors in the off resonant terms for the case where $i\ne j$ gives us from the observation that $q(0)+q(1) =1$.  Then from this we invoke Definition~\ref{def:resonance} and the definition of $\tilde{\alpha}$ in Lemma~\ref{lem:big_one} to see that
     \begin{align}
         i \neq j \implies \abs{\bra{j}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{j}} &\le \widetilde{\alpha}^2\frac{4}{\delta_{\min}^2 t^2} \left( 1 + q(0) + q(1)\right) = \frac{8 \alpha^2}{\delta_{\min}^2(\dim + 1)}.
     \end{align}
-    This allows us to bound the off-resonance self-transition term
+    This allows us to bound the off-resonance self-transition term in Theorem~\ref{thm:second_order_transition} as
     \begin{align}
         \abs{\bra{i}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{i}} &= \abs{- \sum_{j \neq i} \bra{j} \mathcal{T}_{\off}(\ketbra{i}{i}) \ket{j}} \le (\dim_S - 1) \frac{8 \alpha^2}{\delta_{\min}^2 (\dim + 1)} \le \frac{4 \alpha^2}{\delta_{\min}^2}.
     \end{align}
@@ -345,18 +381,18 @@ A Markov chain is a random process that involves a walker transitioning to verti
 
 Specifically, the Markov chain is dictated by the $\Phi(\rho; 0)$ and $\mathcal{T}_{\on}$ terms in the weak-coupling expansion, for $[\rho, H_S] = 0$ we showed that $\Phi(\rho; 0) = \identity(\rho)$, so from now on we will specifically only deal with such density matrices and characterize the zeroth order term as an identity map. As for the Markov chain, we will use unstyled font to denote matrices, such as $I$ for the identity matrix and $T$ for the transition term added on. We use $e_i$ to denote the basis vector associated with the quantum state $\ketbra{i}{i}$ and $p$ to denote the probability vector for $\rho$ associated with its eigenvalues.
 \begin{lemma} \label{lem:quantum_to_classical}
-    Let $T$ be the matrix defined by $e_i^T T e_j \coloneqq \bra{i} \mathcal{T}_{\on}(\ketbra{j}{j}) \ket{i}$. The matrix $I + T$ is a stochastic matrix and models the dynamics of a repeated interactions channel up to $\bigo{\alpha^2 t^2}$,
+    Let $T$ be the matrix defined by $e_i^T T e_j \coloneqq \bra{i} \mathcal{T}_{\on}(\ketbra{j}{j}) \ket{i}$. The matrix $\identity + T$ is a column stochastic matrix and models the dynamics of a repeated interactions channel up to $\bigo{\alpha^2 t^2}$,
     \begin{equation}
-        \bra{j} (\identity + \mathcal{T}_{\on})^{\circ L} (\ketbra{i}{i}) \ket{j} = e_j^T (I + T)^L e_i.
+        \bra{j} (\identity + \mathcal{T}_{\on})^{\circ L} (\ketbra{i}{i}) \ket{j} = e_j^T (\identity + T)^L e_i.
     \end{equation}
     By linearity of $\identity + \mathcal{T}_{\on}$ this identity extends to any diagonal density matrix input $\rho = \sum_i p(i) \ketbra{i}{i}$.
 \end{lemma}
 \begin{proof}
     We prove this inductively on $L$. The base case of $L = 1$ is trivial from the defintion of $T$
     \begin{align}
-    \bra{j} (\identity + \mathcal{T}_{\on})(\ketbra{i}{i}) \ket{j} = \delta_{i,j} + \bra{j} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{j} = e_j^T (I +  T) e_i.
+    \bra{j} (\identity + \mathcal{T}_{\on})(\ketbra{i}{i}) \ket{j} = \delta_{i,j} + \bra{j} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{j} = e_j^T (\identity +  T) e_i.
 \end{align}
-For the inductive step we will rely on the fact that there are no off-diagonal elements for diagonal inputs. In symbols
+For the inductive step we will rely on the fact that there are no off-diagonal elements for diagonal inputs. 
 \begin{align}
     \bra{j} \mathcal{T}_{\on} (\ketbra{i}{i}) \ket{k} = \delta_{j,k} \bra{j} \mathcal{T}_{\on} (\ketbra{i}{i}) \ket{j} \implies \bra{j} \mathcal{T}_{\on}^{\circ L} (\ketbra{i}{i}) \ket{k} = \delta_{j,k} \bra{j} \mathcal{T}_{\on}^{\circ L} (\ketbra{i}{i}) \ket{j}.
 \end{align}
@@ -371,16 +407,29 @@ This is again by induction where the case $L = 1$ is proved in Theorem \ref{thm:
 This argument points the way towards how we will prove the inductive step in our stochastic conversion, starting with
 \begin{align}
     \bra{j} (\identity + \mathcal{T}_{\on})^{\circ L}(\ketbra{i}{i}) \ket{j} &= \bra{j} \left( (\identity + \mathcal{T}_{\on})^{\circ L - 1} (\ketbra{i}{i}) + \mathcal{T}_{\on} \circ (\identity + \mathcal{T}_{\on})^{\circ L - 1} (\ketbra{i}{i}) \right)\ket{j} \\
-    &= e_j^T (I + T)^{L - 1} e_i + \bra{j} \mathcal{T}_{\on} \circ (\identity + \mathcal{T}_{\on})^{\circ L - 1} (\ketbra{i}{i}) \ket{j} . \label{eq:matrix_reloaded1}
+    &= e_j^T (\identity + T)^{L - 1} e_i + \bra{j} \mathcal{T}_{\on} \circ (\identity + \mathcal{T}_{\on})^{\circ L - 1} (\ketbra{i}{i}) \ket{j} . \label{eq:matrix_reloaded1}
 \end{align}
 We used the inductive step to compute the $\identity$ term and we now have to break down the $\mathcal{T}_{\on}$ term. 
 \begin{align}
     \bra{j} \mathcal{T}_{\on} \circ (\identity + \mathcal{T})^{\circ L - 1} (\ketbra{i}{i}) \ket{j} &= \sum_{m, n} \bra{j} \mathcal{T}_{\on}\left( \ketbra{m}{m} (\identity + \mathcal{T}_{\on})^{\circ L - 1} (\ketbra{i}{i}) \ketbra{n}{n} \right) \ket{j} \\
-    &= \sum_{m} \bra{j} \mathcal{T}_{\on} \left( \ketbra{m}{m} \right) \ket{j} e_m^T (I + T)^{L - 1} e_i \\
-    &= \sum_m e_j^T T e_m e_m^T (I + T)^{L -1} e_i \\
-    &= e_j^T T(I + T)^{L-1} e_i.
+    &= \sum_{m} \bra{j} \mathcal{T}_{\on} \left( \ketbra{m}{m} \right) \ket{j} e_m^T (\identity + T)^{L - 1} e_i \\
+    &= \sum_m e_j^T T e_m e_m^T (\identity + T)^{L -1} e_i \\
+    &= e_j^T T(\identity + T)^{L-1} e_i.
 \end{align}
-Substituting this into Eq. \eqref{eq:matrix_reloaded1} yields $e_j^T (I + T)^{L-1} e_i$. The stochasticity of $I + T$ comes from the equality $\sum_j e_j^T T e_i = \trace{\mathcal{T}_{\on}(\ketbra{i}{i})} = 0$ along with the fact the elements of $I + T$ are clearly between 0 and 1.
+Substituting this into Eq. \eqref{eq:matrix_reloaded1} yields \begin{equation}
+     \bra{j} (\identity + \mathcal{T}_{\on})^{\circ L}(\ketbra{i}{i}) \ket{j} = e_j^T (\identity + T)^{L-1} e_i.
+\end{equation} 
+%The stochasticity of $\identity + T$ comes from the equality $\sum_j e_j^T T e_i = \trace{\mathcal{T}_{\on}(\ketbra{i}{i})} = 0$ along with the fact the elements of $\identity + T$ are clearly between 0 and 1.
+
+Our final step in the proof is to show stochasticity of $\identity + T$.  First let us show that $\identity + T$ is column-stochastic.  First note that
+\begin{equation}
+    \sum_i e_i^T (\identity+ T) e_j = 1 + \sum_i \bra{i} \mathcal{T}_{\on}(\ketbra{j}{j}) \ket{i}.
+\end{equation}
+Using the final property of Theorem~\ref{thm:second_order_transition} we observe that
+\begin{equation}
+    1 + \sum_i \bra{i} \mathcal{T}_{\on}(\ketbra{j}{j}) \ket{i} = 1.
+\end{equation}
+Thus the matrix $\identity + T$ is column stochastic provided that $T_{ij} \ge 0$, which is true by definition as each element is an expectation value of a density matrix which is positive semi-definite.
 \end{proof}
 
 Since we will be effectively reducing our quantum dynamics to classical dynamics over the eigenbasis for $H_S$ we will need bounds on the convergence of Markov chains. This is a very deep area of research, with many decades of results, so we will point interested readers to the book by Levin and Peres \cite{levin2017markov} on the mixing times of Markov chains. As we will be dealing with non-reversible Markov chains we unfortunately cannot use the relatively well-developed theory for reversible Markov chains, but luckily we will only need the following theorem due to Jerison \cite{jerison2013general}.
@@ -389,69 +438,24 @@ Since we will be effectively reducing our quantum dynamics to classical dynamics
     \begin{align}
         \frac{N}{\lambda_{\star}} \left( 2\log \frac{1}{\lambda_{\star}} + 4(1 + \log 2)\right) + \frac{1}{\lambda_{\star}} \left(2 \log \left( \frac{1}{\epsilon} \right) - 1\right) \le L,
     \end{align}
-    then we can guarantee that the resulting state is $\epsilon$ close to the fixed point
+    then the resulting state, $\vec{x}$, is $\epsilon$ close to the fixed point
     \begin{equation}
         \forall \vec{x} \text{ s.t. } x_i \ge 0 \text{ and } \sum_i x_i = 1, \quad \norm{\vec{\pi} - M^L \vec{x}}_1 \le \epsilon,
     \end{equation}
     where $\vec{\pi}$ is the unique eigenvector of eigenvalue 1 for $M$.
 \end{theorem}
 
-The last result in this section that we will need is a bound on the trace norm of the remainder term.
+The last result in this section that we will need is a bound on the trace norm of the remainder term, which we state in the following theorem.
 \begin{theorem}[Remainder Bound] \label{lem:remainder_bound}
-    Let $R_{\Phi}(\rho)$ be the remainder term for the Taylor series in Eq. \eqref{eq:phi_taylor_series}. The Sch\"{a}tten 1-norm for any input density matrix $\rho$ can be bounded by
+    Let $R_{\Phi}(\rho)$ be the remainder term for the second-order Taylor series expansion 
+of the quantum channel $\Phi$ acting on an input state $\rho$ about $\alpha=0$ defined via
+    $$\Phi(\rho; \alpha) = \Phi(\rho; 0) + \alpha \frac{\partial}{\partial \alpha} \Phi(\rho; \alpha) \big|_{\alpha = 0} + \frac{\alpha^2}{2} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho; \alpha) \big|_{\alpha = 0} + R_{\Phi}(\rho; \alpha_{\star})$$ where the Sch\"{a}tten 1-norm of the remainder operator is bounded above by
     \begin{equation}
-        \norm{R_{\Phi}(\rho)}_1 \le \frac{16 \sqrt{2}}{\sqrt{\pi}} \dim_S (\alpha t)^3.
+        \norm{R_{\Phi}(\rho;\alpha)}_1 \le \frac{16 \sqrt{2}}{\sqrt{\pi}} \dim_S (\alpha t)^3.
     \end{equation}
 \end{theorem}
-\begin{proof}
-First we note that although $R_{\Phi}(\rho) = \frac{\alpha^3}{6} \partial_{\alpha}^3 \Phi(\rho)\big|_{\alpha = \alpha_{\star}}$ for a specific $ \alpha_{\star} > 0$ our proof will hold for any $\alpha_{\star}$. To compute the trace norm we will use the triangle inequality, unitary invariance of the Sch\"{a}tten norms, and submultiplicativity. To start,
-\begin{align}
-    \|\partial_\alpha^3 \Phi(\rho) \|_1 &= \left\| \frac{\partial^3}{\partial \alpha^3} {\rm Tr}_{H_E} \int e^{i(H+\alpha G)t} \rho_S \otimes \rho_E e^{-i(H+\alpha G)t} dG \bigg|_{\alpha = \alpha_{\star}} \right\|_1 \nonumber\\
-    &= \left\| \frac{\partial^3}{\partial \alpha^3} {\rm Tr}_{H_E} \int e^{i(H+\alpha G)t} \rho_S \otimes \rho_E e^{-i(H+\alpha G)t} dG \bigg|_{\alpha = \alpha_{\star}} \right\|_1 \nonumber\\
-    &\le    \int \left\|{\rm Tr}_{H_E}\frac{\partial^3}{\partial \alpha^3}\left( e^{i(H+\alpha G)t} \rho_S \otimes \rho_E e^{-i(H+\alpha G)t}\right) \bigg|_{\alpha = \alpha_{\star}} \right\|_1 dG.\label{eq:3derivBd}
-\end{align}
-To proceed, Proposition 1 of \cite{rastegin2012relations} allows us to eliminate the partial trace using the relation
-$\norm{\partrace{\hilb_E}{X}}_{1} \le \norm{X}_{\dim_E} \le \norm{X}_1$. Further we use the decomposition of the second derivatives from the proof of Lemma \ref{lem:big_one}, specifically Eq. \eqref{eq:second_derivative_labels} for the definition of each term, as $\partial_{\alpha}^2 \Phi_G = (A) + (B) + (C) + (D) +(E) + (F)$. This gives the following 
-\begin{align}
-    \norm{R_{\Phi}}_1 \le \frac{\alpha^3}{6} &\int \norm{\partial_{\alpha}((A) + (B) + (C) + (D) +(E) + (F)) \big|_{\alpha = \alpha_{\star}} }_1 dG \\
-    &\le \frac{\alpha^3}{6} \int \norm{\partial_{\alpha}(A)\big|_{\alpha = \alpha_{\star}} }_1 + \norm{\partial_{\alpha}(B) \big|_{\alpha = \alpha_{\star}} }_1 + \ldots + \norm{\partial_{\alpha}(F) \big|_{\alpha = \alpha_{\star}} }_1 dG
-\end{align}
-We will demonstrate how this can be computed for the first term $\partial_{\alpha}(A)$. Using Eq. \ref{eq:second_deriv_alpha_first_term}
-\begin{align}
-\partial_{\alpha} (A) &= -t^2 \partial_{\alpha} \int_0^1 \int_0^1 e^{i s_1 s_2 (H+\alpha G)t} G e^{i s_1 (1-s_2) (H+\alpha G)t} G e^{i(1-s_1) (H+\alpha G)t} \rho e^{-i(H+\alpha G) t}   s_1 ~ds_1 ds_2.
-\end{align}
-Due to the multiplication rule the resulting derivative will have 4 terms that each need one application of Duhamel's formula. We will show one of these terms, starting with the leftmost one
-\begin{align}
-    -t^2  &\int_0^1 \int_0^1 \partial_{\alpha} \left( e^{i s_1 s_2 (H+\alpha G)t} \right) G e^{i s_1 (1-s_2) (H+\alpha G)t} G e^{i(1-s_1) (H+\alpha G)t} \rho e^{-i(H+\alpha G) t}   s_1 ~ds_1 ds_2 \\
-    = - i t^3  &\int_0^1 \int_0^1 \int_0^1 \left( e^{i s_1 s_2 s_3 (H+\alpha G)t} G e^{i s_1 s_2 (1 - s_3) (H+\alpha G)t} \right) G e^{i s_1 (1-s_2) (H+\alpha G)t} G e^{i(1-s_1) (H+\alpha G)t} \rho e^{-i(H+\alpha G) t}   s_1^2 s_2 ~ds_1 ds_2 ds_3.
-\end{align}
-Our goal is to compute the 1-norm of the above expression at $\alpha = \alpha_{\star}$. We can do so using the triangle inequality to move the norm of the matrices in the integrand. To proceed we will set $\alpha = \alpha_{\star}$ and reduce the norm of the matrices in the integrand using submultiplicativity and unitary invariance of the Sch\"{a}tten 1-norm as 
-\begin{align}
-    &\norm{\left( e^{i s_1 s_2 s_3 (H+\alpha_{\star} G)t} G e^{i s_1 s_2 (1 - s_3) (H+\alpha_{\star} G)t} \right) G e^{i s_1 (1-s_2) (H+\alpha_{\star} G)t} G e^{i(1-s_1) (H+\alpha_{\star} G)t} \rho e^{-i(H+\alpha_{\star} G) t}}_1 \\
-    \le &\norm{e^{i s_1 s_2 s_3 (H+\alpha_{\star} G)t} G}_1 \norm{e^{i s_1 s_2 (1 - s_3) (H+\alpha_{\star} G)t} G}_1 \norm{e^{i s_1 (1-s_2) (H+\alpha_{\star} G)t} G}_1 \norm{e^{i(1-s_1) (H+\alpha_{\star} G)t} \rho e^{-i(H+\alpha_{\star} G) t}}_1 \\
-    \le &\norm{G}_1^3 \norm{\rho}_1 \\
-    = &\norm{G}_1^3 .
-\end{align}
-Similar computations can be carried out for the other three terms for the derivative acting on $(A)$ which yields the inequality
-\begin{align}
-    \frac{\alpha^3}{6} \int \norm{\partial_{\alpha} (A)}_1 dG &\le \frac{\alpha^3 t^3}{6} \int \int_0^1 \int_0^1 \int_0^1 \norm{G}_1^3 (s_1^2 s_2 + s_1^2 (1 - s_2) + s_1(1-s_1) + s_1) ~ds_1 ds_2 ds_3 dG \\
-    &\le \frac{4}{6} (\alpha t)^3 \int \norm{G}_1^3 dG . \label{eq:remainder_bound_on_A}
-\end{align}
+Proof of the remainder bound follows from the triangle inequality and remainder bounds on Taylor series and is given in Section \ref{sec:weak_coupling_remainder_bound}.
 
-Now that we have computed the norm of the derivative acting on term $(A)$ we only have terms $(B)$ through $(F)$ to compute. These can all be checked to satisfy the same bound on $(A)$ from Eq. \eqref{eq:remainder_bound_on_A}, and as there are six terms in total we have the inequality
-\begin{align}
-    \norm{R_{\Phi}(\rho)}_1 &\le 4 (\alpha t)^3 \int \norm{G}_1^3 dG,
-\end{align}
-which we note holds for all inputs $\rho$. Therefore our last problem is to compute the expected norm of our interaction to the third power. We will decompose $G = U_{\text{Haar}} D U_{\text{Haar}}^\dagger $ to get
-\begin{align}
-    \int \norm{G}_1^3 dG &= \int \norm{D}_1^3 ~ dU_{\text{Haar}} dD = \sum_{i = 1}^{2 \dim_S} \int \abs{d_i}^3 dd_i = 2 \dim_S \int \abs{g}^3 dg,
-\end{align}
-\matt{I don't necessarily like the use of $g$ for eigenvalue integration part, need to set a consistent notation in the prelims. Also this notation is only used in the Haar integral appendix.} where $g$ is a normal Gaussian random variable. This straightforwardly evaluates to $\int |g|^3 dg = 2\sqrt{ \frac{2}{\pi}}$, yielding the final inequality
-\begin{align}
-    \norm{R_{\Phi}(\rho)}_1 \le 16 \sqrt{\frac{2}{\pi}} \dim_S (\alpha t)^3 ,
-\end{align}
-thus completing the proof.
-\end{proof}
 
 \section{Single Qubit} \label{sec:single_qubit}
 Now that we have developed all the tools we need to study thermalization we will tackle the simplest possible system first: a single qubit system $\hilb_S = \mathbb{C}^2$. In this setting we are able to offer the most complete view of thermalization possible, we not only show that the thermal state is the fixed point of the dynamics but we can provide analytic upper bounds on how many interactions are needed to reach a trace distance of $\widetilde{O}(\epsilon)$ from the thermal state for any $\beta$. Further we are able to quantify the impacts of a noisy guess for the eigenvalue gap $\Delta$ on the runtime and how low of a temperature thermal state can be prepared. 
@@ -460,32 +464,33 @@ Now that we have developed all the tools we need to study thermalization we will
 % To start, we take an arbitrary two-level Hamiltonian $H_S = U_S \begin{bmatrix} \lambda & 0 \\0 & \lambda + \Delta \end{bmatrix} U_S^\dagger$ where the eigenvectors $U_S$ are any arbitrary basis for the space and $0 < \Delta$. For simplicity we will set our environment gap to match this exactly, $\gamma = \Delta$, and we will use $\gamma$ to help the reader identify which factors appear from the ancilla qubit versus the system. Our initial state will be the maximally mixed state $\frac{1 }{2} \identity$ and the environment qubits will be prepared in the state $\frac{e^{-\beta H_E}}{1 + e^{-\beta}}$, note that the subscript of $E$ has been dropped from the inverse temperature as there is only one temperature at play. Our goal for this section will be to show that the thermal state $\rho_S(\beta)$ is the fixed point of the dynamics and to bound the rate of convergence to this state.
 
 \begin{theorem} \label{thm:single_qubit}
-    Let $H_S$ be an arbitrary single qubit Hamiltonian with unknown eigenvalue gap $\Delta$, $\rho$ any input state diagonal in the $H_S$ basis, $[\rho, H_S] = 0$, and $L$ the number of interactions simulated. Given a window of width $2 \sigma$ that is promised to contain $\Delta$ that satisfies the inequality
+    Let $H_S$ be an arbitrary single qubit Hamiltonian with eigenvalue gap $\Delta$, $\rho$ any input state diagonal in the $H_S$ basis, $[\rho, H_S] = 0$, and $L$ the number of interactions simulated. Given a window of width $2 \sigma$ that is promised to contain $\Delta$ and satisfies the inequality
     \begin{align}
         \sigma \le \min \set{\frac{\epsilon}{2\beta}, \Delta \sqrt{\frac{\epsilon}{2}}},
     \end{align}
     then the following parameter choices 
     \begin{align}
         \alpha &= \frac{1}{t^3(\Delta + \sigma)^2}, \nonumber \\
-        t &\in \left[ \frac{1}{\sigma}\sqrt{1 - \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}} }, \frac{1}{\sigma}\sqrt{1 + \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}} } \right], \nonumber \\
-        \text{and } L &\ge \frac{10}{\alpha^2 t^2 (1 - \sigma^2 t^2 / 2)} \left( 2 \log \frac{5}{\alpha^2 t^2 \sinc^2(|\Delta - \gamma|t/2)} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right)
+        t &=\frac{1}{\sigma}\sqrt{1 - \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}} }\nonumber\\
+        %\in \left[ \frac{1}{\sigma}\sqrt{1 - \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}} }, \frac{1}{\sigma}\sqrt{1 + \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}} } \right], \nonumber \\
+        \text{and } L &= \left\lceil\frac{10}{\alpha^2 t^2 (1 - \sigma^2 t^2 / 2)} \left( 2 \log \frac{5}{\alpha^2 t^2 \sinc^2(|\Delta - \gamma|t/2)} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right)\right\rceil
     \end{align}
-    are sufficient to guarantee thermalization of the form $\norm{\rho_S(\beta) - \Phi^{\circ L}(\rho)}_1 \in \bigotilde{\epsilon}$. In the limit as $\sigma \to 0$, the total simulation time required approaches
+    are sufficient to guarantee thermalization of the form $\norm{\rho_S(\beta) - \Phi^{\circ L}(\rho)}_1 \in \bigotilde{\epsilon}$. In the limit as $\sigma \to 0$, the total evolution time required for all $L$ interactions 
     \begin{equation}
-        Lt \in \widetilde{\Omega} \left( \frac{1}{\Delta \epsilon^{2.5}}\right).
+        Lt \in \widetilde{O} \left( \frac{1}{\Delta \epsilon^{2.5}}\right).
     \end{equation}
 \end{theorem}
 \begin{proof}
-    The proof will be structured into three parts. First, we will need a bound on how close the fixed point of the Markov chain is to the thermal state, because only when $\gamma = \Delta$ exactly is the fixed point exactly the thermal state and our window of width $\sigma$ needs to be sufficiently small given our error budget. Second, once we have these bounds we then need to determine the number of interactions $L$ that will be necessary to reach the fixed point within trace distance $\epsilon$. Lastly, we use this value of $L$ to bound the accumulative error from the off-resonance mapping $\mathcal{T}_{\off}$ and remainder term $R_{\Phi}$.
+    The proof will be structured into three parts. First, we will need a bound on how close the fixed point of the Markov chain is to the thermal state, because  the fixed point  is exactly the thermal state only when $\gamma = \Delta$ and our window of width $\sigma$ is sufficiently small given our error budget. Second, once we have these bounds we then need to determine the number of interactions $L$ that will be necessary to reach the fixed point within trace distance $\epsilon$. Lastly, we use this value of $L$ to bound the accumulative error from the off-resonance mapping $\mathcal{T}_{\off}$ and remainder term $R_{\Phi}$.
 
     We start by breaking down the trace distance into three components, one for the fixed-point distance from the thermal state, one for the Markov dynamics distance to the fixed-point, and lastly the remainder terms
     \begin{align}
         &\norm{\rho_S(\beta; \Delta) - \Phi^{\circ L}(\rho)}_1 \nonumber \\
         &\le \norm{\rho_S(\beta; \Delta) - \rho_S(\beta; \gamma)}_1 + \norm{\rho_S(\beta; \gamma) - \Phi^{\circ L}(\rho)}_1 \\
-        &\le \norm{\rho_S(\beta; \Delta) - \rho_S(\beta; \gamma)}_1 + \norm{\rho_S(\beta; \gamma) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho)}_1 + \norm{(\identity + \mathcal{T}_{\on})^{\circ L} - \Phi^{\circ L}}_1 \\
-        &\le \norm{\rho_S(\beta; \Delta) - \rho_S(\beta; \gamma)}_1 + \norm{\rho_S(\beta; \gamma) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho)}_1 +  L \left(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1 \right). \label{eq:single_qubit_three_errors}
+        &\le \norm{\rho_S(\beta; \Delta) - \rho_S(\beta; \gamma)}_1 + \norm{\rho_S(\beta; \gamma) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho)}_1 + \norm{(\identity + \mathcal{T}_{\on})^{\circ L}(\rho) - \Phi^{\circ L}(\rho)}_1 \\
+        &\le \norm{\rho_S(\beta; \Delta) - \rho_S(\beta; \gamma)}_1 + \norm{\rho_S(\beta; \gamma) - (\identity + \mathcal{T}_{\on})^{\circ L}(\rho)}_1 +  L \left(\norm{\mathcal{T}_{\off}(\rho)}_1 + \norm{R_{\Phi}}_1 \right). \label{eq:single_qubit_three_errors}
     \end{align}
-    We proceed with the leftmost term first. For our single qubit state the trace distance can be computed explicitly
+    We proceed with the leftmost term first. The trace distance can be computed explicitly for a single qubit state as 
  \begin{align}
      \norm{\rho_S(\beta; \gamma) - \rho_S(\beta; \Delta)}_1 &= \abs{\bra{1} \rho_S(\beta; \gamma) \ket{1} - \bra{1}\rho_S(\beta;\Delta)\ket{1}} + \abs{\bra{2} \rho_S(\beta; \gamma) \ket{2} - \bra{2}\rho_S(\beta; \Delta)\ket{2}} \\
      &= \abs{\bra{1} \rho_S(\beta; \gamma) \ket{1} - \bra{1}\rho_S(\beta; \Delta)\ket{1}} + \abs{1 - \bra{1} \rho_S(\beta; \gamma) \ket{1} -1 + \bra{1}\rho_S(\beta; \Delta)\ket{1}} \\
@@ -515,26 +520,29 @@ Since we require this distance to be less than $\epsilon$, we can upper bound $|
     \end{align}
 This gives us the total Markov chain matrix as 
 \begin{align}
-    I + T &= \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} + \widetilde{\alpha}^2 \sinc^2 \left(\frac{(\Delta - \gamma)t}{2} \right) \frac{1}{1 + e^{-\beta \gamma}}\begin{bmatrix} -e^{-\beta \gamma} & 1 \\ e^{-\beta \gamma} & -1\end{bmatrix},\label{eq:markov_matrix_single_qubit_gamma}
+    \identity + T &= \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} + \widetilde{\alpha}^2 \sinc^2 \left(\frac{(\Delta - \gamma)t}{2} \right) \frac{1}{1 + e^{-\beta \gamma}}\begin{bmatrix} -e^{-\beta \gamma} & 1 \\ e^{-\beta \gamma} & -1\end{bmatrix},\label{eq:markov_matrix_single_qubit_gamma}
 \end{align}
  where it can be seen that $\vec{p}_{\beta, \gamma} = \frac{1}{1 + e^{-\beta \gamma}} \vec{e}_1 + \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \vec{e}_2$ is the fixed point. To show convergence we will need the spectral gap of Eq. \eqref{eq:markov_matrix_single_qubit_gamma}, which is given as $\lambda_{\star} = \widetilde{\alpha}^2 \sinc^2 \left( \frac{(\Delta - \gamma) t}{2} \right)$. Plugging this in to the Markov Relaxation Theorem \ref{thm:markov_chain_bound} we can compute a lower bound on the number of interactions needed 
  \begin{align}
-     L \ge \frac{2}{\widetilde{\alpha}^2 \sinc^2(|\Delta - \gamma|t/2)} \left( 2 \log \frac{1}{\widetilde{\alpha}^2 \sinc^2(|\Delta - \gamma|t/2)} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right). \label{eq:one_qubit_l_bound_1}
+     L &\ge \frac{2}{\widetilde{\alpha}^2 \sinc^2(|\Delta - \gamma|t/2)} \left( 2 \log \frac{1}{\widetilde{\alpha}^2 \sinc^2(|\Delta - \gamma|t/2)} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right) \\
+     &\eqqcolon \frac{2}{\widetilde{\alpha}^2 \sinc^2(|\Delta - \gamma| t/2)} J, \label{eq:one_qubit_l_bound_1}
  \end{align}
- The terms inside the parenthesis are either constant factors or logs of our dominant cost parameters, so we will eventually ignore them in determining our asymptotic runtime and therefore denote them $J \coloneqq \left( 2 \log \frac{1}{\widetilde{\alpha}^2 \sinc^2(|\Delta - \gamma|t/2)} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right)$, the $J$ stands for ``Junk".
-
+where $J$ captures the logarithmic factors.  We then choose $L$ to satisfy this lower bound.
+ 
  Our next goal is to simplify these bounds so that we can propagate them to our final error requirements. We first use Lemma \ref{lem:sinc_poly_approx} to produce a  bound on $\sinc$ whenever $\gamma$ is within our window and $|\Delta - \gamma| \le \sigma$
  \begin{align}
      \sinc^2\left( \frac{|\Delta - \gamma| t}{2} \right) \ge 1 - \frac{\sigma^2 t^2}{2},
  \end{align}
  provided that $t \sigma \le \sqrt{2}$ to make the bound meaningful. We can then create a new lower bound for $L$ by plugging this expression for sinc in to to Eq. \eqref{eq:one_qubit_l_bound_1} we get $L \ge \frac{10}{\alpha^2 t^2(1 - \sigma^2 t^2 / 2)} J$, which is larger than the lower bound in \eqref{eq:one_qubit_l_bound_1}. If we choose $L$ to be twice this lower bound then we will for sure meet the Markov chain error. 
  
- The third stage of the proof utilizes the above bound on $L$ to bound the  off-resonance and remainder terms. The magnitude of the total off-resonance contribution is $L \norm{\mathcal{T}_{\off}}_1 \le \frac{8 }{\Delta^2}$, given by Corollary \ref{cor:t_off_norm}, and the remainder term is $L \norm{R_{\Phi}}_1 \le 32 \sqrt{\frac{2}{\pi}} \alpha t^3$, from Theorem \ref{lem:remainder_bound}. To proceed we would like to asymptotically balance these terms. Since $\alpha$ is still a free parameter, we can require $\alpha t^3 \le \frac{1}{\Delta^2}$. However, since $\Delta$ is an unknown parameter we cannot make this inequality on $\alpha$ an equality, so instead we use the known lower bound on our window for $\Delta$ and set $\alpha = \frac{1}{t^3(\Delta + \sigma)^2} \le \frac{1}{t^3 \Delta^2}$. This then allows us to make the following inequalities
+ The third stage of the proof utilizes the above bound on $L$ to bound the  off-resonance and remainder terms. The magnitude of the total off-resonance contribution is $L \norm{\mathcal{T}_{\off}}_1 \le \frac{8 }{\Delta^2}$, given by Corollary \ref{cor:t_off_norm}, and the remainder term is $L \norm{R_{\Phi}}_1 \le 32 \sqrt{\frac{2}{\pi}} \alpha t^3$, from Theorem \ref{lem:remainder_bound}. %To proceed we would like to asymptotically balance these terms. 
+ Since $\alpha$ is still a free parameter, we %can require $\alpha t^3 \le \frac{1}{\Delta^2}$. However, since $\Delta$ is an unknown parameter we cannot make this inequality on $\alpha$ an equality, so instead we use the known lower bound on our window for $\Delta$ and 
+ set $\alpha = \frac{1}{t^3(\Delta + \sigma)^2} \le \frac{1}{t^3 \Delta^2}$. This then allows us to make the following inequalities
  \begin{align}
      L(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1) &\le \frac{20}{t^2(1 - \sigma^2 t^2 / 2)}J \left( \frac{8}{\Delta^2} + 32 \sqrt{\frac{2}{\pi}} \alpha t^3 \right) \\
     &\le \frac{20}{t^2 \Delta^2 (1 - \sigma^2 t^2 / 2)}J \left( 8 + 32 \sqrt{\frac{2}{\pi}}\right). \label{eq:single_qubit_tmp_2}
  \end{align}
-The last step is then to upper bound the above by $\bigotilde{\epsilon}$. As $J$ contains only log factors, it is sufficient to show that there exists a $t$ such that $\frac{1}{t^2(1 - \sigma^2 t^2 / 2)} \le \epsilon$. Rearranging yields a quadratic in $t^2$ that must satisfy the following
+The last step is then to show the above is contained in $\bigotilde{\epsilon}$. As $J$ contains only log factors, it is sufficient to show that there exists a $t$ such that $\frac{1}{t^2(1 - \sigma^2 t^2 / 2)} \le \epsilon$. Rearranging yields a quadratic in $t^2$ that must satisfy the following
 \begin{equation}
     \Delta^2 t^2 \left(1 - \frac{\sigma^2 t^2}{2}\right) - \frac{1}{\epsilon} \ge 0. \label{eq:single_qubit_tmp_3}
 \end{equation}
@@ -544,28 +552,30 @@ The roots of this quadratic are
 \end{align}
 meaning if $t$ lies within these two roots then our expression will be satisfied. Our first observation is that in order for any solution to the inequality to exist we require $\sigma \le \Delta \sqrt{\frac{\epsilon}{2}}$, otherwise the roots are complex. As $\sigma \to 0$ we note that the larger root $\frac{1}{\sigma^2}(1 + \sqrt{1 - 2 \sigma^2 / \Delta^2 \epsilon})$ approaches infinity and the smaller root approaches $\frac{1}{\Delta^2 \epsilon}$.
 
-Now that we know the inequality in Eq. \eqref{eq:single_qubit_tmp_3} has valid solutions, provided $\sigma$ is small enough, we can now bound the remainder and off-resonance errors by $\bigotilde{\epsilon}$. This is because $J$ only contains log factors of $\alpha$ and $t$, and since $\alpha$ and $t$ are chosen to depend at most polynomially on $\epsilon$ then $J$ will be $\bigo{\log \frac{1}{\epsilon}}$. \matt{Probably should either drop this argument or make it more rigorous.} We now will summarize the results. First our distance from the target state can be upper bounded in three contributions, which is done in Eq. \eqref{eq:single_qubit_three_errors}.
-Provided $\sigma \le \frac{\epsilon}{2 \beta}$, then the distance from our Markov chain fixed point to the desired thermal state is less than $\epsilon$. Second, if $L \ge \frac{10 J}{\alpha^2 t^2(1 - \sigma^2 t^2 /2) }$, then the output state of our channel will be less than a trace distance of $\epsilon$ away from the Markov chain fixed point. Lastly, by choosing $\alpha  = \frac{1}{t^3(\Delta + \sigma)^2}$ and $t \in \left[ \frac{1}{\sigma}\sqrt{1 - \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}} }, \frac{1}{\sigma}\sqrt{1 + \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}} } \right]$ we can guarantee that the remainder and off-resonance error terms are of order $\bigotilde{\epsilon}$. Adding these contributions together gives us $\norm{\rho_S(\beta) - \Phi^{\circ L }(\rho)}_1 \in \bigotilde{\epsilon}$. The total simulation time needed can then be bounded
+Now that we know the inequality in Eq. \eqref{eq:single_qubit_tmp_3} has valid solutions, provided $\sigma$ is small enough, we can now bound the remainder and off-resonance errors by $\bigotilde{\epsilon}$. 
+%This is because $J$ only contains log factors of $\alpha$ and $t$, and since $\alpha$ and $t$ are chosen to depend at most polynomially on $\epsilon$ then $J$ will be $\bigo{\log \frac{1}{\epsilon}}$. \matt{Probably should either drop this argument or make it more rigorous.} 
+We now will summarize the results. First our distance from the target state can be upper bounded in three contributions, which is done in Eq. \eqref{eq:single_qubit_three_errors}.
+Provided $\sigma \le \frac{\epsilon}{2 \beta}$, then the distance from our Markov chain fixed point to the desired thermal state is less than $\epsilon$. Second, if $L \ge \frac{10 J}{\alpha^2 t^2(1 - \sigma^2 t^2 /2) }$, then the output state of our channel will be less than a trace distance of $\epsilon$ away from the Markov chain fixed point. Lastly, by choosing $\alpha  = \frac{1}{t^3(\Delta + \sigma)^2}$ and $t \in \left[ \frac{1}{\sigma}\sqrt{1 - \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}} }, \frac{1}{\sigma}\sqrt{1 + \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}} } \right]$ we can guarantee that the remainder and off-resonance error terms are of order $\bigotilde{\epsilon}$.  We choose the lower limit for our choice of $t$ because it does not diverge as $\sigma\rightarrow 0$.  Adding these contributions together gives us $\norm{\rho_S(\beta) - \Phi^{\circ L }(\rho)}_1 \in \bigotilde{\epsilon}$. The total simulation time needed can then be bounded
 \begin{align}
     Lt &\ge \frac{10 J t}{\alpha^2 t^2 (1 - \sigma^2 t^2 / 2)} \\
     &\ge \frac{10 J t^5 (\Delta + \sigma)^4}{\sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}}} \\
     &\ge \frac{10 J \sigma \left( 1 - \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}}\right)^{5/2} (\Delta + \sigma)^4}{\sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}}}.
 \end{align}
-This is not particularly useful. However, if we make the assumption that $\sigma \to 0$ then we can use the fact that the lower bound for $t$ approaches $\frac{1}{\Delta \sqrt{\epsilon}}$, giving
+If we make the assumption that $\sigma \to 0$ then we can use the fact that the lower bound for $t$ approaches $\frac{1}{\Delta \sqrt{\epsilon}}$, giving
 \begin{equation}
-    \lim_{\sigma \to 0} Lt = \frac{10 J}{\Delta \epsilon^{2.5}}.
+    \lim_{\sigma \to 0} Lt \ge \frac{10 J}{\Delta \epsilon^{2.5}}.
 \end{equation}
+The final result then follows by noting that $J$ is polylogarithmic in $\Delta$ and $\epsilon$ for our choice of $t$ and $\alpha$.
  \end{proof}
 
- Although the above theorem provides rigorous runtime guarantees needed to reach thermalization, they are based on Markov chain bounds which are exceptionally loose. In Table (?) we show three values: first the total simulation time needed for numerically evaluating the channel exactly, second we provide the simulation time of just the Markov chain, ignoring the higher order terms, and lastly we provide the theoretic upper bound on the simulation time for the given parameters. 
- 
- Further, Theorem \ref{thm:single_qubit} only provides a single prescribed value for $\alpha$ and $t$ to use, but numerically we observe that a much wider range of parameters are capable of achieving thermalization. To give an illustration of this flexibility in Fig. \ref{fig:tot_time_vs_single_time} we show how the total simulation time varies as a function of the single interaction time $t$ for various choices of $\alpha$. We find that the general goal when choosing values for $\alpha$ and $t$ should be to increase \emph{both}. The rationale is that the product $\alpha t$ dictates the strength of the interaction term $G$ and by increasing both we improve the chances of the system interacting with the environment. This increased interaction rate then leads to quicker thermalization, up to a point where the number of interactions needed starts to approach $1$ and the dynamics seem to reach some saturation point as all values of $\alpha$ require the same total simulation time.
+ Although the above theorem provides rigorous runtime guarantees needed to reach thermalization, they are based on Markov chain bounds which are exceptionally loose. %In Table (?) we show three values: first the total simulation time needed for numerically evaluating the channel exactly, second we provide the simulation time of just the Markov chain, ignoring the higher order terms, and lastly we provide the theoretic upper bound on the simulation time for the given parameters. 
+ Further, Theorem \ref{thm:single_qubit} only provides a single prescribed value for $\alpha$ and $t$ to use, but numerically we observe that a much wider range of parameters are capable of achieving thermalization. To give an illustration of this flexibility in Fig. \ref{fig:tot_time_vs_single_time} we show how the total simulation time varies as a function of the single interaction time $t$ for various choices of $\alpha$. We find, over the range of parameters considered, that the simulation time needed to approach a thermal state with $\beta=4$  decreases both with $\alpha$ and $t$ for $\alpha t\lesssim 1$.  This illustrates that ideally we  should aim to increase \emph{both} parameters until the integrated strength of the interaction becomes strong enough to break down the perturbative arguments used to justify thermalization. The rationale is that the product $\alpha t$ dictates the strength of the interaction term $G$ and by increasing both we improve the chances of the system interacting with the environment. This increased interaction rate then leads to quicker thermalization, up to a point where the number of interactions needed starts to approach $1$ and the dynamics seem to reach some saturation point as all values of $\alpha$ require the same total simulation time.
 
 
 \begin{figure} 
     \centering
     \includegraphics[width=0.75\linewidth]{numerics/data/total_time_vs_time.png}
-    \caption{Total simulation time for a single qubit system to reach $\beta = \dim = 4$ as a function of per-interaction simulation time $t$. Since the total probability mass being moved at a single step is proportional to $(\alpha t)^2$, we see that increasing $\alpha$ and $t$ tend to decrease the overall cost.}\label{fig:tot_time_vs_single_time}
+    \caption{Total simulation time for a single qubit system to reach $\beta = \dim = 4$ as a function of per-interaction simulation time $t$ \textcolor{blue}{NW: Can we state the error tolerance used to decide whether the system reaches $\beta$?}. Since the total probability mass being moved at a single step is proportional to $(\alpha t)^2$, we see that increasing $\alpha$ and $t$ tend to decrease the overall cost.}\label{fig:tot_time_vs_single_time}
 \end{figure}
 
 \section{Harmonic Oscillator}
@@ -575,112 +585,189 @@ Once we have shown correctness of our algorithm, namely that the thermal state i
 
 
 \begin{theorem}\label{thm:harmonic_oscillator}
-    Let $H = U \diag(\Delta , 2 \Delta , \ldots, \dim_S \Delta) U^\dagger$ denote a truncated harmonic oscillator with frequency $\Delta$. When the gap of our environment Hamiltonian matches the oscillator frequency $\gamma = \Delta$, the thermal state $\frac{e^{-\beta H}}{\partfun(\beta)}$ is an approximate fixed point to the total dynamics $\norm{\rho(\beta) - \Phi(\rho(\beta))}_1 \le \epsilon$ and is the unique fixed point for the Markov chain dynamics $(\identity + \mathcal{T}_{\on})(\rho(\beta)) = \rho(\beta)$. Further, in the limit as $\beta \to \infty$ the convergence time to reach trace distance error of $\epsilon$ is $L \in \widetilde{\Omega}\left(\frac{\dim^2 \Delta^2 }{\epsilon} \right)$ interactions with a time per interaction of $t \in \widetilde{\Theta}\left( \frac{\dim^{3/2}}{\Delta \sqrt{\epsilon}}\right)$, giving a total simulation time of $L t \in \bigotilde{\frac{\dim^{13/2}}{\epsilon^{3/2} \Delta}}$.
+    Let $H = U \diag(\Delta , 2 \Delta , \ldots, \dim_S \Delta) U^\dagger$ denote a truncated harmonic oscillator with frequency $\Delta$ for unitary $U$. When the gap of the environment Hamiltonian matches the oscillator frequency $\gamma = \Delta$, the thermal state $\frac{e^{-\beta H}}{\partfun(\beta)}$ is an approximate fixed point to the total dynamics $\norm{\rho(\beta) - \Phi(\rho(\beta))}_1 \le \widetilde{O}(\epsilon)$ and is the unique fixed point for the Markov chain dynamics $(\identity + \mathcal{T}_{\on})(\rho(\beta)) = \rho(\beta)$. Further, in the limit as $\beta \to \infty$ %the convergence time to reach trace distance error of $\epsilon$ is $L \in \widetilde{\Omega}\left(\frac{\dim^2 \Delta^2 }{\epsilon} \right)$ interactions with a time per interaction of $t \in \widetilde{\Theta}\left( \frac{\dim^{3/2}}{\Delta \sqrt{\epsilon}}\right)$, giving a 
+    the total evolution time needed for our algorithm needed to prepare an $\epsilon$-approximate thermal state is contained in 
+    $$L t \in \widetilde{O} \parens{\frac{\dim^{19/2}}{\Delta \epsilon^{5/2}} }.$$
+
 \end{theorem}
 \begin{proof}
-    We will first show the fixed points of the dynamics and then the convergence time as $\beta \to \infty$. To compute the fixed points we need to compute the on-resonance dynamics $\mathcal{T}_{\on}$, which we will compute term by term. We start with the $i \neq j$ terms $\bra{j} \mathcal{T}_{\on}(\braket{i}{i}) \ket{j}$ and will use the property that $\trace{\mathcal{T}_{\on}(\rho)} = 0$ for diagonal $\rho$. These can all be computed via Eq. \eqref{eq:on_resonance_transitions} in Theorem \ref{thm:second_order_transition}. 
-    starting with the $0$\ts{th} output state
+    We will first show the fixed points of the dynamics and then the convergence time as $\beta \to \infty$. To compute the fixed points we need to compute the on-resonance dynamics $\mathcal{T}_{\on}$, which we will compute term by term. We start with the $i \neq j$ terms $\bra{j} \mathcal{T}_{\on}(\braket{i}{i}) \ket{j}$ and will use the property that $\trace{\mathcal{T}_{\on}(\rho)} = 0$ for diagonal $\rho$ as given by Theorem \ref{thm:second_order_transition}. 
+    Starting with the $1$\ts{st} output state
 \begin{align}
-    \bra{0} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{0} &= \begin{cases}
-        \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} & i = 1 \\
-        0 & i \ge 2
+    \bra{1} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{1} &= \begin{cases}
+        \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} & i = 2 \\
+        0 & i \ge 3
     \end{cases}.
 \end{align}
-The middle output states $0 < j < \dim_S - 1$ are 
+The middle output states $1 < j < \dim_S$ are 
 \begin{equation}
     \bra{j} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{j} = \begin{cases}
         \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} & j = i - 1 \\
         \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} & j = i + 1 \\
         0 & j \not\in \set{i - 1, i, i + 1}
-    \end{cases}.
+    \end{cases}. \label{eq:sho_output_middle_states}
 \end{equation}
 The reason why there are no other nonzero output states than $i \pm 1$ is that because $\gamma = \Delta$ for now we know that the transition output for other states involves factors of $\sinc^2((\Delta_S(i, j) \pm \Delta)t/2) = \sinc^2(\Delta(i - j \pm 1) t/ 2)$ which is clearly only on-resonance when $j = i \pm 1$. The highest energy state can only be reached from the second-highest energy state:
 \begin{equation}
     \bra{\dim_S} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{\dim_S} = \begin{cases}
         \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} & i = \dim_S - 1 \\
         0 & i \le \dim_S - 2
-    \end{cases}.
+    \end{cases}. \label{eq:sho_output_last_state}
 \end{equation}
 
 Now that we have computed the unequal transition elements we can compute the self-transition amplitudes, starting with $0$
 \begin{align}
-    \bra{0} \mathcal{T}_{\on}(\ketbra{0}{0}) \ket{0} &= - \sum_{k \neq 0} \bra{k} \mathcal{T}_{\on}(\ketbra{0}{0}) \ket{k} \\
-    &= - \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}}.
+    \bra{1} \mathcal{T}_{\on}(\ketbra{1}{1}) \ket{1} &= - \sum_{k \neq 1} \bra{k} \mathcal{T}_{\on}(\ketbra{1}{1}) \ket{k} \\
+    &= - \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \\
+    &= - \widetilde{\alpha}^2 q(1). \label{eq:sho_diagonal_transition_1}
 \end{align}
-The middle terms, $0 < i < \dim_S - 1$, are 
+The middle terms, $1 < i < \dim_S$, are 
 \begin{align}
     \bra{i}\mathcal{T}_{\on}(\ketbra{i}{i}) \ket{i} &= - \sum_{k \neq i}  \bra{k} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{k} \\
     &= -\widetilde{\alpha}^2 \left( \frac{1}{1 + e^{-\beta \gamma}} + \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \right) \\
-    &= -\widetilde{\alpha}^2.
+    &= -\widetilde{\alpha}^2. \label{eq:sho_diagonal_transition_2}
 \end{align}
 The last diagonal element is
 \begin{align}
-    \bra{d - 1} \mathcal{T}_{\on}(\ketbra{d - 1}{d-1}) \ket{d - 1} &= - \sum_{k \neq d - 1} \bra{k} \mathcal{T}_{\on}(\ketbra{d-1}{d-1}) \ket{k} \\
-    &= - \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}}.
+    \bra{\dim_S} \mathcal{T}_{\on}(\ketbra{\dim_S}{\dim_S}) \ket{\dim_S} &= - \sum_{k \neq \dim_S} \bra{k} \mathcal{T}_{\on}(\ketbra{\dim_S}{\dim_S}) \ket{k} \\
+    &= - \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} \\
+    &= - \widetilde{\alpha}^2 q(0). \label{eq:sho_diagonal_transition_3}
 \end{align}
 
-Next we show that the thermal state is a fixed point of the weak-coupling dynamics. If $\vec{p}_{\beta}$ is a fixed point of $I + T$ then it must be in the kernel of $T$. We will show this is the case for each index, starting with the ground state:
+Next we show that the thermal state is a fixed point of the weak-coupling dynamics. If $\vec{p}_{\beta}$ is a fixed point of $\identity + T$ then it must be in the kernel of $T$. We will show this is the case for each index, starting with the ground state:
 \begin{align}
-    e_0^T T \vec{p}_{\beta} &= \widetilde{\alpha}^2 \left( -q(1) \frac{e^{-\beta \cdot 0}}{\partfun_S(\beta)} + q(0) \frac{e^{-\beta \Delta}}{\partfun_S(\beta)} \right) \\
-    &= \widetilde{\alpha}^2 \frac{1}{\partfun_S(\beta)} \left( - \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} + \frac{e^{-\beta \Delta}}{1 + e^{-\beta \gamma}} \right),
+    e_1^T T \vec{p}_{\beta} &= \sum_{k} \bra{1} \mathcal{T}_{\on}(\ketbra{k}{k}) \ket{1} \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} \\
+    &= \widetilde{\alpha}^2 \left( -\frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \frac{e^{-\beta \cdot \lambda_S(1)}}{\partfun_S(\beta)} + \frac{1}{1 + e^{-\beta \gamma}} \frac{e^{-\beta \lambda_S(2)}}{\partfun_S(\beta)} \right) \\
+    &= \widetilde{\alpha}^2 \frac{1}{\partfun_S(\beta)} \frac{1}{1 + e^{-\beta \gamma}} \left( - e^{-\beta (\gamma + \Delta)} + e^{-\beta 2 \Delta} \right),
 \end{align}
-where $\Delta = \gamma$ shows that this component is zero. 
+where setting $\gamma = \Delta$ shows that this component is zero.
 The middle terms are computed similarly
 \begin{align}
-    e_k^T T \vec{p}_{\beta} &= \widetilde{\alpha}^2 \left( q(1) \frac{e^{-\beta (k - 1)\Delta }}{\partfun_S(\beta)} - \frac{e^{-\beta k \Delta}}{\partfun_S(\beta)} + q(0) \frac{e^{-\beta (k + 1) \Delta}}{\partfun_S(\beta)} \right) \\
+    e_j^T T \vec{p}_{\beta} &= \sum_{k} \bra{j} \mathcal{T}_{\on}(\ketbra{k}{k}) \ket{j} \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} \\
+    &=\widetilde{\alpha}^2 \left( q(1) \frac{e^{-\beta (k - 1)\Delta }}{\partfun_S(\beta)} - \frac{e^{-\beta k \Delta}}{\partfun_S(\beta)} + q(0) \frac{e^{-\beta (k + 1) \Delta}}{\partfun_S(\beta)} \right) \\
     &= \widetilde{\alpha}^2 \frac{e^{-\beta k \Delta}}{\partfun_S(\beta)} \left( \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} e^{\beta \Delta} - 1 + \frac{1}{1 + e^{-\beta \gamma}} e^{-\beta \Delta} \right) \\
     &= \widetilde{\alpha}^2 \frac{e^{-\beta k \Delta}}{\partfun_S(\beta)} \left( \frac{e^{-\beta (\gamma - \Delta)} + e^{-\beta \Delta}}{1 + e^{-\beta \gamma}} - 1 \right),  
 \end{align}
 and again setting $\gamma = \Delta$ will make this term 0 as well. The last term is
 \begin{align}
-    e_{d - 1}^T ~T ~\vec{p}_{\beta} &= \widetilde{\alpha}^2 \frac{e^{-\beta (d - 2) \Delta}}{\partfun_S(\beta)} \left( q(1) - q(0) e^{-\beta \Delta} \right) \\
-    &= \widetilde{\alpha}^2 \frac{e^{-\beta (d - 2) \Delta}}{\partfun_S(\beta)} \frac{e^{-\beta \gamma} - e^{-\beta \Delta}}{1 + e^{-\beta \gamma}}, 
+    e_{\dim_S}^T ~T \vec{p}_{\beta} &= \sum_k \bra{\dim_S} \mathcal{T}_{\on}(\ketbra{k}{k})\ket{\dim_S} \frac{e^{-\beta \lambda_S(k)}}{\partfun_S(\beta)} \\
+    &=\widetilde{\alpha}^2 \frac{e^{-\beta (\dim_S - 1) \Delta}}{\partfun_S(\beta)} \left( q(1) - q(0) e^{-\beta \Delta} \right) \\
+    &= \widetilde{\alpha}^2 \frac{e^{-\beta (\dim_S - 1) \Delta}}{\partfun_S(\beta)} \frac{e^{-\beta \gamma} - e^{-\beta \Delta}}{1 + e^{-\beta \gamma}}, 
 \end{align}
-where $\gamma = \Delta$ forces the above to 0. This shows that $\vec{p}_{\beta}$ is indeed the fixed point for $I + T$. 
+where $\gamma = \Delta$ forces the above to 0. As every output coefficient for $T \vec{p}_{\beta}$ is 0 this shows that $\vec{p}_{\beta}$ is indeed the fixed point for $\identity + T$. 
 
-The second part of this proof is devoted to computing the spectral gap of the transition matrix $T$ given above in the limit $\beta \to \infty$. In this scenario we have that the first column is 0 
+The second part of this proof is devoted to computing the spectral gap of the transition matrix $T$ given above in the limit $\beta \to \infty$. In this scenario we have that the output of the first column is 0 
 \begin{equation}
-\lim_{\beta \to \infty} \bra{i} \mathcal{T}_{\on}(\ketbra{0}{0})\ket{i} = \lim_{\beta \to \infty} \pm \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} = 0,
+ \lim_{\beta \to \infty} e_i^T T e_1 = \lim_{\beta \to \infty} \bra{i} \mathcal{T}_{\on}(\ketbra{1}{1})\ket{i} = \lim_{\beta \to \infty} \begin{cases} \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} & i = 2 \\
+ - \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} & i = 1 \\
+ 0 & else \end{cases},
 \end{equation}
-which demonstrates that 0 is an eigenvalue of $T$. Now we note that $T$ has an upper triangular structure as 
+and since all cases evaluate to 0 in the limit this shows 0 is an eigenvalue of $T$ with the ground state being the associated eigenvector. To compute the next largest eigenvalue we will show that $T$ is actually in Jordan canonical form, up to an overall scalar. This means we can read the spectrum directly off the diagonal. Since we have already computed the output of the first column we need to compute the remaining columns of $T$. Since we have already computed the output of our channel above we can reuse those results. For $1 < j < \dim_S$ Eqs. \eqref{eq:sho_output_middle_states} and \eqref{eq:sho_diagonal_transition_2} tells us
+\begin{align}
+    \lim_{\beta \to \infty} e_k^T T e_j &= \lim_{\beta \to \infty} \bra{k} \mathcal{T}_{\on}(\ketbra{j}{j}) \ket{k} \\
+    &= \lim_{\beta \to \infty} \widetilde{\alpha}^2\begin{cases}
+        \frac{1}{1 + e^{-\beta \gamma}} & k = j - 1 \\
+        -1 & k = j \\
+        \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} & k = j + 1 \\
+        0 & else
+    \end{cases} \\
+    &= \widetilde{\alpha}^2 
+    \begin{cases}
+        1 & k = j - 1 \\
+        -1 & k = j \\
+        0 & else
+    \end{cases}.
+\end{align}
+The last column in the matrix $T$ is computed similarly from Eq. \eqref{eq:sho_output_last_state} and \eqref{eq:sho_diagonal_transition_3} as
+\begin{align}
+    \lim_{\beta \to \infty}  e_{k}^T T e_{\dim_S} &= \lim_{\beta \to \infty}  \bra{k} \mathcal{T}_{\on}(\ketbra{\dim_S}{\dim_S}) \ket{k} \\
+    &= \lim_{\beta \to \infty} \widetilde{\alpha}^2 \begin{cases}
+        \frac{1}{1 + e^{-\beta \gamma}} & k = \dim_S - 1 \\
+        - \frac{1}{1 + e^{-\beta \gamma}} & k = \dim_S \\
+        0 & else
+    \end{cases} \\
+    &= \widetilde{\alpha}^2 \begin{cases} 1 & k = \dim_S - 1 \\ -1 & k = \dim_S \\ 0 & else \end{cases} .
+    \end{align}
+This gives us a full picture of $T$ as 
 \begin{equation}
-\lim_{\beta \to \infty} \bra{j + 1} \mathcal{T}_{\on}(\ketbra{j}{j})\ket{j + 1} = \lim_{\beta \to \infty} \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} = 0,
+    T = \widetilde{\alpha}^2 \begin{bmatrix}
+        0 & 1 &   &\\
+        & -1 & 1 &  &\\
+        & & -1  & & \\
+        & & & \ddots & \\
+        & &     &       & 1 \\
+        & &  & & -1
+    \end{bmatrix}.
 \end{equation}
-and these are the only nonzero below diagonal entries. As the diagonal entries are $-\widetilde{\alpha}^2$ and there is only one nonzero above diagonal entry which must cancel out the diagonal entry in it's column, we know it must be $+\widetilde{\alpha}^2$. This leads to a banded structure with $-\widetilde{\alpha}^2$ on the diagonals (except the very top left entry) and $+ \widetilde{\alpha}^2$ on the superdiagonal just above the diagonal $T = \widetilde{\alpha}^2 \sum_{i > 1}(-1) \ketbra{i}{i} + \sum_{i > 1} \ketbra{i}{i - 1} $. We note that this is a scaled Jordan canonical form matrix which allows us to read off the two eigenvalues as 0 and $- \widetilde{\alpha}^2$. This gives a spectral gap of $\widetilde{\alpha}^2$ for $T$, and since the spectral gap of $T$ is equal to the spectral gap of $I  + T$ we now have the gap of the Markov chain as $\lambda_{\star}(H) = \widetilde{\alpha}^2$.
+We can compute the spectrum via the characteristic polynomial $\det(\lambda \identity - T)$. This is because $T$ is upper triangular and the determinant we need to compute is
+\begin{equation}
+    \det(\lambda \identity - T) =  \begin{vmatrix}
+        \lambda & -\widetilde{\alpha}^2 &   &\\
+        & \lambda + \widetilde{\alpha}^2 & -\widetilde{\alpha}^2 &  &\\
+        & & \lambda + \widetilde{\alpha}^2  & & \\
+        & & & \ddots & \\
+        & &     &       & -\widetilde{\alpha}^2 \\
+        & &  & & \lambda + \widetilde{\alpha}^2
+    \end{vmatrix}.
+\end{equation}
+The determinant is then the product of the diagonals, yielding $\det(\lambda \identity - T) = \lambda (\lambda + \widetilde{\alpha}^2)^{\dim_S - 1}$. This gives a spectral gap of $T$ as $\widetilde{\alpha}^2$, which is then equal to the spectral gap of the Markov chain $\identity + T$ as $\lambda_{\star}(H) = \widetilde{\alpha}^2$.
 
-We can plug this in to the Markov Relaxation Theorem \ref{thm:markov_chain_bound} to get $L \in \widetilde{\Omega}\left( \frac{\dim}{\widetilde{\alpha}^2}\right)$. We then use the remainder bound in Lemma \ref{lem:remainder_bound} and the off-resonance norm to set values for $\alpha$ and $t$. First $\delta_{\min} = \min_{\Delta(i,j) \neq \Delta(k,l)} |\Delta(i,j) - \Delta(k,l)| = |2 \Delta - \Delta| = \Delta$.
+We then plug this in to the Markov Relaxation Theorem \ref{thm:markov_chain_bound} to get $L \in \widetilde{\Omega}\left( \frac{\dim}{\widetilde{\alpha}^2}\right)$. We then use the remainder bound in Lemma \ref{lem:remainder_bound} and the off-resonance norm to set values for $\alpha$ and $t$. First $\delta_{\min} = \min_{\Delta(i,j) \neq \Delta(k,l)} |\Delta(i,j) - \Delta(k,l)| = |2 \Delta - \Delta| = \Delta$.
 \begin{align}
   L(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1) &\le L \left(\frac{8 \alpha^2}{\Delta} + 16 \sqrt{\frac{2}{\pi}} \dim_S (\alpha t)^3 \right),
 \end{align}
-so again we can set $\alpha t = \frac{1}{\Delta^2 t^2}$ to make these terms asymptoticaly equivalent. Using our asymptotic upper bound for $L$ and requiring this to be of order $\epsilon$ yields
+so again we can set $\alpha t = \frac{1}{\Delta^2 t^2}$ to make these terms asymptoticaly equivalent. Using our asymptotic upper bound for $L$ and requiring this to be of order $\epsilon$ yields that it suffices to choose
 \begin{align}
-    t \in \widetilde{\Omega} \left( \frac{\dim^{3/2}}{\Delta \sqrt{\epsilon}} \right),
+    t \in \widetilde{O} \left( \frac{\dim^{3/2}}{\Delta \sqrt{\epsilon}} \right),
 \end{align}
 giving a total simulation time of 
 \begin{equation}
-    L t \in \bigotilde{\frac{\dim^2}{(\alpha t)^2} t} = \bigotilde{ \dim^2 \Delta^2 t^3} = \widetilde{O} \parens{\frac{\dim^{13/2}}{\epsilon^{3/2} \Delta} }.
+    L t \in \bigotilde{\frac{\dim^2}{(\alpha t)^2} t} = \bigotilde{ \dim^2 \Delta^4 t^5} = \widetilde{O} \parens{\frac{\dim^{19/2}}{\Delta \epsilon^{5/2}} }.
 \end{equation}
 \end{proof}
 
 Theorem \ref{thm:harmonic_oscillator} is helpful for giving an idea of the runtime for very low temperature states, but we cannot extend it to finite $\beta$ due to the ad-hoc computation of the spectral gap. For generic $\beta$ the structure of the transition matrix is tridiagonal, but it is not quite Toeplitz as the main diagonals deviate in the upper left and bottom right corners. We could try to pull these deviations into a separate matrix and treat them as perturbations to a fully Toeplitz matrix, but these deviations are on the order of $\widetilde{\alpha}^2 q(0)$ and $\widetilde{\alpha}^2 q(1)$, which are comparable to the eigenvalues of the resulting Toeplitz matrix. This means the resulting ``perturbation" is actually on the same scale as the unperturbed matrix. Analytically computing the spectral gap for $\dim = 3$ reveals a hyperbolic cosecant structure, but these calculations do not scale easily to higher dimension. It seems that we are restricted to probing the runtime for higher dimensions and finite $\beta$ numerically.
 
-Before we look at the runtime numerically, our first goal will be to verify our analytic derivations and determine how close our Markov chain approximation is to the real dynamics of the channel. To do this we will track the distance to the target thermal state $\norm{\rho(\beta) - \Phi^{\circ L}(\rho(0))}_1$ as a function of $L$ as well as the theoretically computed Markov chain $\norm{\vec{p}_{\beta} - (I + T)^L \vec{p}_0}_1 $. This is done in Figure \ref{fig:sho_error_vs_interactions} where we plot the distance to the thermal state as a function of the number of interactions. As our remainder error is controlled by $\alpha t$ and our off-resonance error by $\alpha / \Delta_{\min}$ we include one plot that varies $\alpha$ and keeps $t$ constant and vice versa for the other plot. We find that increasing $\alpha$ for a fixed $t$ will increase the convergence rate at the cost of a higher variance in the error as well as a further deviation from the Markov chain fixed point. For fixed $\alpha$ we observe a similar behavior, as $t$ increases the convergence time reduces but the deviation from the Markov chain dynamics increases.
+Before we look at the $\beta$ dependence of the runtime our first goal will be to verify our analytic derivations and determine how close our Markov chain approximation is to the real dynamics of the channel. To do this we will track the distance to the target thermal state $\norm{\rho(\beta) - \Phi^{\circ L}(\rho(0))}_1$ as a function of $L$ as well as the theoretically computed Markov chain $\norm{\vec{p}_{\beta} - (\identity + T)^L \vec{p}_0}_1 $. This is done in Figure \ref{fig:sho_error_vs_interactions} where we plot the distance to the thermal state as a function of the number of interactions. As our remainder error is controlled by $\alpha t$ and our off-resonance error by $\alpha / \Delta_{\min}$ we include one plot that varies $\alpha$ and keeps $t$ constant and vice versa for the other plot. We find that increasing $\alpha$ for a fixed $t$ will increase the convergence rate at the cost of a higher variance in the error as well as a further deviation from the Markov chain fixed point. For fixed $\alpha$ we observe a similar behavior, as $t$ increases the convergence time reduces but the deviation from the Markov chain dynamics increases.
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.45\linewidth]{numerics/data/sho_error_vs_l_fix_alpha.png} \includegraphics[width=0.45\linewidth]{numerics/data/sho_error_vs_l_fix_time.png}
+    \begin{subfigure}{0.75\textwidth}
+        \includegraphics[width=\textwidth]{numerics/data/sho_error_vs_l_fix_alpha.png}     
+        \caption{$\norm{\rho_S(\beta) - \Phi^{\circ L }(\rho_S(0))}_1$ as a function of $L$ for various $\alpha$ with fixed $t$.}
+    \end{subfigure}
+    \begin{subfigure}{0.75\textwidth}
+        \includegraphics[width=\textwidth]{numerics/data/sho_error_vs_l_fix_time.png}    
+        \caption{$\norm{\rho_S(\beta) - \Phi^{\circ L }(\rho_S(0))}_1$ as a function of $L$ for various $t$ with fixed $\alpha$.}
+    \end{subfigure}
+    
     \caption{Distance from the thermal state as a function of the number of interactions simulated. The left hand plot shows how changing $\alpha$ for a fixed $t$ affects the convergence and the right hand plot shows varying $t$ with a fixed $\alpha$. In both we see that increasing $\alpha$ or $t$ leads to faster convergences at a cost of a higher deviation from the Markov chain fixed point (shown in dashed). }
     \label{fig:sho_error_vs_interactions}
 \end{figure}
 
-Now that we have numerically verified the validity of our channel as a thermalizing channel as well as the $\alpha$ and $t$ behavior of our Markov chain, we turn our attention to the total simulation time as a function of $\beta$. This is important as our runtime results for the single qubit are independent of $\beta$ and the only runtime results we have for the harmonic oscillator is for the ground state $\beta \to \infty$. Our numeric results are contained in Figure \ref{fig:sho_total_time_vs_beta}. The method we used is to start our simulation at $\rho = \frac{\identity}{\dim_S}$, as we need a state that commutes with $H_S$ and is easy to prepare. We then find the smallest number of interactions needed for our state to have an average trace distance of less than 0.05, averaged over 100 samples, using values of $\alpha$ and $t$ found by trial and error. We find that even for systems as small as $\dim_S = 4$ there is a nontrivial dependence of the runtime on $\beta$. The total simulation time increases with $\beta$, as one would initially expect, until it reaches a peak and then decreases, indicating colder temperatures can converge \emph{quicker} than warmer temperatures when starting from an infinite temperature initial state. This bump becomes noticeably more pronounced as the dimension increases. Our explanation for this phenomena is a temperature dependence of the Markov chain spectral gap that is different than the temperature dependence of the distance between the starting state and the thermal state. 
+Now that we have numerically verified the validity of our channel as a thermalizing channel as well as the $\alpha$ and $t$ behavior of our Markov chain, we turn our attention to the total simulation time as a function of $\beta$. This is important as our runtime results for the single qubit are independent of $\beta$ and the only runtime results we have for the harmonic oscillator is for the ground state $\beta \to \infty$. Our numeric results are contained in Figure \ref{fig:sho_total_time_vs_beta}. The method we used is to start our simulation at $\rho = \frac{\identity}{\dim_S}$, as we need a state that commutes with $H_S$ and is easy to prepare. We then find the smallest number of interactions needed for our state to have an average trace distance of less than 0.05, averaged over 100 samples, using values of $\alpha$ and $t$ found by trial and error. We find that even for systems as small as $\dim_S = 4$ there is a nontrivial dependence of the runtime on $\beta$. The total simulation time increases with $\beta$, as one would initially expect, until it reaches a peak and then decreases, indicating colder temperatures can converge \emph{quicker} than warmer temperatures when starting from an infinite temperature initial state. This bump becomes noticeably more pronounced as the dimension increases, see Figure \ref{fig:sho_total_time_vs_beta}. Our explanation for this phenomena is a temperature dependence of the Markov chain spectral gap that is different than the temperature dependence of the distance between the starting state and the thermal state. 
 
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.45\linewidth]{numerics/data/sho_l_vs_beta.png}
-    \includegraphics[width=0.5\linewidth]{numerics/data/spec_gap_dim_4.pdf}
-    \caption{TODO: Improve. Trace distance to target as a function of interaction number, simulation compared to Markov chain behavior. The Hilbert-Schmidt overlap with the ground state $\anglebrackets{\Phi^L(\rho(0)), \ketbra{0}{0}}$ is 0.940 at $L = 300$. }
+    \begin{subfigure}{0.55\textwidth}
+    \includegraphics[width=\textwidth]{numerics/data/sho_l_vs_beta.png}
+    \caption{Minimum Interactions vs. $\beta$, $\dim = 4$}
+    \label{fig:sho_l_vs_beta_dim_4}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.55\textwidth}
+    \includegraphics[width=\textwidth]{numerics/data/spec_gap_dim_4.pdf}
+    \caption{Spectral Gap vs. $\beta$, $\dim = 4$}
+    \label{fig:sho_spectral_gap_vs_beta}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.55\textwidth}
+    \includegraphics[width=\textwidth]{numerics/data/sho_big_peak.png}
+    \caption{Minimum Interactions vs. $\beta$, $\dim = 10$}
+    \label{fig:sho_l_vs_beta_dim_10}
+    \end{subfigure}
+    \caption{Demonstration of $\beta$ dependence of the thermalizing channel $\Phi$ for the truncated harmonic oscillator.}
     \label{fig:sho_total_time_vs_beta}
 \end{figure}
 
@@ -688,34 +775,164 @@ Now that we have numerically verified the validity of our channel as a thermaliz
 
 
 \section{General Systems}
- Now that we have studied a single qubit and the harmonic oscillator in as much detail as possible, in this section we explore the behavior of our algorithm for some more generic systems. As our algorithm ultimately boils down to a Markov chain over the eigenstates of the Hamiltonian we are unable to make any runtime claims, as that would require bounding the spectral gap of a Markov chain that depends on knowledge of the Hamiltonian eigenvalues. What we do show in this section is three-fold: we first demonstrate that if the environment temperature approaches 0 ($\beta \to \infty$), then the ground state of the system is \emph{a} fixed point, second that if the eigenvalue differences $\lambda(i) - \lambda(j)$ can be sampled from exactly then we show that by taking $t$ sufficiently large the thermal state is the unique fixed point, and lastly we demonstrate that knowledge of eigenvalue gaps is not entirely necessary by preparing low temperature thermal states for Hydrogen chains without any a-priori knowledge.
+ Now that we have studied a single qubit and the harmonic oscillator in as much detail as possible, in this section we explore the behavior of our algorithm for more generic systems. As our algorithm ultimately boils down to a Markov chain over the eigenstates of the Hamiltonian we are unable to make any runtime claims, as that would require bounding the spectral gap of a Markov chain that depends on knowledge of the Hamiltonian eigenvalues. What we do show in this section is three-fold: we first demonstrate that if the environment temperature approaches 0 ($\beta \to \infty$), then the ground state of the system is \emph{a} fixed point, second that if the eigenvalue differences $\set{\lambda(i) - \lambda(j)}_{i, j}$ can be sampled from exactly then choosing $\Delta$ to correspond to these gaps leads the algorithm to yield the thermal state as its unique fixed point. Lastly, we demonstrate numerically that knowledge of eigenvalue gaps is not entirely necessary by preparing low temperature thermal states for Hydrogen chains without any a priori knowledge.
 
 We first briefly discuss what happens in the $\beta \to \infty$ limit. In this scenario our ancilla qubit is in the ground state, meaning that any transition that occurs must increase the energy of the ancilla and decrease the energy of the system. Since the ground state is the lowest possible energy, intuitively we would expect that no transitions out of the ground state occur and the ground state should remain fixed. This intuition is captured in the theorem below, where we ignore the effects of controllable off-resonant transitions and order $(\alpha t)^3$ contributions.
 \begin{theorem}[Ground State Fixed Point] \label{thm:ground_state_fixed}
-    For an arbitrary Hamiltonian $H$ and environment energy gap $\gamma$, in the limit as $\beta \to \infty$ the ground state of $H$ is a fixed point of the on-resonance second order dynamics. Formally,
+    For a Hamiltonian $H$ acting on a Hilbert space of dimension ${\rm dim}$ and environment energy gap $\gamma$, in the limit as $\beta \to \infty$ the ground state of $H$ is a fixed point of the on-resonance second order dynamics. Formally if we take $\ket{0}$ to be the groundstate of $H_s$ then
     \begin{equation}
         \lim_{\beta \to \infty} (\identity + \mathcal{T}_{\on})(\ketbra{0}{0}) = \ketbra{0}{0}.
     \end{equation}
 \end{theorem}
-\begin{proof}
-    To prove this we only have to show that $\lim_{\beta \to \infty} \mathcal{T}_{\on}(\ketbra{0}{0}) = 0$. Suppose $\gamma$ is sufficiently close to the eigenvalue difference $\lambda(j) - \lambda(0)$. Using Eq. \eqref{eq:on_resonance_transitions} from Lemma \ref{thm:second_order_transition} the on-resonance transition amplitude is
+\begin{proof} \textcolor{blue}{NW: This proof needs to be formalized more.  Sufficiently close is not well defined.  Also what is $j$ here?  I think what we mean to say here is that for any such gap, the limit will still be zero and hence the result follows.}
+    To prove this we only have to show that $\lim_{\beta \to \infty} \mathcal{T}_{\on}(\ketbra{0}{0}) = 0$. Suppose $\gamma$ is sufficiently close to the eigenvalue difference $\lambda(j) - \lambda(0)$. Using Theorem \ref{thm:second_order_transition}, the on-resonance transition amplitude is
     \begin{align}
         \lim_{\beta \to \infty} \bra{j} \mathcal{T}_{\on}(\ketbra{0}{0}) \ket{j} &= \lim_{\beta \to \infty} \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(\Delta(j,0) - \gamma)t}{2} \right) = 0.
     \end{align}
-    Since this holds for any $\gamma$ that produces an on-resonance transition we are done.
+    Since this holds for any $\gamma$ that produces an on-resonance transition we are done.  \textcolor{blue}{NW: This last bit doesn't really follow clearly.  The statement of the theorem makes no promise about whether the gap and $\Delta$ leads to a resonant term.}
 \end{proof}
 
-Now we move on to showcase a scenario when finite $\beta$ thermal states are the unique fixed point of the Markov dynamics. For this we assume sample access to the eigenvalue differences $\Delta(i,j) = \lambda(i) - \lambda(j)$, meaning if there are $\chi(i,j)$ pairs of eigenvalues with positive differences $\Delta(k,l) = \Delta(i,j) \ge 0$ then the probability we receive $\Delta(i,j)$ is $\prob{\gamma = \Delta(i,j)} = \chi(i,j) \frac{2}{\dim_S(\dim_S - 1)}$. One simplifying assumption we will make (I'm not sure this is necessary?) is that there are no degeneracies in the Hamiltonian and for all $i,j$ we have $\Delta(i,j) > 0$. By taking $t$ larger than the smallest difference between eigenvalue differences we can ensure that the probability of an on-resonance transition occurring between states $i$ and $j$ is $\chi(i,j) \frac{2}{\dim_S(\dim_S - 1)}$. More formally, we use the definition of $\delta_{\min}$ from Eq. \eqref{eq:delta_min_def} and take $t \ge 1/ \delta_{\min}$ so that we can use Lemma \ref{lem:sinc_poly_approx} to argue that the only contribution to $\bra{j} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{j}$ is from $\gamma = \Delta(i,j)$. As $\gamma$ is a random variable this makes the transition coefficient a random variable as well. 
+\begin{theorem}[Ground State Preparation] \label{thm:ground_state}
+    Let $H_S$ be a Hamiltonian acting on a ${\rm dim}_S$ dimensional Hilbert space, $\rho$ any input state such that $[\rho, H_S] = 0$, $\delta_{\min}$ as defined in Eq. \eqref{eq:delta_min_def}, $\gamma_U = \max_{k \neq l} \Delta_S(k, l) + \delta_{\min}$, $\gamma_L = \min_{k \neq l} \Delta_S(k,l) - \delta_{\min}$, and $\gamma$ a random variable chosen uniformly in the interval $[\gamma_L, \gamma_U]$. In the limit as $\beta \to \infty$ the output of the expected channel $\EE_\gamma \Phi_\gamma$ repeated $L$ times is $\epsilon$ close to the ground state
+    \begin{equation}
+        \lim_{\beta \to \infty} \norm{\rho_S(\beta) - (\EE_\gamma \Phi_\gamma)^{\circ L} (\rho)}_1 \in \widetilde{O}(\epsilon).
+    \end{equation}
+    Given a simulation time $t$ per application of $\EE_\gamma \Phi_{\gamma}$, the total evolution time required by our algorithm is in
+    \begin{equation}
+        Lt \in \widetilde{O}\left( \frac{\dim_S^{16} (\gamma_U - \gamma_L)^7}{\epsilon^{6} \delta_{\min}^8} \right)
+    \end{equation}
+\end{theorem}
+\begin{proof}
+    We now would like to extend the techniques developed in the proof of the runtime for the $\beta \to \infty$ limit for arbitrary Hamiltonians. For this we will need to randomly select our values of $\gamma$ and analyze the expected Markov transition matrix. We will denote the channel for a given value of $\gamma$ as $\Phi_{\gamma}$ and the on-resonance map $\mathcal{T}_{\gamma}^{(\on)}$. A further simplification we will make is we will assume a $\beta \to \infty$ limit throughout. We start by splitting our error into two parts, the distance to the fixed point of the Markov chain and the off-resonance and remainder errors
+\begin{align}
+    \norm{\rho_S(\infty) - \EE_\gamma \left[\Phi_{\gamma}\right]^{\circ L} (\rho)}_1 \le \norm{\rho_S(\infty) - \left(\EE_{\gamma}\left[  \identity + \mathcal{T}_\gamma^{(\on)}  \right] \right)^{\circ L}(\rho)}_1 + L \left(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1\right),
+\end{align}
+where we do not include the $\gamma$ averaging for the error terms as they are independent of the choice of $\gamma$. We will tackle the expected Markov transition matrix first.
+
+As we have seen before, the Markov error typically works by first finding the fixed point of the transition matrix followed by bounding the spectral gap. For this proof we will first show that the ground state is in the kernel of $\EE_\gamma T_\gamma$, meaning it is a fixed point of $\EE_\gamma (\identity + T_\gamma)$, and then we will compute the spectral gap. While computing the spectral gap we will find that 0 is a non-repeated eigenvalue of the expected map, meaning that there is only one unique fixed point. 
+
+To show that the ground state is a fixed point of the dynamics we need to show that it lies in the kernel of $\EE_\gamma T_\gamma$. This is computed using Theorem \ref{thm:second_order_transition}, first for $i > 1$ we see
+\begin{align}
+     \EE_\gamma \lim_{\beta \to \infty} e_i^T T_\gamma e_1 &=  \EE_\gamma \lim_{\beta \to \infty} \bra{i} \TT_\gamma^{(\on)}(\ketbra{1}{1})\ket{i} \\
+    &= \EE_\gamma \lim_{\beta \to \infty} \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \sinc^2\left( \frac{(\Delta_S(i, 1) - \gamma) t }{2} \right) \\
+    &= \widetilde{\alpha}^2 \EE_\gamma \sinc^2\left( \frac{(\Delta_S(i, 1) - \gamma) t }{2} \right) \lim_{\beta \to \infty} \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \\
+    &= 0.
+\end{align}
+Due to trace preservation we then know that 
+\begin{align}
+    \EE_\gamma \lim_{\beta \to \infty} e_1^T T_\gamma e_1 &= \EE_\gamma \lim_{\beta \to \infty} \bra{1} \TT_\gamma^{(\on)}(\ketbra{1}{1}) \ket{1} \\
+    &= \EE_\gamma \lim_{\beta \to \infty} \sum_{i > 1} \bra{i} \TT_\gamma^{(\on)}(\ketbra{1}{1}) \ket{i} \\
+    &= 0.
+\end{align}
+This shows that the ground state $\ketbra{1}{1}$ is a fixed point of the Markov chain.
+
+We now show that in the $\beta \to \infty$ limit that $\EE_\gamma T_\gamma$ is upper triangular. Using Theorem \ref{thm:second_order_transition} and assuming $i > j$ we have
+\begin{align}
+    \EE_\gamma \lim_{\beta \to \infty} e_i^T T_\gamma e_j &= \EE_\gamma \lim_{\beta \to \infty} \bra{i} \TT_\gamma^{\on}(\braket{j}{j})\ket{i} \\
+    &= \EE_\gamma \widetilde{\alpha}^2 \sinc^2 \left(\frac{(\Delta_S(j, i) + \gamma)t}{2} \right) \lim_{\beta \to \infty} \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \\
+    &= 0.
+ \end{align}
+Since we know that $\EE_\gamma T_\gamma$ is upper triangular we can now compute the spectrum if we can compute the diagonal entries. As we have already computed $\EE_\gamma e_1^T T_\gamma e_1$ we will compute the remaining ones similarly. 
+\begin{align}
+    \EE_\gamma \lim_{\beta \to \infty} e_i^T T_\gamma e_i &= \EE_\gamma \lim_{\beta \to \infty} \bra{i} \TT_\gamma^{(\on)}(\ketbra{i}{i}) \ket{i} \\
+    &= - \EE_\gamma \lim_{\beta \to \infty} \sum_{j \neq i} \bra{j} \TT_\gamma^{(\on)}(\ketbra{i}{i}) \ket{j} \\
+    &= - \EE_\gamma \lim_{\beta \to \infty} \sum_{j < i} \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} \mathbf{I}[|\Delta_S(i,j) - \gamma| \le \delta_{\min}] \sinc^2 \left( \frac{(\Delta_S(i, j) - \gamma) t}{2} \right) \nonumber \\
+    &\quad - \EE_\gamma \lim_{\beta \to \infty} \sum_{j > i} \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \mathbf{I}[|\Delta_S(i, j) + \gamma| \le \delta_{\min}] \sinc^2 \left( \frac{(\Delta_S(i, j) + \gamma) t}{2} \right) \\
+    &= - \EE_\gamma  \sum_{j < i} \widetilde{\alpha}^2  \mathbf{I}[|\Delta_S(i,j) - \gamma| \le \delta_{\min}] \sinc^2 \left( \frac{(\Delta_S(i, j) - \gamma) t}{2} \right) \lim_{\beta \to \infty} \frac{1}{1 + e^{-\beta \gamma}} \nonumber \\
+    &\quad - \EE_\gamma \sum_{j > i} \widetilde{\alpha}^2 \mathbf{I}[|\Delta_S(i, j) + \gamma| \le \delta_{\min}] \sinc^2 \left( \frac{(\Delta_S(i, j) + \gamma) t}{2} \right) \lim_{\beta \to \infty} \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \\
+    &= -   \sum_{j < i} \widetilde{\alpha}^2 \EE_\gamma \mathbf{I}[|\Delta_S(i,j) - \gamma| \le \delta_{\min}] \sinc^2 \left( \frac{(\Delta_S(i, j) - \gamma) t}{2} \right). \label{eq:ground_state_tmp_1}
+\end{align}
+
+Now we can perform the $\gamma$ expectation. For this we will integrate a uniformly chosen $\gamma$ from $\gamma_L$ to $\gamma_U$. We need to ensure that every value of $\Delta_S(i,j)$ has a window of $\pm \delta_{\min}$ around it so that each $\sinc$ integral will evaluate to the same amount. This means our limits have to be at least $\gamma_L = \min_{k \neq l} \Delta_S(k, l) - \delta_{\min}$ and $\gamma_U = \max_{k \neq l} \Delta_S(k,l) + \delta_{\min}$. \matt{Conjecture - $\gamma_L = 0$ and $\gamma_U = 2 \norm{H_S}$ should work.} For now, define $\gamma_\Delta = \gamma_U - \gamma_L = \max_{k \neq l} \Delta_S(k,l) - \min_{k \neq l} \Delta_S(k,l)$. This means that the integrations can be computed as
+\begin{align}
+    &\EE_\gamma \mathbf{I}[|\Delta_S(i,j) - \gamma| \le \delta_{\min}] \sinc^2 \left( \frac{(\Delta_S(i, j) - \gamma) t}{2} \right) \nonumber \\
+    &= \int_{\gamma_L}^{\gamma_U} \mathbf{I}[|\Delta_S(i,j) - \gamma| \le \delta_{\min}] \sinc^2 \left( \frac{(\Delta_S(i, j) - \gamma) t}{2} \right) \frac{1}{\gamma_\Delta} d\gamma \\
+    &= \frac{1}{\gamma_\Delta} \int_{\Delta_S(i,j) - \delta_{\min}}^{\Delta_S(i,j) + \delta_{\min}} \sinc^2 \left( \frac{(\Delta_S(i, j) - \gamma) t}{2} \right) d\gamma \\
+    &= \frac{1}{\gamma_\Delta} \int_{-\delta_{\min}}^{\delta_{\min}} \sinc^2 \left( \frac{\widetilde{\gamma} t}{2} \right) d\widetilde{\gamma} \\
+    &= \frac{2}{t(\gamma_U - \gamma_L)} \int_{-\delta_{\min} t/2}^{\delta_{\min} t/2} \sinc^2 (u) du 
+\end{align}
+where we label the last integral with $I_{\sinc}(t)$ which is defined as
+\begin{equation}
+    I_{\sinc}(t) \coloneqq  \int_{-\delta_{\min} t/2}^{\delta_{\min} t/2} \sinc^2 (u) du  . \label{eq:ground_state_prep_sinc_integral}
+\end{equation}
+For now we conjecture that this integral is $\widetilde{\Theta}(1)$ leaving the proof until later.
+
+Now plugging this into Eq. \ref{eq:ground_state_tmp_1} we arrive at
+\begin{align}
+    \EE_\gamma \lim_{\beta \to \infty} e_i^T T_\gamma e_i &= -   \sum_{j < i} \widetilde{\alpha}^2 \frac{2}{t(\gamma_U - \gamma_L)} I_{\sinc}(t) = - \frac{\widetilde{\alpha}^2 (i - 1)}{t(\gamma_U - \gamma_L)} I_{\sinc}(t),
+\end{align}
+which completes our calculation for the diagonal elements of $\EE_\gamma \lim_{\beta \to \infty} T_\gamma$. For the remainder of the proof we will not write the $\beta \to \infty$ limit and take it as implicit. Now we can compute the characteristic polynomial $p_T(x) = \det(x I - \EE_\gamma T_\gamma)$, the roots of which are the eigenvalues of $\EE_\gamma T_\gamma$. Since the determinant of an upper triangular matrix is the product of the diagonals we have
+\begin{align}
+    p_T(x) &= \det(x I - \EE_\gamma T_\gamma) \\
+    &= e_1^T(x I - \EE_\gamma T_\gamma)e_1 \prod_{i = 2}^{\dim_S} e_i^T (x I - \EE_\gamma T_\gamma) e_i \\
+    &= x \prod_{i = 2}^{\dim_S} \left( x + \frac{\widetilde{\alpha}^2 (i - 1)}{t(\gamma_U - \gamma_L)} I_{\sinc}(t)\right).
+\end{align}
+Given that this polynomial is clearly factored the roots are $x = 0$ and $x = -(i - 1) \frac{\widetilde{\alpha}^2 I_{\sinc}(t)}{t(\gamma_U - \gamma_L)}$ giving a gap of 
+\begin{equation}
+    \lambda_\star = 0 + (2 -1) \frac{\widetilde{\alpha}^2 I_{\sinc}(t)}{t(\gamma_U - \gamma_L)} = \frac{\widetilde{\alpha}^2 I_{\sinc}(t)}{t(\gamma_U - \gamma_L)}. \label{eq:ground_state_spectral_gap}
+\end{equation}
+Further, we see that 0 is an eigenvalue with multiplicity 1. This confirms that the ground state is the unique fixed point of $\EE_\gamma (\identity + \TT_\gamma^{(\on)})$.
+
+We move on to computing the asymptotic runtime of our dynamics. We now can find a value of $L$ to make the Markov chain error small using Theorem \ref{thm:markov_chain_bound}. To guarantee $\norm{\ketbra{1}{1} - \left(\EE_\gamma \lim_{\beta \to \infty} \identity + \TT_\gamma^{(\on)}\right)^{\circ L}(\rho)}_1 \le \epsilon$ we require
+\begin{align}
+    L &\ge \frac{\dim_S}{\lambda_\star} J \\
+    L &\in \widetilde{\Omega} \left( \frac{\dim_S t (\gamma_U - \gamma_L)}{\widetilde{\alpha}^2 I_{\sinc}(t)} \right) \\
+    &= \widetilde{\Omega} \left( \frac{\dim_S^2 (\gamma_U - \gamma_L)}{\alpha^2 t I_{\sinc}(t)}\right).
+\end{align}
+Our penultimate task is to bound the off-resonance and remainder error term
+\begin{align}
+    \norm{\TT_{\off}}_1 + \norm{R_{\Phi}}_1 &= \frac{8 \alpha^2}{\delta_{\min}^2} + 16 \sqrt{\frac{\pi}{2}} \dim_S (\alpha t)^3 \\
+    &= \frac{\alpha^2}{\delta_{\min}^2} \left(8 + 16 \sqrt{\frac{\pi}{2}} \dim_S \alpha t^3 \delta_{\min}^2 \right).
+\end{align}
+Now we choose $\alpha = \frac{1}{\dim_S t^3 \delta_{\min}^2}$ to make the contributions within the parenthesis constant. Our last task is to guarantee that the product is within order $\epsilon$
+\begin{align}
+    L(\norm{\TT_{\off}}_1  + \norm{R_{\Phi}}_1) \in \widetilde{O}(\epsilon).
+\end{align}
+Isolating the logarithmic terms into $J$ we get
+\begin{align}
+    L(\norm{\TT_{\off}}_1  + \norm{R_{\Phi}}_1) &\in \widetilde{\Theta}\parens{\frac{\dim_S t(\gamma_U - \gamma_L) \alpha^2}{\widetilde{\alpha}^2 \delta_{\min}^2 I_{\sinc}(t)}} \\
+    &= \widetilde{\Theta}\parens{\frac{\dim_S^2 (\gamma_U - \gamma_L)}{t \delta_{\min}^2 I_{\sinc}(t)}}.
+\end{align}
+In order for this to be in $\widetilde{O}(\epsilon)$ we require
+\begin{equation}
+    t \in \widetilde{\Theta} \parens{ \frac{\dim_S^2 (\gamma_U - \gamma_L)}{\epsilon \delta_{\min}^2} }.\label{eq:ground_state_prep_time}
+\end{equation}
+We remind the reminder that $I_{\sinc}(t)$ should be $\Theta(1)$. This then gives a final runtime of
+\begin{align}
+    Lt &\in \widetilde{\Theta} \parens{\frac{\dim_S^2 (\gamma_U - \gamma_L)}{\alpha^2}} \\
+    &= \widetilde{\Theta} \parens{\dim_S^4 t^6 \delta_{\min}^4 (\gamma_U - \gamma_L)} \\
+    &= \widetilde{\Theta} \parens{\frac{\dim_S^{16} (\gamma_U - \gamma_L)^7}{\epsilon^{6} \delta_{\min}^8}}.
+\end{align}
+This is asymptotically abysmal, but it is a runtime bound.
+
+Now we should verify the behavior of $I_{\sinc}(t)$. By substituting our known value of $t$ from Eq. \eqref{eq:ground_state_prep_time} into definition in Eq. \eqref{eq:ground_state_prep_sinc_integral} we get
+\begin{align}
+    I_{\sinc}(t) &= \int_{-\delta_{\min} t/2}^{\delta_{\min} t/2} \sinc^2 (u) du \\
+    &= \int_{0}^{\frac{\dim_S^2 (\gamma_U - \gamma_L)}{\epsilon \delta_{\min}}} \sinc^2 (u) du 
+\end{align}
+Now we know
+\begin{align}
+    I_{\sinc}(t) \leq \int_0^\infty \sinc^2(u) du \leq \frac{\pi}{2}.
+\end{align}
+
+
+I should turn this into some kind of bound. do I need an upper or lower on $I_{\sinc}$. I need a lower bound on $L > L_{LB} > \frac{1}{\lambda_{\star}}$. this corresponds to a lower bound on $\lambda_{\star}$ of $1/L_{LB}$
+
+\end{proof}
+\matt{TODO need to bound the $I_{\sinc}(t)$ contribution, I'm very certain it is constant but it needs to be proven nonetheless.}
+
+Now we move on to study a scenario when finite $\beta$ thermal states are the unique fixed point of the Markov dynamics. For this we assume sample access to the eigenvalue differences $\Delta(i,j) = \lambda(i) - \lambda(j)$, meaning if there are $\chi(i,j)$ pairs of eigenvalues with positive differences $\Delta(k,l) = \Delta(i,j) \ge 0$ then the probability we receive $\Delta(i,j)$ is $\prob{\gamma = \Delta(i,j)} = \chi(i,j) \frac{2}{\dim_S(\dim_S - 1)}$. One simplifying assumption we will make (I'm not sure this is necessary?) is that there are no degeneracies in the Hamiltonian and for all $i,j$ we have $\Delta(i,j) > 0$. By taking $t$ larger than the smallest difference between eigenvalue differences we can ensure that the probability of an on-resonance transition occurring between states $i$ and $j$ is $\chi(i,j) \frac{2}{\dim_S(\dim_S - 1)}$. More formally, we use the definition of $\delta_{\min}$ from Eq. \eqref{eq:delta_min_def} and take $t \ge 1/ \delta_{\min}$ so that we can use Lemma \ref{lem:sinc_poly_approx} to argue that the only contribution to $\bra{j} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{j}$ is from $\gamma = \Delta(i,j)$. As $\gamma$ is a random variable this makes the transition coefficient a random variable as well. 
 
 \begin{theorem}[Generic System Thermal State Fixed Point]
     Let $H_S$ be an Hermitian matrix with no degenerate eigenvalues, let $\chi(i,j)$ denote the number of eigenvalue differences of value $\Delta(i,j)$, and let $\gamma$ be a random variable with distribution $\prob{\gamma = \Delta(i,j)} = \frac{\chi(i,j)}{\binom{\dim_S}{2}}$. The thermal state $\rho_S(\beta) = \frac{e^{-\beta H_S}}{\partfun(\beta)}$ is the unique fixed point of the Markov chain dynamics of the thermalizing channel $\Phi$ in expectation with respect to $\gamma$, formally
     \begin{align}
         \mathbb{E}_{\gamma} \left[ (\identity + \mathcal{T}_{\on})(\rho_S(\beta)) \right] = \rho_S(\beta).
     \end{align}
-    Combined with Jerison's Markov Relaxation Theorem \ref{thm:markov_chain_bound} this implies there exists sufficiently large $L_\star$ and $t$, along with a sufficiently small $\alpha$, such that for all starting states $\rho$ that are diagonal in the $H_S$ basis and for all $\epsilon > 0$
+    Combined with Jerison's Markov Relaxation Theorem \ref{thm:markov_chain_bound} this implies the existence of sufficiently large $L_\star$ and $t$, along with a sufficiently small $\alpha$, such that for all starting states $\rho$ that commute with $H_S$
     \begin{equation}
-    \norm{\rho_S(\beta) - (\mathbb{E}_\gamma \Phi_\gamma)^{\circ L_\star}(\rho)}_1 \le \epsilon.
+    \norm{\rho_S(\beta) - (\mathbb{E}_\gamma \Phi_\gamma)^{\circ L_\star}(\rho)}_1 \le \epsilon,
     \end{equation}
+    for all $\epsilon > 0$.
 \end{theorem}
 
 \begin{proof}
@@ -766,7 +983,7 @@ To prove that the final transition amplitude is 0 we can use the fact that the t
     \implies \bra{\dim_S - 1} \mathcal{T}_{\on}(\rho_S(\beta)) \ket{\dim_S - 1} &= - \sum_{j < \dim_S - 1} \bra{j} \mathcal{T}_{\on}(\rho_S(\beta)) \ket{j} \\ 
     &= 0.
 \end{align}
-This completes the proof that $\rho_S(\beta)$ is a fixed point of $\identity + \mathbb{E}_{\gamma} \mathcal{T}_{\on}$. To see that it is the unique fixed point we need to show ergodicity of the Markov chain $I + T$. The condition of ergodicity requires that the expected hitting time of any target state $j$ from any initial state $i$ is finite. Given our assumption of sample access to the $\Delta(i,j)$ distribution we have 
+This completes the proof that $\rho_S(\beta)$ is a fixed point of $\identity + \mathbb{E}_{\gamma} \mathcal{T}_{\on}$. To see that it is the unique fixed point we need to show ergodicity of the Markov chain $\identity + T$. The condition of ergodicity requires that the expected hitting time of any target state $j$ from any initial state $i$ is finite. Given our assumption of sample access to the $\Delta(i,j)$ distribution we have 
 \begin{align}
     \bra{j} (\identity + \mathbb{E}_{\gamma} \mathcal{T}_{\on})(\ketbra{i}{i}) \ket{j} &= |\braket{j}{i}|^2 + \mathbb{E}_{\gamma} \bra{j} \mathcal{T}_{\on} (\ketbra{i}{i}) \ket{j}.
 \end{align}
@@ -777,15 +994,33 @@ Lastly, we need to argue that there exist parameters that are sufficient for the
 
 We now have a rigorous understanding of the correctness of our algorithm: for a single qubit system we have a complete characterization of the knowledge needed for the spectral gap $\Delta$ to prepare a thermal state, for harmonic oscillators we were able to prove that the thermal state is the unique fixed point given the oscillator gap $\Delta$ along with runtime bounds for preparing the ground state, and finally for general systems we showed that the ground state is \emph{always} a fixed point of the dynamics and if sample access to the spectral differences of the Hamiltonian is available then the thermal state is the unique fixed point. As we have seen throughout these proofs rely on computing fixed points and spectral gaps of Markov chains, a notoriously challenging problem. As a result of the difficulty of analyzing generic Markov chains analytically we are forced to rely on numerics to assess the runtime of the algorithm for various benchmark systems. It remains an open question if theoretically derived bounds on the spectral gaps of the Markov chain dynamics can be produced without knowledge of the spectral differences of the Hamiltonian. 
 
-We first demonstrate the thermalization runtime for the truncated harmonic oscillator as we add noise to our guess for the oscillator gap $\Delta$. As we have a fairly thorough understanding of the runtime needed as a function of $\alpha, t,$ and $\beta$ we will pick choices of these parameters that allow us to probe the effects of spectral knowledge on the runtime. 
+We first demonstrate the thermalization runtime for the truncated harmonic oscillator, however this time we characterize the runtime needed to thermalize as a function of our knowledge of the spectrum. To parametrize this, as we simulate our repeated interactions channel we sample the environment gaps $\gamma$ from a mixture distribution of Gaussians centered around each eigenvalue difference with a width of $\sigma$. As we vary $\sigma$ from 0 to the maximum eigenvalue difference in the Hamiltonian, we are effectively interpolating our $\gamma$ sampler from perfectly sampling the eigenvalue differences to sampling complete noise. The results in Figure \ref{fig:sho_with_noise} are promising, although we see that having no noise added to the system results in a roughly 10x lower runtime than the completely noisy $\gamma$ samples, the runtime does have a fairly stable plateau. This indicates that the algorithm should work fairly consistently without any knowledge whatsoever of the eigenvalue gaps $\Delta$.
 
-One of the main drawbacks to our results thus far has been that the runtime depends on the spectral gap of a Markov chain, which in turn varies based on our knowledge of the eigenvalue differences $\Delta_S(i,j)$. Although characterizing this dependency analytically seems incredibly difficult, it is rather straightforward to test how well it works numerically on small, classically simulable systems. We did just this for two Hydrogen chain systems, H2 and H3, which are a standard benchmark system in computational chemistry. For each interaction we sample a value of $\gamma$ from a Gaussian distribution with mean $\trace{H_S}$ and variance $\frac{|\norm{H_S} - \trace{H_S}}{2}$, the trace is relatively easy to compute and $\norm{H_S}$ can typically be upper bounded. We then tracked the distance of the system state with each interaction and see a decrease in the error as the number of interactions proceeds. We observe that this rather oblivious distribution of $\gamma$ leads to surprisingly good results for conservative values of $\alpha = 10^{-3}$ and $t = 10^2$; we achieve a trace distance of 0.06 to the thermal state for $\beta = 3$ for H2 and $0.1$ for H3. See Fig. \ref{fig:h_chain_error} for results.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{numerics/data/sho_with_noise_1.png}
+    \caption{Number of interactions needed to reach a trace distance of $0.1$ away from the thermal state with $\beta = 1.0$, for a dimension 5 truncated harmonic oscillator, by sampling from the exact spectrum of the hamiltonian with the amount of added noise indicated by the x-axis. The rightmost limit of the plot is equal to the ``spectral diameter", or the largest eigenvalue minus the smallest. We can see a fairly rapid growth with added noise followed by a fairly stable plateau, indicating that even with minimal to zero knowledge of the spectrum reliable approximation to the thermal state can be prepared. }
+    \label{fig:sho_with_noise}
+\end{figure}
+
+We now move on to more realistic benchmark systems, Hydrogen chains. These Hamiltonians are constructed via an active space computation of either 2 or 3 Hydrogen nuclei spaced equally apart with a reduced active space calculation for the electrons. The Coulomb Hamiltonian is then computed using OpenFermion \matt{CITE CITE CITE}. We first demonstrate that our algorithm works with very naive guesses for $\gamma$, at first we sample $\gamma$ from a Gaussian centered about the average energy level $\trace{H_S} / \dim_S$ with a standard deviation of $2 \norm{H_S}$. We plot the trace distance to the thermal state as a function of the number of interactions in Figure \ref{fig:h_chain_error}. This figure shows that the algorithm is able to achieve very accurate approximations to the thermal state for modest choices of parameters. 
+
 \begin{figure}
     \centering
     \includegraphics[width=0.45\linewidth]{numerics/data/h2_chain_2.png}
     \includegraphics[width = 0.45\linewidth]{numerics/data/h3_chain_7.png}
     \caption{Hydrogen-2 and Hydrogen-3 chain distance to thermal state vs number of interactions. YES THIS IS A BAD PLOT IT NEEDS TO BE RERAN WITH LABELS.}
     \label{fig:h_chain_error}
+\end{figure}
+
+To provide further evidence that our algorithm should be able to work with bad or noisy guesses for the environment gaps $\gamma$ we repeat our noise added experiment from the simple harmonic oscillator. As our Hamiltonians are still relatively small we can compute the eigenvalue spectrum exactly and use this to sample values of $\gamma$. By adding in noise to these samples until the noise added is on the same magnitude as the spectral diameter we can study how important it is to have clean samples of $\gamma$ from the eigenvalue spectrum. Our results demonstrate that not only are clean samples not necessary, but they seem to provide less of an advantage for the larger system of the Hydrogen-3 chain compared to the Hydrogen-2 chain, and much less of an advantage than for the Harmonic Oscillator. It seems so long as one can provide an upper and lower bound on the eigenvalues for $H_S$, even random sampling for $\gamma$ should be sufficient to prepare high accuracy thermal state approximations. It remains an open problem if this can be guaranteed analytically by constructing a $\gamma$-averaged Markov chain transition matrix.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.475\linewidth]{numerics/data/h_chain_with_noise_1.png}
+    \includegraphics[width=0.475\linewidth]{numerics/data/h_chain_3_with_noise_2.png}
+    \caption{Effects of noise added to exact spectrum sampling for Hydrogen chains, H2 on left and H3 on right. As we can see both tend to increase and then plateau. The parameters of these plots are $\beta = 1.0$, $\alpha = 0.01$, and $t = 150$ for H2 and $t = 200$ for H3.}
+    \label{fig:h_chain_with_noise}
 \end{figure}
 
 \section{Conclusion}
@@ -1037,6 +1272,58 @@ We can compute these by plugging in to Eq. \eqref{eq:el_gigante} again, which yi
     As a by-product of this computation we have just shown that $\trace{\mathcal{T}(\rho)} = 0$ and that our mapping is trace preserving to $\bigo{\alpha^2}$.
 \end{proof}
 
+\subsection{Weak-Coupling Remainder Bound} \label{sec:weak_coupling_remainder_bound}
+We further will use the above results to prove Theorem~\ref{lem:remainder_bound} which yields a 
+
+\begin{proof}[Proof of Theorem~\ref{lem:remainder_bound}]
+First we note that although $R_{\Phi}(\rho) = \frac{\alpha^3}{6} \partial_{\alpha}^3 \Phi(\rho)\big|_{\alpha = \alpha_{\star}}$ for a specific $ \alpha_{\star} > 0$ our proof will hold for any $\alpha_{\star}$. To compute the trace norm we will use the triangle inequality, unitary invariance of the Sch\"{a}tten norms, and submultiplicativity. To start,
+\begin{align}
+    \|\partial_\alpha^3 \Phi(\rho) \|_1 &= \left\| \frac{\partial^3}{\partial \alpha^3} {\rm Tr}_{H_E} \int e^{i(H+\alpha G)t} \rho_S \otimes \rho_E e^{-i(H+\alpha G)t} dG \bigg|_{\alpha = \alpha_{\star}} \right\|_1 \nonumber\\
+    &= \left\| \frac{\partial^3}{\partial \alpha^3} {\rm Tr}_{H_E} \int e^{i(H+\alpha G)t} \rho_S \otimes \rho_E e^{-i(H+\alpha G)t} dG \bigg|_{\alpha = \alpha_{\star}} \right\|_1 \nonumber\\
+    &\le    \int \left\|{\rm Tr}_{H_E}\frac{\partial^3}{\partial \alpha^3}\left( e^{i(H+\alpha G)t} \rho_S \otimes \rho_E e^{-i(H+\alpha G)t}\right) \bigg|_{\alpha = \alpha_{\star}} \right\|_1 dG.\label{eq:3derivBd}
+\end{align}
+To proceed, Proposition 1 of \cite{rastegin2012relations} allows us to eliminate the partial trace using the relation
+$\norm{\partrace{\hilb_E}{X}}_{1} \le \norm{X}_{\dim_E} \le \norm{X}_1$. Further we use the decomposition of the second derivatives from the proof of Lemma \ref{lem:big_one}, specifically \textcolor{blue}{NW: This reference is kinda out of order.  Maybe we need a new lemma to cite it so we can leave the derivation in the appendix?  Same issue below.  Another possibility would be to put the entire proof of the remainder bound in the appendix that might be easiest.}  Eq. \eqref{eq:second_derivative_labels} for the definition of each term, as $\partial_{\alpha}^2 \Phi_G = (A) + (B) + (C) + (D) +(E) + (F)$. This gives the following 
+\begin{align}
+    \norm{R_{\Phi}}_1 \le \frac{\alpha^3}{6} &\int \norm{\partial_{\alpha}((A) + (B) + (C) + (D) +(E) + (F)) \big|_{\alpha = \alpha_{\star}} }_1 dG \\
+    &\le \frac{\alpha^3}{6} \int \norm{\partial_{\alpha}(A)\big|_{\alpha = \alpha_{\star}} }_1 + \norm{\partial_{\alpha}(B) \big|_{\alpha = \alpha_{\star}} }_1 + \ldots + \norm{\partial_{\alpha}(F) \big|_{\alpha = \alpha_{\star}} }_1 dG
+\end{align}
+We will demonstrate how this can be computed for the first term $\partial_{\alpha}(A)$. Using Eq. \ref{eq:second_deriv_alpha_first_term}
+\begin{align}
+\partial_{\alpha} (A) &= -t^2 \partial_{\alpha} \int_0^1 \int_0^1 e^{i s_1 s_2 (H+\alpha G)t} G e^{i s_1 (1-s_2) (H+\alpha G)t} G e^{i(1-s_1) (H+\alpha G)t} \rho e^{-i(H+\alpha G) t}   s_1 ~ds_1 ds_2.
+\end{align}
+Due to the multiplication rule the resulting derivative will have 4 terms that each need one application of Duhamel's formula. We will show one of these terms, starting with the leftmost one
+\begin{align}
+    -t^2  &\int_0^1 \int_0^1 \partial_{\alpha} \left( e^{i s_1 s_2 (H+\alpha G)t} \right) G e^{i s_1 (1-s_2) (H+\alpha G)t} G e^{i(1-s_1) (H+\alpha G)t} \rho e^{-i(H+\alpha G) t}   s_1 ~ds_1 ds_2 \\
+    = - i t^3  &\int_0^1 \int_0^1 \int_0^1 \left( e^{i s_1 s_2 s_3 (H+\alpha G)t} G e^{i s_1 s_2 (1 - s_3) (H+\alpha G)t} \right) G e^{i s_1 (1-s_2) (H+\alpha G)t} G e^{i(1-s_1) (H+\alpha G)t} \rho e^{-i(H+\alpha G) t}   s_1^2 s_2 ~ds_1 ds_2 ds_3.
+\end{align}
+Our goal is to compute the 1-norm of the above expression at $\alpha = \alpha_{\star}$. We can do so using the triangle inequality to move the norm of the matrices in the integrand. To proceed we will set $\alpha = \alpha_{\star}$ and reduce the norm of the matrices in the integrand using submultiplicativity and unitary invariance of the Sch\"{a}tten 1-norm as 
+\begin{align}
+    &\norm{\left( e^{i s_1 s_2 s_3 (H+\alpha_{\star} G)t} G e^{i s_1 s_2 (1 - s_3) (H+\alpha_{\star} G)t} \right) G e^{i s_1 (1-s_2) (H+\alpha_{\star} G)t} G e^{i(1-s_1) (H+\alpha_{\star} G)t} \rho e^{-i(H+\alpha_{\star} G) t}}_1 \\
+    \le &\norm{e^{i s_1 s_2 s_3 (H+\alpha_{\star} G)t} G}_1 \norm{e^{i s_1 s_2 (1 - s_3) (H+\alpha_{\star} G)t} G}_1 \norm{e^{i s_1 (1-s_2) (H+\alpha_{\star} G)t} G}_1 \norm{e^{i(1-s_1) (H+\alpha_{\star} G)t} \rho e^{-i(H+\alpha_{\star} G) t}}_1 \\
+    \le &\norm{G}_1^3 \norm{\rho}_1 = \norm{G}_1^3 .
+\end{align}
+Similar computations can be carried out for the other three terms for the derivative acting on $(A)$ which yields the inequality
+\begin{align}
+    \frac{\alpha^3}{6} \int \norm{\partial_{\alpha} (A)}_1 dG &\le \frac{\alpha^3 t^3}{6} \int \int_0^1 \int_0^1 \int_0^1 \norm{G}_1^3 (s_1^2 s_2 + s_1^2 (1 - s_2) + s_1(1-s_1) + s_1) ~ds_1 ds_2 ds_3 dG \\
+    &\le \frac{4}{6} (\alpha t)^3 \int \norm{G}_1^3 dG . \label{eq:remainder_bound_on_A}
+\end{align}
+
+Now that we have computed the norm of the derivative acting on term $(A)$ we only have terms $(B)$ through $(F)$ to compute. These can all be checked to satisfy the same bound on $(A)$ from Eq. \eqref{eq:remainder_bound_on_A}, and as there are six terms in total we have the inequality
+\begin{align}
+    \norm{R_{\Phi}(\rho)}_1 &\le 4 (\alpha t)^3 \int \norm{G}_1^3 dG,
+\end{align}
+which we note holds for all inputs $\rho$. Therefore our last problem is to compute the expected norm of our interaction to the third power. We will decompose $G = U_{\text{Haar}} D U_{\text{Haar}}^\dagger $ to get
+\begin{align}
+    \int \norm{G}_1^3 dG &= \int \norm{D}_1^3 ~ dU_{\text{Haar}} dD = \sum_{i = 1}^{2 \dim_S} \int \abs{d_i}^3 dd_i = 2 \dim_S \mathbb{E}(\abs{y}^3),
+\end{align}
+%\matt{I don't necessarily like the use of $g$ for eigenvalue integration part, need to set a consistent notation in the prelims. Also this notation is only used in the Haar integral appendix.} 
+where $y$ is a normal Gaussian random variable. This straightforwardly evaluates to $\mathbb{E}( |y|^3) = 2\sqrt{ \frac{2}{\pi}}$, yielding the final inequality
+\begin{align}
+    \norm{R_{\Phi}(\rho)}_1 \le 16 \sqrt{\frac{2}{\pi}} \dim_S (\alpha t)^3 ,
+\end{align}
+thus completing the proof.
+\end{proof}
 
 
 
