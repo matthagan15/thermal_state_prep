@@ -578,9 +578,9 @@ def plot_sho_error_v_interaction():
     dim = 4
     # alphas = [0.03, 0.0075,0.003, 0.001]
     alphas = [0.005]
-    times = [50., 100.0, 150., 200.]
+    times = [50., 100.0, 150., 250.]
     results = {}
-    x = [ix for ix in range(n_int)]
+    x = [ix for ix in range(1, n_int, 5)]
     for alpha in alphas:
         for time in times:
             y, yerr = fixed_number_interactions(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, n_int, num_samples=100, gamma_strategy='fixed')
@@ -591,12 +591,14 @@ def plot_sho_error_v_interaction():
         alpha = float(split[0].replace('(', ""))
         time = float(split[1].replace(')', ""))
         x, y, yerr, markov = zip(*results[alpha_time_string])
-        plt.errorbar(x, y, yerr, label="sim. a={:.5},t={:.3}".format(alpha, time))
-        plt.plot(x, markov, label="markov. a={:.5},t={:.3}".format(alpha, time), linestyle='dashed')
+        label = r"$\alpha$={:.4},$t$={:}".format(alpha, int(time))
+        plt.errorbar(x, y, yerr, label=label)
+        plt.plot(x, markov, linestyle='dashed')
     # plt.xscale('log')
-    plt.legend(loc='upper right')
-    plt.ylabel(r"$|| \rho(\beta) - \Phi^L (\rho(0)) ||$")
-    plt.xlabel(r"$L$")
+    plt.legend(loc='lower left')
+    plt.ylabel(r"Error $|| \rho(\beta) - \Phi^L (\rho(0)) ||_1$")
+    plt.xlabel(r"Number of Interactions $L$")
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_fixed_time.pdf')
     plt.show() 
 
     with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_fixed_time", 'w') as f:
@@ -710,9 +712,9 @@ def plot_sho_interaction_v_beta():
 if __name__ == "__main__":
     start = time_this.time()
     # plot_sho_tot_time_vs_time()
-    # plot_sho_error_v_interaction()
+    plot_sho_error_v_interaction()
     # plot_sho_interaction_v_beta()
     # h_chain_time_vs_noise()
     # h_chain_time_vs_beta()
-    test_tot_time_vs_epsilon()
+    # test_tot_time_vs_epsilon()
     # tot_time_vs_dim()
