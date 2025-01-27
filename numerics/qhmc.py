@@ -577,8 +577,8 @@ def plot_sho_error_v_interaction():
     beta = 4.0
     dim = 4
     # alphas = [0.03, 0.0075,0.003, 0.001]
-    alphas = [0.005]
-    times = [50., 100.0, 150., 250.]
+    alphas = [0.025, 0.01, 0.005, 0.0001]
+    times = [100.]
     results = {}
     x = [ix for ix in range(1, n_int, 5)]
     for alpha in alphas:
@@ -595,13 +595,13 @@ def plot_sho_error_v_interaction():
         plt.errorbar(x, y, yerr, label=label)
         plt.plot(x, markov, linestyle='dashed')
     # plt.xscale('log')
-    plt.legend(loc='lower left')
+    plt.legend(loc='upper right')
     plt.ylabel(r"Error $|| \rho(\beta) - \Phi^L (\rho(0)) ||_1$")
     plt.xlabel(r"Number of Interactions $L$")
-    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_fixed_time.pdf')
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_fixed_time_2.pdf')
     plt.show() 
 
-    with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_fixed_time", 'w') as f:
+    with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_fixed_time_2", 'w') as f:
         json.dump(results, f)
     # y, yerr = fixed_number_interactions(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, n_int, num_samples=100, gamma_strategy='fixed')
     # markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
