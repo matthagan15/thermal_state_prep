@@ -16,7 +16,7 @@ import time as time_this
 from joblib import Parallel, delayed
 
 BETA_MAX = 1000
-BINARY_SEARCH_UPPER_LIMIT = 2 ** 18
+BINARY_SEARCH_UPPER_LIMIT = 2 ** 16
 
 def prob_dist_trace_norm(p, q):
     return np.sum(np.abs(p - q))
@@ -446,38 +446,82 @@ def test_beta():
         qhmc = QHMC(ham_sys = harmonic_oscillator_hamiltonian(sys_dim), env_betas=[1.], sim_times=[100.], alphas = [0.01], ham_env_base = env_hamiltonian, num_monte_carlo=500, sys_start_beta=beta)
         print("beta: ", beta)
         print("output error: ", qhmc.compute_error_with_target_beta())
+    return
+
+def tot_time_vs_dim():
+    beta = float(100)
+    ground_state = thermal_state(harmonic_oscillator_hamiltonian(10), beta)
+    print(ground_state)
+    return
 
 def test_tot_time_vs_epsilon():
     dim = 4
     ham = harmonic_oscillator_hamiltonian(dim)
-    beta = float(dim)
-    time_ep = lambda ep: (dim ** 2 / ep)
-    alpha_ep = lambda ep: 1. / (dim * time_ep(ep)**3)
-    alpha = 0.002
-    time = 400.0
-    num_samples = 32
+    beta = 2 * float(dim)
+    num_samples = 64
     ep_start = np.log10(5e-1)
-    ep_end = np.log10(5e-3)
-    epsilons = np.logspace(ep_start, ep_end, 10)
+    ep_end = np.log10(5e-4)
+    epsilons = np.logspace(ep_start, ep_end, 20)
     print("epsilons: ", epsilons)
-    results = []
-    x_fit_vals = []
-    for epsilon in epsilons:
-        # x = minimum_interactions_with_random_gamma(ham, alpha, time, beta, epsilon, "uniform", num_samples=num_samples)
-        a = 2e4 * alpha_ep(epsilon)
-        print("a = ", a)
-        t = time_ep(epsilon)
-        print("t = ", t)
-        x = minimum_interactions_sho(a, t, beta, epsilon, dim, num_samples=num_samples)
-        results.append(x)
-        x_fit_vals.append(np.log10(1. / epsilon))
-        print("ep: {:}, time: {:}".format(epsilon, x))
-    print(x_fit_vals)
-    print(results)
-    # poly_fit = np.polynomial.Polynomial.fit(x_fit_vals, results)
-    # print("linear slope: ", poly_fit.convert().coeffs[1])
-    plt.plot(epsilons, results)
+    
+   
+    exponents = [0.5, 0.75, 1.0]
+    exponent_results = {}
+    for exponent in exponents:
+        results = []
+        x_fit_vals = []
+        num_interactions = []
+        time_ep = lambda ep:(math.pow(dim, 2.0) / math.pow(ep, exponent))
+        alpha_ep = lambda ep: 1. / (time_ep(ep))
+        print("#" * 75)
+        print("exponent: ", exponent)
+        for epsilon in epsilons:
+            # x = minimum_interactions_with_random_gamma(ham, alpha, time, beta, epsilon, "uniform", num_samples=num_samples)
+            print("alpha: {:}, epsilon: {:}, time: {:}".format(alpha_ep(epsilon), epsilon, time_ep(epsilon)))
+            x = minimum_interactions_sho(alpha_ep(epsilon), time_ep(epsilon), beta, epsilon, dim, num_samples=num_samples)
+            num_interactions.append(x)
+            results.append(x * time_ep(epsilon))
+            x_fit_vals.append(np.log10(1. / epsilon))
+            print("minimum interactions ({:}) * time = {:}".format( x, x * time_ep(epsilon)))
+            print("*" * 50 )
+        exponent_results[exponent] = results
+    json_dump = {
+        "time_exponent_dim": 2.0,
+        "alpha_exponent_dim": -1.0,
+        "alpha_exponent_time": -1.0,
+        "beta": 4.0,
+        "dim": 4,
+        "num_samples": num_samples,
+        "epsilons": list(epsilons),
+        # "num_interactions": list(num_interactions),
+        # "total_times": list(results),
+        "exponents": exponents,
+        "total_times": {"0.5": exponent_results.get(0.5, None), "0.75": exponent_results.get(0.75, None), "1.0": exponent_results.get(1.0, None)}
+    }
+    print("exponent results: ", exponent_results)
+    with open('/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting', 'w') as f:
+        json.dump(json_dump, f)
+    for exp in exponents:
+        print("exponent_results[i]: ", exponent_results[exp])
+        poly_fit = np.polynomial.Polynomial.fit(-1. * np.log10(epsilons), np.log10(exponent_results[exp]), 1)
+        slope = poly_fit.convert().coef[1]
+        print("exponent: {:}, slope: {:}".format(exp, slope))
+        if exp == 0.5:
+            time_label = r"$t = O(\epsilon^{-0.5})$"
+        elif exp == 0.75:
+            time_label = r"$t = O(\epsilon^{-0.75})$"
+        elif exp == 1.0:
+            time_label = r"$t = O(\epsilon^{-1.0})$"
+        label = time_label + ", slope = {:.4}".format(slope)
+        plt.plot(epsilons, exponent_results[exp], label = label)
     plt.xscale("log")
+    plt.yscale("log")
+    plt.xlabel(r"$\log \epsilon$")
+    plt.ylabel(r"$\log (L \cdot t)$")
+    plt.legend(loc = "upper right")
+    # plt.xlabel(r"$\epsilon$")
+    # plt.ylabel(r"$L \cdot t$")
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting_plot.pdf')
     plt.show()
     
 
@@ -669,3 +713,4 @@ if __name__ == "__main__":
     # h_chain_time_vs_noise()
     # h_chain_time_vs_beta()
     test_tot_time_vs_epsilon()
+    # tot_time_vs_dim()
