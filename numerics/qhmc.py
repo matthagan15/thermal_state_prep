@@ -458,8 +458,10 @@ def test_tot_time_vs_epsilon():
     dim = 4
     ham = harmonic_oscillator_hamiltonian(dim)
     beta = 2 * float(dim)
-    num_samples = 64
-    ep_start = np.log10(5e-1)
+    print("thermal state target:")
+    print(np.diag(thermal_state(ham, beta)))
+    num_samples = 128
+    ep_start = np.log10(1e-1)
     ep_end = np.log10(5e-4)
     epsilons = np.logspace(ep_start, ep_end, 20)
     print("epsilons: ", epsilons)
@@ -499,7 +501,7 @@ def test_tot_time_vs_epsilon():
         "total_times": {"0.5": exponent_results.get(0.5, None), "0.75": exponent_results.get(0.75, None), "1.0": exponent_results.get(1.0, None)}
     }
     print("exponent results: ", exponent_results)
-    with open('/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting', 'w') as f:
+    with open('/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting_2', 'w') as f:
         json.dump(json_dump, f)
     for exp in exponents:
         print("exponent_results[i]: ", exponent_results[exp])
@@ -517,11 +519,11 @@ def test_tot_time_vs_epsilon():
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel(r"$\log \epsilon$")
-    plt.ylabel(r"$\log (L \cdot t)$")
+    plt.ylabel(r"Total Simulation Time $\log (L \cdot t)$")
     plt.legend(loc = "upper right")
     # plt.xlabel(r"$\epsilon$")
     # plt.ylabel(r"$L \cdot t$")
-    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting_plot.pdf')
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting_plot_2.pdf')
     plt.show()
     
 
