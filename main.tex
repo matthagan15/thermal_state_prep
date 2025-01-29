@@ -531,9 +531,11 @@ The proof of the remainder bound follows from the triangle inequality and remain
 
 
 \section{Specific Systems}
-In this section we analyze the dynamics of the weak-coupling expansion from Section \ref{sec:weak_coupling} as a thermal state preparation routine for specific systems. We start with just a single qubit in Section \ref{sec:single_qubit}, which is already a complex enough of a scenario that there is active research on this setting in the open quantum systems field \cite{prositto2025equilibrium}. For a single qubit we are able to give asymptotic runtime bounds for preparing arbitrary $\beta$ thermal states with specific values of $\alpha$ and $t$ to guarantee a trace distance error of $\epsilon$ from the thermal state. Further, our results hold without exact knowledge of the system energy gap $\Delta$. We do require knowledge of a window of width $2 \sigma$ that contains $\Delta$, and our runtime is parametrized in terms of $\sigma$. 
+In this section we analyze the dynamics of the weak-coupling expansion from Section \ref{sec:weak_coupling} as a thermal state preparation routine for specific systems. We keep these specific systems separate from the generic results in Section \ref{sec:general_systems} for a few reasons. The first being that these systems are simple enough that most readers should have a solid grasp of their spectrums. The second being that they are interesting in their own right and may be of use for researchers in other fields than quantum algorithms design who are looking to implement thermal state preparation for their projects. For example, even the single qubit scenario in Section \ref{sec:single_qubit} is already complex enough that there is active research on this Hamiltonian in the field of open quantum system \cite{prositto2025equilibrium}. Lastly, these scenarios are simple enough that they allow for concrete computations with their spectrums, which can be a helpful warmup for the more abstract settings later. 
 
-After we develop the theory for a single qubit we extend our sights to a truncated harmonic oscillator in Section \ref{sec:harmonic_oscillator}. This section can be viewed as a warmup to the proofs that work for general systems in Section \ref{sec:general_systems} but does contain some unique insights by itself. 
+For a single qubit we are able to give asymptotic runtime bounds for preparing arbitrary $\beta$ thermal states with specific values of $\alpha$ and $t$ to guarantee a trace distance error of $\epsilon$ from the thermal state. Further, our results hold without exact knowledge of the system energy gap $\Delta$. We do require knowledge of a window of width $2 \sigma$ that contains $\Delta$, and our runtime is parametrized in terms of $\sigma$ with a simple expression in the exact knowledge limit of $\sigma \to 0$.
+
+After we develop the theory for a single qubit we extend our sights to a truncated harmonic oscillator in Section \ref{sec:harmonic_oscillator}. This section can be viewed as a warmup to the proofs that work for general systems in Section \ref{sec:general_systems}. One unique aspect of the harmonic oscillator is that all of the energy eigenvalues are integer multiples of single difference $\Delta$, which means that by tuning our environment gap $\gamma$ to $\Delta$ we should be able to thermalize. One difficulty with this however is that ergodicity is now a bit harder to show, as with randomly choosing $\gamma$ there is always a nonzero probability to transition between arbitrary states $i$ and $j$ but with the harmonic oscillator multiple ``hops'' may be necessary if the states are not adjacent in energy eigenvalues.
 
 \subsection{Single Qubit - DEFCON 4} \label{sec:single_qubit}
 Now that we have developed all the tools we need to study thermalization we will tackle the simplest possible system first: a single qubit system $\hilb_S = \mathbb{C}^2$. In this setting we are able to offer the most complete view of thermalization possible, we not only show that the thermal state is the fixed point of the dynamics but we can provide analytic upper bounds on how many interactions are needed to reach a trace distance of $\widetilde{O}(\epsilon)$ from the thermal state for any $\beta$. Further we are able to quantify the impacts of a noisy guess for the eigenvalue gap $\Delta$ on the runtime and how low of a temperature thermal state can be prepared. 
@@ -555,7 +557,7 @@ Now that we have developed all the tools we need to study thermalization we will
     \end{align}
     are sufficient to guarantee thermalization of the form $\norm{\rho_S(\beta) - \Phi^{\circ L}(\rho)}_1 \in \bigotilde{\epsilon}$. In the limit as $\sigma \to 0$, the total evolution time for all $L$ interactions required scales as
     \begin{equation}
-        Lt \in \widetilde{O} \left( \frac{1}{\Delta \epsilon^{2.5}}\right).
+        L \cdot t \in \widetilde{O} \left( \frac{1}{\Delta \epsilon^{2.5}}\right).
     \end{equation}
 \end{theorem}
 \begin{proof}
@@ -659,12 +661,10 @@ The final result then follows by noting that $J$ is polylogarithmic in $\Delta$ 
  \end{proof}
 
 
-\subsection{Harmonic Oscillator - DEFCON 3} \label{sec:harmonic_oscillator}
+\subsection{Harmonic Oscillator - DEFCON 4} \label{sec:harmonic_oscillator}
 Now that we have explored the thermalization algorithm completely for the single qubit case we turn our attention to a more complicated system: a truncated harmonic oscillator. For this scenario we will assume that the oscillator gap, $\Delta$, is known. This assumption is necessary because in order to show that the thermal state is the unique fixed point we need that the underlying Markov chain is ergodic, meaning any initial state has a finite expected hitting time to reach any target state. Assuming knowledge of $\Delta$ allows for us to show ergodicity straightforwardly.
 
 Once we have shown correctness of our algorithm, namely that the thermal state is the unique fixed point, our next goal is to bound the runtime. This is unfortunately impossible for all inverse temperatures $\beta$, as it requires the computation of a spectral gap that does not have a closed form expression for arbitrary truncation of the oscillator. However, we are able to bound the runtime for preparing the ground state, or $\beta \to \infty$ limit, as the Markov transition matrix is upper triangular and the spectrum can be computed straightforwardly.
-
-
 \begin{theorem}\label{thm:harmonic_oscillator}
     Let $H_S$ denote a truncated harmonic oscillator with $\dim_S$ energy levels $\lambda_S(i) = i \Delta$ for $1 \le i \le \dim_S$. Assuming that $\gamma = \Delta$ we show that the thermal state $\rho_S(\beta)$, for both finite $\beta$ and the $\beta \to \infty$ limit, is the unique fixed point of the underlying Markovian dynamics for the thermalizing channel $\Phi$. Letting $\lambda_\star(\beta)$ denote the spectral gap of a transition matrix that depends only on $\beta$ and eigenvalue differences $\Delta_S(i,j)$, we show that for finite $\beta$ using at most
     \begin{equation}
@@ -682,7 +682,7 @@ Once we have shown correctness of our algorithm, namely that the thermal state i
     \begin{equation}
         L \cdot t \in \bigotilde{\frac{\dim_S^9}{\Delta \epsilon^{2.5} \lambda_{\star}(\beta)^{2.5}}}.
     \end{equation}
-    For the $\beta \to \infty$ limit to prepare an $\epsilon$ approximation to the ground state the above expressions for $\alpha, L$, and $t$ hold but with 
+    For the $\beta \to \infty$ limit to prepare an $\epsilon$ approximation to the ground state, the above expressions for $\alpha, L$, and $t$ hold but with 
     \begin{equation}
         \lim_{\beta \to \infty} \lambda_\star(\beta) = 1.
     \end{equation}
