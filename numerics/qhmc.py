@@ -449,10 +449,24 @@ def test_beta():
     return
 
 def tot_time_vs_dim():
-    beta = float(100)
-    ground_state = thermal_state(harmonic_oscillator_hamiltonian(10), beta)
-    print(ground_state)
-    return
+    alpha = 0.01
+    time = 200.
+    num_samples = 15
+    beta = 5.0
+    epsilon = 0.05
+    results = []
+    dims = [x for x in range(2, 25)]
+    gs = "spectra_with_noise=0.0"
+    for dim in dims:
+        x = minimum_interactions_with_random_gamma(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, epsilon, gs, num_samples)
+        results.append(x)
+        print(dim, ', ',  x)
+    p = np.polynomial.Polynomial.fit(np.log10(dims), np.log10(results), 1)
+    slope = p.convert().coef[1]
+    print("slope = ", slope)
+    plt.plot(dims, results)
+    plt.show()
+
 
 def test_tot_time_vs_epsilon():
     dim = 4
@@ -778,8 +792,8 @@ def plot_sho_interaction_v_beta():
     plt.xlabel(r"$\beta$")
     # plt.title("Total time of simulation vs. beta for varying single interaction times.")
     plt.ylabel(r"Total Sim Time $L \cdot t$")
-    plt.legend(loc="lower left")
-    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/sho_total_time_vs_beta_dim_4.pdf')
+    plt.legend(loc="upper right")
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/sho_total_time_vs_beta_dim_10.pdf')
     plt.show()
     # for beta_e in np.logspace(np.log10(1e-1), np.log10(4.0), 10,base=10.):
     #     # beta_e = 0.0 + 0.3 * ix
@@ -800,9 +814,9 @@ def plot_sho_interaction_v_beta():
 
 if __name__ == "__main__":
     start = time_this.time()
-    plot_sho_tot_time_vs_time()
+    # plot_sho_tot_time_vs_time()
     # plot_sho_error_v_interaction()
-    # plot_sho_interaction_v_beta()
+    plot_sho_interaction_v_beta()
     # h_chain_time_vs_noise()
     # h_chain_time_vs_beta()
     # test_tot_time_vs_epsilon()
