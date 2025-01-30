@@ -10,6 +10,9 @@ numerics/tmp/**
 main.dvi
 main.pdf
 main.pdf
+main.out
+main.synctex*
+main.run.xml
 .VSCodeCounter/**
 numerics/target/**
 numerics/cluster_data/**
