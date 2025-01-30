@@ -11,10 +11,10 @@
 \contentsline {subsection}{\numberline {3.3}Numerics - DEFCON 3}{22}{subsection.3.3}%
 \contentsline {section}{\numberline {4}General Systems}{24}{section.4}%
 \contentsline {subsection}{\numberline {4.1}Zero Knowledge - DEFCON 4}{25}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}Perfect Knowledge of $\Delta _S(i,j)$ - DEFCON 4}{30}{subsection.4.2}%
-\contentsline {subsection}{\numberline {4.3}Numerics - DEFCON 3}{33}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.2}Perfect Knowledge of $\Delta _S(i,j)$ - DEFCON 4}{29}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Numerics - DEFCON 3}{32}{subsection.4.3}%
 \contentsline {section}{\numberline {5}Conclusion - DEFCON 4}{34}{section.5}%
-\contentsline {section}{\numberline {A}Technical Proofs - DEFCON 5}{37}{appendix.A}%
-\contentsline {subsection}{\numberline {A.1}Sinc Function}{37}{subsection.A.1}%
+\contentsline {section}{\numberline {A}Technical Proofs - DEFCON 5}{36}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Sinc Bounds}{36}{subsection.A.1}%
 \contentsline {subsection}{\numberline {A.2}Haar Integral Proofs}{37}{subsection.A.2}%
 \contentsline {subsection}{\numberline {A.3}Weak-Coupling Remainder Bound}{45}{subsection.A.3}%
