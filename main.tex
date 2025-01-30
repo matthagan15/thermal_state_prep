@@ -123,9 +123,11 @@
 \section{Introduction - DEFCON 2}
 % After decades of study and exploration, the simulation of quantum materials remains the most promising application for future fault tolerant digital quantum computers. This application has many stages, from classical preprocessing to prepare the material's Hamiltonian in ways accessible by the quantum computer to the measurement of observables of interest. 
 
-To take advantage of the next generation of quantum computing devices becoming available quantum algorithms that will utilize as little ancilla qubits as possible. In this paper we present a quantum algorithm for preparing thermal states, resources of the form $\frac{e^{-\beta H_S}}{\trace{e^{-\beta H_S}}}$ that are often used as inputs to simluations of quantum systems. 
+The simulation of quantum systems and materials is widely expected to be a significant application for digital quantum computers. A critical step in quantum simulation algorithms, as well as other algorithms such as Semi-Definite Program (SDP) solvers \cite{brandao2019sdp}, is the preparation of good input states. Thermal states of the form $\frac{e^{-\beta H}}{\trace{e^{-\beta H}}}$ are typically used and as a result many algorithms have been proposed and studied to prepare these states. 
 
-Qubits are the most important resource in both near term and early fault tolerant quantum computers, with current devices having around 100 physical qubits with some properties. This is due to the fact that quantum errors require quantum error correction (QEC) that inflates the required qubit count by hundreds to a few thousand. Therefore, the memory effeciency of quantum algorithms will allow a greater number of qubits to represent the simulated system of interest. This makes general purpose algorithms with only single ancilla qubit overheads, such as Quantum Signal Processing (QSP) for block-encoding transformations and Qubitization for general time-independent quantum simulation, to quantum algorithms developers beyond their circuit depths. 
+% To take advantage of the next generation of quantum computing devices becoming available quantum algorithms that will utilize as little ancilla qubits as possible. In this paper we present a quantum algorithm for preparing thermal states, resources of the form $\frac{e^{-\beta H_S}}{\trace{e^{-\beta H_S}}}$ that are often used as inputs to simluations of quantum systems. 
+
+% Qubits are the most important resource in both near term and early fault tolerant quantum computers, with current devices having around 100 physical qubits with some properties. This is due to the fact that quantum errors require quantum error correction (QEC) that inflates the required qubit count by hundreds to a few thousand. Therefore, the memory effeciency of quantum algorithms will allow a greater number of qubits to represent the simulated system of interest. This makes general purpose algorithms with only single ancilla qubit overheads, such as Quantum Signal Processing (QSP) for block-encoding transformations and Qubitization for general time-independent quantum simulation, to quantum algorithms developers beyond their circuit depths. 
 
 
 
@@ -143,7 +145,7 @@ Once we had determined that we needed one ancilla qubit and wanted to use time e
 Now that we have walked through our algorithm and its similarities to existing algorithms we would like to highlight some key differences. Although our algorithm was initially inspired by classical Monte Carlo techniques the end result is strikingly similar to the Repeated Interactions (RI) framework developed in the open quantum systems literature. This framework thermalizes a system by coupling to small bath, typically a single qubit or spin, and then refreshes the small bath periodically. The key difference between our work and existing RI literature is two-fold: one is that the open quantum systems community is typically concerned with thermodynamic limits, meaning what happens in infinite time with infinite interactions, and secondly existing RI research tends to focus on specific systems and interactions, which are usually physically motivated. Our work is more algorithmic in focus, we do not assume any structure to the input Hamiltonian and are primarily concerned with bounding correctness and bounding the runtime with asymptotic limits. The closest existing prior literature for fault-tolerant quantum algorithms would be that by Shtanko and Movassagh \cite{shtanko2023preparingthermalstatesnoiseless}, as they employ qubit ancillas and randomized interactions. Their work provides two quantum algorithms, one that utilizes random local interactions and only works for Hamiltonians conjectured to obey the Eigenstate Thermalization Hypothesis (ETH) and the second utilizes random time evolutions for each Hamiltonian term but works for arbitrary Hamiltonians. The convergence guarantees for their generic algorithm are strictly worse than the first and allows for a small probability of failure. More importantly, this second algorithm relies on an accept-reject process for failed samples, vastly complicating the simple nature of their first algorithm. This could be overcome with amplitude amplification at a cost of increased circuit depth but they do not outline these tradeoffs explicitly. In comparison, our algorithm is proven correct for generic Hamiltonians at the cost of a runtime that depends on an unknown spectral gap. An important characteristic of our analysis is that because we have computed the output of the channel on a matrix element basis, once we have a given Hamiltonian we can explicitly compute the transition matrix. This would allow for numeric estimates of the required runtime on a per-system basis. 
 
 \subsection{Main Results - DEFCON 1}
-
+One of the key aspects of our algorithm is that the analysis is fairly dependent on both the structure of the eigenvalue differences and whether the environment gap $\gamma$ can be tuned to to match the system energy differences. Our most applicable result therefore is Theorem \ref{thm:zero_knowledge} in which $\gamma$ is sampled from the interval $[0, 4\norm{H_S}]$ uniformly. This represents the least amount of knowledge we are able to prove thermalization for. If this theorem is used to prepare ground states we give an explicit runtime bound of $\bigotilde{\frac{\dim_S^{16} \norm{H_S}^7}{\delta_{\min}^8 \epsilon^6 \lambda_\star(\beta)^7}}$. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -814,6 +816,8 @@ We can compute the spectrum via the characteristic polynomial $\det(\lambda \ide
 
 
 \subsection{Numerics - DEFCON 3}
+Now that we have rigorous bounds on each of the parameters $\alpha, t$ and $L$ needed to prepare thermal states of simple systems we turn to numerics to test the validity of these bounds. 
+
 
  Although the above theorem provides rigorous runtime guarantees needed to reach thermalization, they are based on Markov chain bounds which are exceptionally loose. %In Table (?) we show three values: first the total simulation time needed for numerically evaluating the channel exactly, second we provide the simulation time of just the Markov chain, ignoring the higher order terms, and lastly we provide the theoretic upper bound on the simulation time for the given parameters. 
  Further, Theorem \ref{thm:single_qubit} only provides a single prescribed value for $\alpha$ and $t$ to use, but numerically we observe that a much wider range of parameters are capable of achieving thermalization. To give an illustration of this flexibility in Fig. \ref{fig:tot_time_vs_single_time} we show how the total simulation time varies as a function of the single interaction time $t$ for various choices of $\alpha$. We find, over the range of parameters considered, that the simulation time needed to approach a thermal state with $\beta=4$  decreases both with $\alpha$ and $t$ for $\alpha t\lesssim 1$.  This illustrates that ideally we  should aim to increase \emph{both} parameters until the integrated strength of the interaction becomes strong enough to break down the perturbative arguments used to justify thermalization. The rationale is that the product $\alpha t$ dictates the strength of the interaction term $G$ and by increasing both we improve the chances of the system interacting with the environment. This increased interaction rate then leads to quicker thermalization, up to a point where the number of interactions needed starts to approach $1$ and the dynamics seem to reach some saturation point as all values of $\alpha$ require the same total simulation time.
@@ -853,7 +857,7 @@ Before we look at the $\beta$ dependence of the runtime our first goal will be t
     \end{subfigure}
     \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\textwidth]{numerics/data/spec_gap_dim_4.pdf}
-    \caption{Spectral Gap vs. $\beta$, $\dim = 4$}
+    \caption{Spectral Gap $\lambda_\star(\beta)$ vs. $\beta$, $\dim = 4$}
     \label{fig:sho_spectral_gap_vs_beta}
     \end{subfigure}
     \hfill
@@ -872,12 +876,12 @@ Now that we have numerically verified the validity of our channel as a thermaliz
 
 We first demonstrate the thermalization runtime for the truncated harmonic oscillator, however this time we characterize the runtime needed to thermalize as a function of our knowledge of the spectrum. To parametrize this, as we simulate our repeated interactions channel we sample the environment gaps $\gamma$ from a mixture distribution of Gaussians centered around each eigenvalue difference with a width of $\sigma$. As we vary $\sigma$ from 0 to the maximum eigenvalue difference in the Hamiltonian, we are effectively interpolating our $\gamma$ sampler from perfectly sampling the eigenvalue differences to sampling complete noise. The results in Figure \ref{fig:sho_with_noise} are promising, although we see that having no noise added to the system results in a roughly 10x lower runtime than the completely noisy $\gamma$ samples, the runtime does have a fairly stable plateau. This indicates that the algorithm should work fairly consistently without any knowledge whatsoever of the eigenvalue gaps $\Delta$.
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.5\linewidth]{numerics/data/sho_with_noise_1.png}
-    \caption{Number of interactions needed to reach a trace distance of $0.1$ away from the thermal state with $\beta = 1.0$, for a dimension 5 truncated harmonic oscillator, by sampling from the exact spectrum of the hamiltonian with the amount of added noise indicated by the x-axis. The rightmost limit of the plot is equal to the ``spectral diameter", or the largest eigenvalue minus the smallest. We can see a fairly rapid growth with added noise followed by a fairly stable plateau, indicating that even with minimal to zero knowledge of the spectrum reliable approximation to the thermal state can be prepared. }
-    \label{fig:sho_with_noise}
-\end{figure}
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.5\linewidth]{numerics/data/sho_with_noise_1.png}
+%     \caption{Number of interactions needed to reach a trace distance of $0.1$ away from the thermal state with $\beta = 1.0$, for a dimension 5 truncated harmonic oscillator, by sampling from the exact spectrum of the hamiltonian with the amount of added noise indicated by the x-axis. The rightmost limit of the plot is equal to the ``spectral diameter", or the largest eigenvalue minus the smallest. We can see a fairly rapid growth with added noise followed by a fairly stable plateau, indicating that even with minimal to zero knowledge of the spectrum reliable approximation to the thermal state can be prepared. }
+%     \label{fig:sho_with_noise}
+% \end{figure}
 
 \section{General Systems} \label{sec:general_systems}
  Now that we have studied a single qubit and the harmonic oscillator in as much detail as possible, in this section we explore the behavior of our algorithm for more generic systems. As our algorithm ultimately boils down to a Markov chain over the eigenstates of the Hamiltonian we are unable to make any runtime claims, as that would require bounding the spectral gap of a Markov chain that depends on knowledge of the Hamiltonian eigenvalues. What we do show in this section is three-fold: we first demonstrate that if the environment temperature approaches 0 ($\beta \to \infty$), then the ground state of the system is \emph{a} fixed point, second that if the eigenvalue differences $\set{\lambda(i) - \lambda(j)}_{i, j}$ can be sampled from exactly then choosing $\Delta$ to correspond to these gaps leads the algorithm to yield the thermal state as its unique fixed point. Lastly, we demonstrate numerically that knowledge of eigenvalue gaps is not entirely necessary by preparing low temperature thermal states for Hydrogen chains without any a priori knowledge.
@@ -891,7 +895,7 @@ We now move on to show how our algorithm behaves if one has no knowledge about t
     \begin{equation}
         \norm{\rho_S(\beta) - \EE_\gamma \Phi_\gamma(\rho_S(\beta))}_1 \le \alpha^2 t e^{\beta \delta_{\min}} \norm{H_S}^{-1} \pi + 8 \frac{\alpha^2}{\delta_{\min}} + 16 \sqrt{\frac{\pi}{2}} \dim_S (\alpha t)^3.
     \end{equation}
-    Let $\rho_{\rm fix}$ denote the fixed point of the transition dynamics $\identity + \EE_\gamma \TT_{\on}^{(\gamma)}$. The parameter settings
+    Let $\rho_{\rm fix}$ denote the unique fixed point of the transition dynamics $\identity + \EE_\gamma \TT_{\on}^{(\gamma)}$. The parameter settings
     \begin{align}
         \alpha = \frac{\delta_{\min}^4 \epsilon^{3} \lambda_\star(\beta)^{3}}{\dim_S^7 \norm{H_S}^3}, ~t = \frac{\dim_S^2 \norm{H_S}}{\epsilon \lambda_\star(\beta) \delta_{\min}^2}, \text{ and } L \in \bigotilde{\frac{\dim_S^{14} \norm{H_S}^6}{\epsilon^5 \delta_{\min}^6 \lambda_\star(\beta)^{6} }}
     \end{align}
@@ -1272,7 +1276,7 @@ Lastly we would like to speculate on possible applications of this routine to ot
 
 
 \section{Technical Proofs - DEFCON 5} \label{sec:appendix}
-\subsection{Sinc Function} \label{sec:appendix_sinc}
+\subsection{Sinc Bounds} \label{sec:appendix_sinc}
 
 \begin{lemma}[Sinc Function Bounds] \label{lem:sinc_poly_approx}
     For $\sinc^2\left( \frac{x t}{2} \right)$ and $\delta_{\min}$ as defined in Eq. \eqref{eq:delta_min_def}, we will make significant use of the following bounds:
