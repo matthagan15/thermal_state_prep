@@ -742,15 +742,15 @@ def plot_sho_tot_time_vs_time():
 
 def plot_sho_interaction_v_beta():
     # alphas = np.logspace(np.log10(0.0001), np.log10(0.001), 4)
-    alphas = [0.01]
+    alphas = [0.005]
     # times = np.logspace(np.log10(50), np.log10(1000.), 5)
     times = [100.0]
     epsilon = 0.05
     dim = 10
-    betas = np.logspace(np.log10(5e-2), np.log10(dim), 40, base=10)
+    betas = np.logspace(np.log10(5e-2), np.log10(5.), 40, base=10)
     # betas = np.linspace(0.01, dim, 40)
     y = []
-    # markov_pred = []
+    markov_pred = []
     results = {}
 
     for alpha in alphas:
@@ -770,14 +770,15 @@ def plot_sho_interaction_v_beta():
     for k,v in results.items():
         print("alpha, t: ", k)
         print("results: ", v)
-        # markov = [min_interactions_sho_markov_chain(beta, k[0], k[1], 0.05, dim) for beta in betas]
-        plt.plot(betas, v, label='a = {:.4}, t={:1.4}'.format(k[0], k[1]))
-        # plt.plot(betas, markov, label="Markov Pred.", linestyle='dashed')
-    plt.yscale('log')
+        markov = [k[1] * min_interactions_sho_markov_chain(beta, k[0], k[1], 0.05, dim) for beta in betas]
+        plt.plot(betas, v, label=r'$\alpha$ = {:.4}, $t$={:1.4}'.format(k[0], k[1]))
+        plt.plot(betas, markov, label="Markov Pred.", linestyle='dashed')
+    # plt.yscale('log')
     plt.xlabel(r"$\beta$")
     # plt.title("Total time of simulation vs. beta for varying single interaction times.")
     plt.ylabel(r"Total Sim Time $L \cdot t$")
-    plt.legend(loc="upper right")
+    plt.legend(loc="lower left")
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/sho_total_time_vs_beta_dim_4.pdf')
     plt.show()
     # for beta_e in np.logspace(np.log10(1e-1), np.log10(4.0), 10,base=10.):
     #     # beta_e = 0.0 + 0.3 * ix
@@ -800,9 +801,9 @@ if __name__ == "__main__":
     start = time_this.time()
     # plot_sho_tot_time_vs_time()
     # plot_sho_error_v_interaction()
-    # plot_sho_interaction_v_beta()
+    plot_sho_interaction_v_beta()
     # h_chain_time_vs_noise()
     # h_chain_time_vs_beta()
-    test_tot_time_vs_epsilon()
+    # test_tot_time_vs_epsilon()
     # tot_time_vs_dim()
     # test_tot_time_vs_epsilon_uniform_gamma()

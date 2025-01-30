@@ -3,18 +3,18 @@
 \contentsline {subsection}{\numberline {1.1}Main Results - DEFCON 1}{4}{subsection.1.1}%
 \contentsline {section}{\numberline {2}Weak Interaction Expansion for $\Phi $}{4}{section.2}%
 \contentsline {subsection}{\numberline {2.1}Preliminaries - DEFCON 5}{4}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2}First and Second Order Terms - DEFCON 4}{5}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.2}First and Second Order Terms - DEFCON 5}{5}{subsection.2.2}%
 \contentsline {subsection}{\numberline {2.3}Markovian Dynamics and Error Terms - DEFCON 5}{10}{subsection.2.3}%
 \contentsline {section}{\numberline {3}Specific Systems}{14}{section.3}%
 \contentsline {subsection}{\numberline {3.1}Single Qubit - DEFCON 4}{14}{subsection.3.1}%
 \contentsline {subsection}{\numberline {3.2}Harmonic Oscillator - DEFCON 4}{18}{subsection.3.2}%
-\contentsline {subsection}{\numberline {3.3}Numerics - DEFCON 2}{22}{subsection.3.3}%
-\contentsline {section}{\numberline {4}General Systems}{25}{section.4}%
-\contentsline {subsection}{\numberline {4.1}Thermal State Preparation - DEFCON 4}{25}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}Ground State Preparation - DEFCON 5}{30}{subsection.4.2}%
-\contentsline {subsection}{\numberline {4.3}Numerics - DEFCON 3}{37}{subsection.4.3}%
-\contentsline {section}{\numberline {5}Conclusion - DEFCON 3}{38}{section.5}%
-\contentsline {section}{\numberline {A}Technical Proofs - DEFCON 5}{40}{appendix.A}%
-\contentsline {subsection}{\numberline {A.1}Sinc Function}{40}{subsection.A.1}%
-\contentsline {subsection}{\numberline {A.2}Haar Integral Proofs}{41}{subsection.A.2}%
-\contentsline {subsection}{\numberline {A.3}Weak-Coupling Remainder Bound}{49}{subsection.A.3}%
+\contentsline {subsection}{\numberline {3.3}Numerics - DEFCON 3}{22}{subsection.3.3}%
+\contentsline {section}{\numberline {4}General Systems}{24}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Zero Knowledge - DEFCON 4}{25}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Perfect Knowledge of $\Delta _S(i,j)$ - DEFCON 4}{30}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Numerics - DEFCON 3}{33}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Conclusion - DEFCON 4}{34}{section.5}%
+\contentsline {section}{\numberline {A}Technical Proofs - DEFCON 5}{37}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Sinc Function}{37}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}Haar Integral Proofs}{37}{subsection.A.2}%
+\contentsline {subsection}{\numberline {A.3}Weak-Coupling Remainder Bound}{45}{subsection.A.3}%
