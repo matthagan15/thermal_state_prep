@@ -703,11 +703,11 @@ def plot_sho_error_v_interaction():
 
 def plot_sho_tot_time_vs_time():
     alphas = np.linspace(0.01, 0.001, 5)
-    times = np.logspace(np.log10(10), np.log10(1000.), 20)
+    times = np.logspace(np.log10(50), np.log10(5000.), 20)
     epsilon = 0.05
     dim = 2
     betas = np.logspace(np.log10(1e-1), np.log10(dim), 10, base=10)
-    beta = 4.0
+    beta = 2.0
     y = []
     # markov_pred = []
     results = {}
@@ -715,7 +715,7 @@ def plot_sho_tot_time_vs_time():
     for alpha in alphas:
         for time in times:
             print("alpha, time: ", alpha, time)
-            ret = minimum_interactions_sho(alpha, time, beta, epsilon, dim, num_samples=20)
+            ret = minimum_interactions_sho(alpha, time, beta, epsilon, dim, num_samples=24)
             if ret is None:
                 results_full = False
                 continue
@@ -729,15 +729,16 @@ def plot_sho_tot_time_vs_time():
         print("alpha: ", k)
         print("results: ", v)
         x, y = zip(*v)
-        plt.plot(x, y, label='a = {:.4}'.format(k))
+        plt.plot(x, y, label=r'$\alpha$ = {:.4}'.format(k))
     plt.yscale('log')
     plt.xscale('log')
     plt.xlabel(r"$t$")
     # plt.title("Total simulation time for dim = 4 Harmonic Oscillator to cool to beta = 4 vs time per interaction")
     plt.ylabel("Total Sim Time $L t$")
     plt.legend(loc="upper right")
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/single_qubit_tot_time_vs_t.pdf')
     plt.show()
-    with open('/Users/matt/repos/thermal_state_prep/numerics/data/t_vs_tot_time.json', 'w') as f:
+    with open('/Users/matt/repos/thermal_state_prep/numerics/data/tot_time_vs_t.json', 'w') as f:
         json.dump(results, f)
 
 def plot_sho_interaction_v_beta():
@@ -799,9 +800,9 @@ def plot_sho_interaction_v_beta():
 
 if __name__ == "__main__":
     start = time_this.time()
-    # plot_sho_tot_time_vs_time()
+    plot_sho_tot_time_vs_time()
     # plot_sho_error_v_interaction()
-    plot_sho_interaction_v_beta()
+    # plot_sho_interaction_v_beta()
     # h_chain_time_vs_noise()
     # h_chain_time_vs_beta()
     # test_tot_time_vs_epsilon()
