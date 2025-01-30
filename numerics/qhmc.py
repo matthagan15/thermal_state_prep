@@ -703,7 +703,7 @@ def plot_sho_error_v_interaction():
 
 def plot_sho_tot_time_vs_time():
     alphas = np.linspace(0.01, 0.001, 5)
-    times = np.logspace(np.log10(50), np.log10(5000.), 20)
+    times = np.logspace(np.log10(25), np.log10(5000.), 30)
     epsilon = 0.05
     dim = 2
     betas = np.logspace(np.log10(1e-1), np.log10(dim), 10, base=10)
