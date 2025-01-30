@@ -16,7 +16,7 @@ import time as time_this
 from joblib import Parallel, delayed
 
 BETA_MAX = 1000
-BINARY_SEARCH_UPPER_LIMIT = 2 ** 16
+BINARY_SEARCH_UPPER_LIMIT = 2 ** 26
 
 def prob_dist_trace_norm(p, q):
     return np.sum(np.abs(p - q))
@@ -471,36 +471,48 @@ def tot_time_vs_dim():
 def test_tot_time_vs_epsilon():
     dim = 4
     ham = harmonic_oscillator_hamiltonian(dim)
-    beta = 2 * float(dim)
+    beta = float(dim)
     print("thermal state target:")
     print(np.diag(thermal_state(ham, beta)))
-    num_samples = 32
-    ep_start = np.log10(1e-1)
-    ep_end = np.log10(2e-3)
-    epsilons = np.logspace(ep_start, ep_end, 20)
+    num_samples = 100
+    ep_start = np.log10(5e-1)
+    ep_end = np.log10(5e-3)
+    epsilons = np.logspace(ep_start, ep_end, 15, base=10)
     print("epsilons: ", epsilons)
     
 #    WARNING, 2.0 is SPECIAL CASED
-    exponents = [2.0, 0.5, 0.75, 1.0]
+    exponents = [-1.0,  -2.0, -3.0]
     exponent_results = {}
     for exponent in exponents:
         results = []
         x_fit_vals = []
         num_interactions = []
-        if exponent != 2.0:
-            time_ep = lambda ep:(math.pow(dim, 2.0) / math.pow(ep, exponent))
-        else:
-            time_ep = lambda ep:(math.pow(dim, 2.0) / math.pow(ep, 0.5))
-        if exponent == 2.0:
-            alpha_ep = lambda ep: 1e4 / math.pow(time_ep(ep), 3.0)
-        else: 
-            alpha_ep = lambda ep: 1. / (time_ep(ep))
+        time_ep = lambda ep: (math.pow(dim, 2.0) / math.pow(ep, 0.5))
+        alpha_ep = lambda ep: math.pow(time_ep(ep), exponent)
+        # if exponent != 2.0:
+        #     time_ep = lambda ep:(math.pow(dim, 2.0) / math.pow(ep, exponent))
+        # else:
+        #     time_ep = lambda ep:(math.pow(dim, 2.0) / math.pow(ep, 0.5))
+        # if exponent == 2.0:
+        #     alpha_ep = lambda ep: 1e4 / math.pow(time_ep(ep), 3.0)
+        # else: 
+        #     alpha_ep = lambda ep: 1. / (time_ep(ep))
         print("#" * 75)
         print("exponent: ", exponent)
         for epsilon in epsilons:
             # x = minimum_interactions_with_random_gamma(ham, alpha, time, beta, epsilon, "uniform", num_samples=num_samples)
-            print("alpha: {:}, epsilon: {:}, time: {:}".format(alpha_ep(epsilon), epsilon, time_ep(epsilon)))
-            x = minimum_interactions_sho(alpha_ep(epsilon), time_ep(epsilon), beta, epsilon, dim, num_samples=num_samples)
+            
+            if exponent == -3.0:
+                alpha = alpha_ep(epsilon) * 2e2 * np.sqrt(3) 
+            elif exponent == -2.0:
+                alpha = alpha_ep(epsilon) * 10. * np.sqrt(10)
+            elif exponent == -1.0:
+                alpha = alpha_ep(epsilon) * .2 * np.sqrt(10)
+            else:
+                alpha = alpha_ep(epsilon)
+            time = time_ep(epsilon)
+            print("alpha: {:}, epsilon: {:}, time: {:}, atilde^2: {:}".format(alpha, epsilon, time, (alpha * time)**2 / (2. * dim + 1.)))
+            x = minimum_interactions_sho(alpha, time_ep(epsilon), beta, epsilon, dim, num_samples=num_samples)
             num_interactions.append(x)
             results.append(x * time_ep(epsilon))
             x_fit_vals.append(np.log10(1. / epsilon))
@@ -519,38 +531,38 @@ def test_tot_time_vs_epsilon():
         # "total_times": list(results),
         "exponents": exponents,
         "total_times": {
-            "0.5": exponent_results.get(0.5, None),
-            "0.75": exponent_results.get(0.75, None),
-            "1.0": exponent_results.get(1.0, None),
-            "alpha_t": exponent_results.get(2.0, None)
+            "-1.0": exponent_results.get(-1.0, None),
+            "-2.0": exponent_results.get(-2.0, None),
+            "-3.0": exponent_results.get(-3.0, None),
+            # "alpha_t": exponent_results.get(2.0, None)
             }
     }
     print("exponent results: ", exponent_results)
-    with open('/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting_3', 'w') as f:
+    with open('/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting_4', 'w') as f:
         json.dump(json_dump, f)
     for exp in exponents:
         print("exponent_results[i]: ", exponent_results[exp])
         poly_fit = np.polynomial.Polynomial.fit(-1. * np.log10(epsilons), np.log10(exponent_results[exp]), 1)
         slope = poly_fit.convert().coef[1]
         print("exponent: {:}, slope: {:}".format(exp, slope))
-        if exp == 0.5:
-            time_label = r"$\alpha = 1/t, t = O(\epsilon^{-0.5})$"
-        elif exp == 0.75:
-            time_label = r"$\alpha = 1/t, t = O(\epsilon^{-0.75})$"
-        elif exp == 1.0:
-            time_label = r"$\alpha = 1/t, t = O(\epsilon^{-1.0})$"
-        elif exp == 2.0:
-            time_label = r"$\alpha = 1/t^3, t = O(\epsilon^{-0.5})$"
+        if exp == -3.0:
+            time_label = r"$\alpha = 1/t^3$"
+        elif exp == -2.0:
+            time_label = r"$\alpha = 1/t^2$"
+        elif exp == -1.0:
+            time_label = r"$\alpha = 1/t$"
+        # elif exp == 2.0:
+            # time_label = r"$\alpha = 1/t^3, t = O(\epsilon^{-0.5})$"
         label = time_label + ", slope = {:.4}".format(slope)
-        plt.plot(epsilons, exponent_results[exp], label = label)
+        plt.plot([1.0 / ep for ep in epsilons], exponent_results[exp], label = label)
     plt.xscale("log")
     plt.yscale("log")
-    plt.xlabel(r"$\log \epsilon$")
+    plt.xlabel(r"$\log \frac{1}{\epsilon}$")
     plt.ylabel(r"Total Simulation Time $\log (L \cdot t)$")
     plt.legend(loc = "upper right")
     # plt.xlabel(r"$\epsilon$")
     # plt.ylabel(r"$L \cdot t$")
-    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting_plot_3.pdf')
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting_plot_4.pdf')
     plt.show()
     return
 
@@ -816,9 +828,9 @@ if __name__ == "__main__":
     start = time_this.time()
     # plot_sho_tot_time_vs_time()
     # plot_sho_error_v_interaction()
-    plot_sho_interaction_v_beta()
+    # plot_sho_interaction_v_beta()
     # h_chain_time_vs_noise()
     # h_chain_time_vs_beta()
-    # test_tot_time_vs_epsilon()
+    test_tot_time_vs_epsilon()
     # tot_time_vs_dim()
     # test_tot_time_vs_epsilon_uniform_gamma()
