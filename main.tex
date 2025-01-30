@@ -708,7 +708,7 @@ Once we have shown correctness of our algorithm, namely that the thermal state i
     &= \widetilde{\alpha}^2 q(0) \mathbf{I}[j = i - 1]  \sinc^2\left(\frac{(\Delta_S(i,j) - \gamma)t}{2}\right) + \widetilde{\alpha}^2 q(1) \mathbf{I}[j = i + 1]  \sinc^2\left(\frac{(\Delta_S(i,j) + \gamma)t}{2}\right) \\
     &= \widetilde{\alpha}^2 \left(q(0) \mathbf{I}[j = i - 1] +  q(1) \mathbf{I}[j = i + 1] \right). \label{eq:harmonic_oscillator_t_matrix}
     \end{align}
-    We now plug this expression into Eq. \eqref{eq:detailed_balance} and show it is zero
+    We now plug this expression into Eq. \eqref{eq:detailed_balance} of Lemma \ref{lem:fixed_point}
     \begin{align}
         &\sum_{i \neq j} \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)} \bra{j} \TT_{\on}(\ketbra{i}{i}) \ket{j} - \frac{e^{-\beta \lambda_S(j)}}{\partfun_S(\beta)} \bra{i} \TT_{\on}(\ketbra{j}{j}) \ket{i} \\
         &= \widetilde{\alpha}^2 \frac{e^{-\beta \lambda_S(j)}}{\partfun_S(\beta)} \sum_{i \neq j} \left[ e^{-\beta \Delta_S(i,j)} \left(q(0) \mathbf{I}[j = i - 1] +  q(1) \mathbf{I}[j = i + 1] \right) - \left(q(0) \mathbf{I}[j = i + 1] +  q(1) \mathbf{I}[j = i - 1] \right) \right] \\
@@ -716,9 +716,9 @@ Once we have shown correctness of our algorithm, namely that the thermal state i
         &= \widetilde{\alpha}^2 \frac{e^{-\beta \lambda_S(j)}}{\partfun_S(\beta)} \left( \left(e^{-\beta \Delta} \frac{1}{1 + e^{-\beta \gamma}} - \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \right) + \left(e^{+\beta \Delta} \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} - \frac{1}{1 + e^{-\beta \gamma}} \right)\right) \\
         &= 0,
     \end{align}
-    where the final equality comes from setting $\gamma = \Delta$ and the summation over $i \neq j$ is only nonzero for $i = j \pm 1$. By Lemma \ref{lem:fixed_point} this is sufficient for $\rho_S(\beta)$ to be a fixed point of $\identity + \TT_{\on}$. 
+    where the final equality comes from setting $\gamma = \Delta$. By Lemma \ref{lem:fixed_point} this is sufficient for $\rho_S(\beta)$ to be a fixed point of $\identity + \TT_{\on}$. 
     
-    To show that $\rho_S(\beta)$ is the unique fixed point we need to show ergodicity. This can be done by showing that the hitting time for any two states $i \neq j$ is nonzero. We prove this by induction on $i - j$ and assume without loss of generality that $i > j$. For $i = j + 1$ we have
+    To show that $\rho_S(\beta)$ is the unique fixed point we need to show ergodicity. This can be done by showing that the hitting time for any two states $i \neq j$ is nonzero. We prove this by induction on $i - j$ first for $i > j$. For $i = j + 1$ we have
     \begin{align}
         \bra{j} \left( \identity + \TT_{\on} \right)(\ketbra{i}{i}) \ket{j} &= \bra{j} \TT_{\on}(\ketbra{j + 1}{j + 1}) \ket{j} \\
         &= \widetilde{\alpha}^2 q(0),
@@ -732,9 +732,9 @@ Once we have shown correctness of our algorithm, namely that the thermal state i
         &= \widetilde{\alpha}^2 q(0) \bra{j } \left(\identity + \TT_{\on} \right)^{\circ n} \left(\ketbra{j + n}{j + n}\right)\ket{j } \\
         &= \widetilde{\alpha}^2 q(0) p,
     \end{align}
-    which is greater than 0. We are able to bound the summation over $k \neq j + n$ because $I + T$, the associated Markov matrix for $\identity + \TT_{\on}$, has only positive entries.
+    which is greater than 0. We are able to bound the summation over $k \neq j + n$ because $I + T$, the associated Markov matrix for $\identity + \TT_{\on}$, has only positive entries. To prove the case where $i < j$ the same argument holds but now we get factors of $q(1)$ as opposed to $q(0)$, which is nonzero for finite $\beta$. 
 
-    Now that we have shown that the thermal state is the fixed point we would like to bound the runtime. To do this we first decompose our error into two parts, a Markov chain error and an off-resonance and remainder error
+    Now that we have shown that the thermal state is the fixed point we would like to bound the runtime. To do so we first decompose our error into two parts, a Markov chain error and an off-resonance and remainder error
     \begin{equation}
         \norm{\rho_S(\beta) - \Phi^{\circ L}(\rho)}_1 \le \norm{\rho_S(\beta) - (\identity + \TT_{\on})^{\circ L}(\rho)}_1 + L(\norm{\TT_{\off}}_1 + \norm{R_{\Phi}}_1 ). \label{eq:harmonic_oscillator_error_breakdown}
     \end{equation}
@@ -827,7 +827,7 @@ Now that we have rigorous bounds on each of the parameters $\alpha, t$ and $L$ n
 
 \begin{figure} 
     \centering
-    \includegraphics[width=0.75\linewidth]{numerics/data/total_time_vs_time.png}
+    \includegraphics[width=0.75\linewidth]{numerics/data/single_qubit_tot_time_vs_t.pdf}
     \caption{Total simulation time for a single qubit system to reach within trace distance of $0.05$ of the thermal state for $\beta = 4$ as a function of per-interaction simulation time $t$ . Since the total probability mass being moved at a single step is proportional to $(\alpha t)^2$, we see that increasing $\alpha$ and $t$ tend to decrease the overall cost.}\label{fig:tot_time_vs_single_time}
 \end{figure}
 
@@ -894,7 +894,7 @@ We now move on to show how our algorithm performs if one has no knowledge about 
 
 \begin{theorem}[Zero Knowledge Thermal State Prep] \label{thm:zero_knowledge}
     Let $H_S$ be a Hermitian matrix with no degenerate eigenvalues, $\rho$ any input state that commutes with $H_S$, and $\gamma$ a random variable chosen uniformly in the interval $[0, 4 \norm{H_S}]$a and
-    let $\rho_{\rm fix}$ denote the unique fixed point of the transition dynamics $\identity + \EE_\gamma \TT_{\on}^{(\gamma)}$. The following statements then hold.
+    let $\rho_{\rm fix}$ denote the unique fixed point of the transition dynamics $\identity + \EE_\gamma \TT_{\on}^{(\gamma)}$ where $\TT_{\on}^{(\gamma)}$ is the on-resonance transition matrix used above with the dependence on $\gamma$ made explicit. The following statements then hold.
     \begin{enumerate}
 \item For finite $\beta$ the thermal state is an approximate fixed point of the thermalizing channel $\EE_\gamma \Phi_\gamma$ with a deviation of
     \begin{equation}
@@ -909,7 +909,7 @@ We now move on to show how our algorithm performs if one has no knowledge about 
     \begin{equation}
         L \cdot t \in \bigotilde{\frac{\dim_S^{16} \norm{H_S}^7}{\delta_{\min}^8 \epsilon^6 \lambda_\star(\beta)^7}}.
     \end{equation}
-   \item    The fixed point is the ground state In the $\beta \to \infty$ limit and the spectral gap is lower bounded by a constant, giving the two limits
+   \item    The fixed point is the ground state In the $\beta \to \infty$ limit and the spectral gap, $\lambda_\star(\beta)$, of the rescaled transition matrix $\EE_\gamma T_\gamma \cdot \left(\frac{2 \norm{H_S} (\dim + 1)}{\alpha^2 t}\right)$ is lower bounded by a constant, giving the two limits
     \begin{equation}
         \lim_{\beta \to \infty} \rho_{\rm fix} = \ketbra{1}{1} \text{ and } \lim_{\beta \to \infty} \lambda_\star(\beta) \ge 2.43.
         \end{equation}
