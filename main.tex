@@ -816,7 +816,9 @@ We can compute the spectrum via the characteristic polynomial $\det(\lambda \ide
 
 
 \subsection{Numerics - DEFCON 3}
-Now that we have rigorous bounds on each of the parameters $\alpha, t$ and $L$ needed to prepare thermal states of simple systems we turn to numerics to test the validity of these bounds. 
+Now that we have rigorous bounds on each of the parameters $\alpha, t$ and $L$ needed to prepare thermal states of simple systems we turn to numerics to test these bounds. The first question we explore is how the total evolution time $L \cdot t$ behaves as a function of $\alpha$ and $t$. Then we explore the effects of eigenvalue difference knowledge on the simulation time needed and find that although knowing the spectral differences is not crucial to thermalization it can speed the process up. Finally we demonstrate how our proof techniques could be leading to worse $\epsilon$ scaling than appears numerically necessary.
+
+
 
 
  Although the above theorem provides rigorous runtime guarantees needed to reach thermalization, they are based on Markov chain bounds which are exceptionally loose. %In Table (?) we show three values: first the total simulation time needed for numerically evaluating the channel exactly, second we provide the simulation time of just the Markov chain, ignoring the higher order terms, and lastly we provide the theoretic upper bound on the simulation time for the given parameters. 
@@ -888,27 +890,31 @@ We first demonstrate the thermalization runtime for the truncated harmonic oscil
 
 
 \subsection{Zero Knowledge - DEFCON 4} \label{sec:zero_knowledge}
-We now move on to show how our algorithm behaves if one has no knowledge about the eigenvalue differences $\Delta_S(i,j)$ at all. This is represented by choosing $\gamma$ uniformly from the interval $[0, 4 \norm{H_S}]$, which technically constitutes an upper bound on the largest $\Delta_S(i,j)$, but estimates of $\norm{H_S}$ are relatively easy to obtain. 
+We now move on to show how our algorithm performs if one has no knowledge about the eigenvalue differences $\Delta_S(i,j)$ apart from a bound on the maximum value of these differences. This is represented by choosing $\gamma$ uniformly from the interval $[0, 4 \norm{H_S}]$, which technically constitutes an upper bound on the largest $\Delta_S(i,j)$, but estimates of $\norm{H_S}$ are often readily attainable from the specification of the Hamiltonian using the triangle inequality.  We also assume that an input state that commutes with the Hamiltonian can be provided.  This is not a substantial restriction because recall that such a state can be attained from either phase estimation or from using a maximally mixed state as an input.
 
 \begin{theorem}[Zero Knowledge Thermal State Prep] \label{thm:zero_knowledge}
-    Let $H_S$ be a Hermitian matrix with no degenerate eigenvalues, $\rho$ any input state that commutes with $H_S$, and $\gamma$ a random variable chosen uniformly in the interval $[0, 4 \norm{H_S}]$. For finite $\beta$ the thermal state is an approximate fixed point of the thermalizing channel $\EE_\gamma \Phi_\gamma$ with a deviation of
+    Let $H_S$ be a Hermitian matrix with no degenerate eigenvalues, $\rho$ any input state that commutes with $H_S$, and $\gamma$ a random variable chosen uniformly in the interval $[0, 4 \norm{H_S}]$a and
+    let $\rho_{\rm fix}$ denote the unique fixed point of the transition dynamics $\identity + \EE_\gamma \TT_{\on}^{(\gamma)}$. The following statements then hold.
+    \begin{enumerate}
+\item For finite $\beta$ the thermal state is an approximate fixed point of the thermalizing channel $\EE_\gamma \Phi_\gamma$ with a deviation of
     \begin{equation}
         \norm{\rho_S(\beta) - \EE_\gamma \Phi_\gamma(\rho_S(\beta))}_1 \le \alpha^2 t e^{\beta \delta_{\min}} \norm{H_S}^{-1} \pi + 8 \frac{\alpha^2}{\delta_{\min}} + 16 \sqrt{\frac{\pi}{2}} \dim_S (\alpha t)^3.
     \end{equation}
-    Let $\rho_{\rm fix}$ denote the unique fixed point of the transition dynamics $\identity + \EE_\gamma \TT_{\on}^{(\gamma)}$. The parameter settings
+    \item   The parameter settings
     \begin{align}
         \alpha = \frac{\delta_{\min}^4 \epsilon^{3} \lambda_\star(\beta)^{3}}{\dim_S^7 \norm{H_S}^3}, ~t = \frac{\dim_S^2 \norm{H_S}}{\epsilon \lambda_\star(\beta) \delta_{\min}^2}, \text{ and } L \in \bigotilde{\frac{\dim_S^{14} \norm{H_S}^6}{\epsilon^5 \delta_{\min}^6 \lambda_\star(\beta)^{6} }}
     \end{align}
     are sufficient to guarantee $\norm{\rho_{\rm fix} - \left(\EE_\gamma \Phi_\gamma \right)^{\circ L}(\rho)}_1 \in \bigotilde{\epsilon}$.
-    The total runtime is therefore
+    The total experimental time needed is therefore
     \begin{equation}
         L \cdot t \in \bigotilde{\frac{\dim_S^{16} \norm{H_S}^7}{\delta_{\min}^8 \epsilon^6 \lambda_\star(\beta)^7}}.
     \end{equation}
-    In the $\beta \to \infty$ limit the fixed point is the ground state and the spectral gap is lower bounded by a constant, giving the two limits
+   \item    The fixed point is the ground state In the $\beta \to \infty$ limit and the spectral gap is lower bounded by a constant, giving the two limits
     \begin{equation}
         \lim_{\beta \to \infty} \rho_{\rm fix} = \ketbra{1}{1} \text{ and } \lim_{\beta \to \infty} \lambda_\star(\beta) \ge 2.43.
         \end{equation}
     Substituting this bound on $\lambda_\star(\beta)$ into the choices for $\alpha, t$ and $L$ given for finite $\beta$ is sufficient to guarantee thermalization of $\left(\EE_\gamma \Phi_\gamma \right)^{\circ L}$.
+    \end{enumerate}
 \end{theorem}
 \begin{proof}
     This proof structure will be structurally similar to the proof of Theorem \ref{thm:perfect_knowledge}. We start by understanding the fixed points of $\identity + \EE_\gamma \TT_{\on}^{(\gamma)}$, conditions for the thermal state being fixed are given in Lemma \ref{lem:fixed_point}. As the condition boils down to a detailed balance like condition, we need to compute the off-diagonal transition elements first. Starting with $i > j$ we have
