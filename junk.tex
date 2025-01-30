@@ -2875,4 +2875,100 @@ Is there a way we can simplify this proof by using the one norm? I bet it become
 % So to summarize, we need $\beta \le \frac{\epsilon}{2 \sigma}$, $L \in \widetilde{\Omega} \left( \frac{\Delta^2}{\sigma^2} \right)$, and $\sigma \in \bigotilde{\sqrt{\epsilon} \Delta}$ in order for this all to work out. We can most likely improve this most by improving the fixed point to thermal state argument, we could compute what the average fixed point is of the random matrix. But that involves generating functions so I'm not too sure I want to mess with that. \matt{This part is structurally complete, but needs to be reworded and put into an appropriate theorem? I'm just not sure what the best way of going about this is, it might even be fine to leave this part as a discussion as opposed to a theorem.}
 
 
+% \subsection{old stuff}
+% To show that the thermal state is the fixed point of the zero knowledge thermalizing channel we need to show that 
+% $\EE_\gamma T_\gamma \vec{p}_{\beta} = 0$ and that the Markov chain is ergodic. Ergodicity will be easy to prove so we focus on showing that $\EE_\gamma T_\gamma \vec{p}_{\beta} = 0$. This condition can be expressed as
+% \begin{equation}
+%     e_j^T \EE_\gamma T_\gamma \vec{p}_{\gamma} = \sum_i \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)} e_j^T \EE_\gamma T_\gamma e_i = 0.   \label{eq:thermal_state_tmp_1}
+% \end{equation}
+% We can make a quick substitution as we know the diagonal elements must equal the sum of the remainder of the column 
+% \begin{equation}
+%     e_i^T \EE_\gamma T_\gamma e_i = - \sum_{j \neq i} e_j^T \EE_\gamma T_\gamma e_i,
+% \end{equation}
+% which we can then pull out the $i = j$ term from the sum in Eq. \eqref{eq:thermal_state_tmp_1}
+% \begin{align}
+%     e_j^T \EE_\gamma T_\gamma \vec{p}_{\beta} &= \sum_{i \neq j} \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)} e_j^T \EE_\gamma T_\gamma e_i - \frac{e^{-\beta \lambda_S(j)}}{\partfun_S(\beta)} \sum_{k \neq j} e_k^T \EE_\gamma T_\gamma e_j \\
+%     &= \frac{e^{-\beta \lambda_S(j)}}{\partfun_S(\beta)} \sum_{i \neq j}   e^{-\beta \Delta_S(i ,j)} e_j^T \EE_\gamma T_\gamma e_i - e_i^T \EE_\gamma T_\gamma e_j . \label{eq:thermal_state_tmp_2}
+% \end{align}
+% We now will try to compute each summand, first for $i < j$ then later for $i > j$. As $\EE_\gamma$ is linear we can use Theorem \ref{thm:second_order_transition} for $i < j$, which we remind the reader makes $\Delta_S(j, i) > 0$, to write
+% \begin{equation}
+%     e_i^T T_\gamma e_j = \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} \mathbf{I}[|\Delta_S(j, i) - \gamma| \le \delta_{\min}] \sinc^2 \left( \frac{(\Delta_S(j,i) - \gamma) t}{2} \right). 
+% \end{equation}
+% Now we need to compute this expectation value
+% \begin{align}
+%     &\EE_\gamma \frac{1}{1 + e^{-\beta \gamma}} \mathbf{I}[|\Delta_S(j, i) - \gamma| \le \delta_{\min}] \sinc^2 \left( \frac{(\Delta_S(j,i) - \gamma) t}{2} \right) d\gamma \\
+%     &= \int_{\gamma_L}^{\gamma_U} \frac{1}{1 + e^{-\beta \gamma}} \mathbf{I}[|\Delta_S(j, i) - \gamma| \le \delta_{\min}] \sinc^2 \left( \frac{(\Delta_S(j,i) - \gamma) t}{2} \right) d\gamma \\
+%     &= \int_{\Delta_S(j,i) - \delta_{\min}}^{\Delta_S(j,i) + \delta_{\min}} \frac{1}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(\Delta_S(j,i) - \gamma) t}{2} \right) d\gamma \\
+%     &= \frac{2}{t} \int_{-\delta_{\min} t /2}^{\delta_{\min} t / 2} \frac{1}{1 + e^{-\beta (\Delta_S(j,i) - 2 u /t)}} \sinc^2(u) du.
+% \end{align}
+% Before we attempt to simplify this integral anymore we turn our attention to the other term in the summand. This can be reduced, again with $i < j$, as follows
+% \begin{align}
+%     e^{-\beta \Delta_S(i,j)} \EE_\gamma e_j^T T_\gamma e_i &= \widetilde{\alpha}^2 e^{-\beta \Delta_S(i,j)} \int_{\gamma_L}^{\gamma_U} \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \mathbf{I}[|\Delta_S(i,j) + \gamma| \le \delta_{\min}] \sinc^2 \left( \frac{(\Delta_S(i,j) + \gamma) t}{2} \right) d\gamma \\
+%     &=\widetilde{\alpha}^2 e^{-\beta \Delta_S(i,j)} \int_{\gamma_L}^{\gamma_U} \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \mathbf{I}[|\Delta_S(j, i) - \gamma| \le \delta_{\min}] \sinc^2 \left( \frac{(\Delta_S(j,i) - \gamma) t}{2} \right) d\gamma \\
+%     &=\widetilde{\alpha}^2 e^{-\beta \Delta_S(i,j)} \int_{\Delta_S(j,i) - \delta_{\min}}^{\Delta_S(j,i) + \delta_{\min}} \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}}  \sinc^2 \left( \frac{(\Delta_S(j,i) - \gamma) t}{2} \right) d\gamma \\
+%     &= \widetilde{\alpha}^2 e^{-\beta \Delta_S(i,j)} \frac{2}{t} \int_{-\delta_{\min} t /2}^{\delta_{\min} t / 2} \frac{e^{-\beta (\Delta_S(j,i) - 2 u /t)}}{1 + e^{-\beta (\Delta_S(j,i) - 2 u /t)}} \sinc^2(u) du \\
+%     &= \widetilde{\alpha}^2 \frac{2}{t} \int_{-\delta_{\min} t /2}^{\delta_{\min} t / 2} \frac{e^{\beta  2 u /t}}{1 + e^{-\beta (\Delta_S(j,i) - 2 u /t)}} \sinc^2 (u) du.
+% \end{align}
+%  Now we can take the difference
+%  \begin{align}
+%      e^{-\beta \Delta_S(i ,j)} e_j^T \EE_\gamma T_\gamma e_i - e_i^T \EE_\gamma T_\gamma e_j &= \frac{2 \widetilde{\alpha}^2}{t} \int_{-\delta_{\min} t /2}^{\delta_{\min} t / 2} \frac{e^{2 \beta u /t } - 1}{1 + e^{-\beta(\Delta_S(j, i) - 2 u /t)}} \sinc^2(u) du. \label{eq:thermal_state_detailed_balance}
+%  \end{align}
+%  This integral as it stands is unfortunately not zero, which can be verified numerically. This implies that for finite $t$ and nonzero $\beta$ the thermal state is not quite a fixed point of the dynamics but instead an approximate fixed point.
+
+% We would like to understand when Eq. \eqref{eq:thermal_state_detailed_balance} approaches 0. One approach could be to take a $1/t$ expansion of the integrand and hope that the constant order term is 0. Unfortunately the $u^k$ integration that results ends up scaling like $t^{k + 1}$, therefore each term in the resulting power series is of order $\bigo{\left(\frac{1}{t}\right)^0}$ in terms of $1/t$. This means that the $t \to \infty$ limit is actually not what we are looking for. Our only other variable to control is $\alpha$, so our next aim is to upper bound the integral. 
+
+% To upper bound the integral we need to understand the $\beta \to \infty$ limit. Clearly the numerator $e^{\beta 2 u /t} - 1$ diverges. The denominator depends on the relative sign of $\Delta_S(j,i) - 2u /t$. If $u < 0$ then this is clearly positive. The largest positive value $u$ can take is $\delta_{\min} t/ 2$, meaning $\Delta_S(j,i) - 2 u / t \geq \Delta_S(j,i) - \delta_{\min}$. Since $\delta_{\min} \leq \Delta_S(j,i)$ for all $j$ and $i$ we have $\Delta_S(j,i) - 2 u /t \geq 0$. This implies that the denominator $1 + e^{-\beta (\Delta_S(j,i) - 2 u /t)}$ approaches 1 as $\beta \to \infty$ and is upper bounded by $2$. We use this to justify the following bounds
+% \begin{align}
+%     \abs{\int_{-\delta_{\min}t/2}^{\delta_{\min}t/2} \frac{e^{\beta 2 u /t} - 1}{2(1 + e^{-\beta(\Delta_S(j,i) - 2u/t)})} \sinc^2(u) du} &\leq \int_{-\delta_{\min}t/2}^{\delta_{\min}t/2} \frac{\abs{e^{\beta 2 u / t} - 1}}{2 \abs{1 + e^{-\beta (\Delta_S(j,i) - 2 u / t)}}} \sinc^2(u) du \\
+%     &\leq \frac{e^{\beta \delta_{\min}}}{2} \int_{-\delta_{\min}t/2}^{\delta_{\min}t/2} \sinc^2(u) du \\
+%     &\leq e^{\beta \delta_{\min}} \frac{\pi }{2}.
+% \end{align}
+% Plugging in to Eq. \eqref{eq:thermal_state_detailed_balance} we have 
+% \begin{equation}
+%     \left| e^{-\beta \Delta_S(i ,j)} e_j^T \EE_\gamma T_\gamma e_i - e_i^T \EE_\gamma T_\gamma e_j \right| \leq \frac{\alpha^2 t e^{\beta \delta_{\min}}}{\dim + 1} \pi.
+% \end{equation}
+% We now use this in the actual expression we are interested in, which is Eq. \eqref{eq:thermal_state_tmp_2}. Using the triangle inequality, the upper bound $\frac{e^{-\beta \lambda_S(j)}}{\partfun_S(\beta)} \leq 1$, and the upper bound just derived we arrive at
+% \begin{align}
+%     \left| e_j^T \EE_\gamma T_\gamma \vec{p}_\beta \right| &\leq \sum_{i \neq j} \left| e^{-\beta \Delta_S(i ,j)} e_j^T \EE_\gamma T_\gamma e_i - e_i^T \EE_\gamma T_\gamma e_j \right| \\
+%     &\leq (\dim_S - 1) \frac{\alpha^2 t e^{\beta \delta_{\min}}}{\dim + 1} \pi \\
+%     &\leq \alpha^2 t e^{\beta \delta_{\min}} \pi.
+% \end{align}
+
+% This allows us to bound the trace norm of the resulting vector $\EE_\gamma T_\gamma \vec{p}_\beta$ through very loose bounds. We get
+% \begin{align}
+%     \norm{\EE_\gamma T_\gamma \vec{p}_\beta}_1 &= \sum_j \abs{e_j^T \EE_\gamma T_\gamma \vec{p}_\beta } \leq \sum_j \alpha^2 t e^{\beta \delta_{\min}} \pi = \alpha^2 t e^{\beta \delta_{\min}} \dim_S \pi.
+% \end{align}
+% At first glance we note that $\alpha \to 0$ is the relevant limit that we want to explore. However, this would amount to looking at the limit with 0 interaction between system and environment, which of course any state such that $[H_S, \rho] = 0$ will be fixed in this limit. Our expression however reveals that in taking the $\alpha \to 0$ limit we are also allowed to take the $t \to \infty$ limit as long as the product $\alpha t$ is sublinear in $\alpha$. So we see that even with nonzero probability mass being transfered with each application of $\EE_\gamma \Phi_\gamma$ we can have the thermal state be an arbitrarily small fixed point of the dynamics. 
+
+
+
+% Taylor Series does not appear to  
+%  This unfortunately is not zero, as there are specific values of all parameters that can be numerically integrated to show that this is nonzero. Further, we cannot hope that other terms within the sum will cancel out. Further, we cannot evaluate this in the $\beta \to \infty$ limit as we have divided by $e^{-\beta \lambda_S(j)}$ so the expression is not valid in this regime.
+
+%  Can we make this into a thermodynamic limit theorem? Like in the limit as $t \to \infty$ does the above vanish? 
+% We should try to make a Taylor series for this with respect to $1/t$. Note we will ignore the overall $t$ scaling due to $\widetilde{\alpha}^2/ t$ out front for now. But at $1/t = 0$, $t = \infty$ the integral approaches
+% \begin{equation}
+%     \lim_{t \to \infty} \int_{-\delta_{\min} t /2}^{\delta_{\min} t / 2} \frac{e^{2 \beta u /t } - 1}{1 + e^{-\beta(\Delta_S(j, i) - 2 u /t)}} \sinc^2(u) du = \int_{- \infty}^{\infty} \lim_{t \to \infty} \left[\frac{e^{2 \beta u /t } - 1}{1 + e^{-\beta(\Delta_S(j, i) - 2 u /t)}}  \right] \sinc^2(u) du = 0 
+% \end{equation}
+
+% First we need to take a small $1/t$ expansion of the integrand. We will ignore the limits of integration being functions of $t$ for now, as it will turn out that the first order in $1/t$ will be symmetric with respect to $u$ and therefore vanish. Now we will take a Taylors series expansion with respect to $\frac{2 \beta u}{t}$ about 0, which corresponds to the $t \to \infty$ limit, which is given up to order $1/t^3$ as
+% \begin{align}
+%     \frac{e^{\frac{2 \beta u}{t}} - 1}{1 + e^{-\beta \Delta_S(j,i)} e^{\frac{2 \beta u}{t}}} &= \frac{\frac{2 \beta u}{t}}{1 + e^{-\beta \Delta_S(j,i)}} + \frac{1 - e^{-\beta \Delta_S(j,i)}}{2(1 + e^{-\beta \Delta_S(j,i)})^2} \left(\frac{2 \beta u}{t}\right)^2 + \bigo{\left(\frac{2 \beta u}{t}\right)^3}.
+% \end{align}
+% Now we can compute the $u$ integration term by term
+% \begin{align}
+%     \frac{2 \beta}{t} \frac{1}{1 + e^{-\beta \Delta_S(j,i)}} \int_{-\delta_{\min}t/2}^{-\delta_{\min}t/2} u \sinc^2(u) du = 0,
+% \end{align}
+% as $\sinc^2(u) = \sinc^2(-u)$, $u$ is anti-symmetric, and the integration bounds are symmetric. The second integration is
+% \begin{align}
+%     &\frac{1 - e^{-\beta \Delta_S(j,i)}}{2(1 + e^{-\beta \Delta_S(j,i)})^2} \left(\frac{2 \beta}{t}\right)^2 \int_{-\delta_{\min}t/2}^{-\delta_{\min}t/2} u^2 \sinc^2(u) du \nonumber \\
+%     &= \frac{1 - e^{-\beta \Delta_S(j,i)}}{2(1 + e^{-\beta \Delta_S(j,i)})^2} \left(\frac{2 \beta}{t}\right)^2 \int_{-\delta_{\min}t/2}^{-\delta_{\min}t/2} \sin^2(u) du \\
+%     &=\frac{1 - e^{-\beta \Delta_S(j,i)}}{2(1 + e^{-\beta \Delta_S(j,i)})^2} \left(\frac{2 \beta}{t}\right)^2 \left(\frac{\delta_{\min} t}{2} - \cos\left(\frac{\delta_{\min} t}{2} \right) \sin\left( \frac{\delta_{\min} t}{2} \right) \right).
+% \end{align}
+% Now taking the prefactor of $\frac{2 \widetilde{\alpha}^2}{t} = 2 \frac{\alpha^2 t}{\dim + 1}$ from Eq. \eqref{eq:thermal_state_detailed_balance} we get
+% \begin{align}
+%     e^{-\beta \Delta_S(i ,j)} e_j^T \EE_\gamma T_\gamma e_i - e_i^T \EE_\gamma T_\gamma e_j = 
+% \end{align}
+
+
 \end{document}
