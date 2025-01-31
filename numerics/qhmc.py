@@ -100,7 +100,7 @@ def sample_gammas_with_noise(spectra, noise, num_samples):
     return samples 
 
 def load_h_chain():
-    with open('/Users/matt/scratch/hamiltonians/h_chain_2.pickle', 'rb') as openfile:
+    with open('/Users/matt/scratch/hamiltonians/h_chain_3.pickle', 'rb') as openfile:
         h_list = list(pickle.load(openfile))
         dims = h_list.pop()
         h = np.zeros(dims, dtype=np.complex128)
@@ -353,7 +353,7 @@ alpha.
         def sampler2():
             sample_state = thermal_state(self.ham_sys, self.sys_start_beta)
             if gamma_strategy == 'random':
-                gammas = sample_gammas(avg, h_norm, len(self.betas))
+                gammas = sample_gammas(avg, h_norm / 4.0, len(self.betas))
             elif gamma_strategy == 'fixed':
                 print("fixed gamma strat.")
                 gammas = [1.0] * len(self.betas)
@@ -685,6 +685,45 @@ def h_chain_time_vs_noise():
         json.dump(json_dump, f)
 
 
+def plot_error_v_interaction():
+    n_int = 200_000
+    beta = 4.0
+    ham = load_h_chain()
+    target_state = thermal_state(ham, beta)
+    print("therml state")
+    probs = list(np.diag(target_state))
+    probs.sort()
+    print(probs)
+    # alphas = [0.03, 0.0075,0.003, 0.001]
+    alphas = [0.05, 0.025]
+    times = [500., 100.]
+    results = {}
+    x = [ix for ix in range(1, n_int + 2, 1_000)]
+    for alpha in alphas:
+        for time in times:
+            print("atiled^2: {:}", (math.pow(alpha * time, 2.0) / (2.0 * ham.shape[0] + 1.0)))
+            y, yerr = fixed_number_interactions(ham, alpha, time, beta, n_int, num_samples=8, gamma_strategy='random')
+            # markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
+            results["{:},{:}".format(alpha, time)] = list(zip(x, y, yerr))
+    for alpha_time_string in results.keys():
+        split = alpha_time_string.split(',')
+        alpha = float(split[0].replace('(', ""))
+        time = float(split[1].replace(')', ""))
+        x, y, yerr = zip(*results[alpha_time_string])
+        label = r"$\alpha$={:.4},$t$={:}".format(alpha, int(time))
+        plt.errorbar(x, y, yerr, label=label)
+        # plt.plot(x, markov, linestyle='dashed')
+    # plt.xscale('log')
+    plt.legend(loc='upper right')
+    plt.ylabel(r"Error $|| \rho(\beta) - \Phi^L (\rho(0)) ||_1$")
+    plt.xlabel(r"Number of Interactions $L$")
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_h_chain_3.pdf')
+    plt.show() 
+
+    with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_h_chain_3", 'w') as f:
+        json.dump(results, f)
+    return
+
 def plot_sho_error_v_interaction():
     n_int = 300
     beta = 4.0
@@ -828,9 +867,10 @@ if __name__ == "__main__":
     start = time_this.time()
     # plot_sho_tot_time_vs_time()
     # plot_sho_error_v_interaction()
+    plot_error_v_interaction()
     # plot_sho_interaction_v_beta()
     # h_chain_time_vs_noise()
     # h_chain_time_vs_beta()
-    test_tot_time_vs_epsilon()
+    # test_tot_time_vs_epsilon()
     # tot_time_vs_dim()
     # test_tot_time_vs_epsilon_uniform_gamma()
