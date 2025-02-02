@@ -695,7 +695,7 @@ def h_chain_error_v_interaction():
     probs = list(np.diag(target_state))
     probs.sort()
     print(probs)
-    alphas = [0.001, 0.005]
+    alphas = [0.0025, 0.01, 0.05]
     times = [1000., 200.]
     results = {}
     x = [ix for ix in range(1, n_int + 2)]
@@ -708,16 +708,19 @@ def h_chain_error_v_interaction():
         split = alpha_time_string.split(',')
         alpha = float(split[0].replace('(', ""))
         time = float(split[1].replace(')', ""))
+        atilde2 = (math.pow(alpha * time, 2.0) / (2.0 * ham.shape[0] + 1.0))
         x, y, yerr = zip(*results[alpha_time_string])
         label = r"$\alpha$={:.4},$t$={:}".format(alpha, int(time))
+        label += r", $\widetilde{\alpha}^2 $"
+        label += r"={:.4}".format(atilde2)
         plt.errorbar(x, y, yerr, label=label)
     plt.legend(loc='upper right')
     plt.ylabel(r"Error $|| \rho(\beta) - \Phi^L (\rho(0)) ||_1$")
     plt.xlabel(r"Number of Interactions $L$")
-    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_h3_chain_2.pdf')
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_h3_chain_3.pdf')
     plt.show() 
 
-    with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_h3_chain_2.json", 'w') as f:
+    with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_h3_chain_3.json", 'w') as f:
         json.dump(results, f)
     return
 
@@ -905,8 +908,8 @@ if __name__ == "__main__":
     # plot_sho_interaction_v_beta()
     # h_chain_time_vs_noise()
     # h_chain_time_vs_beta()
-    # h_chain_error_v_interaction()
-    plot_h_chain_eigenvalues()
+    h_chain_error_v_interaction()
+    # plot_h_chain_eigenvalues()
     # test_tot_time_vs_epsilon()
     # tot_time_vs_dim()
     # test_tot_time_vs_epsilon_uniform_gamma()
