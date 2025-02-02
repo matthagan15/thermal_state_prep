@@ -99,8 +99,12 @@ def sample_gammas_with_noise(spectra, noise, num_samples):
         samples.append(sample)
     return samples 
 
-def load_h_chain():
-    with open('/Users/matt/scratch/hamiltonians/h_chain_3.pickle', 'rb') as openfile:
+def load_h_chain(num_hydrogen):
+    if num_hydrogen == 2:
+        path = '/Users/matt/scratch/hamiltonians/h_chain_2.pickle'
+    if num_hydrogen == 3:
+        path = '/Users/matt/scratch/hamiltonians/h_chain_3.pickle'
+    with open(path, 'rb') as openfile:
         h_list = list(pickle.load(openfile))
         dims = h_list.pop()
         h = np.zeros(dims, dtype=np.complex128)
@@ -689,14 +693,14 @@ def h_chain_time_vs_noise():
 def h_chain_error_v_interaction():
     n_int = 50_00
     beta = 4.0
-    ham = load_h_chain()
+    ham = load_h_chain(3)
     target_state = thermal_state(ham, beta)
     print("therml state")
     probs = list(np.diag(target_state))
     probs.sort()
     print(probs)
-    alphas = [0.0025, 0.01, 0.05]
-    times = [1000., 200.]
+    alphas = [0.005, 0.01, 0.05]
+    times = [500., 1000.]
     results = {}
     x = [ix for ix in range(1, n_int + 2)]
     for alpha in alphas:
