@@ -100,7 +100,7 @@ def sample_gammas_with_noise(spectra, noise, num_samples):
     return samples 
 
 def load_h_chain():
-    with open('/Users/matt/scratch/hamiltonians/h_chain_2.pickle', 'rb') as openfile:
+    with open('/Users/matt/scratch/hamiltonians/h_chain_3.pickle', 'rb') as openfile:
         h_list = list(pickle.load(openfile))
         dims = h_list.pop()
         h = np.zeros(dims, dtype=np.complex128)
