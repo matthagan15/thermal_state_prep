@@ -121,7 +121,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction - DEFCON 2}
-% After decades of study and exploration, the simulation of quantum materials remains the most promising application for future fault tolerant digital quantum computers. This application has many stages, from classical preprocessing to prepare the material's Hamiltonian in ways accessible by the quantum computer to the measurement of observables of interest. 
 \matt{Current structure is OK, needs to be much shorter and skip more of the background. More comparisons with other techniques, specifically gilyen glauber dynamics, needs to be done.}
 The simulation of quantum systems and materials is among the most promising applications for exponential improvements of digital quantum computers over classical computers \cite{aspuru2005simulated} \cite{reiher2017elucidating} \cite{tensorHypercontraction}. A critical step in quantum simulation algorithms, as well as other quantum algorithms such as Semi-Definite Program (SDP) solvers \cite{brandao2019sdp} and Hamiltonian learning \cite{anshu_sample-efficient_2021}, is the preparation of good input states. Thermal states of the form $\rho = \frac{e^{-\beta H}}{\trace{e^{-\beta H}}}$ are typically used as they have high overlap with the low energy subspace of the Hamiltonian $H$. This high overlap with the ground state indicates that the computational problem is very difficult, as even approximate sampling of $k$-local ground states is QMA-complete \cite{kempe2005complexitylocalhamiltonianproblem}. 
 
@@ -1278,9 +1277,9 @@ We now move on to more realistic benchmark systems, Hydrogen chains. These Hamil
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.45\linewidth]{numerics/data/h2_chain_2.png}
-    \includegraphics[width = 0.45\linewidth]{numerics/data/h3_chain_7.png}
-    \caption{Hydrogen-2 and Hydrogen-3 chain distance to thermal state vs number of interactions. YES THIS IS A BAD PLOT IT NEEDS TO BE RERAN WITH LABELS.}
+    \includegraphics[width=0.45\linewidth]{numerics/data/error_vs_interaction_h_chain.pdf}
+    \includegraphics[width = 0.45\linewidth]{numerics/data/error.png}
+    \caption{Hydrogen-2 and Hydrogen-3 chain distance to thermal state vs number of interactions. YES THIS IS A BAD PLOT IT NEEDS TO BE RERAN WITH LABELS. TODO: Plot eigenvalue differences of H2 and H3 along with around 100 or 1000 samples of the eigenvalues.}
     \label{fig:h_chain_error}
 \end{figure}
 
