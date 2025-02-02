@@ -100,7 +100,7 @@ def sample_gammas_with_noise(spectra, noise, num_samples):
     return samples 
 
 def load_h_chain():
-    with open('/Users/matt/scratch/hamiltonians/h_chain_3.pickle', 'rb') as openfile:
+    with open('/Users/matt/scratch/hamiltonians/h_chain_2.pickle', 'rb') as openfile:
         h_list = list(pickle.load(openfile))
         dims = h_list.pop()
         h = np.zeros(dims, dtype=np.complex128)
@@ -471,17 +471,18 @@ def tot_time_vs_dim():
 def test_tot_time_vs_epsilon():
     dim = 4
     ham = harmonic_oscillator_hamiltonian(dim)
-    beta = float(dim)
+    beta = float(dim) * 0.5
     print("thermal state target:")
     print(np.diag(thermal_state(ham, beta)))
-    num_samples = 100
+    num_samples = 128
     ep_start = np.log10(5e-1)
-    ep_end = np.log10(5e-3)
+    ep_end = np.log10(5e-4)
     epsilons = np.logspace(ep_start, ep_end, 15, base=10)
     print("epsilons: ", epsilons)
     
 #    WARNING, 2.0 is SPECIAL CASED
-    exponents = [-1.0,  -2.0, -3.0]
+    # exponents = [-1.0,  -2.0, -3.0]
+    exponents = [-1.0, -0.5]
     exponent_results = {}
     for exponent in exponents:
         results = []
@@ -507,7 +508,7 @@ def test_tot_time_vs_epsilon():
             elif exponent == -2.0:
                 alpha = alpha_ep(epsilon) * 10. * np.sqrt(10)
             elif exponent == -1.0:
-                alpha = alpha_ep(epsilon) * .2 * np.sqrt(10)
+                alpha = alpha_ep(epsilon) * .4 * np.sqrt(10)
             else:
                 alpha = alpha_ep(epsilon)
             time = time_ep(epsilon)
@@ -538,7 +539,7 @@ def test_tot_time_vs_epsilon():
             }
     }
     print("exponent results: ", exponent_results)
-    with open('/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting_4', 'w') as f:
+    with open('/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting_5', 'w') as f:
         json.dump(json_dump, f)
     for exp in exponents:
         print("exponent_results[i]: ", exponent_results[exp])
@@ -562,7 +563,7 @@ def test_tot_time_vs_epsilon():
     plt.legend(loc = "upper right")
     # plt.xlabel(r"$\epsilon$")
     # plt.ylabel(r"$L \cdot t$")
-    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting_plot_4.pdf')
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting_plot_5.pdf')
     plt.show()
     return
 
@@ -685,8 +686,8 @@ def h_chain_time_vs_noise():
         json.dump(json_dump, f)
 
 
-def plot_error_v_interaction():
-    n_int = 200_000
+def h_chain_error_v_interaction():
+    n_int = 50_00
     beta = 4.0
     ham = load_h_chain()
     target_state = thermal_state(ham, beta)
@@ -694,16 +695,14 @@ def plot_error_v_interaction():
     probs = list(np.diag(target_state))
     probs.sort()
     print(probs)
-    # alphas = [0.03, 0.0075,0.003, 0.001]
-    alphas = [0.05, 0.025]
-    times = [500., 100.]
+    alphas = [0.001, 0.005]
+    times = [1000., 200.]
     results = {}
-    x = [ix for ix in range(1, n_int + 2, 1_000)]
+    x = [ix for ix in range(1, n_int + 2)]
     for alpha in alphas:
         for time in times:
             print("atiled^2: {:}", (math.pow(alpha * time, 2.0) / (2.0 * ham.shape[0] + 1.0)))
             y, yerr = fixed_number_interactions(ham, alpha, time, beta, n_int, num_samples=8, gamma_strategy='random')
-            # markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
             results["{:},{:}".format(alpha, time)] = list(zip(x, y, yerr))
     for alpha_time_string in results.keys():
         split = alpha_time_string.split(',')
@@ -712,17 +711,52 @@ def plot_error_v_interaction():
         x, y, yerr = zip(*results[alpha_time_string])
         label = r"$\alpha$={:.4},$t$={:}".format(alpha, int(time))
         plt.errorbar(x, y, yerr, label=label)
-        # plt.plot(x, markov, linestyle='dashed')
-    # plt.xscale('log')
     plt.legend(loc='upper right')
     plt.ylabel(r"Error $|| \rho(\beta) - \Phi^L (\rho(0)) ||_1$")
     plt.xlabel(r"Number of Interactions $L$")
-    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_h_chain_3.pdf')
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_h3_chain_2.pdf')
     plt.show() 
 
-    with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_h_chain_3", 'w') as f:
+    with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_h3_chain_2.json", 'w') as f:
         json.dump(results, f)
     return
+
+
+def plot_h_chain_eigenvalues():
+    ham = load_h_chain()
+    spectra = np.linalg.eigvals(ham)
+    avg = np.trace(ham) / ham.shape[0]
+    h_norm = 2*np.linalg.norm(ham, ord = 2)
+    sampled_differences = sample_gammas(avg, h_norm / 4.0, 500)
+    spectral_diffs = []
+    for ix in range(len(spectra)):
+        for jx in range(len(spectra)):
+            if spectra[ix] != spectra[jx]:
+                spectral_diffs.append(np.abs(spectra[ix] - spectra[jx]))
+    spectral_diffs.sort()
+    sampled_differences.sort()
+    def histedges_equalN(x, nbin):
+        npt = len(x)
+        return np.interp(np.linspace(0, npt, nbin + 1),
+                         np.arange(npt),
+                         np.sort(x))
+
+    x = spectral_diffs
+    plt.plot(spectral_diffs, label='true')
+    plt.plot(sampled_differences, label='sampled')
+    plt.legend(loc = 'upper left')
+    plt.show()
+    n, bins, patches = plt.hist(x, histedges_equalN(x, 80))
+    plt.show()
+    print("spectrum: ", spectra)
+    print("spectral diffs: ", spectral_diffs)
+    print("sampled vals: ", sampled_differences)
+    fig, axs = plt.subplots(1, 2, sharey=True, tight_layout=True)
+    axs[0].hist(sampled_differences, bins=20)
+    # axs[1].hist(spectral_diffs, bins=np.linspace(0.0, 1.7, 0.1))
+    axs[0].set_title("sampled gammas")
+    axs[1].set_title("true spectral differences")
+    plt.show()
 
 def plot_sho_error_v_interaction():
     n_int = 300
@@ -867,10 +901,14 @@ if __name__ == "__main__":
     start = time_this.time()
     # plot_sho_tot_time_vs_time()
     # plot_sho_error_v_interaction()
-    plot_error_v_interaction()
+    # plot_error_v_interaction()
     # plot_sho_interaction_v_beta()
     # h_chain_time_vs_noise()
     # h_chain_time_vs_beta()
+    # h_chain_error_v_interaction()
+    plot_h_chain_eigenvalues()
     # test_tot_time_vs_epsilon()
     # tot_time_vs_dim()
     # test_tot_time_vs_epsilon_uniform_gamma()
+    end = time_this.time()
+    print("time elapsed: ", end - start)
