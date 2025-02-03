@@ -662,17 +662,17 @@ def h_chain_time_vs_beta():
     plt.show()
 
 def h_chain_time_vs_noise():
-    ham = load_h_chain()
+    ham = load_h_chain(3)
     # ham = harmonic_oscillator_hamiltonian(5)
     eigs = np.linalg.eigvals(ham)
     spectral_norm = np.max(np.abs(eigs))
     max_difference = np.abs(np.max(eigs) - np.min(eigs))
     print('spectral_norm: ', spectral_norm, ", max_difference: ", max_difference)
-    alpha = 0.005
-    time = 200.
-    num_samples = 32
-    epsilon = 0.10
-    beta = 1.0
+    alpha = 0.01
+    time = 500.
+    num_samples = 100
+    epsilon = 0.05
+    beta = 2.0
     # noises = [0.0, 0.01, 0.05, 0.1]
     noises = np.linspace(0.0, max_difference, 10)
     results = []
@@ -681,12 +681,13 @@ def h_chain_time_vs_noise():
         results.append(x)
         print('noise: ', noise)
         print("result: ", x)
-    plt.xlabel("Gaussian Noise Width")
-    plt.ylabel("L: Interactions Needed")
+    plt.xlabel(r"Gaussian Noise Width $\sigma$")
+    plt.ylabel(r"Total Sim. Time $L \cdot t$")
     plt.plot(noises, results)
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/h3_chain_with_noise_3.pdf')
     plt.show()
     json_dump = {"noises": list(noises), "results": list(results), "alpha": alpha, "time": time, "num_samples": num_samples, "epsilon": epsilon, "beta": beta, "hamiltonian": "h_chain_3"}
-    with open('/Users/matt/repos/thermal_state_prep/numerics/data/h_chain_3_with_noise_2', 'w') as f:
+    with open('/Users/matt/repos/thermal_state_prep/numerics/data/h3_chain_with_noise_3.json', 'w') as f:
         json.dump(json_dump, f)
 
 
@@ -730,11 +731,11 @@ def h_chain_error_v_interaction():
 
 
 def plot_h_chain_eigenvalues():
-    ham = load_h_chain()
+    ham = load_h_chain(3)
     spectra = np.linalg.eigvals(ham)
     avg = np.trace(ham) / ham.shape[0]
     h_norm = 2*np.linalg.norm(ham, ord = 2)
-    sampled_differences = sample_gammas(avg, h_norm / 4.0, 500)
+    sampled_differences = sample_gammas(avg, h_norm, 5000).tolist()
     spectral_diffs = []
     for ix in range(len(spectra)):
         for jx in range(len(spectra)):
@@ -747,23 +748,14 @@ def plot_h_chain_eigenvalues():
         return np.interp(np.linspace(0, npt, nbin + 1),
                          np.arange(npt),
                          np.sort(x))
-
-    x = spectral_diffs
+    print("spectrum: ", spectra)
+    print("spectral diffs: ", spectral_diffs)
+    # print("sampled vals: ", sampled_differences)
     plt.plot(spectral_diffs, label='true')
     plt.plot(sampled_differences, label='sampled')
     plt.legend(loc = 'upper left')
     plt.show()
-    n, bins, patches = plt.hist(x, histedges_equalN(x, 80))
-    plt.show()
-    print("spectrum: ", spectra)
-    print("spectral diffs: ", spectral_diffs)
-    print("sampled vals: ", sampled_differences)
-    fig, axs = plt.subplots(1, 2, sharey=True, tight_layout=True)
-    axs[0].hist(sampled_differences, bins=20)
-    # axs[1].hist(spectral_diffs, bins=np.linspace(0.0, 1.7, 0.1))
-    axs[0].set_title("sampled gammas")
-    axs[1].set_title("true spectral differences")
-    plt.show()
+    
 
 def plot_sho_error_v_interaction():
     n_int = 300
@@ -910,9 +902,9 @@ if __name__ == "__main__":
     # plot_sho_error_v_interaction()
     # plot_error_v_interaction()
     # plot_sho_interaction_v_beta()
-    # h_chain_time_vs_noise()
+    h_chain_time_vs_noise()
     # h_chain_time_vs_beta()
-    h_chain_error_v_interaction()
+    # h_chain_error_v_interaction()
     # plot_h_chain_eigenvalues()
     # test_tot_time_vs_epsilon()
     # tot_time_vs_dim()
