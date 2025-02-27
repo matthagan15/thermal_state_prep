@@ -1,0 +1,160 @@
+\documentclass[
+%reprint,
+%superscriptaddress,
+%groupedaddress,
+%unsortedaddress,
+%runinaddress,
+%frontmatterverbose, 
+%preprint,
+%preprintnumbers,
+%nofootinbib,
+%nobibnotes,
+%bibnotes,
+ amsmath,amssymb,
+ aps,
+%pra,
+%prb,
+%rmp,
+%prstab,
+%prstper,
+%floatfix,
+onecolumn, 
+nofootinbib]{revtex4-2}
+%\usepackage[utf8]{inputenc}
+
+\usepackage{amsmath,amsthm, amssymb}
+\usepackage[margin=3cm]{geometry}
+\usepackage{mathtools}
+\usepackage{dsfont}
+\usepackage{xcolor}
+\usepackage{algorithm,algpseudocode}
+% \usepackage{todonotes}
+% \usepackage{nicefrac}
+\usepackage{mathrsfs}
+% \usepackage{tikz}
+\usepackage{thm-restate}
+\usepackage{hyperref}
+
+\usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    linkcolor={black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+
+\usepackage{caption}
+\usepackage{subcaption}
+%\usepackage{etoc}
+
+%%%%%%%%    THEOREM DEFINITIONS AND RESTATABLE
+% \newcounter{claim}
+% \setcounter{claim}{0}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{claim}{Claim}
+\newtheorem{dependency}{Dependency}
+\newtheorem{definition}[theorem]{Definition}
+
+\newcommand{\matt}[1]{\todo[color=red!50, prepend, caption={Matt}, tickmarkheight=0.25cm]{#1}}
+% \newcommand{\matt}[1]{\textcolor{red}{{\Large TODO:} #1}}
+
+\newcommand{\on}{\rm on}
+\newcommand{\off}{\rm off}
+\newcommand{\haar}{\text{Haar}}
+
+%%%%%%%%    NOTATION DEFINITIONS FOR EASIER WRITING
+\newcommand{\ket}[1]{|#1\rangle}
+\newcommand{\bra}[1]{\langle #1|}
+\newcommand{\braket}[2]{\langle #1|#2\rangle}
+\newcommand{\ketbra}[2]{| #1\rangle\! \langle #2|}
+\newcommand{\parens}[1]{\left( #1 \right)}
+\newcommand{\brackets}[1]{\left[ #1 \right]}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\norm}[1]{\left|\left| #1 \right|\right|}
+\newcommand{\diamondnorm}[1]{\left| \left| #1 \right| \right|_\diamond}
+\newcommand{\anglebrackets}[1]{\left< #1 \right>}
+\newcommand{\overlap}[2]{\anglebrackets{#1 , #2 }}
+\newcommand{\set}[1]{\left\{ #1 \right\}}
+\newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
+%\newcommand{\openone}{\mathds{1}}
+\newcommand{\expect}[1]{\mathbb{E}\brackets{#1}}
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\TT}{\mathcal{T}}
+
+\newcommand{\variance}[1]{\textit{Var} \brackets{ #1 }}
+\newcommand{\prob}[1]{{\rm Prob}\left[ #1 \right]}
+\newcommand{\bigo}[1]{O\left(#1\right)}
+\newcommand{\bigotilde}[1]{\widetilde{O} \left( #1 \right)}
+\newcommand{\ts}{\textsuperscript}
+\newcommand{\deltaM}{\Delta_{\text{M}}}
+
+\DeclareMathOperator{\Tr}{Tr}
+\newcommand{\trace}[1]{\Tr \brackets{ #1 }}
+\newcommand{\partrace}[2]{\Tr_{#1} \brackets{ #2 }}
+\newcommand{\complex}{\mathbb{C}}
+
+%%%%% COMMONLY USED OBJECTS
+\newcommand{\hilb}{\mathcal{H}}
+\newcommand{\partfun}{\mathcal{Z}}
+\newcommand{\identity}{\mathds{1}}
+\newcommand{\gue}{\rm GUE}
+\DeclareMathOperator{\sinc}{sinc}
+\DeclareMathOperator{\hermMathOp}{Herm}
+\DeclareMathOperator{\im}{Im}
+\DeclareMathOperator{\diag}{diag}
+\newcommand{\herm}[1]{\hermMathOp\parens{#1}}
+
+\begin{document}
+
+\title{Thermal State Preparation with One Ancilla Qubit \\
+Extended Abstract}
+
+\author{Matthew Hagan}
+\affiliation{
+University of Toronto, Department of Physics, Toronto ON, Canada
+}
+\email{matt.hagan@mail.utoronto.ca}
+
+\author{Nathan Wiebe}
+\affiliation{
+University of Toronto, Department of Computer Science, Toronto ON, Canada
+}%
+\affiliation{
+Pacific Northwest National Laboratory, Richland WA, USA
+}%
+\affiliation{
+Canadian Institute for Advanced Research, Toronto ON, Canada
+}%
+
+\maketitle
+
+\section{Overview}
+Thermal states are fundamental primitives for many quantum algorithms, ranging from quantum chemistry and materials simulations to SemiDefinite Program (SDP) solvers. They are also of utmost importance in physics, as systems tend to generically equilibrate to the temperature of their surrounding environments. Understanding the problem of thermalization, or how systems approach thermal states, is therefore a critical task for both physics and quantum computer science. We address these problems by proposing a new quantum algorithm that is capable of preparing thermal states for arbitrary systems at arbitrary temperatures and compiles to simple Hamiltonian evolution circuits. We address the computational perspective on thermal state preparation by providing a simple and robust algorithm that works for any system with completely explicit simulation time bounds for grounds states and the physical perspective by extending the Repeated Interactions framework for open systems to a much broader range of systems. 
+
+\section{Background}
+
+Given the ubiquity of Gibbs sampling, algorithms for the problem on classical computers have seen active development since the origins of the Metropolis-Hastings algorithm in the 1950's. Algorithms for preparing thermal states on quantum computers are much less developed, given that quantum computers are a much more recent development, and is stymied by a lack of physical understanding of how generic systems approach thermal equilibrium. Recently there has been rapid development of quantum algorithms for thermal state preparation based on two different physical theories, one by simulating Linbladian evolution of the Davies Linbladian and the other by simulating the time evolution of Eigenstate Thermalization Hypothesis (ETH) satisfying Hamiltonians. The rest of this section will provide an overview of existing algorithms for thermal state preparation. 
+
+The first algorithms proposed for preparing thermal states on quantum computers rely on phase estimation to directly work in the Hamiltonians eigenbasis or attempt to mimic the Metropolis-Hastings algorithm. Some drawbacks to the phase estimation approach is that phase estimation requires a doubling of the number of qubits and has no clear path to analyzing special case Hamiltonians beyond the exponential time required for the worst-case scenario. Previous Metropolis-Hastings algorithms have struggled to handle the sample filtering required in the classical algorithm and not only require complicated techniques such as Marriot-Watrous rewinding but also have questionable proofs of correctness.
+
+Recently developed physically inspired methods offer much improved algorithms over existing techniques. Chronologically, the first algorithm developed by Shtanko and Movassagh utilizes time evolution of the system while coupled to a thermal bath. These techniques offer conceptually simpler circuits than either of the existing approaches mentioned, as they essentially only require Hamiltonian simulation routines. Two drawbacks to this approach are as follows. The first is that one algorithm they propose only works for ETH satisfying Hamiltonians and explicitly scales with $\beta$, meaning that the exact ground state limit is unattainable. The second algorithm proposed does work for generic Hamiltonians, but the convergence method used is a relative entropy bound that has a prohibitively high failure probability for low precision $\epsilon$ of the output state.
+
+More recently, a variety of algorithms \cite{chen2023quantumthermalstatepreparation, gilyen2024quantumgeneralizationsglaubermetropolis} based on Linbladian approaches have been show to prepare thermal states for generic systems. These approaches are based on a physical model for thermalization known as a Davies generator. These algorithms are generic, satisfy the Kubo-Martin-Schwinger (KMS) conditions for thermal state fixed points (in some settings exactly, in others approximately), and can be shown to be efficient for ETH satisfying Hamiltonians. Some drawbacks of these algorithms is that they are fairly complex, meaning that compiling these routines to specific circuits is very nontrivial, and require at least a logarithmic ancilla overhead. A further complication is that the runtime of many of these algorithms explicitly depend on a mixing time, which is difficult to compute for arbitrary systems.
+
+\section{Algorithm and Proof Techniques}
+We present a quantum algorithm 
+
+\section{Main Results}
+
+% Thermal states are fundamental primitives for many quantum algorithms, ranging from quantum chemistry to SemiDefinite Program (SDP) solvers. As they approach the ground state as the temperature of the thermal state approaches 0, they are very computationally difficult to prepare but also incredible resources for probing various properties, such as entanglement structure, of the Hamiltonian under study. How quantum systems efficiently approach thermal equilibrium is a major open question from both a physics perspective, as in how do realistic quantum systems interact with an environment to cool to the same temperature as the environment, and a computational perspective, meaning how can we prepare thermal states for a given Hamiltonian on a digital, fault-tolerant quantum computer. 
+
+% From the physics perspective there exist a few proposed methods for how generic systems may approach thermal equilibrium. The Eigenstate Thermalization Hypothesis (ETH) is a leading mechanism for understanding how many-body systems that do not interact with an external environment can appear thermal for any single particle. This model however is not typically accommodating for environment interactions and it is still an open problem to classify all Hamiltonians that satisfy the assumptions needed, hence the "Hypothesis" in the name. Linbladian dynamics are used to describe environments that are typically much larger than the system. This framework works well in the weak system-enivornment coupling regime and with "Markovian" environments, which can be thought of as large environments that are not effected by the interaction with the system. As a result these models tend to break down in strong coupling and small environment regimes. The Repeated Interactions (RI) framework was developed describe very small environments that are repeatedly refreshed. This method is relatively difficult to study for arbitrary systems and as a result most results have been for small systems, such as single qubits or three-level systems. 
+
+% From the computational perspective there are algorithms that work for generic Hamiltonians, such as phase estimation based approaches or Metropolis-Hastings inspired approaches. In the past few years there has been rapid development of physics based approaches, some that work for ETH satisfying Hamiltonians and others that are based on Linbladian simulations and work for all systems. In our paper we develop a new thermalization procedure that relies solely on Hamiltonian simulation of the unprocessed Hamiltonian of interest.   
+
+\bibliographystyle{unsrt}
+\bibliography{bib}
+\end{document}

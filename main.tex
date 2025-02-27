@@ -1,5 +1,26 @@
-\documentclass{article}
-\usepackage[utf8]{inputenc}
+\documentclass[
+%reprint,
+%superscriptaddress,
+%groupedaddress,
+%unsortedaddress,
+%runinaddress,
+%frontmatterverbose, 
+%preprint,
+%preprintnumbers,
+%nofootinbib,
+%nobibnotes,
+%bibnotes,
+ amsmath,amssymb,
+ aps,
+%pra,
+%prb,
+%rmp,
+%prstab,
+%prstper,
+%floatfix,
+onecolumn, 
+nofootinbib]{revtex4-2}
+%\usepackage[utf8]{inputenc}
 
 \usepackage{amsmath,amsthm, amssymb}
 \usepackage[margin=3cm]{geometry}
@@ -7,10 +28,10 @@
 \usepackage{dsfont}
 \usepackage{xcolor}
 \usepackage{algorithm,algpseudocode}
-\usepackage{todonotes}
-\usepackage{nicefrac}
+% \usepackage{todonotes}
+% \usepackage{nicefrac}
 \usepackage{mathrsfs}
-\usepackage{tikz}
+% \usepackage{tikz}
 \usepackage{thm-restate}
 \usepackage{hyperref}
 
@@ -25,7 +46,7 @@
 
 \usepackage{caption}
 \usepackage{subcaption}
-\usepackage{etoc}
+%\usepackage{etoc}
 
 %%%%%%%%    THEOREM DEFINITIONS AND RESTATABLE
 % \newcounter{claim}
@@ -58,7 +79,7 @@
 \newcommand{\overlap}[2]{\anglebrackets{#1 , #2 }}
 \newcommand{\set}[1]{\left\{ #1 \right\}}
 \newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
-\newcommand{\openone}{\mathds{1}}
+%\newcommand{\openone}{\mathds{1}}
 \newcommand{\expect}[1]{\mathbb{E}\brackets{#1}}
 \newcommand{\EE}{\mathbb{E}}
 \newcommand{\TT}{\mathcal{T}}
@@ -87,40 +108,84 @@
 \newcommand{\herm}[1]{\hermMathOp\parens{#1}}
 
 
-% \title{Ground and Thermal State Preparation with One Ancilla Qubit}
-% \title{Single Ancilla Thermal State Preparation via Repeated Interactions}
-% \title{Single-Ancilla Ground and Thermal State Preparation:\\ {\large The Thermodynamic Cost of Ignorance}}
-\title{The Thermodynamic Cost of Ignorance:\\{\large Single Ancilla Thermal State Preparation}}
-\author{Matthew Hagan, Nathan Wiebe}
-\date{May 2022}
-
 \begin{document}
 
-\maketitle
-% \abstract{The repeated interactions framework is a theoretical method of thermalization for open quantum systems that proposes systems reach thermal equilibrium by interacting with small, single qubit, ``environments" that are in themselves in thermal equilibrium. The mental model is many photons bombarding a sample, each interacting for some time only to be replaced by a fresh photon after some interaction time. We study this model through the lens of quantum algorithm design by modeling the interaction hamiltonian with a random ensemble that resembles the GUE distribution and studying the dynamics in a weak-coupling or short-time regime. Our main insight is that the dynamics of the repeated interactions channel acting on a quantum state is controllably close to a Markov chain over the eigenstates of the system Hamiltonian. The fixed points and spectral gap of this Markov chain are dictated by the eigenvalue gap of the environment Hamiltonians. One crucial benefit of this Markov chain is that if configured properly the fixed point is a thermal state of the system automatically and bypasses the need for filtration techniques of Metropolis-Hastings style algorithms. As we further only need quantum simulation as a sub-routine this algorithm should be viewed as the quantum generalization of Hamiltonian Monte Carlo techniques. We provide detailed analysis for an arbitrary single qubit system, including analytic runtime bounds for both knowledge of the eigenvalue gap and probabilistic analysis based on a distribution of the eigenvalue gap. We also analyze a truncated Harmonic Oscillator and show that the thermal state is a fixed point and provide numeric bounds on the Markov relaxation time. For generic systems we show that in the zero-temperature limit the ground state is a fixed point. We provide numeric results for the single qubit, harmonic oscillator, and hydrogen chains. The harmonic oscillator numerics display a Mpemba phenomenon, when starting from the infinite temperature aka maximally mixed state, where lower temperature states require less interactions and interaction time to thermalize than some intermediate temperature states.}
+\title{ {The Thermodynamic Cost of Ignorance:} \\
+Thermal State Preparation with One Ancilla Qubit}
 
-% \begin{center}
-%     \textbf{Abstract 2.0}
-% \end{center}
-% The preparation of good initial states for the simulation of quantum systems on digital quantum devices is an active area of research, as many of the existing algorithms have significant drawbacks. In this paper we propose a novel algorithm for the preparation of thermal states by combining ideas from the repeated interactions or collisional model of thermalization from open quantum systems literature and Hamiltonian Monte Carlo techniques from machine learning. The algorithm consists of preparing a single environment qubit in a thermal state at inverse temperature $\beta$ and a user specified eigenvalue gap $\gamma$ and then simulating the time dynamics of the system of interest with a random interaction Hamiltonian to couple the ancilla qubit to the system. The dynamics of the channel in the weak-coupling/long-time or strong-coupling/short-time regime reduce to a Markov chain over the eigenstates of the system Hamiltonian. This Markov chain has the thermal state $e^{-\beta H} / \partfun$ as a fixed point, bypassing the need for complicated sample rejection techniques (such as Marriot-Watrous rewinding) present in quantum analogs of Metropolis-Hastings style algorithms. We study the performance of this algorithm in detail for arbitrary single qubit Hamiltonians and the truncated Harmonic oscillator, with numeric evidence showcasing a Quantum Mpemba effect in the Harmonic oscillator. We further provide analytic evidence that the thermal state is the fixed point if one can sample eigenvalue differences exactly for any Hamiltonian and we show numeric evidence that this requirement is not restrictive for small hydrogen chain systems. 
+\author{Matthew Hagan}
+\affiliation{
+University of Toronto, Department of Physics, Toronto ON, Canada
+}
+\email{matt.hagan@mail.utoronto.ca}
 
-% \begin{center}
-%     \textbf{Abstract 3.0}
-% \end{center}
-% \abstract{
-% The simulation of quantum systems remains the most promising application for future digital quantum computers after decades of theoretic exploration. Most research has gone into developing better algorithms for simulating the time dynamics, with initial state preparation posing the most challenging open problem. In this paper we propose a quantum algorithm for the preparation of quantum thermal states $e^{-\beta H} / \partfun$ based on a synthesis of ideas from the Repeated Interactions framework in the open quantum systems literature and Hamiltonian Monte Carlo techniques from machine learning. Our algorithm works by preparing the ancilla in a thermal state, coupling the ancilla and system with a random matrix with Haar distributed eigenvectors and I.I.D Gaussian eigenvalues, and then simulating the time dynamics of the now coupled system-ancilla before removing the ancilla. We show that the quantum dynamics of this channel is arbitrarily close to a classical Markov chain over the eigenstates of $H$ which, when tuned properly, has the thermal state as it's fixed point. This Markov chain crucially avoids any complicated rejection or unwinding steps present in most previous quantum Metropolis-Hastings inspired algorithms, which significantly simplifies the implementation. The runtime of our algorithm scales like the inverse of the spectral gap of the resulting Markov chain, which is to be expected. We provide detailed analysis for the harmonic oscillator, which displays a surprisingly complicated Mpemba phenomenon, and we show that low temperature thermal states of small hydrogen chains can be prepared by choosing random energy gaps for the ancilla hamiltonian. 
-% }
+\author{Nathan Wiebe}
+\affiliation{
+University of Toronto, Department of Computer Science, Toronto ON, Canada
+}%
+\affiliation{
+Pacific Northwest National Laboratory, Richland WA, USA
+}%
+\affiliation{
+Canadian Institute for Advanced Research, Toronto ON, Canada
+}%
 
 
 \begin{abstract}
-    We present a new quantum algorithm for preparing arbitrary thermal states on a digital quantum device with a single ancilla qubit. The algorithm involves preparing a ancilla qubit in the thermal state for the desired $\beta$ followed by simulating the system-ancilla pair coupled via a randomized interaction $G$ and is given by the channel $\rho \mapsto \partrace{{\rm anc}}{e^{-i(H + \alpha G)t} \rho \otimes \frac{e^{-\beta H_E}}{\partfun} e^{+ i (H + \alpha G)t}}$. Refreshing the state of the ancilla and repeating brings the system closer to the thermal state. We prove analytically that there are asymptotic speedups given exact knowledge of the eigenvalue differences $\lambda_S(i) - \lambda_S(j)$ of the system for ground state preparation as opposed to complete ignorance and demonstrate numeric evidence of speedups for finite $\beta$ for small Hydrogen chains. Our main results are runtime bounds for ground state preparation ($\beta \to \infty$) for arbitrary non-degenerate Hamiltonians with or without knowledge of eigenvalue differences and proofs of fixed points for the thermal state for finite $\beta$. We supplement our theoretic analysis of the algorithm with extensive numerics.
+  In this work we investigate a model of thermalization wherein a single
+ancillary qubit randomly interacts with the system to be thermalized. This not
+only sheds light on the emergence of Gibbs states in nature, but also provides
+a routine for preparing arbitrary thermal states on a digital quantum computer.
+For desired $\beta$ and random interaction $G$ the routine boils down to time
+independent Hamiltonian simulation and is represented by the channel $\Phi :
+\rho \mapsto \mathbb{E}_G {\rm Tr}_{\rm Env} \left[ e^{-i(H + \alpha G)t}
+\left(\rho \otimes \frac{e^{-\beta H_E}}{\mathcal{Z}}\right) e^{i (H + \alpha
+G)t} \right]$. We rigorously prove that these dynamics reduce to a Markov chain
+process in the weak-coupling regime with the thermal state as the approximate
+fixed point. We upper bound the total simulation time required in terms of the
+Markov chain spectral gap $\lambda_\star$, which we compute exactly in the
+ground state limit. These results are independent of any eigenvalue knowledge
+of the system, but we are further able to show that with knowledge of
+eigenvalue differences $\lambda_S(i) - \lambda_S(j)$, then the total simulation
+time is dramatically reduced. The ratio of the complete ignorance simulation
+cost to the perfect knowledge simulation cost scales as $\widetilde{O}
+\left({\frac{\|{H_S}\|^7}{\delta_{\rm min}^7 \epsilon^{3.5}
+\lambda_\star(\beta)^{3.5}}}\right)$, where $\delta_{\min}$ is related to the
+eigenvalue differences of the system. Additionally, we provide more specific
+results for single qubit and harmonic oscillator systems as well as numeric
+experiments with hydrogen chains. In addition to the algorithmic merits, these
+results can be viewed as broad extensions of the Repeated Interactions model to
+generic Hamiltonians with unknown interactions, giving a complete picture of
+the thermalization process for quantum systems.
+% In this work we investigate a model of thermalization wherein a single ancillary qubit randomly interacts with the system to be thermalized. This not only sheds light on the emergence of Gibbs states in nature, but also provides a routine for preparing arbitrary thermal states on a digital quantum computer. For desired $\beta$ and random interaction $G$, which has Haar random eigenvalues and I.I.D Gaussian eigenvalues, the routine boils down to time independent Hamiltonian simulation and is represented by the channel $\Phi : \rho \mapsto \EE_G \partrace{{\rm Env}}{e^{-i(H + \alpha G)t} \left(\rho \otimes \frac{e^{-\beta H_E}}{\partfun}\right) e^{i (H + \alpha G)t}}$. We rigorously prove that these dynamics reduce to a Markov chain process in the weak-coupling regime with the thermal state as the approximate fixed point. This allows us to upper bound the total simulation time required as a function of the Markov chain spectral gap $\lambda_\star$, which we are able to compute exactly in the ground state limit. These results are independent of any eigenvalue knowledge of the system, but we are further able to show that if one has knowledge of eigenvalue differences $\lambda_S(i) - \lambda_S(j)$, then the total simulation time is dramatically reduced. The ratio of the complete ignorance simulation cost to the perfect knowledge simulation cost scales as $\bigotilde{\frac{\norm{H_S}^7}{\delta_{\min}^7 \epsilon^{3.5} \lambda_\star(\beta)^{3.5}}}$, where $\delta_{\min}$ is related to the eigenvalue differences of the system. Additionally, we provide more specific results for single qubit and harmonic oscillator systems as well as numeric experiments with hydrogen chains. In addition to the algorithmic merits, these results can be viewed as broad extensions of the Repeated Interactions model in open quantum systems to generic Hamiltonians with unknown interactions, giving a complete picture of the thermalization process for quantum systems.
 \end{abstract}
+
+
+% Abstract 7.1
+% \begin{abstract}
+% In this work we investigate a model of thermalization wherein a single ancillary qubit randomly interacts with the system to be thermalized. This not only sheds light on the emergence of Gibbs states in nature, but also provides a routine for preparing arbitrary thermal states on a digital quantum computer. The procedure involves preparing the ancilla qubit in the thermal state for the desired $\beta$, followed by simulating the system-ancilla pair coupled via a randomized interaction $G$ and is given by the channel $\rho \mapsto \partrace{{\rm env}}{e^{-i(H + \alpha G)t} \left(\rho \otimes \frac{e^{-\beta H_E}}{\partfun}\right) e^{i (H + \alpha G)t}}$. We rigorously prove that these dynamics reduce to a Markov chain process with the thermal state as the approximate fixed point in the weak-coupling regime. This allows us to upper bound the total simulation time required as a function of the spectral gap $\lambda_\star$, which we are able to compute exactly in the ground state limit. These results are independent of any eigenvalue knowledge of the system, but further we are able to show that if one has knowledge of eigenvalue differences $\lambda_S(i) - \lambda_S(j)$, then the total simulation time is dramatically reduced. The ratio of the complete ignorance simulation cost to the perfect knowledge simulation cost scales as $\bigotilde{\frac{\norm{H_S}^7}{\delta_{\min}^7 \epsilon^{3.5} \lambda_\star(\beta)^{3.5}}}$, where $\delta_{\min}$ is related to the eigenvalue differences of the system. Additionally, we provide more specific results for single qubit and harmonic oscillator systems as well as numeric experiments with hydrogen chains. These results can be viewed as broad extensions of the Repeated Interactions model in open quantum systems to generic Hamiltonians with unknown interactions, giving a complete picture of the thermalization process for quantum systems.
+% \end{abstract}
+
+
+% Abstract 7.0
+% \begin{abstract}
+% In this work we investigate a model of thermalization wherein a single ancillary qubit randomly interacts with the system to be thermalized. This not only sheds light on the emergence of Gibbs states in nature, but also provides a quantum algorithm for preparing arbitrary thermal states on a digital quantum device. The algorithm involves preparing the ancilla qubit in the thermal state for the desired $\beta$, followed by simulating the system-ancilla pair coupled via a randomized interaction $G$ and is given by the channel $\rho \mapsto \partrace{{\rm env}}{e^{-i(H + \alpha G)t} \left(\rho \otimes \frac{e^{-\beta H_E}}{\partfun}\right) e^{i (H + \alpha G)t}}$. We rigorously prove that these dynamics reduce to a Markov chain process with the thermal state as the approximate fixed point in the weak-coupling regime. This allows us to upper bound the total simulation time required as a function of the spectral gap $\lambda_\star$, which we are able to compute exactly in the ground state limit. These results are independent of any eigenvalue knowledge of the system, but further we are able to show that if one has knowledge of eigenvalue differences $\lambda_S(i) - \lambda_S(j)$, then the total simulation time is dramatically reduced. The ratio of the complete ignorance simulation cost to the perfect knowledge simulation cost scales as $\bigotilde{\frac{\norm{H_S}^7}{\delta_{\min}^7 \epsilon^{3.5} \lambda_\star(\beta)^{3.5}}}$, where $\delta_{\min}$ is related to the eigenvalue differences of the system. Additionally, we provide more specific results for single qubit and harmonic oscillator systems as well as numeric experiments with hydrogen chains. These results can be viewed as broad extensions of the Repeated Interactions model in open quantum systems to generic Hamiltonians with unknown interactions, giving a complete picture of the thermalization process for quantum systems.
+% \end{abstract}
+
+% Abstract 6.0
+% \begin{abstract}
+%     We present a quantum algorithm for preparing arbitrary thermal states on a digital quantum device with a single ancilla qubit. The algorithm involves preparing a ancilla qubit in the thermal state for the desired $\beta$ followed by simulating the system-ancilla pair coupled via a randomized interaction $G$ and is given by the channel $\rho \mapsto \partrace{{\rm env}}{e^{-i(H + \alpha G)t} \left(\rho \otimes \frac{e^{-\beta H_E}}{\partfun}\right) e^{+ i (H + \alpha G)t}}$. We show that refreshing the state of the ancilla and repeating brings causes the system to the thermal state via a novel technique that relates the thermalization process to a Markov chain. 
+%     We provide analytic convergence bounds for two scenarios: one where we know all the eigenvalue gaps in the system and the other where we are ignorant of the gaps.  We show a polynomial advantage in the provable upper bounds arises from this knowledge of the gaps that leads to an eigth-order speedup in the simulation time with the differences between the eigenvalue gaps to prepare a thermal state for any $\beta$ for an arbitrary quantum system. This illustrates the high cost of ignorance in using this randomized approach to prepare thermal states.  We also provide tighter analysis for the important cases of thermalizing qubits and harmonic oscillators using our algorithm and provide rigorous bounds on the total simulation time needed to thermalize these systems with random interactions using our algorithm.  Finally we test our algorithm numerically on hydrogen chains and show that thermalization can occur quickly even in systems for which we have no a priori knowledge of the spectrum.
+% \end{abstract}
+
+\maketitle
+\newpage
 \tableofcontents
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Introduction - DEFCON 2}
+\section{Introduction}
 
 The simulation of quantum systems and materials is among the most promising applications for exponential advantages of digital quantum computers over classical computers \cite{aspuru2005simulated} \cite{reiher2017elucidating} \cite{tensorHypercontraction}. A critical step in quantum simulation algorithms, as well as other quantum algorithms such as Semi-Definite Program (SDP) solvers \cite{brandao2019sdp} and Hamiltonian learning routines \cite{anshu_sample-efficient_2021}, is the preparation of good input states, which are typically thermal states $\frac{e^{-\beta H}}{\trace{e^{-\beta H}}}$. Thermal states at low temperatures (high $\beta$) have large overlap with the ground states of the system, indicating that preparing thermal states is just as difficult as the QMA-Hard $k$-local ground state preparation problem \cite{kempe2005complexitylocalhamiltonianproblem}. 
 
@@ -128,27 +193,25 @@ Many classical algorithms have been developed to estimate the measurement outcom
 
 In recent years new approaches have been developed \cite{chen2023quantumthermalstatepreparation}, \cite{gilyen2024quantumgeneralizationsglaubermetropolis}, \cite{motlagh2024ground}, \cite{motta2019} \cite{ding2024single}, many of which are based on the simulation of Linblad operators from open quantum systems \cite{davies1974markovian}. These algorithms have seen a marked improvement in recent years, ranging from ground state preparation routines with single-ancilla overhead \cite{ding2024single} to the first constructions that satisfy a discrete-time detailed balance condition \cite{gilyen2024quantumgeneralizationsglaubermetropolis}. The correctness of many of these algorithms, such as \cite{ding2024efficientquantumgibbssamplers}, is based on satisfying the Kubo-Martin-Schwinger (KMS) condition (\cite{kms2}, \cite{kms1}) which guarantees that the thermal state is a fixed point of the dynamics. The literature on this class of algorithms is already significant and continues to grow, so we point the reader to \cite{gilyen2024quantumgeneralizationsglaubermetropolis}, \cite{dalzell2023quantumalgorithmssurveyapplications}, \cite{chen2023quantumthermalstatepreparation} and \cite{rouze2024efficientthermalizationuniversalquantum} for their thorough literature reviews. 
 
-One of the main drawbacks to the above approaches is the sheer complexity of the resulting algorithms. These algorithms tend to rely on coherently weighted sums of Heisenberg evolved jump operators and the construction of circuits to simulate the resulting Linbladians is highly nontrivial, as mentioned in Section 1.2 of \cite{gilyen2024quantumgeneralizationsglaubermetropolis}. Further, these algorithms tend to require more ancilla qubits as more jump operators are used. For ground states specifically there exists single ancilla algorithms \cite{ding2024single} but we remark that our algorithm is the first general purpose thermal state preparation routine for finite $\beta$ that utilizes only one qubit explicitly. One algorithm that avoids this drawback is given by Shtanko and Movassagh \cite{shtanko2023preparingthermalstatesnoiseless}, as it does not transform the input Hamiltonian or rely on coherent sums of the input. They propose two algorithms in their paper. The first couples the system to a large bath of ancilla qubits via random $k$-local Pauli terms but is only proven to work for input Hamiltonians satisfying the Eigenstate Thermalization Hypothesis (ETH). The second couples the system to a bath of ancilla qubits via random circuit rotations. This second algorithm works for more generic Hamiltonians, but has much weaker guarantees on the convergence time needed and involves an extra rejection step similar, but not identical to, Temme et al \cite{temme2011}. Further, both of these algorithms have runtimes with explicit $\beta$ scaling which leads to a breakdown of their analysis in the $\beta \to \infty$ limit. Improving the analysis of these algorithms to more general Hamiltonians and to the ground state limit are important open problems, as mentioned in the conclusion of \cite{shtanko2023preparingthermalstatesnoiseless}.
+One of the main drawbacks to the above approaches is the sheer complexity of the resulting algorithms. These algorithms tend to rely on coherently weighted sums of Heisenberg evolved jump operators and the construction of circuits to simulate the resulting Linbladians is nontrivial, as mentioned in Section 1.2 of \cite{gilyen2024quantumgeneralizationsglaubermetropolis}. Further, these algorithms tend to require logarithmically more ancilla qubits to allow for the addition of jump operators whereas our routine explicitly utilizes only a single ancilla qubit. Turning to ground states specifically, there exists single ancilla algorithms \cite{ding2024single}  but we remark that our channel is the first general purpose thermal state preparation routine for finite $\beta$ that utilizes only one qubit explicitly. Further, our routine avoids the complication of simulating weighted Linbladians and has incredibly simple circuits only relying on time independent Hamiltonian simulation and Haar 2-designs. 
 
-In this paper, we propose a novel thermal state preparation algorithm inspired by the classical Hamiltonian Monte Carlo algorithm (\cite{neal1993probabilistic}, \cite{hoffman2011nouturnsampleradaptivelysetting}), which is also known as Hybrid Monte Carlo. Hamiltonian Monte Carlo resolves some of the previously mentioned issues, specifically the poor scaling with high dimensional systems, by introducing extra variables that serve as momentum and using time dynamics to generate state transitions. These extra momentum variables are sampled from their thermal distribution $\propto e^{-\beta p^2}$ and the total system is then simulated with classical Hamiltonian dynamics to generate updates to the state. Our algorithm was developed out of efforts to port this philosophy of using extra variables and time dynamics to prepare thermal states over to quantum systems. The extra states that we add are a single ancilla qubit prepared in a thermal state and we simulate the system-ancilla pair with a randomized interaction term $G$, see Section \ref{sec:prelim} and Eq. \eqref{eq:PhiDef} for more details. 
+Another algorithm that avoids some of the drawbacks of Linbladian simulation is the thermal state preparation routine by Shtanko and Movassagh \cite{shtanko2023preparingthermalstatesnoiseless}. They propose two algorithms, one tailored to a specific class of Hamiltonians and another more general algorithm. The first couples the system to a large bath of ancilla qubits via random $k$-local Pauli terms but is only proven to work for input Hamiltonians satisfying the Eigenstate Thermalization Hypothesis (ETH). The second couples the system to a bath of ancilla qubits via random circuit rotations. This second algorithm works for more generic Hamiltonians, but has much weaker guarantees on the convergence time needed and involves an extra rejection step similar, but not identical to, Temme et al \cite{temme2011}. Further, both of these algorithms have runtimes with explicit $\beta$ scaling which leads to a breakdown of their analysis in the $\beta \to \infty$ limit. Improving the analysis of these algorithms to more general Hamiltonians and to the ground state limit are important open problems, as mentioned in the conclusion of \cite{shtanko2023preparingthermalstatesnoiseless}.
 
-We analyze the resulting channel in a weak-coupling regime and obtain a reduction of the quantum dynamics to an underlying Markov chain over the eigenstates of the system. This allows us to show the correctness of the algorithm fairly easily by finding the fixed point of the Markov chain directly. We explicitly do not rely on KMS conditions, instead directly proving conditions on the fixed points that more resembles classical detailed balance, see Eq. \eqref{eq:detailed_balance}. One potential downside to this approach is that the convergence time of our algorithm is now dependent on the mixing time of a classical Markov process, which is near impossible to know a priori. This is a feature of virtually all previous thermal state preparation routines and computing the spectral gaps that dictate these relaxation times is a major open problem. For our algorithm we are unable to compute these spectral gaps for general systems and finite $\beta$, but we resolve both open problems posed by Shtanko and Movassagh \cite{shtanko2023preparingthermalstatesnoiseless} by computing lower bounds on these spectral gaps for arbitrary non-degenerate Hamiltonians in the ground state, $\beta \to \infty$, limit.
+In this paper, we propose a novel thermal state preparation routine inspired by the classical Hamiltonian Monte Carlo algorithm (\cite{neal1993probabilistic}, \cite{hoffman2011nouturnsampleradaptivelysetting}), which is also known as Hybrid Monte Carlo. Hamiltonian Monte Carlo resolves some of the previously mentioned issues, specifically the poor scaling with high dimensional systems, by introducing extra variables that serve as momentum and using time dynamics to generate state transitions. These extra momentum variables are sampled from their thermal distribution $\propto e^{-\beta p^2}$ and the total system is then simulated with classical Hamiltonian dynamics to generate updates to the state. Our channel was developed out of efforts to port this philosophy of using extra variables and time dynamics to prepare thermal states over to quantum systems. The extra states that we add are a single ancilla qubit prepared in a thermal state and we simulate the system-ancilla pair with a randomized interaction term $G$, see Section \ref{sec:prelim} and Eq. \eqref{eq:PhiDef} for more details. 
 
-
-Although our algorithm was inspired by the classical Hamiltonian Monte Carlo algorithm, the end result bears a striking resemblence to the Repeated Interactions (RI) framework studied in open quantum systems \cite{ciccarello2022repeated}. This framework involves coupling small environments, typically a single photon prepared in a thermal state, with the system and repeating the process over and over. This is then studied in thermodynamic limits of infinite time, infinite interactions, and weak coupling, which serves as a key difference with our work as we are concerned with bounding finite resources for use in an algorithm. Our work could be viewed as a validation of the RI framework where the interaction is unknown and the eigenvalues are also unknown. This also highlights a key difference between our work and existing RI literature, as previous RI work is typically concerned with specific systems and interactions \cite{polla2021quantum}. The RI framework has recently been fully worked out in the single qubit instance \cite{prositto2025equilibrium} where Prositto, Forbes, and Segal bound finite work and energy requirements needed for thermalization of a qubit with an ancilla qubit. Their results are complimentary to our single qubit results in Section \ref{sec:single_qubit}. Recently there have been algorithms developed to take Linbladian simulations and convert them to RI simulations on quantum computers \cite{pocrnic2024quantumsimulationlindbladiandynamics}. It remains to be seen if the previously developed Linbladian based algorithms, in particular the other single qubit ground state prep algorithm by Ding et al \cite{ding2024single}, resemble our results if this machinery is used to obtain their RI-equivalent algorithms.
-
-% One problem that has remained open is if there exist algorithms for preparing quantum thermal states that explicitly utilize only a single ancilla qubit. There exist very good algorithms for preparing ground states utilizing a single ancilla qubit \cite{ding2024single} and some that solve thermal state preparation using a logarithmic number of ancillas \cite{chen_fast_2022} or rely on weak measurements that could potentially utilize only a single ancilla \cite{zhang2023dissipative}, but none that explicitly use only one. We resolve this problem by introducing a quantum algorithm that solves this problem with an incredibly simple routine. We prepare our single ancilla in a thermal state of the desired temperature $\beta$, couple it to our system Hamiltonian with a randomly chosen interaction term, and then time evolve the interacting system-ancilla pair. By repeating this process and refreshing the ancilla state the system will converge to the thermal state. Although the idea of using dissipative dynamics to produce ground and thermal states has been explored in the past, see \cite{shtanko2023preparingthermalstatesnoiseless}, \cite{cubitt2023dissipativegroundstatepreparation}, \cite{zhang2023dissipative}, \cite{ding2024single}, and \cite{gilyen2024quantumgeneralizationsglaubermetropolis}, the major difference between these approaches is how the ``jump" operators are created or how the interaction terms are chosen. Shtanko and Movassagh in \cite{shtanko2023preparingthermalstatesnoiseless} use $k$-local Pauli terms, Zhang and Cubitt in \cite{zhang2023dissipative} use tuned weak measurements, and both Ding et al. \cite{ding2024single} and Gilyen et al. \cite{gilyen2024quantumgeneralizationsglaubermetropolis} use coherently weighted sums of jump operators, of which there are many options. See \cite{dalzell2023quantumalgorithmssurveyapplications} and \cite{chen2023quantumthermalstatepreparation} for more thorough overviews of the existing techniques.
+We analyze the resulting channel in a weak-coupling regime and obtain a reduction of the quantum dynamics to an underlying Markov chain over the eigenstates of the system. This allows us to show the correctness of the procedure fairly easily by finding the fixed point of the Markov chain directly. We explicitly do not rely on KMS conditions, instead directly proving conditions on the fixed points that more resembles classical detailed balance, see Eq. \eqref{eq:detailed_balance}. One potential downside to this approach is that the convergence time of our channel is now dependent on the mixing time of a classical Markov process, which is near impossible to know a priori. This is a feature of virtually all previous thermal state preparation routines and computing the spectral gaps that dictate these relaxation times is a major open problem. We are unable to compute these spectral gaps for general systems and finite $\beta$, but we resolve both open problems posed by Shtanko and Movassagh \cite{shtanko2023preparingthermalstatesnoiseless} by extending the range of systems that can be thermalized to all non-degenerate Hamiltonians and by computing the spectral gap of the Markov chain in the ground state, $\beta \to \infty$, limit.
 
 
+Although our channel was inspired by the classical Hamiltonian Monte Carlo algorithm, the end result bears a striking resemblence to the Repeated Interactions (RI) framework studied in open quantum systems \cite{ciccarello2022repeated}. This framework involves coupling small environments, typically a single photon prepared in a thermal state, with the system and repeating the process over and over. This is then studied in thermodynamic limits of infinite time, infinite interactions, and weak coupling, which serves as a key difference with our work as we are concerned with bounding finite resources for use in an algorithm. Our work could be viewed as an extension of the RI framework to arbitrary Hamiltonians with completely unknown interactions. This also highlights a key difference between our work and existing RI literature, as previous RI work is typically concerned with specific systems and interactions \cite{polla2021quantum}. The RI framework has recently been fully worked out in the single qubit instance \cite{prositto2025equilibrium} where Prositto, Forbes, and Segal bound finite work and energy requirements needed for thermalization of a qubit with a single ancilla qubit. Their results are complimentary to our single qubit results in Section \ref{sec:single_qubit}. Recently there have been algorithms developed to take Linbladian simulations and convert them to RI simulations on quantum computers \cite{pocrnic2024quantumsimulationlindbladiandynamics}. It remains to be seen if the previously developed Linbladian based algorithms, in particular the single qubit ground state prep algorithm by Ding et al \cite{ding2024single}, resemble our results if this machinery is used to obtain the RI-equivalent algorithm.
 
-% Now that we have walked through our algorithm and its similarities to existing algorithms we would like to highlight some key differences. Although our algorithm was initially inspired by classical Monte Carlo techniques the end result is strikingly similar to the Repeated Interactions (RI) framework developed in the open quantum systems literature. This framework thermalizes a system by coupling to small bath, typically a single photon or spin, and then refreshes the small bath periodically. The key difference between our work and existing RI literature is two-fold: one is that the open quantum systems community is typically concerned with thermodynamic limits, meaning what happens in infinite time with infinite interactions, and secondly existing RI research tends to focus on specific systems and interactions, which are usually physically motivated. Our work is more algorithmic in focus and as such we do not assume any structure to the input Hamiltonian or of the coupling between system and environment. Further, we are primarily concerned with guaranteeing correctness of the algorithm, meaning does the channel actually output the thermal state, and bounding the resources needed, typically in asymptotic limits. The closest existing prior literature for fault-tolerant quantum algorithms would be that by Shtanko and Movassagh \cite{shtanko2023preparingthermalstatesnoiseless}, as they employ qubit ancillas and randomized interactions. Their work provides two quantum algorithms, one that utilizes random local interactions and only works for Hamiltonians conjectured to obey the Eigenstate Thermalization Hypothesis (ETH) and the second utilizes random time evolutions for each Hamiltonian term but works for arbitrary Hamiltonians. The convergence guarantees for their generic algorithm are strictly worse than the first and allows for a small probability of failure. More importantly, this second algorithm relies on an accept-reject process for failed samples, vastly complicating the simple nature of their first algorithm. This could be overcome with amplitude amplification at a cost of increased circuit depth but they do not outline these tradeoffs explicitly. In comparison, our algorithm is proven correct for generic Hamiltonians at the cost of a runtime that depends on an unknown spectral gap. An important characteristic of our analysis is that because we have computed the output of the channel on a matrix element basis, once we have a given Hamiltonian we can explicitly compute the transition matrix. This would allow for numeric estimates of the required runtime on a per-system basis. 
+\subsection{Main Results}
+The remainder of the paper is split into three main parts. Section \ref{sec:weak_coupling} contains a derivation of the weak-coupling expansion in Lemma \ref{lem:big_one} and outlines the underlying Markov chain behavior in Section \ref{sec:markov}. This weak-coupling expansion is presented in as much generality as possible as it may be of use in other applications beyond our thermalization procedure, such as thermometry or spectroscopy. Section \ref{sec:specific_systems} has two theorems concerning single qubit systems and harmonic oscillators, Theorems \ref{thm:single_qubit} and \ref{thm:harmonic_oscillator} respectively, as well as numerics exploring the $\beta$ and $\epsilon$ dependence of the channel. Section \ref{sec:general_systems} contains our most general results in Theorems \ref{thm:zero_knowledge} and \ref{thm:perfect_knowledge} in which we show that the thermal state is an approximate fixed point for arbitrary Hamiltonians, bound the runtime in terms of a Markovian spectral gap, and finally compute this spectral gap for the ground state limit. The main difference between these two theorems is that one requires only an uppper bound on the spectral norm $\norm{H_S}$ while the other takes advantage of eigenvalue knowledge. Lastly numerics on small Hydrogen chains that explore strong coupling error rates and the effects of noisy eigenvalue samples on thermalization are presented in Section \ref{sec:general_numerics}. 
 
-\subsection{Main Results - DEFCON 1}
-The remainder of the paper is split into three main parts. Section \ref{sec:weak_coupling} contains a derivation of the weak-coupling expansion in Lemma \ref{lem:big_one} and outlines the underlying Markov chain behavior in Section \ref{sec:markov}. Section \ref{sec:specific_systems} has two theorems concerning single qubit systems and harmonic oscillators, Theorems \ref{thm:single_qubit} and \ref{thm:harmonic_oscillator} respectively, as well as numerics exploring the $\beta$ and $\epsilon$ dependence of the algorithm. Section \ref{sec:general_systems} contains our most general results in Theorems \ref{thm:zero_knowledge} and \ref{thm:perfect_knowledge} in which we show that the thermal state is an approximate fixed point for arbitrary Hamiltonians, bound the runtime in terms of a Markovian spectral gap, and finally compute this spectral gap for the ground state limit. The main difference between these two theorems is that one requires only an uppper bound on the spectral norm $\norm{H_S}$ while the other takes advantage of eigenvalue knowledge. Lastly numerics on small Hydrogen chains finish the section. 
+One of the key aspects of our thermalization procedure is that the analysis is dependent on the ability to tune the environment gap $\gamma$ to match the system energy differences. One of our main results in Theorem \ref{thm:zero_knowledge} shows that even if the user cannot tune $\gamma$ at all and is reduced to uniform guessing within an interval containing all the differences $\Delta_S(i,j)$, then thermalization can still occur. We show that the thermal state at finite $\beta$ is an approximate fixed state, with the error going to 0 as the coupling constant $\alpha \to 0$. This zero coupling limit can be taken with the opposite limit $t \to \infty$ to yield a nonzero simulation time for the random interaction $G$. Further, we show that the ground state is exactly the fixed point in the $\beta \to \infty$ limit. In this limit we are also able to bound the total simulation time required as $L \cdot t \in \bigotilde{\frac{\dim_S^{16} \norm{H_S}^7}{\delta_{\min}^8 \epsilon^6}} $, where $\delta_{\min}$ represents a ``resolution" type distance and is the smallest difference between two distinct eigenvalue differences $|\Delta_S(i,j) - \Delta_S(k,l)|$. When preparing finite $\beta$ thermal states we pick up an extra factor of $\frac{1}{\widetilde{\lambda}_\star(\beta)^7}$ related to the spectral gap of the transition matrix.
 
+Although Theorem \ref{thm:zero_knowledge} is likely to be the more applicable result for most scenarios, as eigenvalue knowledge is just as difficult to obtain as preparing thermal states, in Theorem \ref{thm:perfect_knowledge} we are able to quantify the effects of this knowledge on the total simulation time needed by the channel. We obtain stronger results than the zero knowledge Theorem \ref{thm:zero_knowledge}: we find that the thermal state is the exact fixed point at all $\beta \in [0, \infty]$ and that the amount of simulation time needed scales as $L \cdot t \in \bigotilde{\frac{\dim_S^{16}}{\delta_{\min} \epsilon^{2.5} \lambda_\star^{3.5}}}$. This represents a reduction over the zero knowledge scenario of $\bigotilde{\frac{\norm{H_S}^7}{\delta_{\min}^7 \epsilon^{3.5} \widetilde{\lambda}_\star(\beta)^{3.5}}}$. We remark that although these asymptotic scalings are not optimal, they are qualitatively interesting as they represent the first analysis for thermal state preparation that eigenvalue heuristics have a quantifiable impact on. 
 
-
-One of the key aspects of our algorithm is that the analysis is fairly dependent on both the structure of the eigenvalue differences and whether the environment gap $\gamma$ can be tuned to to match the system energy differences. Our most applicable result therefore is Theorem \ref{thm:zero_knowledge} in which $\gamma$ is sampled from the interval $[0, 4\norm{H_S}]$ uniformly. This represents the least amount of knowledge we are able to prove thermalization for. If this theorem is used to prepare ground states we give an explicit runtime bound of $\bigotilde{\frac{\dim_S^{16} \norm{H_S}^7}{\delta_{\min}^8 \epsilon^6 \widetilde{\lambda}_\star(\beta)^7}}$. 
+We explored this reduction in total simulation time numerically in Section \ref{sec:general_numerics} with small Hydrogen chains of 2 or 3 nuclei. We started off by measuring the total simulation time needed to reach a fixed $\epsilon = 0.05$ with perfect samples of eigenvalue differences $\Delta_S(i,j)$. We then tracked the total simulation time as we added noise to these guesses and find that low noise guesses can reduce the total simulation time by a factor of 2. These results that indicate that even very noisy guesses can still lead to thermalization are also complimented by our study of the error convergence for hydrogen chain systems, as for these tests we chose $\gamma$ from a Gaussian centered at the average energy $\trace{H_S} / \dim_S$ with a standard deviation of $\norm{H_S} / 2$. Even with this heuristic choice for $\gamma$ we can achieve fairly low errors of $\epsilon = 0.03$ in as little as $L = 1500$ interactions.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -157,7 +220,7 @@ One of the key aspects of our algorithm is that the analysis is fairly dependent
 
 
 \section{Weak Interaction Expansion for $\Phi$} \label{sec:weak_coupling}
-\subsection{Preliminaries and Notation - DEFCON 5} \label{sec:prelim}
+\subsection{Preliminaries and Notation} \label{sec:prelim}
 We will be working with a bipartite Hilbert space consisting of a system space $\hilb_S$ with dynamics governed by the Hamiltonian $H_S$ and an environment space $\hilb_E$ with Hamiltonian $H_E$. The total space is $\hilb = \hilb_S \otimes \hilb_E$ with Hamiltonian $H = H_S \otimes \identity_E + \identity_E \otimes H_E = H_S + H_E$. We will assume without loss of generality that our spaces are encoded in qubits so that $\hilb_S = \mathbb{C}^{2^n}$ and $\hilb_E = \mathbb{C}^{2^m}$. We use $\dim_S$ to refer to the dimension of the system's Hilbert space ($2^n$), $\dim_E$ the environment, and $\dim$ the total Hilbert space. As for the basis we will use for our spaces, we will work directly in the eigenbasis of each Hamiltonian. Besides simplifying our calculations, we can do so because the interaction term we will introduce later is unitarily invariant. We denote these basis in a 1-indexed fashion as
 \begin{equation}
     H_{S} = \sum_{i = 1}^{2^n} \lambda_S(i) \ketbra{i}{i} ~,~ H_{E} = \sum_{j=1}^{2^m } \lambda_E(j) \ketbra{j}{j} ~,~ H = \sum_{i=1}^{2^n } \sum_{j=1}^{2^m } \lambda(i,j) \ketbra{i,j}{i,j},
@@ -197,7 +260,7 @@ We will typically drop the implicit parameters of $\alpha, \beta$ and $t$. Our g
 \end{equation}
 giving us $\Phi(\rho; \alpha, \beta, t) = \Tr_{\hilb_E} \mathbb{E}_G \Phi_G(\rho \otimes \rho_E(\beta); \alpha, t)$. Another alternative notation for $\Phi$ that we will use is whenever $\hilb_E$ is a single qubit with energy gap $\gamma$ we will use $\Phi_\gamma$ to draw attention to this specific energy gap. We will also make frequent use of indicator functions, denoted $\mathbf{I}[P]$, which is 1 if the predicate $P$ is true and 0 if $P$ is false.
 
-\subsection{First and Second Order Terms - DEFCON 5}
+\subsection{First and Second Order Terms}
 In order to understand our thermalizing channel $\Phi$ we will compute a Taylor Series for the output of the channel with respect to the coupling constant $\alpha$. We will perform the $\alpha$ expansion about $\alpha = 0$ and we will use the mean value form of the remainder, in which we are guaranteed a special value $\alpha_{\star} \in (0, \infty)$ such that the final derivative evaluated at $\alpha_{\star}$ is the exact amount needed. We use a second-order expansion and will need to explicitly compute terms up to order $\alpha^2$, which will give the following expansion
 \begin{align}
     \Phi(\rho; \alpha) &= \Phi(\rho; 0) + \alpha \frac{\partial}{\partial \alpha} \Phi(\rho; \alpha) \big|_{\alpha = 0} + \frac{\alpha^2}{2} \frac{\partial^2}{\partial \alpha^2} \Phi(\rho; \alpha) \big|_{\alpha = 0} + R_{\Phi}(\rho; \alpha_{\star}) \label{eq:phi_taylor_series}
@@ -209,9 +272,6 @@ We use
 \end{equation} to denote the transition terms, as it will be revealed that the first two terms do not cause transitions in the system state, and $R_{\Phi}$ to denote the remainder. 
 Further we will often leave the dependence on the  $\alpha$ parameter implicit and only include it when necessary.
 
-%The order $\alpha^0$ term constitutes the time-evolution channel on the input density matrix, as $e^{i (H + \alpha G)t}\big|_{\alpha = 0} = e^{i H t}$, so when we restrict ourselves to density matrices that are diagonal in the $H_S$ basis it acts as the identity map. 
-%The second term yields the first non-trivial correction term and we find that it vanishes due to our random interaction matrix having mean zero entries, formally $\mathbb{E}_G [G] = 0$. 
-%The second order correction does not average to zero but is a much more involved calculation and will therefore be broken up into a few pieces: first we will compute the total system-environment state for an arbitrary basis state input, which we use this to compute transition amplitudes for diagonal elements, then we demonstrate that coherences, or off-diagonal elements, are not introduced to the system-environment state at second order in $\alpha$, and finally we show how the diagonal transition amplitudes can be broken down into on-resonance terms and controllably small off-resonant terms. We then use these second order computations to show that the output of the $\bigo{\alpha^0}$ term and the on-resonant second order term can be expressed as a Markov chain, provided that our input density matrix commutes with $H_S$. Lastly we provide a bound on the trace norm of the remainder term $R_{\Phi}$. 
 
 We start off with the $\bigo{\alpha^0}$ term, which can be trivially computed as
 \begin{align}
@@ -267,7 +327,7 @@ and let $\eta(i,j)$ denote the degeneracy of the $(i,j)$\ts{th} eigenvalue of $H
 \end{restatable}
 \noindent The proof of this Lemma uses similar techniques to Theorem \ref{lem:first_order_phi}, and formal proof can be found in Appendix \ref{sec:haar_integral_appendix}.
 
-Next we will compute the effects of the channel on just the system alone. In order to do this we will need to compute the partial trace $\Tr_{\hilb_E}$. We can either do this for a generic environment, which will result in summations over $\hilb_E$ floating around, or specialize to a specific choice of $\hilb_E$ and actually compute the summation. For the remainder of this paper we will choose the latter option with a single qubit environment $\hilb_E = \mathbb{C}^2$ and denote the Hamiltonian $H_E = \begin{bmatrix} 0 & 0 \\ 0 & \gamma \end{bmatrix}$. Our environment input states then become
+Next we will compute the effects of the channel on just the system alone which involves computing the partial trace $\Tr_{\hilb_E}$. We can either do this for a generic environment, which results in summations over $\hilb_E$ floating around, or specialize to a specific choice of $\hilb_E$ and compute the summation. For the remainder of this paper we will choose the latter option with a single qubit environment $\hilb_E = \mathbb{C}^2$ and denote the Hamiltonian $H_E = \begin{bmatrix} 0 & 0 \\ 0 & \gamma \end{bmatrix}$. Our environment input states then become
 \begin{equation}
     \rho_E(\beta) = \frac{e^{-\beta H_E}}{\partfun_E(\beta)} = \frac{1}{1 + e^{-\beta \gamma}} \ketbra{0}{0} + \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \ketbra{1}{1} \eqqcolon q(0) \ketbra{0}{0} + q(1) \ketbra{1}{1} \label{eq:env_state_def},
 \end{equation}
@@ -290,11 +350,7 @@ which follows from $\Tr \mathcal{T}(\rho) = 0$ as shown in Lemma \ref{lem:big_on
 \begin{equation}
     j \neq k \implies \bra{j} \mathcal{T}(\ketbra{i}{i}) \ket{k} = 0.
 \end{equation}
-% \item If $|\Delta_S(i, j) \pm \gamma| \geq \delta_{\min}$ then $\bra{j}\mathcal{T}_{\on}(\ketbra{i}{i}) \ket{j} = 0$ and $\bra{j}\mathcal{T}(\ketbra{i}{i})\ket{j} = \bra{j}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{j}$.
-% \item The same state transitions $\ketbra{i}{i}$ to $\ketbra{i}{i}$ are then the negative sum of the other transitions,
-% \begin{equation}
-%     \bra{i} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{i} := - \sum_{j \neq i} \bra{j} \mathcal{T}_{\on}(\ketbra{i}{i}) \ket{j} \text{ and } \bra{i} \mathcal{T}_{\off}(\ketbra{i}{i}) \ket{i} := - \sum_{j \neq i} \bra{j} \mathcal{T}_{\off}(\ketbra{i}{i}) \ket{j}.
-% \end{equation} 
+
 \end{enumerate}
 \end{theorem}
 In the proof of the theorem, as well as in subsequent propositions, it is useful to introduce the concept of on- and off-resonant couplings which we give below.
@@ -373,24 +429,9 @@ We will now use these definitions to prove Theorem~\ref{thm:second_order_transit
     By plugging in Eqs. \eqref{eq:on_resonance_i_geq_j} and \eqref{eq:on_resonance_i_leq_j} we are done with the self-transition terms. 
 \end{proof}
 
-% \begin{definition}[On- and Off-Resonant terms]\label{def:resonance}
-% The individual terms in $\bra{j}\mathcal{T}(\ketbra{i}{i})\ket{j}$ can be divided into two groups which we call ``on-resonant" and ``off-resonant", denoted $\mathcal{T}(\rho) = \mathcal{T}_{\on}(\rho) + \mathcal{T}_{\off}(\rho)$.  for $\delta_{\min}$ given in Eq. \eqref{eq:delta_min_def}, this decomposition is 
-% \begin{enumerate}
-% \item If $i > j$, which implies $\Delta_S(i,j) > 0$, and $|\Delta_S(i,j) - \gamma| \le \delta_{\min}$,
-% \begin{align}
-%     \bra{j}\mathcal{T}_{\on}(\ketbra{i}{i})\ket{j} &:= \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} \sinc^2\left( \frac{(\Delta_S(i,j) - \gamma)t}{2} \right), \\
-%     \bra{j}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{j} &:= \widetilde{\alpha}^2 \sinc^2 \left( \frac{\Delta_S(i,j)t}{2} \right) + \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(\Delta_S(i,j) + \gamma)t}{2} \right).
-% \end{align}
-% \matt{In the definition of $\TT_{\on}$ and $\TT_{\off}$ we should use indicator variables. This would make it much clearer and easier to use in the randomized $\gamma$ arguments.}
-% \item If $i < j$ and $|\Delta_S(i,j) + \gamma| \le \delta_{\min}$ then the decomposition is
-% \begin{align}
-%     \bra{j}\mathcal{T}_{\on}(\ketbra{i}{i})\ket{j} &:=  \widetilde{\alpha}^2 \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \sinc^2 \left( \frac{(\Delta_S(i,j) + \gamma)t}{2} \right), \\
-%     \bra{j}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{j} &:= \widetilde{\alpha}^2 \sinc^2 \left( \frac{\Delta_S(i,j)t}{2} \right) + \widetilde{\alpha}^2 \frac{1}{1 + e^{-\beta \gamma}} \sinc^2\left( \frac{(\Delta_S(i,j) - \gamma)t}{2} \right).
-% \end{align}
-% \end{enumerate}
-% \end{definition}
 
-\subsection{Markovian Dynamics and Error Terms - DEFCON 5} \label{sec:markov}
+
+\subsection{Markovian Dynamics and Error Terms} \label{sec:markov}
 
 Now that we have fully computed the significant contributors to the output of our channel $\Phi$, we move on to characterize the behavior of the channel as a Markov chain with noise. 
 A Markov chain is a random process that involves a walker transitioning to vertices on a graph wherein the probability of transition does not depend on the history of the walker.  Specifically, in this context we view the vertices in this graph as the eigenstates of the Hamiltonian.  The repeated interaction model because of the lack of coherences in the weak coupling limit can be interpreted as a Markov process over these eigenstates with transitions probabilities given by the above analysis. 
@@ -439,7 +480,7 @@ We can use the inductive hypothesis on the term on the left and we now have to b
 Substituting this into Eq. \eqref{eq:matrix_reloaded1} yields \begin{equation}
      \bra{j} (\identity + \mathcal{T}_{\on})^{\circ L}(\ketbra{i}{i}) \ket{j} = e_j^T (I + T)^{L} e_i.
 \end{equation} 
-%The stochasticity of $\identity + T$ comes from the equality $\sum_j e_j^T T e_i = \trace{\mathcal{T}_{\on}(\ketbra{i}{i})} = 0$ along with the fact the elements of $\identity + T$ are clearly between 0 and 1.
+
 
 Our final step in the proof is to show that $I + T$ is column-stochastic. This is straightforward from our definition of $T$
 \begin{equation}
@@ -514,7 +555,7 @@ Using the decomposition from Theorem \ref{thm:second_order_transition} and inter
     \end{align}
 \end{corollary}
 \begin{proof}
-%For this we will assume a worst-case scenario in which $\gamma$ forces all 3 terms in Eq. \eqref{eq:t_2_intermediate_1} to be off-resonant. 
+
 This result follows from applying bounds on the sinc function from Lemma \ref{lem:sinc_poly_approx} (given in Appendix \ref{sec:appendix_sinc}) to the worst-case scenario off-resonance terms given in Eq. \eqref{eq:off_resonance}. 
     \begin{align}
         i \neq j \implies \abs{\bra{j}\mathcal{T}_{\off}(\ketbra{i}{i})\ket{j}} &\le \widetilde{\alpha}^2\frac{4}{\delta_{\min}^2 t^2} \left( 1 + q(0) + q(1)\right) = \frac{8 \alpha^2}{\delta_{\min}^2(\dim + 1)}.
@@ -553,10 +594,15 @@ For a single qubit we are able to give asymptotic runtime bounds for preparing a
 
 After we develop the theory for a single qubit we extend our sights to a truncated harmonic oscillator in Section \ref{sec:harmonic_oscillator}. This section can be viewed as a warmup to the proofs that work for general systems in Section \ref{sec:general_systems}. One unique aspect of the harmonic oscillator is that all of the energy eigenvalues are integer multiples of single difference $\Delta$, which means that by tuning our environment gap $\gamma$ to $\Delta$ we should be able to thermalize. One difficulty with this however is that ergodicity is now a bit harder to show, as with randomly choosing $\gamma$ there is always a nonzero probability to transition between arbitrary states $i$ and $j$ but with the harmonic oscillator multiple ``hops'' may be necessary if the states are not adjacent in energy eigenvalues.
 
-Lastly, another reason to study these two specific systems is that they serve as crucial test beds for numerical studies. As our analysis tends to work with upper bounds, it is crucial to probe the total runtime cost via simulation of the actual channel itself. Although we do study more realistic systems numerically in Section \ref{sec:general_numerics}, larger systems are more costly in terms of classical computation needed to simulate. Because of the reduction in classical compute time needed, we are able to get a more complete view of our algorithm through the lens of the small systems in Section \ref{sec:specific_numerics}.
+Lastly, another reason to study these two specific systems is that they serve as crucial test beds for numerical studies. As our analysis tends to work with upper bounds to obtain realistic estimates of total simulation times we need to simulate the channel numerically. Although we do study more realistic systems numerically in Section \ref{sec:general_numerics}, larger systems are more costly in terms of classical computation needed to simulate. Because of the reduction in classical compute time needed, we are able to get a more complete view of our channel through the lens of the small systems in Section \ref{sec:specific_numerics}.
 
-\subsection{Single Qubit - DEFCON 4} \label{sec:single_qubit}
-Now that we have developed all the tools we need to study thermalization we will tackle the simplest possible system first: a single qubit system $\hilb_S = \mathbb{C}^2$. In this setting we are able to offer the most complete view of thermalization possible, we not only show that the thermal state is the fixed point of the dynamics but we can provide analytic upper bounds on how many interactions are needed to reach a trace distance of $\widetilde{O}(\epsilon)$ from the thermal state for any $\beta$. Further we are able to quantify the impacts of a noisy guess for the eigenvalue gap $\Delta$ on the runtime and how low of a temperature thermal state can be prepared. 
+\subsection{Single Qubit} \label{sec:single_qubit}
+The first system we study is the qubit $\hilb_S = \mathbb{C}^2$. This system is simple enough that we can explicitly write the dynamics as a $2 \times 2$ transition matrix, which makes it easy to compute required simulation times and easy for the reader to follow. Although this system could be viewed as a warmup to the more general systems in Section \ref{sec:general_systems}, as the proof techniques are very similar, we remark that this system does have some unique properties. The biggest difference is that we do not assume any kind of belief distribution of the eigenvalue gap $\Delta$ of the system. We only require that a window of width $2 \sigma$ is known that contains $\Delta$. We can then characterize the runtime in terms of $\sigma$ and in addition to determining runtime we find it determines an upper bound on the $\beta$ that can be prepared at low error.
+
+The other unique phenomenon with the single qubit scenario is that the total simulation time needed is \emph{independent} of $\beta$. Although this may seem incorrect, as most existing thermal state preparation algorithms tend to scale at least linearly with $\beta$, this is in fact a property of the underlying Markov chain. The rate of convergence of the Markov chain is dictated by the spectral gap, which for this system is shown to be $\widetilde{\alpha}^2$. The only aspect of the Markov chain that changes with $\beta$ is what the fixed point is and the Markov Relaxation Theorem \ref{thm:markov_chain_bound} provides relaxation guarantees regardless of initial or final state. 
+
+
+
 
 \begin{theorem} \label{thm:single_qubit}
     Let $H_S$ be an arbitrary single qubit Hamiltonian with eigenvalue gap $\Delta$, $\rho$ any input state diagonal in the $H_S$ basis, $[\rho, H_S] = 0$, and $L$ the number of interactions simulated. Given a window of width $2 \sigma$ that is promised to contain $\Delta$ and satisfies the inequality
@@ -570,7 +616,7 @@ Now that we have developed all the tools we need to study thermalization we will
         %\in \left[ \frac{1}{\sigma}\sqrt{1 - \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}} }, \frac{1}{\sigma}\sqrt{1 + \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}} } \right], \nonumber \\
         \text{and } L &= \left\lceil\frac{10}{\alpha^2 t^2 (1 - \sigma^2 t^2 / 2)} \left( 2 \log \frac{5}{\alpha^2 t^2 \sinc^2(|\Delta - \gamma|t/2)} + 4( 1 + \log 2) - \frac{1}{2} + \log \frac{2}{\epsilon} \right)\right\rceil
     \end{align}
-    are sufficient to guarantee thermalization of the form $\norm{\rho_S(\beta) - \Phi^{\circ L}(\rho)}_1 \in \bigotilde{\epsilon}$. In the limit as $\sigma \to 0$, the total evolution time for all $L$ interactions required scales as
+    are sufficient to guarantee thermalization of the form $\norm{\rho_S(\beta) - \Phi^{\circ L}(\rho)}_1 \in \bigotilde{\epsilon}$. In the limit as $\sigma \to 0$, the total simulation time required for all $L$ interactions required scales as
     \begin{equation}
         L \cdot t \in \widetilde{O} \left( \frac{1}{\Delta \epsilon^{2.5}}\right).
     \end{equation}
@@ -642,8 +688,7 @@ where $J$ captures the logarithmic factors.  We then choose $L$ to satisfy this 
      L \ge \frac{10}{\alpha^2 t^2(1 - \sigma^2 t^2 / 2)} J \label{eq:single_qubit_l_bound_2}
  \end{equation} which is larger than the lower bound in \eqref{eq:one_qubit_l_bound_1}. If we choose $L$ to be twice this lower bound then we will for sure meet the Markov chain error.   
  
- The third stage of the proof utilizes the above bound on $L$ to bound the  off-resonance and remainder terms. The magnitude of the total off-resonance contribution is $L \norm{\mathcal{T}_{\off}}_1 \le \frac{8 }{\Delta^2}$, given by Corollary \ref{cor:t_off_norm}, and the remainder term is $L \norm{R_{\Phi}}_1 \le 32 \sqrt{\frac{2}{\pi}} \alpha t^3$, from Theorem \ref{thm:remainder_bound}. %To proceed we would like to asymptotically balance these terms. 
- Since $\alpha$ is still a free parameter, we %can require $\alpha t^3 \le \frac{1}{\Delta^2}$. However, since $\Delta$ is an unknown parameter we cannot make this inequality on $\alpha$ an equality, so instead we use the known lower bound on our window for $\Delta$ and 
+ The third stage of the proof utilizes the above bound on $L$ to bound the  off-resonance and remainder terms. The magnitude of the total off-resonance contribution is $L \norm{\mathcal{T}_{\off}}_1 \le \frac{8 }{\Delta^2}$, given by Corollary \ref{cor:t_off_norm}, and the remainder term is $L \norm{R_{\Phi}}_1 \le 32 \sqrt{\frac{2}{\pi}} \alpha t^3$, from Theorem \ref{thm:remainder_bound}. 
  set $\alpha = \frac{1}{t^3(\Delta + \sigma)^2} \le \frac{1}{t^3 \Delta^2}$. This then allows us to make the following inequalities
  \begin{align}
      L(\norm{\mathcal{T}_{\off}}_1 + \norm{R_{\Phi}}_1) &\le \frac{20}{t^2(1 - \sigma^2 t^2 / 2)}J \left( \frac{8}{\Delta^2} + 32 \sqrt{\frac{2}{\pi}} \alpha t^3 \right) \\
@@ -660,13 +705,10 @@ The roots of this quadratic are
 meaning if $t$ lies within these two roots then our expression will be satisfied. Our first observation is that in order for any solution to the inequality to exist we require $\sigma \le \Delta \sqrt{\frac{\epsilon}{2}}$, otherwise the roots are complex. As $\sigma \to 0$ we note that the larger root $\frac{1}{\sigma^2}(1 + \sqrt{1 - 2 \sigma^2 / \Delta^2 \epsilon})$ approaches infinity and the smaller root approaches $\frac{1}{\Delta^2 \epsilon}$.
 
 Now that we know the inequality in Eq. \eqref{eq:single_qubit_tmp_3} has valid solutions, provided $\sigma$ is small enough, we can now bound the remainder and off-resonance errors by $\bigotilde{\epsilon}$. 
-%This is because $J$ only contains log factors of $\alpha$ and $t$, and since $\alpha$ and $t$ are chosen to depend at most polynomially on $\epsilon$ then $J$ will be $\bigo{\log \frac{1}{\epsilon}}$. \matt{Probably should either drop this argument or make it more rigorous.} 
 We now will summarize the results. First our distance from the target state can be upper bounded in three contributions, which is done in Eq. \eqref{eq:single_qubit_three_errors}.
 Provided $\sigma \le \frac{\epsilon}{2 \beta}$, then the distance from our Markov chain fixed point to the desired thermal state is less than $\epsilon$. Second, if $L \ge \frac{10 J}{\alpha^2 t^2(1 - \sigma^2 t^2 /2) }$, then the output state of our channel will be less than a trace distance of $\epsilon$ away from the Markov chain fixed point. Lastly, by choosing $\alpha  = \frac{1}{t^3(\Delta + \sigma)^2}$ and $t \in \left[ \frac{1}{\sigma}\sqrt{1 - \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}} }, \frac{1}{\sigma}\sqrt{1 + \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}} } \right]$ we can guarantee that the remainder and off-resonance error terms are of order $\bigotilde{\epsilon}$.  We choose the lower limit for our choice of $t$ because it does not diverge as $\sigma\rightarrow 0$.  Adding these contributions together gives us $\norm{\rho_S(\beta) - \Phi^{\circ L }(\rho)}_1 \in \bigotilde{\epsilon}$. The total simulation time needed can then be bounded
 \begin{align}
-    Lt &\ge \frac{10 J t}{\alpha^2 t^2 (1 - \sigma^2 t^2 / 2)} \\
-    &\ge \frac{10 J t^5 (\Delta + \sigma)^4}{\sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}}} \\
-    &\ge \frac{10 J \sigma \left( 1 - \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}}\right)^{5/2} (\Delta + \sigma)^4}{\sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}}}.
+    Lt &\ge \frac{10 J t}{\alpha^2 t^2 (1 - \sigma^2 t^2 / 2)} \ge \frac{10 J t^5 (\Delta + \sigma)^4}{\sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}}} \ge \frac{10 J \sigma \left( 1 - \sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}}\right)^{5/2} (\Delta + \sigma)^4}{\sqrt{1 - \frac{2 \sigma^2}{\Delta^2 \epsilon}}}.
 \end{align}
 If we make the assumption that $\sigma \to 0$ then we can use the fact that the lower bound for $t$ approaches $\frac{1}{\Delta \sqrt{\epsilon}}$, giving
 \begin{equation}
@@ -676,12 +718,11 @@ The final result then follows by noting that $J$ is polylogarithmic in $\Delta$ 
  \end{proof}
 
 
-\subsection{Harmonic Oscillator - DEFCON 4} \label{sec:harmonic_oscillator}
-Now that we have explored the thermalization algorithm completely for the single qubit case we turn our attention to a more complicated system: a truncated harmonic oscillator. For this scenario we will assume that the oscillator gap, $\Delta$, is known. This assumption is necessary because in order to show that the thermal state is the unique fixed point we need that the underlying Markov chain is ergodic, meaning any initial state has a finite expected hitting time to reach any target state. Assuming knowledge of $\Delta$ allows for us to show ergodicity straightforwardly.
+\subsection{Harmonic Oscillator} \label{sec:harmonic_oscillator}
+Now that we have explored the thermalization channel completely for the single qubit case we turn our attention to a more complicated system: a truncated harmonic oscillator. For this scenario we will assume that the oscillator gap, $\Delta$, is known. This is mostly to simplify proofs of ergodicity and should not be an issue in practice, as evidenced by later theorems that show thermalization without eigenvalue knowledge. The reason behind this proof requirement is that by tuning $\gamma$ to be the spectral gap we can create a ``ladder" transition matrix in which states can move one level up or down. The proof of ergodicity relies on this ladder. Once we remove knowledge of $\Delta$ if $\gamma$ has some probability of being close to $2 \Delta$ this special ladder structure is destroyed. To avoid this annoyance and focus on the special structure granted by the harmonic oscillator we will assume $\gamma = \Delta$.
 
+This system also represents a transition from the single qubit to more general settings discussed later as the guarantees on total simulation time as a function of $\beta$ are similar. For the harmonic oscillator we are only able to bound the spectral gap in the ground state limit as $\beta \to \infty$, meaning that the convergence time for finite $\beta$ has to be characterized in terms of the spectral gap of the Markov chain. For infinite $\beta$ we are able to compute the spectral gap exactly, as the Markov transition matrix is upper triangular. The following theorem introduces this technique in a straightforward setting before it is used later for more complicated transition matrices. 
 
-
-Once we have shown correctness of our algorithm, namely that the thermal state is the unique fixed point, our next goal is to bound the runtime. This is unfortunately impossible for all inverse temperatures $\beta$, as it requires the computation of a spectral gap that does not have a closed form expression for arbitrary truncation of the oscillator. However, we are able to bound the runtime for preparing the ground state, or $\beta \to \infty$ limit, as the Markov transition matrix is upper triangular and the spectrum can be computed straightforwardly.
 \begin{theorem}\label{thm:harmonic_oscillator}
     Let $H_S$ denote a truncated harmonic oscillator with $\dim_S$ energy levels that are (up to an irrelevant constant offset) $\lambda_S(i) = i \Delta$ for $1 \le i \le \dim_S$, $\gamma$ be chosen such that $\gamma = \Delta$ be the known energy gap, and let $\rho$ be any input state that commutes with $H_S$. Setting the following parameters for the thermalizing channel $\Phi$
     \begin{equation}
@@ -699,20 +740,7 @@ Once we have shown correctness of our algorithm, namely that the thermal state i
     \begin{equation}
         \lim_{\beta \to \infty} \widetilde{\lambda}_\star(\beta) = 1.
     \end{equation}
-    % Assuming that $\gamma = \Delta$ we show that the thermal state $\rho_S(\beta)$, for both finite $\beta$ and the $\beta \to \infty$ limit, is the unique fixed point of the underlying Markovian dynamics for the thermalizing channel $\Phi$. Letting $\widetilde{\lambda}_\star(\beta)$ denote the spectral gap of a transition matrix that depends only on $\beta$ and eigenvalue differences $\Delta_S(i,j)$, we show that for finite $\beta$ using at most
-    % \begin{equation}
-    %     L \in 
-    % \end{equation}
-    % applications of $\Phi$ with parameter settings of
-    % \begin{equation}
-        
-    % \end{equation}
-    % is sufficient to guarantee thermalization with error
-    % \begin{equation}
-    %     \norm{\rho_S(\beta) - \Phi^{\circ L}(\rho)}_1 \in \bigotilde{\epsilon}.
-    % \end{equation}
-    % The total simulation cost to prepare the approximate thermal state is then at most
-    
+
     
 \end{theorem}
 \begin{proof}
@@ -724,7 +752,7 @@ Once we have shown correctness of our algorithm, namely that the thermal state i
     &= \widetilde{\alpha}^2 q(0) \mathbf{I}[j = i - 1]  \sinc^2\left(\frac{(\Delta_S(i,j) - \gamma)t}{2}\right) + \widetilde{\alpha}^2 q(1) \mathbf{I}[j = i + 1]  \sinc^2\left(\frac{(\Delta_S(i,j) + \gamma)t}{2}\right) \\
     &= \widetilde{\alpha}^2 \left(q(0) \mathbf{I}[j = i - 1] +  q(1) \mathbf{I}[j = i + 1] \right). \label{eq:harmonic_oscillator_t_matrix}
     \end{align}
-    We now plug this expression into Eq. \eqref{eq:detailed_balance} of Lemma \ref{lem:fixed_point} and use the fact that $\Delta_S(i,j)=\Delta$ for the harmonic oscillator
+    We now plug this expression into Eq. \eqref{eq:detailed_balance} of Lemma \ref{lem:fixed_point} and use the fact that $\Delta_S(i,i+1)=\Delta$ for the harmonic oscillator
     \begin{align}
         &\sum_{i \neq j} \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)} \bra{j} \TT_{\on}(\ketbra{i}{i}) \ket{j} - \frac{e^{-\beta \lambda_S(j)}}{\partfun_S(\beta)} \bra{i} \TT_{\on}(\ketbra{j}{j}) \ket{i} \\
         &= \widetilde{\alpha}^2 \frac{e^{-\beta \lambda_S(j)}}{\partfun_S(\beta)} \sum_{i \neq j} \left[ e^{-\beta \Delta_S(i,j)} \left(q(0) \mathbf{I}[j = i - 1] +  q(1) \mathbf{I}[j = i + 1] \right) - \left(q(0) \mathbf{I}[j = i + 1] +  q(1) \mathbf{I}[j = i - 1] \right) \right] \\
@@ -750,13 +778,13 @@ Once we have shown correctness of our algorithm, namely that the thermal state i
     \end{align}
     which is greater than 0. We are able to bound the summation over $k \neq j + n$ because $I + T$, the associated Markov matrix for $\identity + \TT_{\on}$, has only positive entries. To prove the case where $i < j$ the same argument holds but now we get factors of $q(1)$ as opposed to $q(0)$, which is nonzero for finite $\beta$. 
 
-    Now that we have shown that the thermal state is the fixed point we would like to bound the runtime. To do so we first decompose our error into two parts, a Markov chain error and an off-resonance and remainder error
+    Now that we have shown that the thermal state is the fixed point we would like to bound the total simulation time needed. To do so we first decompose our error into two parts, a Markov chain error and an off-resonance and remainder error
     \begin{equation}
         \norm{\rho_S(\beta) - \Phi^{\circ L}(\rho)}_1 \le \norm{\rho_S(\beta) - (\identity + \TT_{\on})^{\circ L}(\rho)}_1 + L(\norm{\TT_{\off}}_1 + \norm{R_{\Phi}}_1 ). \label{eq:harmonic_oscillator_error_breakdown}
     \end{equation}
-    The approach we take is to first bound the number of interactions needed for the output of the Markov chain to be $\epsilon$ close to the fixed point and then use this bound on $L$ to upper bound the off-resonance and remainder error. Unfortunately in the finite $\beta$ scenario we are unable to determine the spectral gap of $T$, the entries of which are given in Eq. \eqref{eq:harmonic_oscillator_t_matrix}, which is necessary to use Jerison's Markov Relaxation Theorem \ref{thm:markov_chain_bound}. Instead, we will pull out the overall factor of $\widetilde{\alpha}^2$ and let $\widetilde{\lambda}_\star(\beta)$ denote the spectral gap of $T/\widetilde{\alpha}^2$. This then allows us to use Theorem \ref{thm:markov_chain_bound} but we will have to leave the number of interactions required in terms of $\widetilde{\lambda}_\star(\beta)$.
+    We first bound the number of interactions, $L$, needed for the output of the Markov chain to be $\epsilon$ close to the fixed point and then use this bound on $L$ to upper bound the off-resonance and remainder error. Unfortunately in the finite $\beta$ scenario we are unable to determine the spectral gap of $T$, the entries of which are given in Eq. \eqref{eq:harmonic_oscillator_t_matrix}.  The spectral gap of $T$ is necessary to use Jerison's Markov Relaxation Theorem \ref{thm:markov_chain_bound} which poses a problem for our understanding of the evolution time needed. Instead, we will pull out the overall factor of $\widetilde{\alpha}^2$ and let $\widetilde{\lambda}_\star(\beta)$ denote the spectral gap of $T/\widetilde{\alpha}^2$. This then allows us to use Theorem \ref{thm:markov_chain_bound} but we will have to leave the number of interactions required in terms of $\widetilde{\lambda}_\star(\beta)$.
 
-    Theorem \ref{thm:markov_chain_bound} tells us that requiring 
+    Theorem \ref{thm:markov_chain_bound} tells us that requiring
     \begin{align}
         L \ge \frac{\dim_S}{\widetilde{\alpha}^2 \widetilde{\lambda}_\star(\beta)} J \in \bigotilde{\frac{\dim_S^2}{\alpha^2 t^2 \widetilde{\lambda}_\star(\beta)}}
     \end{align}
@@ -768,18 +796,18 @@ Once we have shown correctness of our algorithm, namely that the thermal state i
     \begin{equation}
         \norm{\TT_{\off}}_1 + \norm{R_{\Phi}}_1 \le \frac{\alpha^2}{\Delta^2} \left(8 + 16 \sqrt{\frac{\pi}{2}} \right).
     \end{equation}
-    Now our expression for the total error scales as
+    Using the sub-additivity property of the trace distance the total error scales as
     \begin{align}
         L (\norm{\TT_{\off}}_1 + \norm{R_{\Phi}}_1) &\le \frac{\dim_S^2}{\alpha^2 t^2 \widetilde{\lambda}_\star(\beta)} J \frac{\alpha^2}{\Delta^2} \left(8 + 16 \sqrt{\frac{\pi}{2}} \right) \\
         &\in \bigotilde{\frac{\dim_S^2}{t^2 \Delta^2 \widetilde{\lambda}_\star(\beta)}}.
     \end{align}
     We can make this $\bigotilde{\epsilon}$ by setting $t = \frac{\dim_S}{\Delta \sqrt{\epsilon \widetilde{\lambda}_\star(\beta)}}$.
-    This then gives us the following total simulation time as
+    This then gives the following total simulation time as
     \begin{align}
         L\cdot t \in \bigotilde{\frac{\dim_S^2}{\alpha^2 t \widetilde{\lambda}_\star(\beta)} } = \bigotilde{\frac{\dim_S^9}{\epsilon^{2.5} \Delta  \widetilde{\lambda}_\star(\beta)^{3.5}}}.
     \end{align}
     
-    Now that we have analyzed the finite $\beta$ regime, we turn to the $\beta \to \infty$ limit. Our proof above for the fixed points only worked for finite $\beta$, but Lemma \ref{lem:fixed_point} tells us that in the $\beta \to \infty$ limit the ground state is a fixed point. We will show that it is the unique fixed point by computing the spectrum of $T$, which will be rather easy to do. Lemma \ref{lem:fixed_point} further tells us that as $\beta \to \infty$ the matrix $T$ is upper triangular, which means we can compute the spectrum if we can compute the diagonal elements. We will do so via Eq. \eqref{eq:harmonic_oscillator_t_matrix}, which says for $1 < i < \dim_S$
+    Now that we have analyzed the finite $\beta$ regime, we turn to the $\beta \to \infty$ limit. Our proof above for the fixed points only worked for finite $\beta$, but Lemma \ref{lem:fixed_point} tells us that in the $\beta \to \infty$ limit the ground state is a fixed point. We will show that it is the unique fixed point by computing the spectrum of $T$, which will be rather easy to do. Lemma \ref{lem:fixed_point} further tells us that as $\beta \to \infty$ the matrix $T$ is upper triangular, which means we can compute the spectrum if we can compute the diagonal elements. We will do so via Eq. \eqref{eq:harmonic_oscillator_t_matrix} and~\eqref{eq:env_state_def}, which says for $1 < i < \dim_S$
     \begin{align}
         e_i^T T e_i &= \bra{i} \TT_{\on}(\ketbra{i}{i}) \ket{i} \\
         &= -\sum_{j \neq i} \bra{j} \TT_{\on}(\ketbra{i}{i}) \ket{j} \\
@@ -787,11 +815,11 @@ Once we have shown correctness of our algorithm, namely that the thermal state i
         &= -\widetilde{\alpha}^2 \left(q(0) + q(1) \right) \\
         &= - \widetilde{\alpha}^2,
     \end{align}
-    where the summation is only nonzero for $j = i \pm 1$. For $i = 1$ we note that because $e_1$ is a fixed point we have $e_j^T T e_1 = 0$, so the diagonal entry is 0. The computation for $i = \dim_S$ is similar to the above but yields 
+    where the summation is only nonzero for $j = i \pm 1$. For $i = 1$ we note that because $e_1$ is a fixed point we have $e_j^T T e_1 = 0$, so the diagonal entry is 0. The computation for $i = \dim_S$ is similar to the above but yields from~\eqref{eq:env_state_def}
     \begin{equation}
         \lim_{\beta \to \infty} \bra{\dim_S} \TT_{\on}(\ketbra{\dim_S}{\dim_S}) \ket{\dim_S} = -\widetilde{\alpha}^2 \lim_{\beta \to \infty}  q(0) = - \widetilde{\alpha}^2.
     \end{equation}
-    This gives us a full picture of $T$ as 
+    This shows us that the zero temperature limit of the transition matrix $T$ is 
 \begin{equation}
     \lim_{\beta \to \infty} T = \widetilde{\alpha}^2 \begin{bmatrix}
         0 & 1 &   &\\
@@ -815,15 +843,15 @@ We can compute the spectrum via the characteristic polynomial $\det(\lambda \ide
 \end{equation}
     The roots of the above characteristic polynomial gives the spectrum of $T$ as 0 and $-\widetilde{\alpha}^2$ with multiplicity $\dim_S - 1$. This not only gives the spectral gap of $\widetilde{\alpha}^2$ but further shows that the ground state is the unique fixed point because 0 only has multiplicity 1. This shows that $\lim_{\beta \to \infty} \widetilde{\lambda}_\star(\beta) = 1$.
 
-    We now can use this to repeat the runtime bound arguments from the finite $\beta$ case. The decomposition in Eq. \eqref{eq:harmonic_oscillator_error_breakdown} is still valid and we can use the Markov Relaxation Theorem \ref{thm:markov_chain_bound} to bound
+    We now can use this to repeat the simulation time bound arguments from the finite $\beta$ case. The decomposition in Eq. \eqref{eq:harmonic_oscillator_error_breakdown} is still valid and we can use the Markov Relaxation Theorem \ref{thm:markov_chain_bound} to bound
     \begin{equation}
-        L \ge \frac{\dim_S}{\widetilde{\alpha}^2\lim_{\beta \to \infty} \widetilde{\lambda}_\star(\beta)} J \in \bigotilde{\frac{\dim_S^2}{\alpha^2 t^2}}.
+        L \ge \frac{\dim_S}{\widetilde{\alpha}^2\lim_{\beta \to \infty} \widetilde{\lambda}_\star(\beta)} J \in \widetilde{\Theta}\left({\frac{\dim_S^2}{\alpha^2 t^2}}\right).
     \end{equation}
-    The arguments for the off-resonance and remainder error bounds are the exact same and tell us to set
+    The arguments for the off-resonance and remainder error bounds are the exact same and tell us that it suffices to set
     \begin{equation}
         \alpha = \frac{1}{\dim_S \Delta^2 t^3} \text{ and } t = \frac{\dim_S}{\Delta \sqrt{\epsilon}}.
     \end{equation}
-    This gives the total runtime as
+    This gives the total simulation time needed as
     \begin{equation}
         L\cdot t \in \bigotilde{\frac{\dim_S^9}{\epsilon^{2.5} \Delta}}.
     \end{equation}
@@ -831,12 +859,12 @@ We can compute the spectrum via the characteristic polynomial $\det(\lambda \ide
 
 
 
-\subsection{Numerics - DEFCON 4} \label{sec:specific_numerics}
-Now that we have rigorous bounds on each of the parameters $\alpha, t$ and $L$ needed to prepare thermal states of simple systems, we turn to numerics to test these bounds. The first question we explore is how the total simulation time $L \cdot t$ behaves as a function of $\alpha$ and $t$. After, we examine the dependence of the total simulation time on the inverse temperature $\beta$ and we observe a Mpemba-like effect. Finally, we demonstrate how our proof techniques could be leading to worse $\epsilon$ scaling than appears numerically necessary. Throughout these experiments we have the same numeric method of starting with the maximally mixed state $\rho_S(0)$ and performing a search on the minimal number of interactions needed for the mean trace distance over all samples to be less than the target $\epsilon$. The number of samples is increased until the variance in the trace distance is less than an order of magnitude below the mean.
+\subsection{Numerics} \label{sec:specific_numerics}
+Now that we have rigorous bounds on each of the parameters $\alpha, t$ and $L$ needed to prepare thermal states of simple systems, we turn to numerics to test these bounds. The first question we explore is how the total simulation time $L \cdot t$ behaves as a function of $\alpha$ and $t$. After, we examine the dependence of the total simulation time on the inverse temperature $\beta$ and we observe a Mpemba-like effect where we find higher temperature states can cool faster than lower temperature ones~\cite{auerbach1995supercooling}. Finally, we demonstrate how our proof techniques could be leading to worse $\epsilon$ scaling than appears numerically necessary. Throughout these experiments we have the same numeric method of starting with the maximally mixed state $\rho_S(0)$ and performing a search on the minimal number of interactions needed for the mean trace distance over all samples to be less than the target $\epsilon$. The number of samples is increased until the variance in the trace distance is less than an order of magnitude below the mean.
 
 In Figure \ref{fig:tot_time_vs_single_time} we explore the total simulation time needed to prepare a thermal state with $\beta = 2.0$ and $\epsilon = 0.05$ for a single qubit system. We plot the total simulation time $L \cdot t$ needed as a function of $t$ for various settings of $\alpha$. We find that increasing both parameters tends to decrease the overall cost until a saturation point is reached, which is at a value of $t$ slightly larger $1/\alpha$. For a fixed value of $\alpha$ this initial decrease in $L \cdot t$ is inverse with $t$, in agreement with our finding of $L \in \bigotilde{t^{-2}}$ in Eq. \eqref{eq:single_qubit_l_bound_2} for $\sigma = 0$. However, this process of decreasing the cost by increasing $t$ can only scale so far and appears to run into a minimum number of interactions $L$ required to thermalize. After this saturation point $L \cdot t$ scales linearly with $t$, indicating that the number of interactions $L$ has reached a minimum. 
 
-Another major take away from Figure \ref{fig:tot_time_vs_single_time} is that it demonstrates that our algorithm is exceptionally robust beyond the weak-coupling expansion in which we can theoretically analyze it. The values of $\alpha t$ used in the far right of the plot completely break our weak-coupling expansion, as we have values of $\widetilde{\alpha}$ that reach up to 500. One interesting phenomenon that we do not have an explanation for is the ``clumping" of various settings of $\alpha$ in the large $t$ limit. As $\alpha t$ dictates the amount of time that the random interaction term $G$ is simulated for, it could be that once a minimum amount of randomness is added via this interaction it is no longer beneficial in causing transitions among system eigenstates. 
+Another major take away from Figure \ref{fig:tot_time_vs_single_time} is that it demonstrates that our thermalizing channel is exceptionally robust beyond the weak-coupling expansion in which we can theoretically analyze it. The values of $\alpha t$ used in the far right of the plot completely break our weak-coupling expansion, as we have values of $\widetilde{\alpha}$ that reach up to 500. One interesting phenomenon that we do not have an explanation for is the ``clumping" of various settings of $\alpha$ in the large $t$ limit. As $\alpha t$ dictates the amount of time that the random interaction term $G$ is simulated for, it could be that once a minimum amount of randomness is added via this interaction it is no longer beneficial in causing transitions among system eigenstates. 
 
 \begin{figure} 
     \centering
@@ -844,7 +872,7 @@ Another major take away from Figure \ref{fig:tot_time_vs_single_time} is that it
     \caption{Total simulation time for a single qubit system to reach within trace distance of $0.05$ of the thermal state for $\beta = 2$ as a function of per-interaction simulation time $t$. The slope of the large $t$ asymptote is $\approx$ 1.01.}\label{fig:tot_time_vs_single_time}
 \end{figure}
 
-The next task we have is to examine the $\beta$ dependence of our algorithm. For the harmonic oscillator Theorem \ref{thm:harmonic_oscillator} is helpful for giving an idea of the total simulation time for the ground state but we cannot extend it to finite $\beta$ due to the special structure of the transition matrix in the $\beta \to \infty$ limit. Perturbation theory could possibly be used to extend the computation of the spectral gap to the low temperature regime, but even then it would break down for large temperature (small $\beta$). For generic $\beta$ the structure of the harmonic oscillator transition matrix is tridiagonal but it is not quite Toeplitz, as the main diagonals deviate in the upper left and bottom right corners. We could try to pull these deviations into a separate matrix and treat them as perturbations to a fully Toeplitz matrix, which we can then compute the spectrum of. The issue with this approach is that these deviations are on the order of $\widetilde{\alpha}^2 q(0)$ and $\widetilde{\alpha}^2 q(1)$, which are comparable to the eigenvalues of the unperturbed matrix.
+The next task we have is to examine the $\beta$ dependence. For the harmonic oscillator Theorem \ref{thm:harmonic_oscillator} is helpful for giving an idea of the total simulation time for the ground state but we cannot extend it to finite $\beta$ due to the special structure of the transition matrix in the $\beta \to \infty$ limit. Perturbation theory could possibly be used to extend the computation of the spectral gap to the low temperature regime, but even then it would break down for large temperature (small $\beta$). For generic $\beta$ the structure of the harmonic oscillator transition matrix is tridiagonal but it is not quite Toeplitz, as the main diagonals deviate in the upper left and bottom right corners. We could try to pull these deviations into a separate matrix and treat them as perturbations to a fully Toeplitz matrix, which we can then compute the spectrum of. The issue with this approach is that these deviations are on the order of $\widetilde{\alpha}^2 q(0)$ and $\widetilde{\alpha}^2 q(1)$, which are comparable to the eigenvalues of the unperturbed matrix.
 
 In Figure \ref{fig:sho_total_time_vs_beta} we are able to probe the total simulation time and spectral gap of the harmonic oscillator as a function of $\beta$. We reveal a rather surprising Mpemba-like phenomenon where it takes longer for an infinite temperature initial state (the maximally mixed state) to cool to intermediate temperatures than low temperature states. The Mpemba effect \cite{mpemba} is a classical phenomenon related to the time needed to freeze hot water compared to room temperature water with mentions going all the way back to Aristotle. This phenomenon has been extended to quantum thermodynamics and observed in both theory \cite{nickMpemba}, \cite{mpembaExplanation} and in recent experimental research \cite{zhang2025mpembaObservation}. Our observations are not only a further analytic observation, but we are able to provide a proposed mechanism that explains the behavior. It is clear that the distance of our initial state to the target thermal state $\norm{\rho_S(\beta) - \rho_S(\infty)}_1$ increases monotonically with $\beta$ but what is not obvious is that the spectral gap of the underlying Markov chain is \emph{also} increasing. As larger spectral gaps lead to quicker convergences this acts in an opposite way on the total simulation time. The end result is that for small $\beta$ the increase in initial distance is stronger than the increase in the spectral gap and $L \cdot t$ increases. After some amount of $\beta$ these forces flip and the spectral gap effects become stronger than the initial state distance increasing, leading to a reduction in $L \cdot t$. This phenomenon appears to become more pronounced as the dimension of the harmonic oscillator increases, as can be seem in the $\dim_S = 10$ data. Two things remain unclear: the first is what parameters affect the position and height of the peak in total simulation time and the second is if this behavior is present in Hamiltonians with more complicated eigenvalue difference structure than the harmonic oscillator.
 
@@ -856,6 +884,7 @@ In Figure \ref{fig:sho_total_time_vs_beta} we are able to probe the total simula
     \label{fig:sho_l_vs_beta_dim_4}
     \end{subfigure}
     \begin{subfigure}{0.45\textwidth}
+    \vspace{0.7cm}
     \includegraphics[width=\textwidth]{numerics/data/spec_gap_dim_4.pdf}
     \caption{Spectral Gap $\widetilde{\lambda}_\star(\beta)$ vs. $\beta$, $\dim = 4$}
     \label{fig:sho_spectral_gap_vs_beta}
@@ -866,13 +895,17 @@ In Figure \ref{fig:sho_total_time_vs_beta} we are able to probe the total simula
     \caption{Total simulation time vs. $\beta$, $\dim = 10$}
     \label{fig:sho_l_vs_beta_dim_10}
     \end{subfigure}
-    \caption{Demonstration of $\beta$ dependence of the thermalizing channel $\Phi$ for the truncated harmonic oscillator.}
+    \caption{Demonstration of $\beta$ dependence of the thermalizing channel $\Phi$ for the truncated harmonic oscillator. The environment gap $\gamma$ was tuned to match the system gap $\Delta$ exactly. The minimal number of interactions was found by binary search over values of $L$ that have an average error of less than $\epsilon = 0.05$ with 100 samples.}
     \label{fig:sho_total_time_vs_beta}
 \end{figure}
 
-The analytic proofs given in Theorems \ref{thm:single_qubit} and \ref{thm:harmonic_oscillator} are entirely based on our weak-coupling expansion derived in Section \ref{sec:weak_coupling}. The high level picture of this expansion is that we have a remainder error that scales like $\bigo{(\alpha t)^3}$ and an off-resonance error that scales as $\bigo{\alpha^2}$. To balance these two terms we then set $\alpha = \bigo{1/t^3}$. However, as seen in Figure \ref{fig:tot_time_vs_single_time} our simulation algorithm appears to be quite robust beyond this weak-coupling expansion, which could lead to significant improvements in runtime. In our derivation for the $\bigo{\alpha}$ and $\bigo{\alpha^2}$ terms we relied on our eigenvalues being I.I.D Gaussian variables, with the first and second order expressions containing factors with the first and second moments respectively of the Gaussian distribution. This would suggest that the third order term in a weak coupling expansion might also be 0, similarly to the first order term. This would lead to a supposed remainder error of $\bigo{\alpha^4 t^4}$, which after balancing with the off-resonance error would give $\alpha = \bigo{1/t^2}$. If the number of interactions then scales like $\bigo{1/\alpha^2 t^2}$, which is consistent with the spectral gap of $\TT_{\on}$ scaling as $\bigo{\alpha^2 t^2}$, then to make the total error of order $\bigo{\epsilon}$ we would require $t \in \bigotilde{1/\epsilon^{0.5}}$ as in Theorems \ref{thm:single_qubit} and \ref{thm:harmonic_oscillator}. This conjecture then leads to a total simulation time of order $\bigo{1/\epsilon^{1.5}}$. 
+The analytic proofs given in Theorems \ref{thm:single_qubit} and \ref{thm:harmonic_oscillator} are entirely based on our weak-coupling expansion derived in Section \ref{sec:weak_coupling}. The high level picture of this expansion is that we have a remainder error that scales like $\bigo{(\alpha t)^3}$ and an off-resonance error that scales as $\bigo{\alpha^2}$. To balance these two terms we then set $\alpha = \bigo{1/t^3}$. However, as seen in Figure \ref{fig:tot_time_vs_single_time} our thermalization routine appears to be quite robust beyond this weak-coupling expansion, which could lead to significant improvements in runtime. In our derivation for the $\bigo{\alpha}$ and $\bigo{\alpha^2}$ terms we relied on our eigenvalues being I.I.D Gaussian variables, with the first and second order expressions containing factors with the first and second moments respectively of the Gaussian distribution. This would suggest that the third order term in a weak coupling expansion might also be 0, similarly to the first order term. This would lead to a supposed remainder error of $\bigo{\alpha^4 t^4}$, which after balancing with the off-resonance error would give $\alpha = \bigo{1/t^2}$. If the number of interactions then scales like $\bigo{1/\alpha^2 t^2}$, which is consistent with the spectral gap of $\TT_{\on}$ scaling as $\bigo{\alpha^2 t^2}$, then to make the total error of order $\bigo{\epsilon}$ we would require $t \in \bigotilde{1/\epsilon^{0.5}}$ as in Theorems \ref{thm:single_qubit} and \ref{thm:harmonic_oscillator}. This conjecture then leads to a total simulation time of order $\bigo{1/\epsilon^{1.5}}$. 
 
-An even further conjecture would be to keep $\alpha \cdot t$ as a small constant, in this case we are essentially saying that the randomized dynamics $e^{i \alpha t G}$ are beneficial and should not be thought of as some remainder error to be minimized. If the $\alpha t$ constant is small enough then the dynamics will still be approximated by the Markov chain $\TT_{on}$. Our spectral gap will still scale as $\bigo{(\alpha t)^2}$ and $t$ as $\bigo{1/\epsilon^{0.5}}$. This would lead to our total simulation cost scaling as $\bigo{1/\epsilon^{0.5}}$. In Figure \ref{fig:epsilon_scaling} we numerically explore these various scalings of $\alpha$ for the harmonic oscillator with $\beta = \dim_S = 4$. Our first remark is that the $\alpha = \bigo{1/t^3}$ scaling as dictated by Theorem \ref{thm:harmonic_oscillator} is numerically verified, with our experiment suggesting $L \cdot t \in \bigo{1/\epsilon^{2.764}}$. We obtained these exponents via a linear fit to the logarithm of $L\cdot t$ and $1/\epsilon$.
+An even further conjecture would be to keep $\alpha \cdot t$ as a small constant, in this case we are essentially saying that the randomized dynamics $e^{i \alpha t G}$ are beneficial and should not be thought of as some remainder error to be minimized. If the $\alpha t$ constant is small enough then the dynamics will still be approximated by the Markov chain $\TT_{on}$. Our spectral gap will still scale as $\bigo{(\alpha t)^2}$ and $t$ as $\bigo{1/\epsilon^{0.5}}$. This would lead to our total simulation time scaling as $\bigo{1/\epsilon^{0.5}}$. In Figure \ref{fig:epsilon_scaling} we numerically explore these various scalings of $\alpha$ for the harmonic oscillator with $\beta = \dim_S = 4$. Our first remark is that the $\alpha = \bigo{1/t^3}$ scaling as dictated by Theorem \ref{thm:harmonic_oscillator} is numerically supported. 
+ Specifically, the theorem suggests that we should observe $O(1/\epsilon^{2.5})$ scaling for $L\cdot t$. 
+ Our experiment suggesting $L \cdot t \in \bigo{1/\epsilon^{2.764}}$ which is approximately consistent and deviations from this scaling may arise from the inclusion of data in the fit from outside of the weak coupling limit which is the only regime where we anticipate this scaling. 
+ 
+ We obtained these exponents via least squares fitting of a power-law fit to $L\cdot t$ and $1/\epsilon$. 
 
 
 \begin{figure}
@@ -885,15 +918,17 @@ An even further conjecture would be to keep $\alpha \cdot t$ as a small constant
 
 \section{General Systems} \label{sec:general_systems}
 
-We now turn to extending our techniques to arbitrary Hamiltonians. The only restriction on the Hamiltonians we will make is that they have no degenerate eigenvalues. This assumption is only required for the $\beta \to \infty$ limit as our proof of the transition matrix $T$ being upper triangular in Lemma \ref{lem:fixed_point} requires no degenerate eigenvalues. The reason behind this is that for degenerate eigenvalues there is always a non-zero transition amplitude that scales as $\bigo{\widetilde{\alpha}^2}$ without a factor of sinc. This means within the degenerate subspace in the transition matrix there is a uniform block. This makes computing the transition matrix spectrum a little more complicated than necessary, so we avoid this issue by requiring no degeneracies. This restriction could most likely be lifted in future work. 
+We now extend our thermalization techniques to arbitrary Hamiltonians with no degenerate eigenvalues. The first major difficulty that we run into is how to choose our environment gap $\gamma$. If one does not have any knowledge whatsoever about where the eigenvalues of $H_S$ may lie then we are reduced to uniform guessing. In Section \ref{sec:zero_knowledge} we show that even in this scenario the thermal state is an approximate fixed point for finite $\beta$ and the exact fixed point for ground states and we provide a bound on the total simulation time required. However, we show that this generality does come at a cost. If one has complete knowledge of the eigenvalue differences we show in Section \ref{sec:perfect_knowledge} that the total simulation time markedly decreases. Further, with complete knowledge the thermal state is an exact fixed point for all $\beta$. Finally, in Section \ref{sec:general_numerics} we study these impacts on small Hydrogen chain systems and observe the quantitative effects of noise added to $\gamma$. 
 
-The first major difference we run into when moving to general systems is that the eigenvalue differences $\Delta_S(i,j)$ are now not known a priori. For the single qubit case we were able to show thermalization if the gap $\Delta$ is contained within some window and for the harmonic oscillator we assumed that the gap was known. 
+The assumption on non-degenerate eigenvalues is required for fairly technical conditions. In the $\beta \to \infty$ limit for our proof of the spectral gap we use the fact that the transition matrix $T$ is upper triangular in Lemma \ref{lem:fixed_point}. This is where the non-degeneracy is required because degenerate eigenvalues always have a non-zero transition amplitude that scales as $\bigo{\widetilde{\alpha}^2}$ without a factor of sinc. This means within the degenerate subspace in the transition matrix there is a uniform block. This makes computing the transition matrix spectrum a little more complicated than necessary, so we avoid this issue by requiring no degeneracies. This restriction could likely be lifted through an intelligent choice of eigenbasis for the degenerate subspace, or through better spectrum calculations of the resulting transition matrix, but we leave such explorations for future work. 
 
-\subsection{Zero Knowledge - DEFCON 4} \label{sec:zero_knowledge}
-We now move on to show how our algorithm performs if one has no knowledge about the eigenvalue differences $\Delta_S(i,j)$ apart from a bound on the maximum value of these differences. This is represented by choosing $\gamma$ uniformly from the interval $[0, 4 \norm{H_S}]$, which technically constitutes an upper bound on the largest $\Delta_S(i,j)$, but estimates of $\norm{H_S}$ are often readily attainable from the specification of the Hamiltonian using the triangle inequality.  We also assume that an input state that commutes with the Hamiltonian can be provided.  This is not a substantial restriction because recall that such a state can be attained from either phase estimation or from using a maximally mixed state as an input.
+
+
+\subsection{Zero Knowledge} \label{sec:zero_knowledge}
+We now move on to show how our channel performs if one has no knowledge about the eigenvalue differences $\Delta_S(i,j)$ apart from a bound on the maximum value of these differences. This is represented by choosing $\gamma$ uniformly from the interval $[0, 4 \norm{H_S}]$, which technically constitutes an upper bound on the largest $\Delta_S(i,j)$, but estimates of $\norm{H_S}$ are often readily attainable from the specification of the Hamiltonian using the triangle inequality.  We also assume that an input state that commutes with the Hamiltonian can be provided, the maximally mixed state is sufficient as would a random eigenstate yielded by the quantum phase estimation algorithm.
 
 \begin{theorem}[Zero Knowledge Thermal State Prep] \label{thm:zero_knowledge}
-    Let $H_S$ be a Hermitian matrix with no degenerate eigenvalues, $\rho$ any input state that commutes with $H_S$, and $\gamma$ a random variable chosen uniformly in the interval $[0, 4 \norm{H_S}]$ and
+    Let $H_S$ be a Hermitian matrix of dimension ${\rm dim}_S$ with no degenerate eigenvalues, $\rho$ any input state that commutes with $H_S$, and $\gamma$ a random variable distributed uniformly in the interval $[0, 4 \norm{H_S}]$ and
     let $\rho_{\rm fix}$ denote the unique fixed point of the transition dynamics $\identity + \EE_\gamma \TT_{\on}^{(\gamma)}$ where $\TT_{\on}^{(\gamma)}$ is the on-resonance transition matrix used above with the dependence on $\gamma$ made explicit. The following statements then hold.
     \begin{enumerate}
 \item For finite $\beta$ the thermal state is an approximate fixed point of the thermalizing channel $\EE_\gamma \Phi_\gamma$ with a deviation of
@@ -913,12 +948,12 @@ We now move on to show how our algorithm performs if one has no knowledge about 
     \begin{equation}
         \lim_{\beta \to \infty} \rho_{\rm fix} = \ketbra{1}{1} \text{ and } \lim_{\beta \to \infty} \widetilde{\lambda}_\star(\beta) = 2 \int_{0}^{-\delta_{\min}t/2} \sinc^2(u) du \ge 2.43.
         \end{equation}
-    Substituting this bound on $\widetilde{\lambda}_\star(\beta)$ into the choices for $\alpha, t$ and $L$ given for finite $\beta$ is sufficient to guarantee thermalization of $\left(\EE_\gamma \Phi_\gamma \right)^{\circ L}$.
+
     \end{enumerate}
 \end{theorem}
 \begin{proof}
     %This proof structure will be structurally similar to the proof of Theorem \ref{thm:perfect_knowledge}. 
-    We start by understanding the fixed points of $\identity + \EE_\gamma \TT_{\on}^{(\gamma)}$, conditions for the thermal state being fixed are given in Lemma \ref{lem:fixed_point}. As the condition boils down to a detailed balance like condition, we need to compute the off-diagonal transition elements first. Starting with $i > j$ we have
+    We start by understanding the fixed points of $\identity + \EE_\gamma \TT_{\on}^{(\gamma)}$, conditions for the thermal state being fixed are given in Lemma \ref{lem:fixed_point}. As the condition boils down to a detailed balance like condition, we need to compute the off-diagonal transition elements first. Starting with $i > j$ we have from Definition~\ref{def:transition} that
     \begin{align}
         &\EE_\gamma \bra{j} \TT_{\on}^{(\gamma)}(\ketbra{i}{i})\ket{j} \nonumber \\
         &=  \widetilde{\alpha}^2 \EE_{\gamma} \frac{1}{1 + e^{-\beta \gamma}} \mathbf{I}[|\Delta_S(i,j) - \gamma| \le \delta_{\min}]  \sinc^2\left(\frac{(\Delta_S(i,j) - \gamma)t}{2}\right) \\ \nonumber \\
@@ -928,11 +963,11 @@ We now move on to show how our algorithm performs if one has no knowledge about 
         &=  \frac{\widetilde{\alpha}^2}{4 \norm{H_S}} \int_{\Delta_S(i,j) - \delta_{\min}}^{\Delta_S(i,j) + \delta_{\min}} \frac{1}{1 + e^{-\beta \gamma}}  \sinc^2\left(\frac{(\Delta_S(i,j) - \gamma)t}{2}\right) d\gamma \\
         &= \frac{\widetilde{\alpha}^2}{2 t \norm{H_S}} \int_{-\delta_{\min} t /2}^{\delta_{\min} t / 2} \frac{1}{1 + e^{-\beta (\Delta_S(i, j) - 2 u /t)}} \sinc^2(u) du. \label{eq:zero_knowledge_transition_1}
     \end{align}
-    The exact same calculation holds for $i < j$ but with a slightly different integrand
+    The exact same calculation holds for $i < j$, which after repeating the steps that led to~\eqref{eq:zero_knowledge_transition_1} we arrive at a similar result  with a slightly different integrand
     \begin{align}
         \EE_\gamma \bra{j} \TT_{\on}^{(\gamma)}(\ketbra{i}{i})\ket{j} &= \frac{\widetilde{\alpha}^2}{2 t \norm{H_S}} \int_{-\delta_{\min} t /2}^{\delta_{\min} t / 2} \frac{e^{-\beta (\Delta_S(j,i) - 2 u /t)}}{1 + e^{-\beta (\Delta_S(j,i) - 2 u /t)}} \sinc^2(u) du,\label{eq:zero_knowledge_transition_2}
     \end{align}
-    as we pick up a factor of $q(1)$ as opposed to $q(0)$. Note that we have also shown that $\EE_\gamma T_\gamma$ is ergodic, as there is a nonzero probability for any state $\ketbra{i}{i}$ to transition to any other state $\ketbra{j}{j}$ in one iteration.
+    as we pick up a factor of $q(1)$ as opposed to $q(0)$. Note that we have also shown that $\EE_\gamma T_\gamma$ is ergodic, as there is a nonzero probability for any state $\ketbra{i}{i}$ to transition to any other state $\ketbra{j}{j}$ in one iteration on average over $\gamma$.
 
     For finite $\beta$ the condition for $\rho_S(\beta)$ being a fixed point is given in Eq. \eqref{eq:detailed_balance}, repeated here as
     \begin{equation}
@@ -950,7 +985,7 @@ We now move on to show how our algorithm performs if one has no knowledge about 
         &\frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)} e_j^T \EE_\gamma T_\gamma e_i - \frac{e^{-\beta \lambda_S(j)}}{\partfun_S(\beta)}  e_i^T \EE_\gamma T_\gamma e_j \nonumber \\ 
         &= \frac{e^{-\beta \lambda_S(j)}}{\partfun_S(\beta)} \frac{\widetilde{\alpha}^2}{2 t \norm{H_S}} \int_{-\delta_{\min} t /2 }^{\delta_{\min} t/ 2} \frac{ e^{\beta 2 u / t} - 1}{1 + e^{-\beta(\Delta_S(j, i) - 2u/t)}} \sinc^2(u) du. \label{eq:zero_knowledge_tmp_2}
     \end{align}
-    Unfortunately these integrals are not 0, which can be verified numerically, and it is incredibly unclear how to make the summation over $i \neq j$ equal to 0. 
+    Unfortunately these integrals are not 0, which can be verified numerically, and it is unclear how to make the summation over $i \neq j$ equal to 0. 
     
     Our work around this is that instead of showing that the thermal state is exactly the fixed point we can use these results to show that it is an approximate fixed point. There are a few ways we could proceed. The first way could be to compute a Taylor series for the integrand and isolate the limits in which the remainder goes to 0. Unfortunately due to the $\sinc^2(u) = \sin(u)^2 / u^2$ term this means that the overall scaling will go like $1/t$, making the total expression independent of $t$. Instead the route we will take will be to upper bound the norm $\norm{\vec{p}_{\beta} - \EE_\gamma (I + T_\gamma)\vec{p}_\beta}_1 = \norm{\EE_\gamma T_\gamma \vec{p}_\beta}_1$, as this norm is only 0 if $\vec{p}_\beta$ is a fixed point. We reduce this to computations we have already performed as
     \begin{align}
@@ -970,7 +1005,7 @@ We now move on to show how our algorithm performs if one has no knowledge about 
         &\le \frac{\widetilde{\alpha}^2 \dim_S}{t \norm{H_S}} e^{\beta \delta_{\min}} \pi \\
         &\le \alpha^2 t e^{\beta \delta_{\min}} \norm{H_S}^{-1} \pi.
     \end{align}
-    For this we can have $\alpha t$, which represents the total simulation time for the random interaction $G$, be constant and still take $\alpha \to 0$ to achieve arbitrarily small error.
+    For this we can have $\alpha t$, which represents the total simulation time multiplied by the strength of the random interaction $G$, be constant and still take $\alpha \to 0$ to achieve arbitrarily small error.
 
     Now we turn to bounding the total simulation time. We will let $\rho_{\rm fix}$ denote the fixed point of the dynamics. As before, we break the error into two pieces
     \begin{equation}
@@ -978,7 +1013,7 @@ We now move on to show how our algorithm performs if one has no knowledge about 
     \end{equation}
     Let $\widetilde{\lambda}_\star(\beta)$ denote the spectral gap for the rescaled transition matrix $\EE_\gamma T_\gamma \cdot \left(\frac{2 \norm{H_S} (\dim + 1)}{\alpha^2 t}\right)$, as this is the dimensionful prefactor in front of the transitions derived in Eqs. \eqref{eq:zero_knowledge_transition_1} and \eqref{eq:zero_knowledge_transition_2}. Jerison's Markov Relaxation Theorem \ref{thm:markov_chain_bound} tells us that taking $L$ to satisfy
     \begin{equation}
-        L \ge \frac{\dim_S}{\lambda_\star} J \in \bigotilde{\frac{\dim_S^2 \norm{H_S}}{\alpha^2 t \widetilde{\lambda}_\star(\beta)}}
+        L \ge \frac{\dim_S}{\lambda_\star} J \in \bigotilde{\frac{\dim_S^2 \norm{H_S}}{\alpha^2 t \widetilde{\lambda}_\star(\beta)}}\label{eq:Lbd}
     \end{equation}
     is sufficient to guarantee $\norm{\rho_{\rm fix} - \left(\EE_\gamma \identity + \TT_{\on}^{(\gamma)}\right)^{\circ L} (\rho)}_1 \in \bigotilde{\epsilon}$. Now we balance the off-resonance and remainder errors
     \begin{equation}
@@ -1021,9 +1056,13 @@ We now move on to show how our algorithm performs if one has no knowledge about 
     \begin{equation}
         \alpha = \frac{1}{\dim_S \delta_{\min}^2 t^3}, ~ t = \frac{4 \dim_S^2 \norm{H_S}}{\epsilon \delta_{\min}^2}, \text{ and } L \in \bigotilde{\frac{\dim_S^2 \norm{H_S}}{\alpha^2 t}}
     \end{equation}
-    are sufficient to guarantee $\norm{\ketbra{1}{1} - \left( \EE_\gamma \Phi_\gamma\right)^{\circ L} (\rho)}_1 \in \bigotilde{\epsilon}$.
+    are sufficient to guarantee $\norm{\ketbra{1}{1} - \left( \EE_\gamma \Phi_\gamma\right)^{\circ L} (\rho)}_1 \in \bigotilde{\epsilon}$.  Substituting this into~\eqref{eq:Lbd} yields
+    \begin{equation}
+        L\cdot t \in \bigotilde{\frac{\dim_S^{16} \norm{H_S}^7}{\delta_{\min}^8 \epsilon^6 \widetilde{\lambda}_\star(\beta)^7}}
+    \end{equation}
+    as stated in the second claim in the theorem.
 
-    Our final task is to show that our justification of $I_{\sinc}(t)$ as constant is valid. Using the choice of $t$ directly above
+    Our final task is to justify the third claim of the theorem, which involves showing that $I_{\sinc}(t)$ as constant is valid. Using the choice of $t$ directly above
     \begin{align}
         I_{\sinc}(t) = \int_{-\delta_{\min} t /2}^{\delta_{\min} t /2}  \sinc^2(u) du = 2 \int_{0}^{ \frac{\dim_S^2 4 \norm{H_S}} {\epsilon \delta_{\min}}} \sinc^2(u) du. \label{eq:zero_knowledge_sinc_integral}
     \end{align}
@@ -1031,23 +1070,21 @@ We now move on to show how our algorithm performs if one has no knowledge about 
     \begin{align}
     \epsilon \le 2 \le \frac{3^2}{\pi} \le \frac{\dim_S^2}{\pi} \le \frac{\dim_S^2 4 \norm{H_S}}{\pi \delta_{\min}},
 \end{align}
-as $\delta_{\min} \le 4 \norm{H_S}$. This shows that for our choice of $t$ then $|I_{\sinc}(t) - \pi| \le 0.71$, rendering it asymptotically constant.
+as $\delta_{\min} \le 4 \norm{H_S}$. This shows that for our choice of $t$ then $|I_{\sinc}(t) - \pi| \le 0.71$, rendering it asymptotically constant as claimed.
 \end{proof}
 
-There are a few points that need to be addressed with the above theorem. The first is that our proof of the approximate fixed point utilizes rather poor bounds. The result is that as $\beta \to \infty$ our bounds on the change in the thermal state goes to $\infty$ as well, but in this limit we are able to show that the ground state is the \emph{exact} fixed point of the Markov chain. This divergence in approximation error must be a result of loose bounds and might be a potential avenue for improvement. The second point we would like to address is the rather high asymptotic scaling. This is the byproduct of a few things, the most important of which is the introduction of a $1/t$ in the reduction of the $\sinc$ integral. This causes a downstream effect of increasing the degree of each asymptotic parameter. To improve this one would need some kind of knowledge of the eigenvalues to prevent a uniform integration of each $\sinc$ term. We study the limiting case of this by assuming sample access to the exact eigenvalue differences $\Delta_S(i,j)$ in Section \ref{sec:perfect_knowledge} and obtain much improved scaling. The second source of inflation in our asymptotic scaling could be our weak-coupling approach to studying the channel. As explored numerically in Section \ref{sec:specific_numerics} we find that using different $\alpha$ scalings with respect to $t$ can greatly effect the $\epsilon$ scaling of the total simulation time $L \cdot t$. A higher order analysis of this channel could lead to anytically better guarantees on the thermalization time required. 
+There are a few points that need to be addressed with the above theorem. The first is that our proof of the approximate fixed point utilizes rather poor bounds, resulting in diverging behavior as $\beta \to \infty$. For finite $\beta$ our bounds on the change in the thermal state scales as $e^{\beta \delta_{\min}}$, which diverges as $\beta$ goes to $\infty$, but in this exact same limit we are able to show that the ground state is the \emph{exact} fixed point of the Markov chain. This clear divergence in approximation error is a result of loose bounds and could be a potential avenue for improvement. The second point we would like to address is the rather high asymptotic scaling. This is the byproduct of a few things, the most important of which is the introduction of a $1/t$ in the reduction of the $\sinc$ integral. This causes a downstream effect of increasing the degree of each asymptotic parameter. To improve this one would need some kind of knowledge of the eigenvalues to prevent a uniform integration of each $\sinc$ term. We study the limiting case of this by assuming sample access to the exact eigenvalue differences $\Delta_S(i,j)$ in Section \ref{sec:perfect_knowledge} and obtain much improved scaling. The second source of inflation in our asymptotic scaling could be our weak-coupling approach to studying the channel. As explored numerically in Section \ref{sec:specific_numerics} we find that using different $\alpha$ scalings with respect to $t$ can greatly effect the $\epsilon$ scaling of the total simulation time $L \cdot t$. A higher order analysis of this channel could lead to anytically better guarantees on the thermalization time required, even in this zero knowledge scenario.
 
-% This poor scaling is a byproduct of a few loose bounds. First, the number of interactions needed for the Markov chain to converge, from Jerison's Theorem \ref{thm:markov_chain_bound}, is incredibly loose. This is due to the guarantee of convergence for an arbitrary input state, it is unclear if this bound could be improved if promises of overlap with the ground state on the input state are provided. Second, the lack of knowledge of the eigenvalue differences introduces an incredibly costly $1 / t$ factor into the spectral gap. This then propagates through $L$ to make the runtime significantly worse. Third, we suspect that the remainder bound could potentially be improved to $\bigo{\alpha^4}$. This could be shown by utilizing the fact that the eigenvalues of $G$ are Gaussian, meaning their third moment is 0. The computation of the $G$ eigenvalue moments is what shows the $\bigo{\alpha}$ term in the weak expansion is 0 and could show that the order correction is potentially 0 as well. This would allow for $\alpha$ to scale as $1 / t^2$ as opposed to $1 / t^3$ and could lead to significant asymptotic improvements. A further conjecture, explored in Section \ref{sec:general_numerics}, is that the product $\alpha t$ which represents the total time evolution of the random matrix $G$, should remain \emph{constant} with respect to $t$. This would then lead to $1/\epsilon$ scaling, which we explore numerically in Section \ref{sec:general_numerics}.
+\subsection{Perfect Knowledge} \label{sec:perfect_knowledge}
 
-\subsection{Perfect Knowledge - DEFCON 4} \label{sec:perfect_knowledge}
+Oftentimes when studying a system some knowledge of the eigenvalue gaps may be present. Our goal in this section is to study the extreme case of this scenario where one has knowledge of the exact eigenvalue differences. This is unlikely to happen with realistic quantum materials but instead serves as an ideal scenario for our channel to benchmark the effects of eigenvalue knowledge. Further, we note for some computational tasks, such as amplitude amplification, the eigenvalues may be explicitly computable and the real task is to find the dominant eigenvectors. A more realistic model for studying the impacts of eigenvalue knowledge on the total simulation time might be to place Gaussians at each of the $\Delta_S(i,j)$ values with some width $\sigma$. This is the model we use for numeric investigations in Section \ref{sec:general_numerics}, but we were unable to compute the total simulation time required analytically. We find that our model of perfect knowledge allows us to show a reduced total simulation time budget, with the ratio of zero knowledge to perfect knowledge scaling as $\bigotilde{\frac{\norm{H_S}^7}{\delta_{\min}^7 \epsilon^{3.5} \widetilde{\lambda}_\star(\beta)^{3.5}}}$, 
+     which gives an explicit worst-case simulation time bound for ground state preparation.
 
-Oftentimes when studying a system some knowledge of the eigenvalue gaps may be present. Our goal in this section is to study the extreme case of this scenario where one has knowledge of the exact eigenvalue differences. This is unlikely to happen with realistic quantum materials but instead serves as an ideal scenario for our algorithm to benchmark the effects of eigenvalue knowledge. Further, we note for some computational tasks, such as amplitude amplification, the eigenvalues may be explicitly computable and the real task is to find the dominant eigenvectors. A more realistic model for studying the impacts of eigenvalue knowledge on the total simulation time might be to place Gaussians at each of the $\Delta_S(i,j)$ values with some width $\sigma$. This is the model we use for numeric investigations in Section \ref{sec:general_numerics}, but we were unable to compute the total simulation time required analytically. We find that our model of perfect knowledge allows us to show a reduced total simulation time budget, with the ratio of zero knowledge to perfect knowledge scaling as $\bigotilde{\frac{\norm{H_S}^7}{\delta_{\min}^7 \epsilon^{3.5} \widetilde{\lambda}_\star(\beta)^{3.5}}}$. 
 
-
-% The main improvements in the total simulation time for the following theorem over the zero knowledge Theorem \ref{thm:zero_knowledge} is the $\epsilon$ scaling goes from $\epsilon^{-6}$ to $\epsilon^{-2.5}$, matching the $\epsilon$ scaling for the single qubit and harmonic oscillator in Theorems \ref{thm:single_qubit} and \ref{thm:harmonic_oscillator}. Compared to Theorem \ref{thm:zero_knowledge} we find that the total simulation time no longer has any dependency on $\norm{H_S}$ and the $\delta_{\min}$ scaling goes from $\delta_{\min}^{-8}$ to $\delta_{\min}^{-1}$, a large improvement. 
 
 
 \begin{theorem}[Perfect Knowledge Thermal State Prep] \label{thm:perfect_knowledge}
-    Let $H_S$ be a Hermitian matrix with no degenerate eigenvalues, $\rho$ any input state that commutes with $H_S$ , and let $\gamma$ be a random variable with distribution $\prob{\gamma = \Delta(i,j)} = \frac{\eta_\Delta(i,j)}{\binom{\dim_S}{2}}$. For arbitrary $\beta$ the thermal state can be prepared with controllable error
+    Let $H_S$ be a Hermitian matrix of dimension ${\rm dim}_S$ with no degenerate eigenvalues, $\rho$ any input state that commutes with $H_S$ , and let $\gamma$ be a random variable with distribution $\prob{\gamma = \Delta(i,j)} = \frac{\eta_\Delta(i,j)}{\binom{\dim_S}{2}}$ where $\eta_{i,j}$ is the number of times a particular eigenvalue difference appears. For any $\beta\in [0,\infty]$ the thermal state can be prepared with controllable error
     \begin{equation}
         \norm{\rho_S(\beta) - \left(\EE_\gamma \Phi_\gamma \right)^{\circ L}(\rho)}_1 \in \bigotilde{\epsilon}
     \end{equation}
@@ -1060,11 +1097,10 @@ Oftentimes when studying a system some knowledge of the eigenvalue gaps may be p
      \begin{equation}
          L \cdot t \in \bigotilde{\frac{\dim_S^{16}}{\delta_{\min} \epsilon^{2.5} \widetilde{\lambda}_\star(\beta)^{3.5}}}.
      \end{equation}
-     All of the above conditions hold in the ground state limit as $\beta \to \infty$ and further we can compute a lower bound on the spectral gap as
+     All of the above conditions hold in the ground state limit as $\beta \to \infty$ and further we can compute a lower bound on the spectral gap of the rescaled transition matrix as
      \begin{equation}
-         \lim_{\beta \to \infty} \widetilde{\lambda}_\star(\beta) = \min_{i > 1} \sum_{j < i} \eta_\Delta(i,j) \ge 1,
+         \lim_{\beta \to \infty} \widetilde{\lambda}_\star(\beta) = \min_{i > 1} \sum_{j < i} \eta_\Delta(i,j) \ge 1.
      \end{equation}
-     which gives fully explicit worst-case runtime bounds for ground state preparation.
 \end{theorem}
 \begin{proof}
 This proof structure is structurally similar to the proof of Theorem \ref{thm:zero_knowledge}.
@@ -1073,7 +1109,7 @@ To show that the thermal state is the fixed point we will need to compute transi
     &\EE_\gamma \bra{j} \TT_{\on}^{(\gamma)}(\ketbra{i}{i})\ket{j} \nonumber \\
     &=  \widetilde{\alpha}^2 \EE_{\gamma} \frac{1}{1 + e^{-\beta \gamma}} \mathbf{I}[|\Delta_S(i,j) - \gamma| \le \delta_{\min}]  \sinc^2\left(\frac{(\Delta_S(i,j) - \gamma)t}{2}\right) \nonumber \\
     &~+ \widetilde{\alpha}^2 \EE_{\gamma} \frac{e^{-\beta \gamma}}{1 + e^{-\beta \gamma}} \mathbf{I}[|\Delta_S(i,j) + \gamma| \le \delta_{\min}]  \sinc^2\left(\frac{(\Delta_S(i,j) + \gamma)t}{2}\right) \\
-    &= \widetilde{\alpha}^2 \sum_{\Delta_S(k,l)} \prob{\gamma = \Delta_S(k,l)} \frac{\mathbf{I}[|\Delta_S(i,j) - \Delta_S(k,l)| \le \delta_{\min}]}{1 + e^{-\beta \Delta_S(k,l)}}   \sinc^2\left(\frac{(\Delta_S(i,j) - \Delta_S(k,l)t}{2}\right) \\
+    &= \widetilde{\alpha}^2 \sum_{\Delta_S(k,l)} \prob{\gamma = \Delta_S(k,l)} \frac{\mathbf{I}[|\Delta_S(i,j) - \Delta_S(k,l)| \le \delta_{\min}]}{1 + e^{-\beta \Delta_S(k,l)}}   \sinc^2\left(\frac{(\Delta_S(i,j) - \Delta_S(k,l))t}{2}\right) \\
     &= \widetilde{\alpha}^2 \frac{\eta_\Delta(i,j)}{\binom{\dim_S}{2}} \frac{1}{1 + e^{-\beta \Delta_S(i,j)}}.
 \end{align}
 $i < j$ can be computed similarly as
@@ -1087,7 +1123,7 @@ This allows us to compute the detailed-balance like condition in Eq. \eqref{eq:d
     &= \frac{\widetilde{\alpha}^2}{\partfun_S(\beta)} \frac{\eta_\Delta(i,j)}{\binom{\dim_S}{2}} \left(\frac{e^{-\beta \lambda_S(i)}}{1 + e^{-\beta \Delta_S(i,j)}} - e^{-\beta \lambda_S(j)} \frac{e^{-\beta \Delta_S(i,j)}}{1 + e^{-\beta \Delta_S(i,j)} } \right) \\
     &= 0.
 \end{align}
-For $i < j$ the same calculation holds
+For $i < j$ we can repeat the same steps to argue that detailed balance also holds in this case.
 \begin{align}
     &\frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)} \EE_\gamma \bra{j} \TT_{\on}^{(\gamma)}(\ketbra{i}{i}) \ket{j} - \frac{e^{-\beta \lambda_S(j)}}{\partfun_S(\beta)} \bra{i} \TT_{\on}^{(\gamma)}(\ketbra{j}{j}) \ket{i} \nonumber \\
     &= \frac{e^{-\beta \lambda_S(i)}}{\partfun_S(\beta)} \widetilde{\alpha}^2 \frac{\eta_\Delta(i,j)}{\binom{dim_S}{2}} \frac{e^{-\beta \Delta_S(j, i)}}{1 + e^{-\beta \Delta_S(j, i)}} - \frac{e^{-\beta \lambda_S(j)}}{\partfun_S(\beta)} \widetilde{\alpha}^2 \frac{\eta_\Delta(i,j)}{\binom{dim_S}{2}} \frac{1}{1 + e^{-\beta \Delta_S(j, i)}} \\
@@ -1096,7 +1132,7 @@ For $i < j$ the same calculation holds
 \end{align}
 This is sufficient to show that the thermal state $\rho_S(\beta)$ is a fixed point via Lemma \ref{lem:fixed_point}. As we have also shown that the probability of transitioning from any state $\ketbra{i}{i}$ to any other state $\ketbra{j}{j}$ is nonzero this gives a nonzero expected hitting time for any pair of states. This implies the Markov chain is ergodic and that $\rho_S(\beta)$ is the \emph{unique} fixed point.
 
-Next we bound the total simulation time of the algorithm. For reasons similar to the harmonic oscillator in Section \ref{sec:harmonic_oscillator} we are unable to compute the spectral gap of the Markov matrix. We start the analysis in a similar manner by using the decomposition
+Next we bound the total simulation time required. For reasons similar to the harmonic oscillator in Section \ref{sec:harmonic_oscillator} we are unable to compute the spectral gap of the Markov matrix. We start the analysis in a similar manner by using the decomposition
 \begin{equation}
     \norm{\rho_S(\beta) - \left(\EE_\gamma \Phi_\gamma\right)^{\circ L}(\rho)}_1 \le \norm{\rho_S(\beta) - \left(\EE_\gamma \identity + \TT_{\on}^{(\gamma)}\right)^{\circ L}(\rho)}_1 + L(\norm{\TT_{\off}}_1 + \norm{R_{\Phi}}_1 ).
 \end{equation}
@@ -1106,7 +1142,7 @@ We bound the Markov error via Theorem \ref{thm:markov_chain_bound}. This theorem
 \end{align}
 where $\widetilde{\lambda}_\star(\beta)$ is the spectral gap of the rescaled transition matrix $\EE_\gamma T_\gamma \cdot \frac{\binom{\dim_S}{2}}{\widetilde{\alpha}^2}$, is sufficient for $\norm{\rho_S(\beta) - \left(\EE_\gamma \identity + \TT_{\on}^{(\gamma)}\right)^{\circ L}(\rho)}_1 \in \bigotilde{\epsilon}$. We now use this to bound the total off-resonance and remainder error after balancing the two contributions asymptotically
 \begin{align}
-    \norm{\TT_{\off}}_1 + \norm{R_{\Phi}}_1 \le \frac{8\alpha^2}{\delta_{\min}^2} + 16 \sqrt{\frac{\pi}{2}} \dim_S (\alpha t)^3 = \frac{\alpha^2}{\delta_{\min}^2} \left( + 16 \sqrt{\frac{\pi}{2}}  \alpha \dim_S \delta_{\min}^2 t^3\right).
+    \norm{\TT_{\off}}_1 + \norm{R_{\Phi}}_1 \le \frac{8\alpha^2}{\delta_{\min}^2} + 16 \sqrt{\frac{\pi}{2}} \dim_S (\alpha t)^3 = \frac{\alpha^2}{\delta_{\min}^2} \left( 8+ 16 \sqrt{\frac{\pi}{2}}  \alpha \dim_S \delta_{\min}^2 t^3\right).
 \end{align}
 Setting $\alpha = \frac{1}{\dim_S \delta_{\min}^2 t^3}$ is sufficient to make the parenthesis a constant. Lastly to get the total error in $\bigotilde{\epsilon}$ we multiply the above by the $L$ chosen before
 \begin{align}
@@ -1118,7 +1154,7 @@ Choosing
 \end{equation}
 is sufficient to guarantee $L (\norm{\TT_{\off}}_1 + \norm{R_{\Phi}}_1) \in \bigotilde{\epsilon}$ and that the total error $\norm{\rho_S(\beta) - \left( \EE_\gamma \Phi_\gamma \right)^{\circ L}(\rho)}_1 \in \bigotilde{\epsilon}$. Combining the above results for $\alpha, L$ and $t$ yields the theorem statement for finite $\beta$. 
 
-We now show how to calculate $\widetilde{\lambda}_\star(\beta)$ in the $\beta \to \infty$ limit. From Lemma \ref{lem:fixed_point} we know that $\EE_\gamma T_\gamma$ will be upper triangular, meaning we can compute the spectrum if we can compute the diagonals. Using our computation of the off-diagonals from before we have for $i > 1$
+We now show how to calculate $\widetilde{\lambda}_\star(\beta)$ in the $\beta \to \infty$ limit. From Lemma \ref{lem:fixed_point} we know that $\EE_\gamma T_\gamma$ will be upper triangular, implying again that we can compute the spectrum if we can compute the diagonal elements of the matrix. Using our computation of the off-diagonal elements from the proof of Theorem~\ref{thm:zero_knowledge} we have for $i > 1$
 \begin{align}
     \lim_{\beta \to \infty} \EE_\gamma \bra{i} \TT_{\on}^{(\gamma)}(\ketbra{i}{i}) \ket{i} &= - \lim_{\beta \to \infty} \sum_{j \neq i} \bra{j} \TT_{\on}^{(\gamma)}(\ketbra{i}{i}) \ket{j} \\
     &= - \lim_{\beta \to \infty} \sum_{j < i} \widetilde{\alpha}^2 \frac{\eta_\Delta(i,j)}{\binom{\dim_S}{2}} \frac{1}{1 + e^{-\beta \Delta_S(i,j)}} - \lim_{\beta \to \infty} \sum_{j > i} \widetilde{\alpha}^2 \frac{\eta_\Delta(i,j)}{\binom{\dim_S}{2}} \frac{e^{-\beta \Delta_S(j, i)}}{1 + e^{-\beta \Delta_S(j, i)}} \\
@@ -1130,10 +1166,11 @@ For $i = 1$ as we know the ground state is fixed we have $\lim_{\beta \to \infty
 \end{align}
 \end{proof}
 
-\subsection{Hydrogen Chain Numerics - DEFCON 4} \label{sec:general_numerics}
+The above theorem shows that if we sample our transitions strategically rather than randomly then we can achieve much faster convergence to the groundstates in our upper bounds.  Importantly, the scaling of the total simulation time is also independent of the norm of $H_S$ in this case, whereas the time required by the zero knowledge case does.  Unfortunately, the dimensional scaling of ${\rm dim}_S^16$ is prohibitive for all but the smallest dimensional systems.  This scaling is again likely loose because of a number of assumptions that we make above and also a result of our insistence that the channel always operate inside the regime of weak coupling.  In contrast, we will see below that equilibration can be much faster if strong coupling is assumed.  Finally, it is worth noting that although perfect knowledge is assumed, a cooling schedule is not used.  By changing the distribution depending on the temperature of the Gibbs state it is possible that even better scaling may be achievable.
 
-The analytic results developed in the previous two sections provide strong guarantees on the correctness of our algorithm for most quantum systems, however the bounds on the total simulation are fairly high degree polynomials in the parameters of interest. One crucial interpretation of the two different results is that knowledge of the eigenvalue differences of $H_S$ can lead to significantly better simulation time bounds, but this knowledge is not \emph{crucial} for thermalization. Another important takeaway is that we cannot bound the simulation time or number of interactions required for finite $\beta$ as we cannot bound the spectral gap of the expected transition matrix $\EE_\gamma T_\gamma$. The purpose of this section is to investigate these two theoretic takeaways numerically with small Hydrogen chain systems. These systems are some of the smallest chemical systems that still display some real-world chemical behavior, and as a result are typically used in many numeric benchmarks for quantum routines. 
+\subsection{Hydrogen Chain Numerics} \label{sec:general_numerics}
 
+The analytic results developed in the previous two sections provide strong guarantees on the correctness of our routine for most quantum systems, however the bounds on the total simulation are fairly high degree polynomials in the parameters of interest. One crucial interpretation of the two different results is that knowledge of the eigenvalue differences of $H_S$ can lead to significantly better simulation time bounds, but this knowledge is not \emph{crucial} for thermalization. Another important takeaway is that we cannot bound the simulation time or number of interactions required for finite $\beta$ as we cannot bound the spectral gap of the expected transition matrix $\EE_\gamma T_\gamma$. The purpose of this section is to investigate these two theoretic takeaways numerically with small Hydrogen chain systems. These systems are some of the smallest chemical systems that still display some real-world chemical behavior, and as a result are typically used in many numeric benchmarks for quantum routines. 
 
 Our first experiment conducted is to study the effects of changing $\alpha$ and $t$ on the trace distance error as a function of $L$. The theory developed in prior sections is very prescriptive; to reach a specific trace distance of $\epsilon$ all of our theorems give a value of $\alpha$, $L$, and $t$ that guarantee a distance of at most $\bigotilde{\epsilon}$ but say nothing about what this convergence looks like. In Figure \ref{fig:h_chain_error} we study the effects of different choices of $\alpha$ and $t$ on this convergence rate. To generate the Hamiltonians used in these experiments we created a small chain of equally spaced hydrogen nuclei with an STO-3G active space for the electrons. Hamiltonian creation was done with OpenFermion \cite{mcclean2020openfermion} and PySCF \cite{pyscf}. Once the Hamiltonians were generated, the distance to the thermal state $\rho_S(\beta)$ for each was tracked over $L = 5000$ interactions. For both Hydrogen 2 and Hydrogen 3 we chose $\beta = 4$ for consistency, this gave a ground state overlap of around 0.56 for Hydrogen 2 and 0.26 for Hydrogen 3. 
 
@@ -1147,8 +1184,20 @@ Our first experiment conducted is to study the effects of changing $\alpha$ and 
     \begin{subfigure}{0.49\textwidth}
         \includegraphics[width=\textwidth]{numerics/data/error_vs_interaction_h3_chain_3.pdf}
         \caption{Hydrogen 3 }\label{fig:h3_error}
-    \end{subfigure} \\ 
-    \begin{subfigure}{0.49\textwidth}
+    \end{subfigure} 
+    \caption{These plots show the distance to the target thermal state for Hydrogen 2 and Hydrogen 3 chains as the number of interactions $L$ increases. For both Hydrogen 2 and 3 we set $\beta = 4.0$, which gives a ground state overlap of greater than 0.5 for Hydrogen 2 and 0.25 for Hydrogen 3. $\gamma$ for both \ref{fig:h2_error} and \ref{fig:h3_error} was generated by placing a Gaussian at the average energy $\trace{H_S} / \dim_S$ with a width of $\norm{H_S} / 2$. We note that a variety of $\widetilde{\alpha}^2$ values were chosen to demonstrate the faster convergence, but higher error, of strong coupling.
+    }
+    \label{fig:h_chain_error}
+\end{figure}
+
+There are a few key takeaways from Figure \ref{fig:h_chain_error}. The first is that we observe increasing $\alpha$ and $t$ tend to increase the convergence rate, with $\alpha$ visuallly appearing more important. At higher values of $\alpha$ changes in $t$ appear to make less of an impact on the error. We also observe that our channel is seemingly robust beyond our weak-interaction analysis. For values of $\widetilde{\alpha}^2$, the weak-interaction expansion parameter, we observe that values as high as $\widetilde{\alpha}^2 \approx 3$ can have rapid convergence to fairly low error floors. We note that these coupling values that go beyond weak-interaction seem to lead to faster convergence of the dynamics at the cost of a larger error floor. It remains an open question if dynamic choices of $\alpha$ and $t$ could lead to better performance of the overall routine, one could use very large $\widetilde{\alpha}$ initially to quickly thermalize with large error and then decrease $\widetilde{\alpha}$ to fine-tune the final state.
+
+The second observation we make is on the choice of the environment gaps $\gamma$. For both Hydrogen 2 and 3 we selected $\gamma $ randomly from a Gaussian with mean $\trace{H_S} / \dim_S$ and standard deviation of $\norm{H_S} / 2$. This choice of $\gamma$ is completely heuristic and was intended to have a large overlap with what the typical eigenvalue differences may look like with a large enough deviation to pick up potentially large differences. Although this heuristic works well enough to show convergence, it leads us to question if the error convergence or floors can be improved with better choices of $\gamma$. 
+
+In Figure \ref{fig:h_chain_noise} we demonstrate that better choices of $\gamma$ do in fact reduce the total simulation time needed for thermalization. In Figures \ref{fig:h2_chain_with_noise} and \ref{fig:h3_chain_with_noise} we compute the number of interactions needed at a fixed coupling constant $\alpha$ and a fixed time $t$ as a function of the noise added to our samples for $\gamma$. We generate one sample of $\gamma$ by first computing the eigenvalue spectrum of H2 or H3 exactly, then by choosing two non-equal eigenvalues, and finally sampling a Gaussian centered at the absolute value of the difference. The width of this Gaussian then serves as a proxy for the amount of knowledge one may have about the system's eigenvalues. We plot the total simulation time with respect to this width as it varies from 0 to the spectral width $\max_i \lambda_S(i) - \min_j \lambda_S(j)$. The results align well with our theoretic analysis: having knowledge of the eigenvalues of the system can be used to speed up the thermalization routine but if one does not have any knowledge at all the thermal state can still be prepared. It is an open question if the dependence of the total simulation time $L \cdot t$ on the noise level $\sigma$ can be determined analytically.
+ \begin{figure}
+     \centering
+        \begin{subfigure}{0.49\textwidth}
         \includegraphics[width = \textwidth]{numerics/h2_chain_with_noise_3.pdf}    
         \caption{Hydrogen 2 } \label{fig:h2_chain_with_noise}
     \end{subfigure}    
@@ -1156,46 +1205,39 @@ Our first experiment conducted is to study the effects of changing $\alpha$ and 
         \includegraphics[width=\textwidth]{numerics/h3_chain_with_noise_3.pdf}
         \caption{Hydrogen 3 }\label{fig:h3_chain_with_noise}
     \end{subfigure} 
-    \caption{ \ref{fig:h2_error} and \ref{fig:h3_error} show the distance to target thermal state for Hydrogen 2 and Hydrogen 3 chains as the number of interactions $L$ increases. For both Hydrogen 2 and 3 we set $\beta = 4.0$, which gives a ground state overlap of greater than 0.5 for Hydrogen 2 and 0.25 for Hydrogen 3. $\gamma$ for both \ref{fig:h2_error} and \ref{fig:h3_error} was generated by placing a Gaussian at the average energy $\trace{H_S} / \dim_S$ with a width of $\norm{H_S} / 2$. \\
-    In \ref{fig:h2_chain_with_noise} and \ref{fig:h3_chain_with_noise} the effects of eigenvalue knowledge is studied. In these plots the amount of total simulation time needed to prepare a $\beta = 2.0$ thermal state with $\alpha = 0.01$ and $t = 500$ is tracked as a function of the noise added to samples of $\gamma$. A sample for $\gamma$ is generated by choosing two non-equal eigenvalues from the system spectrum and adding a Gaussian random variable with standard deviation $\sigma$.}
-    \label{fig:h_chain_error}
-\end{figure}
-
-There are a few key takeaways from Figure \ref{fig:h_chain_error}. The first is that we observe increasing $\alpha$ and $t$ tend to increase the convergence rate, with $\alpha$ visuallly appearing more important. At higher values of $\alpha$ changes in $t$ appear to make less of an impact on the error. We also observe that our algorithm is seemingly robust beyond our weak-interaction analysis. For values of $\widetilde{\alpha}^2$, the weak-interaction expansion parameter, we observe that values as high as $\widetilde{\alpha}^2 \approx 3$ can have rapid convergence to fairly low error floors. We note that these coupling values that go beyond weak-interaction seem to lead to faster convergence of the dynamics at the cost of a larger error floor. It remains an open question if dynamic choices of $\alpha$ and $t$ could lead to better performance of the overall algorithm, one could use very large $\widetilde{\alpha}$ initially to quickly thermalize with large error and then decrease $\widetilde{\alpha}$ to fine-tune the final state.
-
-The second observation we make is on the choice of the environment gaps $\gamma$. For both Hydrogen 2 and 3 we selected $\gamma $ randomly from a Gaussian with mean $\trace{H_S} / \dim_S$ and standard deviation of $\norm{H_S} / 2$. This choice of $\gamma$ is completely heuristic and was intended to have a large overlap with what the typical eigenvalue differences may look like with a large enough deviation to pick up potentially large differences. Although this heuristic works well enough to show convergence it leads us to question how much faster would this algorithm be with better choices of $\gamma$. In the bottom half of Figure \ref{fig:h_chain_error} we demonstrate that better choices of $\gamma$ do in fact reduce the total simulation time needed. In Figures \ref{fig:h2_chain_with_noise} and \ref{fig:h3_chain_with_noise} we compute the number of interactions needed at a fixed coupling constant $\alpha$ and a fixed time $t$ as a function of the noise added to our samples for $\gamma$. We generate one sample of $\gamma$ by first computing the eigenvalue spectrum of H2 or H3 exactly, then by choosing two non-equal eigenvalues, and finally sampling a Gaussian centered at the absolute value of the difference. The width of this Gaussian then serves as a proxy for the amount of knowledge one may have about the system's eigenvalues. We plot the total simulation time with respect to this width as it varies from 0 to the spectral width $\max_i \lambda_S(i) - \min_j \lambda_S(j)$. The results align well with our theoretic analysis: having knowledge of the eigenvalues of the system can be used to speed up the thermalization routine but if one does not have any knowledge at all the thermal state can still be prepared. 
- 
-
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.475\linewidth]{numerics/data/h_chain_with_noise_1.png}
-%     \includegraphics[width=0.475\linewidth]{numerics/data/h_chain_3_with_noise_2.png}
-%     \caption{}
-%     \label{fig:h_chain_with_noise}
-% \end{figure}
-
-\section{Conclusion - DEFCON 4} \label{sec:conclusion}
-
-Thermal state preparation is likely to be a crucial preparation step for the simulation of quantum systems on digital quantum computers. We have presented an algorithm for this task that has an optimally minimal number of overhead ancilla qubits and compiles to remarkably simple circuits of just time independent Hamiltonian evolution of the unprocessed system Hamiltonian, with no filtering or rejection steps and no Fourier weighted jump operators of Linbladians. Our algorithm is based on relatively recent classical Monte Carlo techniques, specifically Hamiltonian Monte Carlo \cite{hoffman2011nouturnsampleradaptivelysetting} and the end result bears striking resemblance to the Repeated Interactions framework in open quantum systems \cite{prositto2025equilibrium}. In the Hamiltonian Monte Carlo algorithm thermal states over a position coordinate $q$ is prepared by sampling momentum $p$ from the Boltzmann distribution for Gaussians $e^{-\beta p^2/2m}$ followed by time evolution. Classical Hamiltonian dynamics is enough to couple the position and momentum, leading to the Boltzmann distribution over $q$ with enough time and samples. In the repeated interactions framework a quantum system interacts with many small environments, typically a single photon, that is repeated until the system thermalizes. 
-
-Our work extends these procedures to quantum algorithms. For Hamiltonian Monte Carlo, instead of adding in momentum variables we add in a single ancilla qubit to serve as our extra state space. We do not have the luxury of classical Hamiltonian dynamics that couples these two spaces or registers, so we add in a randomized interaction term to the Hamiltonian. After simulating the time dynamics of this system-ancilla pair and repeating multiple times we are able to thermalize the system to the same $\beta$. On the other hand, the Repeated Interactions framework typically is concerned with thermodynamic limits, such as infinite time or interactions, and specific system-interactions pairs. As our algorithm is intended to be used as a subroutine for quantum computers our techniques work for arbitrary, non-degenerate, Hamiltonians and purposefully use randomized interactions as opposed to a fixed interaction model.
-
-In classical Hamiltonian Monte Carlo it is well known that sharp gradients in the Hamiltonian require longer simulation time and more samples to converge. Our quantum algorithm has a much more subtle dependence on the structure of the Hamiltonian. As our single ancilla qubit only has one energy difference $\gamma$, we have to tune this energy difference to allow for energy to be siphoned off from the system into the ancilla. This would present a conundrum, as knowing spectral gaps is as difficult or harder than preparing ground states of arbitrary quantum Hamiltonians, but we are able to prove that our algorithm is robust to complete ignorance of these differences. We show that this ignorance comes at an asymptotic cost in the amount of resources needed to prepare the thermal state. We numerically verify that knowledge of the eigenvalue differences can be used to speed up the total simulation time, as demonstrated in Figure \ref{fig:h_chain_error}. We posit that this behavior serves as a crucial entry point for heuristics about Hamiltonian spectra into thermal state preparation algorithms. No prior thermal state preparation routines have had such an explicit demonstration of the utility of such knowledge. It was our hope to analytically quantify the speedups gained as a function of the relative entropy between a heuristic guess for the eigenvalue differences and the true spectra, but our numeric evidence will have to suffice until future work can clarify this dependence.
-
-We would like to make a few remarks on potential improvements for the analysis of this algorithm. As we have demonstrated numerically, our guaranteed analytic values of $\alpha$ and $t$ that lead to thermalization are drastically overestimated. We conjecture that this is due to our truncation of the weak-coupling expansion and in Figure \ref{fig:epsilon_scaling} we demonstrate that taking $\alpha \propto 1/t$ and $t \propto 1/ \sqrt{\epsilon}$ drastically outperforms our analytically derived bounds of $\alpha \propto 1/t^3$, by almost 4 orders of magnitude at $\epsilon \approx 0.005$. It is an open question of how to analyze this channel in the strong-coupling regime, and our numeric results suggest that such an analysis may indicate better performance of our algorithm than our weak-coupling expansion can show. It is also an open question of whether dynamically chosen values of $\alpha$ and $t$, such as having strong coupling and low time at the beginning and gradually decreasing $\alpha$ and increasing $t$, can outperform static $\alpha$ and $t$. We also suspect that the Markov relaxation theorem we used greatly overestimates the number of interactions needed. It remains to be seen if better Markov theory is needed or if the convergence time could be characterized based on the overlap of the initial state with the thermal state, which is a property that a few ground state preparation algorithms demonstrate. Another potential avenue for improving the analysis of this algorithm is whether different randomized interactions or even eigenvector heuristics can be beneficial. For example, in the harmonic oscillator if one has knowledge of the creation and annihilation operators $a^\dagger$ and $a$, could one simply use the interaction $a^\dagger \otimes (X + i Y) + a \otimes (X - i Y)$ instead of involving a randomized $G$ that relies on a Haar average? The last potential improvement to analyze this algorithm is to extend our spectral gap computations using perturbation theory. We are only able to compute the spectral gaps $\widetilde{\lambda}_\star(\beta)$ in the limit of $\beta \to \infty$ but it should be possible to compute a perturbation on the order of $1/\beta$. This would give the runtime needed to prepare low-temperature thermal states as opposed to zero-temperature states.
-
-Lastly, we would like to speculate on possible applications of this routine to other quantum information processing tasks. The first question that arises is if this algorithm could be used in the training of quantum Boltzmann machines, which are essentially thermal states. It is an open question if our thermalizing techniques could be used to either train models or to generate output samples from an already trained model. Through the process of demonstrating that this algorithm prepares the system in the thermal state we have calculated the output of our channel for both the system and the environment registers, and for much larger environments than single qubits. We can turn this protocol on it's head and ask how much information about the system are these ancilla qubits carrying away with them? Preliminary explorations not included here suggest that given knowledge about eigenvalue gaps one can use transition statistics in the ancilla qubits to infer what the inverse temperature $\beta$ is of the system, assuming the system is in a thermal state. Could this thermalizing procedure instead be used to develop a Bayesian model to update beliefs about Hamiltonian spectra and system temperatures? This would represent an interaction agnostic model for performing quantum thermometry or spectroscopy, which to the best of our knowledge has not been developed yet. 
-
-\section*{Acknowledgments}
+     \caption{ In these plots the amount of total simulation time needed to prepare a $\beta = 2.0$ thermal state with $\alpha = 0.01$ and $t = 500$ is tracked as a function of the noise added to samples of $\gamma$. A sample for $\gamma$ is generated by choosing two non-equal eigenvalues from the system spectrum and adding a Gaussian random variable with standard deviation $\sigma$. For each value of $\sigma$ the resulting state needs to have an average trace distance of less than $0.05$ for 100 samples.}
+     \label{fig:h_chain_noise}
+ \end{figure}
 
 
+
+
+\section{Conclusion} \label{sec:conclusion}
+
+Thermal state preparation is likely to be a crucial preparation step for the simulation of quantum systems on digital quantum computers. We have presented a thermalization routine for this task that has an optimally minimal number of overhead ancilla qubits and compiles to remarkably simple circuits of time independent Hamiltonian evolution of the unprocessed system Hamiltonian, with no filtering or rejection steps and no Fourier weighted jump operators of Linbladians. Our routine is based on relatively recent classical Monte Carlo techniques, specifically Hamiltonian Monte Carlo \cite{hoffman2011nouturnsampleradaptivelysetting} and the end result bears striking resemblance to the Repeated Interactions framework in open quantum systems \cite{prositto2025equilibrium}. In the Hamiltonian Monte Carlo algorithm thermal states over a position coordinate $q$ is prepared by sampling momentum $p$ from the Boltzmann distribution for Gaussians $e^{-\beta p^2/2m}$ followed by time evolution. Classical Hamiltonian dynamics is enough to couple the position and momentum, leading to the Boltzmann distribution over $q$ with enough time and samples. In the repeated interactions framework a quantum system interacts with many small environments, typically a single photon, that is repeated until the system thermalizes. 
+
+Our work extends these procedures to quantum algorithms. For Hamiltonian Monte Carlo, instead of adding in momentum variables we add in a single ancilla qubit to serve as our extra state space. We do not have the luxury of classical Hamiltonian dynamics that couples these two spaces or registers, so we add in a randomized interaction term to the Hamiltonian. After simulating the time dynamics of this system-ancilla pair and repeating multiple times we are able to thermalize the system to the same $\beta$. On the other hand, the Repeated Interactions framework typically is concerned with thermodynamic limits, such as infinite time or interactions, and specific system-interactions pairs. As our procedure is intended to be used as a subroutine for quantum computers our techniques work for arbitrary, non-degenerate, Hamiltonians and purposefully use randomized interactions as opposed to a fixed interaction model.
+
+One benefit of our thermalization procedure is that it can be compiled all the way down to the circuit level with minimal overhead in complexity. The elements of the channel that need to be compiled are: the ancilla qubit state preparation, the initial state preparation for the system, the time evolution of $H + \alpha G$, and the partial trace. The ancilla state preparation can be done starting from the ground state with a Pauli-$X$ rotation. The initial system state can be any state that commutes with $H_S$, the two leading choices are the maximally mixed state or a Haar random pure state. The maximally mixed state can be prepared using just CNOT gates at a cost of higher qubit count and a Haar random pure state can be prepared with no additional qubit overhead by applying a deep enough random circuit \cite{choi2023preparing}. 
+
+The time evolution of $H + \alpha G$ can be broken down into simulation of $H_S$ and then $\alpha G$ by one application of Trotter. The simulation of $H_S$ can be implemented in two different ways depending on the access model for the system Hamiltonian $H_S$. If $H_S$ is provided as a block-encoding then there exist optimal simulation techniques that add only a single extra ancilla qubit \cite{low2019hamiltonian}. If $H_S$ is provided as a sum of $k$-local Pauli strings or as a sparse matrix then product formula techniques can be used \cite{childs2021theory} at zero extra overhead in ancilla qubits. To simulate the time evolution of $\alpha G$ we can use the following breakdown $e^{i \alpha G t} = e^{i \alpha U_{\haar} D U_{\haar}^\dagger t} = U_{\haar} e^{i \alpha  D  t}U_{\haar}^\dagger$. This unitary can be implemented with a 2-design to approximate the $U_{\haar}$, this is due to the fact that we only expand the channel to second order in $\alpha$. Random Clifford circuits \cite{webb2015clifford} are sufficient for this purpose. To simulate $e^{i \alpha D t}$ random $Z$ rotations and controlled-$Z$ rotations should be sufficient, as we only ever rely on the eigenvalues being pairwise independent in our analysis. In the worst case the number of random gates in the $Z$ basis that would need to be applied would scale with the dimension of the system, adding an overall factor of $\dim_S$ to the preparation. In the product formula case we further remark that $H + \alpha G$ could be simulated in total with a composite technique of using Trotter for $H$ and randomized compilation for $\alpha G$ \cite{hagan2023composite}. 
+
+In classical Hamiltonian Monte Carlo it is well known that sharp gradients in the Hamiltonian require longer simulation time and more samples to converge. Our quantum routine has a much more subtle dependence on the structure of the Hamiltonian. As our single ancilla qubit only has one energy difference $\gamma$, we have to tune this energy difference to allow for energy to be siphoned off from the system into the ancilla. This would present a conundrum, as knowing spectral gaps is as difficult or harder than preparing ground states of arbitrary quantum Hamiltonians, but we are able to prove that our routine is robust to complete ignorance of these differences. We show that this ignorance comes at an asymptotic cost in the amount of resources needed to prepare the thermal state. We numerically verify that knowledge of the eigenvalue differences can be used to speed up the total simulation time, as demonstrated in Figure \ref{fig:h_chain_error}. We posit that this behavior serves as a crucial entry point for heuristics about Hamiltonian spectra into thermal state preparation algorithms. No prior thermal state preparation routines have had such an explicit demonstration of the utility of such knowledge. It was our hope to analytically quantify the speedups gained as a function of the relative entropy between a heuristic guess for the eigenvalue differences and the true spectra, but our numeric evidence will have to suffice until future work can clarify this dependence.
+
+We would like to make a few remarks on potential improvements for the analysis of this channel. As we have demonstrated numerically, our guaranteed analytic values of $\alpha$ and $t$ that lead to thermalization are drastically overestimated. We conjecture that this is due to our truncation of the weak-coupling expansion and in Figure \ref{fig:epsilon_scaling} we demonstrate that taking $\alpha \propto 1/t$ and $t \propto 1/ \sqrt{\epsilon}$ drastically outperforms our analytically derived bounds of $\alpha \propto 1/t^3$, by almost 4 orders of magnitude at $\epsilon \approx 0.005$. It is an open question of how to analyze this channel in the strong-coupling regime, and our numeric results suggest that such an analysis may indicate better performance of our protocol than a weak-coupling expansion can show. It is also an open question of whether dynamically chosen values of $\alpha$ and $t$, such as having strong coupling and low time at the beginning and gradually decreasing $\alpha$ and increasing $t$, can outperform static $\alpha$ and $t$. We also suspect that the Markov relaxation theorem we used greatly overestimates the number of interactions needed. It remains to be seen if better Markov theory is needed or if the convergence time could be characterized based on the overlap of the initial state with the thermal state, which is a property that a few ground state preparation algorithms demonstrate. Another potential avenue for improving the analysis of this channel is whether different randomized interactions or even eigenvector heuristics can be beneficial. For example, in the harmonic oscillator if one has knowledge of the creation and annihilation operators $a^\dagger$ and $a$, could one simply use the interaction $a^\dagger \otimes (X + i Y) + a \otimes (X - i Y)$ instead of involving a randomized $G$ that relies on a Haar average? The last potential improvement is to extend our spectral gap computations using perturbation theory. We are only able to compute the spectral gap $\widetilde{\lambda}_\star(\beta)$ in the limit of $\beta \to \infty$, but it should be possible to compute a perturbation on the order of $1/\beta$. This would give the simulation time needed to prepare low-temperature thermal states as opposed to zero-temperature states.
+
+Lastly, we would like to speculate on possible applications of this routine to other quantum information processing tasks. The first question that arises is if these techniques could be used in the training of quantum Boltzmann machines, which are essentially thermal states. It is an open question if our thermalizing techniques could be used to either train models or to generate output samples from an already trained model. Through the process of demonstrating that this channel prepares the system in the thermal state we have calculated the output of our channel for both the system and the environment registers, and for much larger environments than single qubits. We can turn this protocol on it's head and ask how much information about the system are these ancilla qubits carrying away with them? Preliminary explorations suggest that given knowledge about eigenvalue gaps one can use transition statistics in the ancilla qubits to infer what the inverse temperature $\beta$ is of the system, assuming the system is in a thermal state. Could this thermalizing channel instead be used to develop a Bayesian model to update beliefs about Hamiltonian spectra and system temperatures? This would represent an interaction agnostic model for performing quantum thermometry or spectroscopy, which to the best of our knowledge has not been developed yet. 
+
+\begin{acknowledgments}
+We thank Matthew Pocrnic, Alessandro Prositto, and Dvira Segal for useful discussions about repeated interaction models and Ahmet Burak Çatlı and Sophia Simon for helpful discussions on quantum thermodynamics. We thank the University of Toronto Computer Science Department for compute resources. This material is primarily based upon work supported by the U.S. Department of Energy, Office of Science, National Quantum Information Science Research Centers, Co-design Center for Quantum Advantage (C2QA) under contract number DE- SC0012704 (PNNL FWP 76274).  NW also acknowledges support from Google Inc. and Boehringer Ingelheim Inc.
+\end{acknowledgments}
 \bibliographystyle{unsrt}
 \bibliography{bib}
 
 \appendix 
 
 
-\section{Technical Proofs - DEFCON 5} \label{sec:appendix}
+\section{Technical Proofs} \label{sec:appendix}
 \subsection{Sinc Bounds} \label{sec:appendix_sinc}
 
 \begin{lemma}[Sinc Function Bounds] \label{lem:sinc_poly_approx}
@@ -1477,7 +1519,7 @@ which we note holds for all inputs $\rho$. Therefore our last problem is to comp
 \begin{align}
     \int \norm{G}_1^3 dG &= \int \norm{D}_1^3 ~ dU_{\text{Haar}} dD = \sum_{i = 1}^{2 \dim_S} \int \abs{d_i}^3 dd_i = 2 \dim_S \mathbb{E}(\abs{y}^3),
 \end{align}
-%\matt{I don't necessarily like the use of $g$ for eigenvalue integration part, need to set a consistent notation in the prelims. Also this notation is only used in the Haar integral appendix.} 
+
 where $y$ is a normal Gaussian random variable. This straightforwardly evaluates to $\mathbb{E}( |y|^3) = 2\sqrt{ \frac{2}{\pi}}$, yielding the final inequality
 \begin{align}
     \norm{R_{\Phi}(\rho)}_1 \le 16 \sqrt{\frac{2}{\pi}} \dim_S (\alpha t)^3 ,
