@@ -896,18 +896,64 @@ def plot_sho_interaction_v_beta():
     # plt.show()
     return
 
+def redo_the_epsilon_scaling():
+    file = "/Users/matt/repos/thermal_state_prep/numerics/data/epsilon_fitting_4.json"
+    with open(file, 'r') as f:
+        results = json.load(f)
+    print(results)
+    exponents = results['exponents']
+    epsilons = results['epsilons']
+    tot_times = results['total_times']
+    lower_bound = 10
+    print(epsilons[lower_bound:])
+    x = np.log10([1. / ep for ep in epsilons[lower_bound:]])
+    y = np.log10(tot_times[str(exponents[2])][lower_bound:])
+    p = np.polynomial.Polynomial.fit(x, y, 1)
+    print('coefs: ', p.convert().coef)
+    print(tot_times[str(exponents[0])][lower_bound:])
+    for exponent in exponents:
+        exp = str(exponent)
+        # print("exponent_results[i]: ", results[exp])
+        x = -1. * np.log10(epsilons)
+        y = np.log10(tot_times[exp])
+        cutoff = 7
+        poly_fit = np.polynomial.Polynomial.fit(x[cutoff:], y[cutoff:], 1)
+        slope = poly_fit.convert().coef[1]
+        print("exponent: {:}, slope: {:}".format(exp, slope))
+        if exponent == -3.0:
+            time_label = r"$\alpha = 1/t^3$"
+        elif exponent == -2.0:
+            time_label = r"$\alpha = 1/t^2$"
+        elif exponent == -1.0:
+            time_label = r"$\alpha = 1/t$"
+        # elif exp == 2.0:
+            # time_label = r"$\alpha = 1/t^3, t = O(\epsilon^{-0.5})$"
+        label = time_label + ", slope = {:.4}".format(slope)
+        plt.plot([1.0 / ep for ep in epsilons], tot_times[exp], label = label)
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.xlabel(r"$\frac{1}{\epsilon}$")
+    plt.ylabel(r"Total Simulation Time $(L \cdot t)$")
+    plt.legend(loc = "upper right")
+    # plt.xlabel(r"$\epsilon$")
+    # plt.ylabel(r"$L \cdot t$")
+    plt.savefig('/Users/matt/Desktop/epsilon_fitting_plot_5.pdf')
+    plt.show()
+    return
+
 if __name__ == "__main__":
     start = time_this.time()
     # plot_sho_tot_time_vs_time()
     # plot_sho_error_v_interaction()
     # plot_error_v_interaction()
     # plot_sho_interaction_v_beta()
-    h_chain_time_vs_noise()
+    # h_chain_time_vs_noise()
     # h_chain_time_vs_beta()
     # h_chain_error_v_interaction()
     # plot_h_chain_eigenvalues()
     # test_tot_time_vs_epsilon()
     # tot_time_vs_dim()
     # test_tot_time_vs_epsilon_uniform_gamma()
+    redo_the_epsilon_scaling()
     end = time_this.time()
     print("time elapsed: ", end - start)
