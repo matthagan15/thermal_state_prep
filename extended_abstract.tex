@@ -10,6 +10,7 @@
 %nofootinbib,
 %nobibnotes,
 %bibnotes,
+11pt,
  amsmath,amssymb,
  aps,
 %pra,
@@ -21,6 +22,8 @@
 onecolumn, 
 nofootinbib]{revtex4-2}
 %\usepackage[utf8]{inputenc}
+
+\renewcommand{\baselinestretch}{1.0}
 
 \usepackage{amsmath,amsthm, amssymb}
 \usepackage[margin=3cm]{geometry}
@@ -142,12 +145,20 @@ The first algorithms proposed for preparing thermal states on quantum computers 
 
 Recently developed physically inspired methods offer much improved algorithms over existing techniques. Chronologically, the first algorithm developed by Shtanko and Movassagh utilizes time evolution of the system while coupled to a thermal bath. These techniques offer conceptually simpler circuits than either of the existing approaches mentioned, as they essentially only require Hamiltonian simulation routines. Two drawbacks to this approach are as follows. The first is that one algorithm they propose only works for ETH satisfying Hamiltonians and explicitly scales with $\beta$, meaning that the exact ground state limit is unattainable. The second algorithm proposed does work for generic Hamiltonians, but the convergence method used is a relative entropy bound that has a prohibitively high failure probability for low precision $\epsilon$ of the output state.
 
-More recently, a variety of algorithms \cite{chen2023quantumthermalstatepreparation, gilyen2024quantumgeneralizationsglaubermetropolis} based on Linbladian approaches have been show to prepare thermal states for generic systems. These approaches are based on a physical model for thermalization known as a Davies generator. These algorithms are generic, satisfy the Kubo-Martin-Schwinger (KMS) conditions for thermal state fixed points (in some settings exactly, in others approximately), and can be shown to be efficient for ETH satisfying Hamiltonians. Some drawbacks of these algorithms is that they are fairly complex, meaning that compiling these routines to specific circuits is very nontrivial, and require at least a logarithmic ancilla overhead. A further complication is that the runtime of many of these algorithms explicitly depend on a mixing time, which is difficult to compute for arbitrary systems.
+More recently, a variety of algorithms \cite{chen2023quantumthermalstatepreparation, gilyen2024quantumgeneralizationsglaubermetropolis} based on Linbladian approaches have been show to prepare thermal states for generic systems. These approaches are based on a physical model for thermalization known as a Davies generator. These algorithms are generic, satisfy the Kubo-Martin-Schwinger (KMS) conditions for thermal state fixed points (in some settings exactly, in others approximately), and can be shown to be efficient for ETH satisfying Hamiltonians. Some drawbacks of these algorithms is that they are fairly complex and involve procedures such as coherently weighted Fourier transforms of the input Hamiltonian and operator square roots, meaning that compiling these routines to specific circuits is very nontrivial. A further complication is that the runtime of many of these algorithms explicitly depend on a mixing time, which is difficult to compute for arbitrary systems.
 
 \section{Algorithm and Proof Techniques}
-We present a quantum algorithm 
+In our paper we present a new quantum algorithm inspired by classical Hamiltonian Monte Carlo (HMC) techniques that we show can prepare arbitrary thermal states. HMC is a modification of the original Metropolis-Hastings algorithm that eliminates random walk behavior by extending the state space to include a momentum variable and utilizes time-evolution of the new Hamiltonian to transition to new states. As the probability of accepting new samples scales like the exponential of the energy difference, and Hamiltonian evolution naturally preserves energy, every sample is accepted if we ignore numerical errors that arise in practice. We adopt this philosphy and propose an algorithm that extends the state space of our Hamiltonian with a single ancilla qubit, prepared in the thermal state of the target temperature, and simulate the new system-ancilla pair with a randomized interaction term denoted $G$. By tracing out the ancilla register we arrive at the final expression for our channel 
+\begin{equation}
+    \Phi(\rho) = \mathbb{E}_G \partrace{\rm env}{e^{-i(H_S + H_E + \alpha G) t} \left( \rho \otimes \frac{e^{-\beta H_E}}{\partfun_E(\beta)} \right) e^{+i(H_S + H_E + \alpha G) t} }.
+\end{equation}
+
+To show that this channel prepares the thermal state we use a weak-coupling expansion that is second order in the coupling constant $\alpha$ to compute the transition elements $T_{j, i} =  \frac{\alpha^2}{2} \frac{\partial^2}{\partial \alpha^2}\bra{j} \Phi\ketbra{i}{i}) \ket{j}$. Computing these bounds is the most technical contribution in our paper, but boils down to repeated applications of Duhamel's formula along with second moment Haar integrations. We then show that the total mapping up to second order can be represented exactly as a Markov chain over the system eigenbasis. This representation as a Markov chain allows us to then provide arguments about the fixed points and convergence time of the channel $\Phi$ and is dependent on the tuning of the ancilla gap $\gamma$.
 
 \section{Main Results}
+We provide both numeric and theoretic analysis of our proposed algorithm. Analytically we study our channel for four scenarios, two specific and two applied. The specific systems we study are single qubit systems and truncated harmonic oscillators. For the single qubit system we are able to obtain an explicit bound on the total simulation time required to reach a trace distance of $\bigotilde{\epsilon}$ to the thermal state. For the harmonic oscillator we are able to show that the thermal state is the unique fixed point, provided knowledge of the oscillator gap $\Delta$, and are able to bound the total simulation time required as $\bigotilde{\frac{\dim_S^9}{\Delta \epsilon^{2.5} \lambda_\star(\beta) }}$, where $\lambda_\star(\beta)$ is the spectral gap of the Markov transition matrix. We are further able to show that in the ground state limit this gap can be computed as $\lim_{\beta \to \infty} \lambda_\star(\beta) = 1$. 
+
+Our other two analytic results hold for arbitrary non-degenerate Hamiltonians and the requirement on non-degeneracy is relatively mild and can be lifted fairly easily but complicates our proof techniques unnecessarily. For these Hamiltonians we prove convergence of the channel in two scenarios: one in which no knowledge of the eigenvalue differences beyond an upper bound on the spectral norm is present and the other in which the eigenalue differences are known exactly. 
 
 % Thermal states are fundamental primitives for many quantum algorithms, ranging from quantum chemistry to SemiDefinite Program (SDP) solvers. As they approach the ground state as the temperature of the thermal state approaches 0, they are very computationally difficult to prepare but also incredible resources for probing various properties, such as entanglement structure, of the Hamiltonian under study. How quantum systems efficiently approach thermal equilibrium is a major open question from both a physics perspective, as in how do realistic quantum systems interact with an environment to cool to the same temperature as the environment, and a computational perspective, meaning how can we prepare thermal states for a given Hamiltonian on a digital, fault-tolerant quantum computer. 
 
