@@ -1,4 +1,24 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
+
+\bibitem{temme2011}
+K.~Temme, T.~J. Osborne, K.~G. Vollbrecht, D.~Poulin, and F.~Verstraete.
+\newblock Quantum metropolis sampling.
+\newblock {\em Nature}, 471(7336):87–90, March 2011.
+
+\bibitem{jiang2024quantummetropolissamplingweak}
+Jiaqing Jiang and Sandy Irani.
+\newblock Quantum metropolis sampling via weak measurement, 2024.
+
+\bibitem{poulin2009sampling}
+David Poulin and Pawel Wocjan.
+\newblock Sampling from the thermal quantum gibbs state and evaluating
+  partition functions<? format?> with a quantum computer.
+\newblock {\em Physical review letters}, 103(22):220502, 2009.
+
+\bibitem{marriott2005quantum}
+Chris Marriott and John Watrous.
+\newblock Quantum arthur--merlin games.
+\newblock {\em computational complexity}, 14(2):122--152, 2005.
 
 \bibitem{chen2023quantumthermalstatepreparation}
 Chi-Fang Chen, Michael~J. Kastoryano, Fernando G. S.~L. Brandão, and András
@@ -8,5 +28,35 @@ Chi-Fang Chen, Michael~J. Kastoryano, Fernando G. S.~L. Brandão, and András
 \bibitem{gilyen2024quantumgeneralizationsglaubermetropolis}
 András Gilyén, Chi-Fang Chen, Joao~F. Doriguello, and Michael~J. Kastoryano.
 \newblock Quantum generalizations of glauber and metropolis dynamics, 2024.
+
+\bibitem{ding2024efficientquantumgibbssamplers}
+Zhiyan Ding, Bowen Li, and Lin Lin.
+\newblock Efficient quantum gibbs samplers with kubo--martin--schwinger
+  detailed balance condition, 2024.
+
+\bibitem{ding2024single}
+Zhiyan Ding, Chi-Fang Chen, and Lin Lin.
+\newblock Single-ancilla ground state preparation via lindbladians.
+\newblock {\em Physical Review Research}, 6(3):033147, 2024.
+
+\bibitem{davies1974markovian}
+E~Brian Davies.
+\newblock Markovian master equations.
+\newblock {\em Communications in mathematical Physics}, 39:91--110, 1974.
+
+\bibitem{alicki1976detailed}
+Robert Alicki.
+\newblock On the detailed balance condition for non-hamiltonian systems.
+\newblock {\em Reports on Mathematical Physics}, 10(2):249--258, 1976.
+
+\bibitem{zhang2023dissipative}
+Daniel Zhang, Jan~Lukas Bosse, and Toby Cubitt.
+\newblock Dissipative quantum gibbs sampling.
+\newblock {\em arXiv preprint arXiv:2304.04526}, 2023.
+
+\bibitem{shtanko2023preparingthermalstatesnoiseless}
+Oles Shtanko and Ramis Movassagh.
+\newblock Preparing thermal states on noiseless and noisy programmable quantum
+  processors, 2023.
 
 \end{thebibliography}
