@@ -233,6 +233,47 @@ def fixed_number_interactions(h_sys, alpha, time, beta_e, num_interactions, num_
     threadpool = Parallel(n_jobs=8)
     return  phi.simulate_with_random_env(threadpool, gamma_strategy=gamma_strategy)
  
+def fixed_number_interactions_strong_coupling(h_sys,
+                                              alpha_start,
+                                              time_start,
+                                              beta_e,
+                                              num_interactions,
+                                              decay_rate = 0.9,
+                                              num_samples = 100,
+                                              gamma_strategy = 'fixed',
+                                              interactions_per_step = 20
+                                              ):
+    """
+    Computes the error after a fixed number of interactions with a given decay rate for alpha and t.
+    This reduces alpha by the decay_rate (alpha_i = decay_rate * alpha_(i - 1)) and increases t by
+    the decay rate. 
+    """
+    alphas = []
+    times = []
+    num_steps = math.ceil(num_interactions / interactions_per_step)
+    alpha_cutoff = 1e-6
+    time_cutoff = 1e6
+    alpha_verbose = True
+    for step in range(num_steps + 1):
+        num_interactions_left = min(interactions_per_step, num_interactions - len(alphas))
+        new_alpha = max(alpha_start * (decay_rate ** step), 1e-6)
+        new_time = min(time_start * ((1.0 / decay_rate) ** step), 1e6)
+        if abs(new_alpha - alpha_cutoff) < 1e-14 and verbose:
+            print("alpha clipped at step: ", step, " / ", num_steps + 1)
+        if abs(new_time - time_cutoff) < 1e-14: 
+            print("time clipped at step: ", step, " / ", num_steps + 1)
+        alphas.extend([new_alpha] * num_interactions_left)
+        times.extend([new_time] * num_interactions_left)
+    assert len(times) == num_interactions
+    assert len(alphas) == num_interactions
+    # print(alphas)
+    # alphas = [(decay_rate ** min(ix, 100)) * alpha_start for ix in range(num_interactions)]
+    # times = [((1.0 / decay_rate) ** min(ix, 100) ) * time_start for ix in range(num_interactions)]
+    # phi = QHMC(ham_sys=h_sys, env_betas=[beta_e] * num_interactions, sys_start_beta=0.0, sim_times=times, alphas=alphas, num_monte_carlo=num_samples)
+    phi = QHMC(ham_sys=h_sys, env_betas=[beta_e] * num_interactions, sys_start_beta=0.0, sim_times=times, alphas=alphas, num_monte_carlo=num_samples)
+    threadpool = Parallel(n_jobs=8)
+    return phi.simulate_with_random_env(threadpool, gamma_strategy=gamma_strategy)
+
 
 def minimum_interactions_with_random_gamma(hamiltonian, alpha, time, beta_e, epsilon, gamma_strategy, num_samples = 100):
     """
@@ -359,7 +400,7 @@ alpha.
             if gamma_strategy == 'random':
                 gammas = sample_gammas(avg, h_norm / 4.0, len(self.betas))
             elif gamma_strategy == 'fixed':
-                print("fixed gamma strat.")
+                # print("fixed gamma strat.") 
                 gammas = [1.0] * len(self.betas)
             elif gamma_strategy == 'spectra_with_noise':
                 gammas = sample_gammas_with_noise(spectra, noise, len(self.betas))
@@ -761,8 +802,7 @@ def plot_sho_error_v_interaction():
     n_int = 300
     beta = 4.0
     dim = 4
-    # alphas = [0.03, 0.0075,0.003, 0.001]
-    alphas = [0.025, 0.01, 0.005, 0.0001]
+    alphas = [0.01, 0.005,]
     times = [100.]
     results = {}
     x = [ix for ix in range(1, n_int, 5)]
@@ -788,15 +828,40 @@ def plot_sho_error_v_interaction():
 
     with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_fixed_time_2", 'w') as f:
         json.dump(results, f)
-    # y, yerr = fixed_number_interactions(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, n_int, num_samples=100, gamma_strategy='fixed')
-    # markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
-    # plt.errorbar(x, y, yerr, label="Simulated")
-    # plt.plot(x, markov_pred, label="Markov Pred.")
-    # plt.legend(loc='upper right')
-    # plt.ylabel(r"$|| \rho(\beta) - \Phi^L (\rho(0)) ||$")
-    # plt.xlabel(r"$L$")
-    # plt.title(r'$|| \rho(\beta) - \Phi^L (\rho(0)) || $ as a function of L W/ dim=4 SHO, $\alpha = 0.005, t = 100.$')
-    # plt.show() 
+    return
+
+def plot_sho_error_v_interaction_decay_rate():
+    n_int = 500
+    beta = 4.0
+    dim = 4
+    alpha = 0.1
+    time = 50.0
+    results = {}
+    x = [ix for ix in range(1, n_int, 5)]
+    decay_rate = 0.9
+    for decay_rate in [0.9, 0.8, 0.5]:
+        y, yerr = fixed_number_interactions_strong_coupling(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, n_int, num_samples=1024, gamma_strategy='fixed', decay_rate=decay_rate, interactions_per_step=30)
+            # markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
+        results["{:},{:},{:}".format(alpha, time, decay_rate)] = list(zip(x, y, yerr))
+    for alpha_time_string in results.keys():
+        split = alpha_time_string.split(',')
+        alpha = float(split[0].replace('(', ""))
+        time = float(split[1].replace(')', ""))
+        decay_rate = float(split[2].replace(')', ""))
+        x, y, yerr = zip(*results[alpha_time_string])
+        label = r"$\alpha$={:.4},$t$={:},decay={:}".format(alpha, int(time), decay_rate)
+        label += r", $\widetilde{\alpha}^2 $"
+        label += r"{:}".format( (alpha * time)**2 / (2. * dim + 1.))
+        plt.errorbar(x, y, yerr, label=label)
+    plt.yscale('log')
+    plt.legend(loc='upper right')
+    plt.ylabel(r"Error $|| \rho(\beta) - \Phi^L (\rho(0)) ||_1$")
+    plt.xlabel(r"Number of Interactions $L$")
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_fixed_time_2.pdf')
+    plt.show() 
+
+    with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_fixed_time_2", 'w') as f:
+        json.dump(results, f)
     return
 
 def plot_sho_tot_time_vs_time():
@@ -954,6 +1019,7 @@ if __name__ == "__main__":
     # test_tot_time_vs_epsilon()
     # tot_time_vs_dim()
     # test_tot_time_vs_epsilon_uniform_gamma()
-    redo_the_epsilon_scaling()
+    # redo_the_epsilon_scaling()
+    plot_sho_error_v_interaction_decay_rate()
     end = time_this.time()
     print("time elapsed: ", end - start)
