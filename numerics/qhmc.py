@@ -251,14 +251,14 @@ def fixed_number_interactions_strong_coupling(h_sys,
     alphas = []
     times = []
     num_steps = math.ceil(num_interactions / interactions_per_step)
-    alpha_cutoff = 1e-6
-    time_cutoff = 1e6
+    alpha_cutoff = 1e-8
+    time_cutoff = 1e8
     alpha_verbose = True
     for step in range(num_steps + 1):
         num_interactions_left = min(interactions_per_step, num_interactions - len(alphas))
         new_alpha = max(alpha_start * (decay_rate ** step), 1e-6)
         new_time = min(time_start * ((1.0 / decay_rate) ** step), 1e6)
-        if abs(new_alpha - alpha_cutoff) < 1e-14 and verbose:
+        if abs(new_alpha - alpha_cutoff) < 1e-14:
             print("alpha clipped at step: ", step, " / ", num_steps + 1)
         if abs(new_time - time_cutoff) < 1e-14: 
             print("time clipped at step: ", step, " / ", num_steps + 1)
@@ -831,7 +831,7 @@ def plot_sho_error_v_interaction():
     return
 
 def plot_sho_error_v_interaction_decay_rate():
-    n_int = 500
+    n_int = 1000
     beta = 4.0
     dim = 4
     alpha = 0.1
@@ -839,8 +839,8 @@ def plot_sho_error_v_interaction_decay_rate():
     results = {}
     x = [ix for ix in range(1, n_int, 5)]
     decay_rate = 0.9
-    for decay_rate in [0.9, 0.8, 0.5]:
-        y, yerr = fixed_number_interactions_strong_coupling(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, n_int, num_samples=1024, gamma_strategy='fixed', decay_rate=decay_rate, interactions_per_step=30)
+    for decay_rate in [0.9, 0.8, 0.7, 0.6, 0.5]:
+        y, yerr = fixed_number_interactions_strong_coupling(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, n_int, num_samples=128, gamma_strategy='fixed', decay_rate=decay_rate, interactions_per_step=10)
             # markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
         results["{:},{:},{:}".format(alpha, time, decay_rate)] = list(zip(x, y, yerr))
     for alpha_time_string in results.keys():
