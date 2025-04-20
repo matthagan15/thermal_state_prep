@@ -1161,8 +1161,8 @@ INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/cm/cmex10.tfm
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/rsfs/rsfs10.tfm
-INPUT /usr/local/texlive/2022/texmf-var/fonts/map/pdftex/updmap/pdftex.map
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/cm/cmti10.tfm
+INPUT /usr/local/texlive/2022/texmf-var/fonts/map/pdftex/updmap/pdftex.map
 INPUT ./numerics/data/error_vs_interaction_h2_chain_1.pdf
 INPUT ./numerics/data/error_vs_interaction_h2_chain_1.pdf
 INPUT numerics/data/error_vs_interaction_h2_chain_1.pdf

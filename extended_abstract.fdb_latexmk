@@ -1,13 +1,13 @@
 # Fdb version 3
-["bibtex extended_abstract"] 1740873956 "extended_abstract.aux" "extended_abstract.bbl" "extended_abstract" 1740874039
+["bibtex extended_abstract"] 1745188332 "extended_abstract.aux" "extended_abstract.bbl" "extended_abstract" 1745188333
   "/usr/local/texlive/2022/texmf-dist/bibtex/bst/base/unsrt.bst" 1292289607 18030 1376b4b231b50c66211e47e42eda2875 ""
   "bib.bib" 1740852305 55750 0675923572b9c7949460c48daa609348 ""
-  "extended_abstract.aux" 1740874038 2642 2ad0b591509b4a721b79c2b7e2e0dd54 "pdflatex"
+  "extended_abstract.aux" 1745188333 1939 6a532cc08b3330bb2ab11c4e99e204af "pdflatex"
   (generated)
   "extended_abstract.bbl"
   "extended_abstract.blg"
-["pdflatex"] 1740874038 "/Users/matt/repos/thermal_state_prep/extended_abstract.tex" "extended_abstract.pdf" "extended_abstract" 1740874039
-  "/Users/matt/repos/thermal_state_prep/extended_abstract.tex" 1740874037 34628 d9bbe81d64298ce4d173b9af6041ef1e ""
+["pdflatex"] 1745188332 "/Users/matt/repos/thermal_state_prep/extended_abstract.tex" "extended_abstract.pdf" "extended_abstract" 1745188333
+  "/Users/matt/repos/thermal_state_prep/extended_abstract.tex" 1745188331 36388 f903e7c8b65864160bcfea9e9e4bf89c ""
   "/usr/local/texlive/2022/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
   "/usr/local/texlive/2022/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1246382020 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
@@ -206,10 +206,10 @@
   "/usr/local/texlive/2022/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1647878959 4410336 7d30a02e9fa9a16d7d1f8d037ba69641 ""
   "/usr/local/texlive/2022/texmf-var/web2c/pdftex/pdflatex.fmt" 1650299912 2826445 802517aaf20fe8122c6d6cbeb7cf35c1 ""
   "/usr/local/texlive/2022/texmf.cnf" 1647878952 577 209b46be99c9075fd74d4c0369380e8c ""
-  "extended_abstract.aux" 1740874038 2642 2ad0b591509b4a721b79c2b7e2e0dd54 "pdflatex"
-  "extended_abstract.bbl" 1740873956 2318 380e8ff7c2596a6a3f014251e7a7e388 "bibtex extended_abstract"
+  "extended_abstract.aux" 1745188333 1939 6a532cc08b3330bb2ab11c4e99e204af "pdflatex"
+  "extended_abstract.bbl" 1745188332 385 f2f92d5f8ade249cc339cbaab6a946b3 "bibtex extended_abstract"
   "extended_abstract.out" 0 -1 0 "pdflatex"
-  "extended_abstract.tex" 1740874037 34628 d9bbe81d64298ce4d173b9af6041ef1e ""
+  "extended_abstract.tex" 1745188331 36388 f903e7c8b65864160bcfea9e9e4bf89c ""
   "extended_abstract.toc" 0 -1 0 ""
   "numerics/data/error_vs_interaction_h2_chain_1.pdf" 1738525483 851015 779869e568ea0efed881300c2a905b82 ""
   "numerics/h3_chain_with_noise_3.pdf" 1738615865 124337 7ab51b6d881b5ccda8ede4ad14563f37 ""
