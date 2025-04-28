@@ -103,13 +103,15 @@ Thermal states are fundamental primitives for many quantum algorithms, ranging f
 
 % We are not only able to show correctness of the algorithm, meaning that the output is $\bigotilde{\epsilon}$ close in trace distance to the thermal state, but also are able to bound the runtime needed to reach this output in two generic scenarios: the first in which a user has perfect knowledge of the eigenvalue differences $\lambda_S(i) - \lambda_S(j)$ and the other in which these differences are completely unknown and the user is forced to sample uniformly at random from some interval containing all the differences.
 
-Our algorithm is inspired by the classical Hamiltonian Monte Carlo (HMC) algorithm, which is a modification of the original Metropolis-Hastings algorithm that eliminates random walk behavior. HMC works by extending the state space of the system of interest to include momentum variables and then utilizes time-evolution of the extended Hamiltonian to transition to new states. As the probability of accepting new samples scales like the exponential of the energy difference, and since Hamiltonian evolution naturally preserves energy, every sample is theoretically accepted ignoring numerical integration errors. By implementing a quantum version of HMC, which does not have a rejection filter, we are able to avoid the dealbreakers of Marriot-Watrous rewinding \cite{temme2011} or other weak measurement schemes \cite{jiang2024quantummetropolissamplingweak} present when trying to adapt standard Metropolis-Hastings algorithms to quantum computers.
-
-The quantum algorithm we developed can be summarized as follows. First, prepare the system in a state diagonal in the Hamiltonian basis, the maximally mixed state or a Haar random pure state are sufficient, and a single ancilla qubit in a thermal state $\frac{e^{-\beta H_E}}{1 + e^{-\beta \gamma}}$, with an energy gap $\gamma$ that can be chosen uniformly at random from the interval $[0, 4\norm{H_S}]$. Then, choose an interaction term with Haar random eigenvectors and I.I.D Gaussian eigenvalues and add it to the system and environment Hamiltonians with a coupling constant $\alpha$. Finally, simulate the system-environment Hamiltonian wth interaction for a time $t$ and then trace out the ancilla qubit. This yields our overall channel
+Our algorithm is inspired by the classical Hamiltonian Monte Carlo (HMC) algorithm, a modification of Metropolis-Hastings. HMC works by extending the state space of the system of interest to include momentum variables and then utilizes time-evolution of the extended Hamiltonian to transition to new states. Our algorithm is described as follows. We first prepare a single ancilla qubit in a thermal state for a chosen energy gap $\gamma$. This gap can be chosen according to eigenvalue differences known to the user or sampled uniformly at random from an interval containing all eigenvalue differences, we outline both techniques in our paper. Then, choose an interaction term $G \sim U_{\rm haar} \Lambda U_{\rm haar}^\dagger$, whre $U_{\rm haar}$ can be sampled from a 2-design and $\Lambda$ is a diagonal matrix with I.I.D Gaussian entries. Simulating the total Hamiltonian with the randomized interaction then yields the channel
 \begin{equation}
     \Phi(\rho) = \mathbb{E}_G \partrace{\rm env}{e^{-i(H_S + H_E + \alpha G) t} \left( \rho \otimes \frac{e^{-\beta H_E}}{\partfun_E(\beta)} \right) e^{+i(H_S + H_E + \alpha G) t} }, \label{eq:phi}
 \end{equation}
 which is then repeated $L$ times.
+
+% By implementing a quantum version of HMC we are able to avoid the dealbreakers of Marriot-Watrous rewinding \cite{temme2011} or other weak measurement schemes \cite{jiang2024quantummetropolissamplingweak} present when trying to adapt standard Metropolis-Hastings algorithms to quantum computers. 
+
+% The quantum algorithm we developed can be summarized as follows. First, prepare the system in a state diagonal in the Hamiltonian basis, the maximally mixed state or a Haar random pure state are sufficient, and a single ancilla qubit in a thermal state $\frac{e^{-\beta H_E}}{1 + e^{-\beta \gamma}}$, with an energy gap $\gamma$ that can be chosen uniformly at random from the interval $[0, 4\norm{H_S}]$. Then, choose an interaction term with Haar random eigenvectors and I.I.D Gaussian eigenvalues and add it to the system and environment Hamiltonians with a coupling constant $\alpha$. Finally, simulate the system-environment Hamiltonian wth interaction for a time $t$ and then trace out the ancilla qubit. 
 
 In our paper we provide a detailed analysis of this algorithm using a weak-coupling expansion. We are able to prove fixed point properties and convergence rates in terms of the spectral gap of an underlying Markov chain. One remarkable property of our algorithm is that the spectral gap of this system is \emph{exactly} computable in the ground state limit, as $\beta \to \infty$. We perform this analysis in four settings: first for a single qubit system, second for a truncated harmonic oscillator, third for a generic system with no a priori eigenvalue knowledge, and fourth for a generic system with exact eigenvalue knowledge. These results are presented in four theorems (Theorems 10 - 13) in the complete manuscript and are summarized in Figure 1, although we leave out the single qubit scenario due to space constraints. 
 
@@ -150,6 +152,10 @@ As previously mentioned, our algorithm can be straightforwardly compiled to time
     \caption{Hydrogen-3 Chain Simulation Time} \label{fig:temp2}
     \end{subfigure}
 \end{figure}
+
+% \bibliographystyle{unsrt}
+% \bibliography{bib}
+\end{document}
 
 % To analyze this algorithm we perform a weak-coupling expansion of the combined system-environment output of $\Phi$ as given in Eq. \eqref{eq:phi}. The technical tools used for this involve only applications of Duhamel's formula and second moment Haar integrals. The computation of this weak-coupling expansion is completely generic and could be used in future work to study problems such as thermometry and spectroscopy. For Gibbs sampling, we use this expansion to reduce the quantum dynamics of $\Phi$ to a classical Markov chain over the system eigenbasis. Once this is obtained we can compute the fixed points of the channel, compute spectral gaps, and show ergodicity.  A further result that is left out is that the fixed point of the Zero Knowledge case may appear to diverge in the $\beta \to \infty$ limit, as we show that it is a controllably approximate fixed point, but in this same limit we show that the ground state is the exact fixed point with no approximation, indicating our approximation bounds are rather loose.
 
@@ -271,6 +277,3 @@ As previously mentioned, our algorithm can be straightforwardly compiled to time
 % \end{theorem}
 
 
-\bibliographystyle{unsrt}
-\bibliography{bib}
-\end{document}

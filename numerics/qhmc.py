@@ -328,6 +328,18 @@ def fixed_num_interactions_markov(dim, alpha, time, beta, num_interactions):
     return ret
 
 
+def fermi_hubbard(l: int, t: float, u: float):
+    """
+    - `l` is the lattice length (l x l lattice is used.) 
+    - `t` is the coupling coefficient between FH sites.
+    - `u` is the onsite potential. 
+    
+    """
+    h = []
+    # for ix in range(lattice_length):
+    #     for jx in range(lattice_length):
+
+
 class QHMC:
     """
     This class simulates weak interactions with a bath using GUE couplings. The main method is
@@ -1048,6 +1060,7 @@ if __name__ == "__main__":
     # tot_time_vs_dim()
     # test_tot_time_vs_epsilon_uniform_gamma()
     # redo_the_epsilon_scaling()
-    plot_sho_error_v_interaction_decay_rate()
+    # plot_sho_error_v_interaction_decay_rate()
+    fermi_hubbard(3)
     end = time_this.time()
     print("time elapsed: ", end - start)

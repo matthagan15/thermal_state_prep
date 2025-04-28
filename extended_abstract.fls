@@ -1173,12 +1173,6 @@ INPUT ./numerics/h3_chain_with_noise_3.pdf
 INPUT numerics/h3_chain_with_noise_3.pdf
 INPUT ./numerics/h3_chain_with_noise_3.pdf
 INPUT ./numerics/h3_chain_with_noise_3.pdf
-INPUT ./extended_abstract.bbl
-INPUT extended_abstract.bbl
-INPUT ./extended_abstract.bbl
-INPUT extended_abstract.bbl
-INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/cm/cmr12.tfm
-INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm
 INPUT extended_abstract.aux
 INPUT ./extended_abstract.out
 INPUT ./extended_abstract.out
@@ -1196,7 +1190,6 @@ INPUT /usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb
-INPUT /usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb
