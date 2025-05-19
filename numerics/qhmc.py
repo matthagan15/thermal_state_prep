@@ -282,38 +282,7 @@ def fixed_number_interactions_with_decay(h_sys,
     This reduces alpha by the decay_rate (alpha_i = decay_rate * alpha_(i - 1)) and increases t by
     the decay rate. 
     """
-    alphas = []
-    times = []
-    num_steps = math.ceil(num_interactions / interactions_per_step)
-    # time_cutoff = 1.0 / alpha_cutoff
-    alpha_verbose = True
-    time_verbose = True
-    for step in range(num_steps + 1):
-        num_interactions_left = min(interactions_per_step, num_interactions - len(alphas))
-        # new_alpha = max(alpha_start * (alpha_decay_rate ** step), alpha_cutoff)
-        # new_time = min(time_start * (time_increase_rate ** step), time_cutoff)
-        try:
-            new_alpha = max(alpha_start * (alpha_decay_rate ** step), alpha_cutoff)
-        except OverflowError:
-            new_alpha = alpha_cutoff
-        try:
-            new_time = min(time_start * (time_increase_rate ** step), time_cutoff)
-        except OverflowError:
-            new_time = time_cutoff
-        if abs(new_alpha - alpha_cutoff) < 1e-14 and alpha_verbose:
-            print("alpha clipped at step: ", step, " / ", num_steps + 1, ". len(alphas): ", len(alphas), ", num_interactions left: ", num_interactions - len(alphas), ". Final alpha: ", new_alpha)
-            alpha_verbose = False
-        if abs(new_time - time_cutoff) < 1e-14 and time_verbose: 
-            print("time clipped at step: ", step, " / ", num_steps + 1, ". len(times): ", len(times), ", num_interactions remaining: ", num_interactions - len(times), ". Final time: ", new_time)
-            time_verbose = False
-        alphas.extend([new_alpha] * num_interactions_left)
-        times.extend([new_time] * num_interactions_left)
-    assert len(times) == num_interactions
-    assert len(alphas) == num_interactions
-    # print(alphas)
-    # alphas = [(decay_rate ** min(ix, 100)) * alpha_start for ix in range(num_interactions)]
-    # times = [((1.0 / decay_rate) ** min(ix, 100) ) * time_start for ix in range(num_interactions)]
-    # phi = QHMC(ham_sys=h_sys, env_betas=[beta_e] * num_interactions, sys_start_beta=0.0, sim_times=times, alphas=alphas, num_monte_carlo=num_samples)
+    alphas, times = generate_alphas_and_times(num_interactions, interactions_per_step, alpha_start, alpha_decay_rate, time_start, time_increase_rate, alpha_cutoff=alpha_cutoff, time_cutoff=time_cutoff)
     phi = QHMC(ham_sys=h_sys, env_betas=[beta_e] * num_interactions, sys_start_beta=0.0, sim_times=times, alphas=alphas, num_monte_carlo=num_samples)
     threadpool = Parallel(n_jobs=8)
     return phi.simulate_with_random_env(threadpool, gamma_strategy=gamma_strategy)
@@ -887,17 +856,16 @@ def plot_sho_error_v_interaction():
     return
 
 def plot_sho_error_v_interaction_decay_rate():
-    n_int = 1500
+    n_int = 1000
     beta = 4.0
     dim = 4
     alpha = 0.5
     time = 100.
-    alpha_cutoff = 1e-14
-    time_cutoff = 1e14
+    alpha_cutoff = 1e-10
+    time_cutoff = 1e10
     results = {}
-    x = [ix for ix in range(1, n_int, 5)]
-    int_per_step = 50
-    for (alpha_decay_rate, time_increase_rate, alpha0, time0) in [(0.1, 10.0, 0.02, 100), (0.1, 10., 0.02, 100), (0.1, 10.0, 0.02, 100)]:
+    x = [ix for ix in range(0, n_int)]
+    for (alpha_decay_rate, time_increase_rate, alpha0, time0, int_per_step) in [(0.1, 10.0, 0.02, 100, 25), (0.1, 10.0, 0.02, 100, 50), (0.1, 10., 0.02, 100, 100), (1.0, 1.0, 1e-10, 1e10, 1000000)]:
         print("*" * 75)
         print("alpha_decay_rate: {:}, time_increase_rate: {:}, int_per_step: {:}".format( alpha_decay_rate, time_increase_rate, int_per_step))
 
@@ -907,7 +875,7 @@ def plot_sho_error_v_interaction_decay_rate():
             time0,
             beta,
             n_int,
-            num_samples=1024,
+            num_samples=1024 * 4,
             gamma_strategy='fixed',
             alpha_decay_rate=alpha_decay_rate,
             time_increase_rate=time_increase_rate,
@@ -917,8 +885,11 @@ def plot_sho_error_v_interaction_decay_rate():
             )
         
             # markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
-        results["{:},{:},{:},{:}".format(alpha_decay_rate, time_increase_rate, alpha0, int_per_step)] = list(zip(x, y, yerr))
-        int_per_step += 50
+        assert len(x) == len(y)
+        results["{:},{:},{:},{:},{:}".format(alpha_decay_rate, time_increase_rate, alpha0, time0, int_per_step)] = list(zip(x, y, yerr))
+        # int_per_step += 50
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    fig.set_size_inches(12, 5)
     for alpha_time_string in results.keys():
         print("=" * 50)
         print("alpha_time_string: ", alpha_time_string)
@@ -926,32 +897,30 @@ def plot_sho_error_v_interaction_decay_rate():
         alpha_decay_rate = float(split[0].replace('(', ""))
         time_increase_rate = float(split[1].replace(')', ""))
         alpha0 = float(split[2].replace(')', ""))
-        num_steps_per_cycle = float(split[3].replace(')', ""))
+        time0 = float(split[3].replace(')', ""))
+        num_steps_per_cycle = float(split[4].replace(')', ""))
         x, y, yerr = zip(*results[alpha_time_string])
-        # label = r"$r_\alpha$={:.4},$r_t$={:.4}, $\alpha_0$={:.4}, $t_0$={:.4}".format(alpha_decay_rate, time_increase_rate, alpha0, time0)
         label = r"num_steps_per_cycle={:.4}".format(num_steps_per_cycle)
-        # label += r", $\widetilde{\alpha}^2 $"
-        # label += r"{:}".format( (alpha * time)**2 / (2. * dim + 1.))
-        plt.errorbar(x, y, yerr, label=label)
-    plt.yscale('log')
-    plt.legend(loc='upper right')
-    plt.ylabel(r"Error $|| \rho(\beta) - \Phi^L (\rho(0)) ||_1$")
-    plt.xlabel(r"Number of Interactions $L$")
-    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/alpha_decay/3.pdf')
+        ax1.errorbar(x, y, yerr, label=label)
+
+        alphas,times = generate_alphas_and_times(n_int, int(num_steps_per_cycle), alpha0, alpha_decay_rate, time0, time_increase_rate, alpha_cutoff=alpha_cutoff, time_cutoff=time_cutoff)
+        label=r"num_steps_per_cycle={:}".format(num_steps_per_cycle)
+        ax2.plot(alphas, label=label)
+    # ax1.set_xscale('log')
+    ax1.set_yscale('log')
+    ax1.legend(loc='upper right')
+    ax1.set_ylabel(r"Error $|| \rho(\beta) - \Phi^L (\rho(0)) ||_1$")
+    ax1.set_xlabel(r"Number of Interactions $L$")
+
+    # ax2.set_xscale('log')
+    ax2.set_yscale('log')
+    ax2.legend(loc='upper right')
+    ax2.set_xlabel(r"Number of Interactions")
+    ax2.set_ylabel(r"$\alpha$")
+    plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/alpha_decay/6.pdf')
     plt.show() 
 
-    # alphas, times = generate_alphas_and_times(n_int, 100, 0.02, 0.1, 100., 10.)
-    # print(times)
-    # plt.plot(alphas, label="alphas")
-    # plt.yscale('log')
-    # # plt.plot(times, label="times")
-    # # plt.legend()
-    # plt.show()
-    # plt.plot(times)
-    # plt.yscale('log')
-    # plt.show()
-
-    with open("/Users/matt/repos/thermal_state_prep/numerics/data/alpha_decay/3", 'w') as f:
+    with open("/Users/matt/repos/thermal_state_prep/numerics/data/alpha_decay/6", 'w') as f:
         json.dump(results, f)
     return
 
