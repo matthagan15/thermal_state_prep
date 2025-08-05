@@ -824,35 +824,49 @@ def plot_h_chain_eigenvalues():
     
 
 def plot_sho_error_v_interaction():
-    n_int = 300
-    beta = 4.0
+    n_int = 40000
+    beta = 1.0
     dim = 4
-    alphas = [0.01, 0.005,]
-    times = [100.]
+    alphas = [0.1, 0.01, 0.001]
+    times = [100., 1000. ]
     results = {}
-    x = [ix for ix in range(1, n_int, 5)]
+    # x = [ix for ix in range(1, n_int, 5)]
     for alpha in alphas:
         for time in times:
+            if alpha > 0.002 and time > 200.0:
+                continue
             y, yerr = fixed_number_interactions(harmonic_oscillator_hamiltonian(dim), alpha, time, beta, n_int, num_samples=100, gamma_strategy='fixed')
-            markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
-            results["{:},{:}".format(alpha, time)] = list(zip(x, y, yerr, markov_pred))
+            # markov_pred = fixed_num_interactions_markov(dim, alpha, time, beta, n_int)
+            results["{:},{:}".format(alpha, time)] = list(zip([x + 1 for x in range(n_int)], y, yerr))
+    log_space_x_raw = np.logspace(0, np.log10(n_int), 200)
+    log_space_x = set([int(log_space_x_raw[ix]) for ix in range(len(log_space_x_raw))])
     for alpha_time_string in results.keys():
         split = alpha_time_string.split(',')
         alpha = float(split[0].replace('(', ""))
         time = float(split[1].replace(')', ""))
-        x, y, yerr, markov = zip(*results[alpha_time_string])
+        xs = []
+        ys = []
+        yerrs = []
+        for (x, y, yerr) in results[alpha_time_string]:
+            if x in log_space_x:
+                xs.append(x)
+                ys.append(y)
+                yerrs.append(yerr)
+
+        # x, y, yerr = zip(*results[alpha_time_string])
         label = r"$\alpha$={:.4},$t$={:}".format(alpha, int(time))
-        plt.errorbar(x, y, yerr, label=label)
-        plt.plot(x, markov, linestyle='dashed')
-    # plt.xscale('log')
+        plt.errorbar(xs, ys, yerrs, label=label)
+        # plt.plot(x, linestyle='dashed')
+    plt.xscale('log')
+    plt.yscale('log')
     plt.legend(loc='upper right')
     plt.ylabel(r"Error $|| \rho(\beta) - \Phi^L (\rho(0)) ||_1$")
     plt.xlabel(r"Number of Interactions $L$")
     plt.savefig('/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_fixed_time_2.pdf')
     plt.show() 
 
-    with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_fixed_time_2", 'w') as f:
-        json.dump(results, f)
+    # with open("/Users/matt/repos/thermal_state_prep/numerics/data/error_vs_interaction_fixed_time_2", 'w') as f:
+    #     json.dump(results, f)
     return
 
 def plot_sho_error_v_interaction_decay_rate():
@@ -1069,7 +1083,7 @@ def redo_the_epsilon_scaling():
 if __name__ == "__main__":
     start = time_this.time()
     # plot_sho_tot_time_vs_time()
-    # plot_sho_error_v_interaction()
+    plot_sho_error_v_interaction()
     # plot_error_v_interaction()
     # plot_sho_interaction_v_beta()
     # h_chain_time_vs_noise()
@@ -1080,7 +1094,7 @@ if __name__ == "__main__":
     # tot_time_vs_dim()
     # test_tot_time_vs_epsilon_uniform_gamma()
     # redo_the_epsilon_scaling()
-    plot_sho_error_v_interaction_decay_rate()
+    # plot_sho_error_v_interaction_decay_rate()
     # fermi_hubbard(3)
     end = time_this.time()
     print("time elapsed: ", end - start)
